@@ -68,6 +68,12 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
   </div>
 );
 
+const TabGroupLabel = ({ children, first }: { children: React.ReactNode; first?: boolean }) => (
+  <div className={`col-span-full ${first ? "" : "mt-2"} pt-1 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground border-t border-white/5 first:border-t-0 first:pt-0`}>
+    {children}
+  </div>
+);
+
 const CheckRow = ({ checked, label, onClick }: { checked: boolean; label: string; onClick?: () => void }) => (
   <button onClick={onClick} className="flex items-start gap-2 text-left w-full py-1" type="button">
     <Checkbox checked={checked} className="mt-0.5 pointer-events-none" />
@@ -98,7 +104,7 @@ const SocialOnModulePage = () => {
   const { user } = useAuth();
   const uid = user?.id ?? "";
 
-  const [tab, setTab] = useState("prism");
+  const [tab, setTab] = useState("um_toque");
   const [loading, setLoading] = useState(true);
 
   // profile
@@ -395,30 +401,36 @@ const SocialOnModulePage = () => {
       <main className="max-w-5xl mx-auto p-4">
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto gap-1 bg-transparent">
-            <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
-            <TabsTrigger value="auditoria" className="text-xs gap-1"><Search className="w-3 h-3" />Auditoria</TabsTrigger>
+            <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
+            <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
+            <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
+            <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
+
+            <TabGroupLabel>🧭 Estratégia e planejamento</TabGroupLabel>
+            <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
+            <TabsTrigger value="estrategista" className="text-xs gap-1"><Brain className="w-3 h-3" />Estrategista</TabsTrigger>
+            <TabsTrigger value="pro" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Social ON Pro</TabsTrigger>
+            <TabsTrigger value="auditoria" className="text-xs gap-1"><Search className="w-3 h-3" />Auditoria</TabsTrigger>
             <TabsTrigger value="calendario" className="text-xs gap-1"><CalendarDays className="w-3 h-3" />Calendário</TabsTrigger>
             <TabsTrigger value="metricas" className="text-xs gap-1"><BarChart3 className="w-3 h-3" />Métricas</TabsTrigger>
-            <TabsTrigger value="academia" className="text-xs gap-1"><GraduationCap className="w-3 h-3" />Academia</TabsTrigger>
-            <TabsTrigger value="esteira" className="text-xs gap-1"><ShoppingCart className="w-3 h-3" />Esteira</TabsTrigger>
-            <TabsTrigger value="repurposer" className="text-xs gap-1"><RefreshCw className="w-3 h-3" />Repurposer</TabsTrigger>
-            <TabsTrigger value="dm" className="text-xs gap-1"><MessageSquare className="w-3 h-3" />DM &amp; Objeções</TabsTrigger>
+
+            <TabGroupLabel>📈 Crescimento e vendas</TabGroupLabel>
             <TabsTrigger value="viral" className="text-xs gap-1"><Microscope className="w-3 h-3" />Viral</TabsTrigger>
-            <TabsTrigger value="prova" className="text-xs gap-1"><Camera className="w-3 h-3" />Prova social</TabsTrigger>
-            <TabsTrigger value="playbook" className="text-xs gap-1"><BookOpen className="w-3 h-3" />Playbook</TabsTrigger>
-            <TabsTrigger value="ideias" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Ideias</TabsTrigger>
-            <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
-            <TabsTrigger value="brand_score" className="text-xs gap-1"><Trophy className="w-3 h-3" />Brand Score</TabsTrigger>
             <TabsTrigger value="viral_lab" className="text-xs gap-1"><Flame className="w-3 h-3" />Viral Lab</TabsTrigger>
             <TabsTrigger value="dna" className="text-xs gap-1"><Dna className="w-3 h-3" />DNA</TabsTrigger>
+            <TabsTrigger value="brand_score" className="text-xs gap-1"><Trophy className="w-3 h-3" />Brand Score</TabsTrigger>
+            <TabsTrigger value="ideias" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Ideias</TabsTrigger>
+            <TabsTrigger value="repurposer" className="text-xs gap-1"><RefreshCw className="w-3 h-3" />Repurposer</TabsTrigger>
+            <TabsTrigger value="dm" className="text-xs gap-1"><MessageSquare className="w-3 h-3" />DM &amp; Objeções</TabsTrigger>
+            <TabsTrigger value="prova" className="text-xs gap-1"><Camera className="w-3 h-3" />Prova social</TabsTrigger>
+            <TabsTrigger value="esteira" className="text-xs gap-1"><ShoppingCart className="w-3 h-3" />Esteira</TabsTrigger>
+
+            <TabGroupLabel>🎓 Aprender</TabGroupLabel>
+            <TabsTrigger value="academia" className="text-xs gap-1"><GraduationCap className="w-3 h-3" />Academia</TabsTrigger>
+            <TabsTrigger value="playbook" className="text-xs gap-1"><BookOpen className="w-3 h-3" />Playbook</TabsTrigger>
             <TabsTrigger value="autoridade" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Autoridade</TabsTrigger>
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
-            <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
-            <TabsTrigger value="pro" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Social ON Pro</TabsTrigger>
-           <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
-           <TabsTrigger value="estrategista" className="text-xs gap-1"><Brain className="w-3 h-3" />Estrategista</TabsTrigger>
-
           </TabsList>
 
           {/* ─────────── PRISM (com Reels e Pack integrados) ─────────── */}

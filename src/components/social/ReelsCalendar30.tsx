@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarClock, CalendarDays, Check, Film, Layers, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -45,7 +45,7 @@ export default function ReelsCalendar30() {
   const endDate = useMemo(() => isoDay(start, 29), [start]);
   const startDate = useMemo(() => isoDay(start, 0), [start]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from("social_content_calendar")
@@ -55,9 +55,9 @@ export default function ReelsCalendar30() {
       .order("date", { ascending: true });
     setRows((data as Row[]) || []);
     setLoading(false);
-  };
+  }, [startDate, endDate]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => { load(); }, [load]);
 
   const seed = async () => {
     if (seeding) return;

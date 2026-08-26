@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -182,7 +182,7 @@ export default function SocialOnPage() {
     finally { setPublishing(false); await loadIgPosts(); }
   };
 
-  const loadCalendar = async () => {
+  const loadCalendar = useCallback(async () => {
     if (!coachId) return;
     const end = new Date(`${weekStart}T12:00:00`);
     end.setDate(end.getDate() + 6);
@@ -194,9 +194,9 @@ export default function SocialOnPage() {
       .lte("date", end.toISOString().slice(0, 10))
       .order("date");
     setRows((data as CalendarRow[]) ?? []);
-  };
+  }, [coachId, weekStart]);
 
-  useEffect(() => { loadCalendar(); /* eslint-disable-next-line */ }, [coachId, weekStart]);
+  useEffect(() => { loadCalendar(); }, [loadCalendar]);
 
   useEffect(() => {
     if (!coachId) return;

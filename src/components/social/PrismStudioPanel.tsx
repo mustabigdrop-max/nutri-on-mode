@@ -121,7 +121,7 @@ export default function PrismStudioPanel({
     }));
   };
 
-  const useSegment = async (id: string) => {
+  const applySegment = async (id: string) => {
     const f = files.find((x) => x.id === id);
     if (!f?.objectUrl || !f.trim) return;
     try {
@@ -373,7 +373,7 @@ export default function PrismStudioPanel({
                     Trecho: {Math.max(0, Math.round((f.trim?.end ?? 0) - (f.trim?.start ?? 0)))}s
                     {(f.trim?.end ?? 0) - (f.trim?.start ?? 0) > 60 ? " · ideal até 35s" : ""}
                   </span>
-                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" disabled={processing} onClick={() => useSegment(f.id)}>
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" disabled={processing} onClick={() => applySegment(f.id)}>
                     <Scissors className="w-3 h-3" /> Usar este trecho
                   </Button>
                 </div>

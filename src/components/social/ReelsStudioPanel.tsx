@@ -310,7 +310,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
       <div style={{ borderBottom: `1px solid ${C.border}`, paddingBottom: 12, marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <div style={{ ...fT, fontSize: FONT["2xl"], color: C.text }}>SOCIAL ON · <span style={{ color: C.gold }}>REELS STUDIO</span></div>
-          <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 4 }}>@diogo.mell0 · transformação é sistema.</div>
+          <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 4 }}>transformação é sistema.</div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button

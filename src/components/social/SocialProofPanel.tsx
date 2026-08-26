@@ -98,9 +98,9 @@ const SocialProofPanel = ({
     if (!authorized) return toast.error("Confirme a autorização do cliente");
     const canvas = await html2canvas(cardRef.current, { backgroundColor: "#020205", scale: 3, useCORS: true });
     const filename = `nutrion-resultado-${(stats?.name || "cliente").toLowerCase().replace(/\s+/g, "-")}.png`;
-    (await saveImage(canvas.toDataURL("image/png"), filename))
-      ? toast.success(isMobileDevice() ? 'Toque em "Salvar imagem" para ir pra galeria' : `${filename} baixado!`)
-      : toast.error("Não consegui salvar o card");
+    const saved = await saveImage(canvas.toDataURL("image/png"), filename);
+    if (saved) toast.success(isMobileDevice() ? 'Toque em "Salvar imagem" para ir pra galeria' : `${filename} baixado!`);
+    else toast.error("Não consegui salvar o card");
   };
 
   const genCaption = async () => {
@@ -164,7 +164,7 @@ const SocialProofPanel = ({
                 )}
                 <div>
                   {coachName && <p className="text-xs text-white/80">{coachName}</p>}
-                  <p className="text-xs text-white/50">@{(handle || "diogo.mell0").replace("@", "")}</p>
+                  {handle && <p className="text-xs text-white/50">@{handle.replace("@", "")}</p>}
                   <p className="text-xs" style={{ color: ACCENT }}>nutrion.app.br</p>
                 </div>
               </div>

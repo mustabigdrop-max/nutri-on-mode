@@ -295,7 +295,8 @@ const PrismPanel = ({
   };
 
   const renderAll = async (res: PrismResult) => {
-    const footer = watermark ? `@${(handle || "diogo.mell0").replace("@", "")} · nutrion.app.br` : undefined;
+    const cleanHandle = (handle || "").replace("@", "").trim();
+    const footer = watermark ? (cleanHandle ? `@${cleanHandle} · nutrion.app.br` : "nutrion.app.br") : undefined;
     const slides = res.content?.carousel_slides || [];
     const stories = res.content?.stories_frames || [];
 
@@ -705,7 +706,7 @@ const PrismPanel = ({
                     <Button size="sm" variant="outline" className="gap-2"
                       onClick={async () => {
                         const n = await downloadMany(Object.entries(edits).map(([k, v]) => ({ url: v, filename: `prism-${k}.png` })));
-                        n ? toast.success(`${n} imagens baixadas!`) : toast.error("Não consegui baixar as imagens");
+                        if (n) toast.success(`${n} imagens baixadas!`); else toast.error("Não consegui baixar as imagens");
                       }}>
                       <Download className="w-3 h-3" /> Baixar todas
                     </Button>
@@ -825,7 +826,7 @@ const PrismPanel = ({
               <Button size="sm" variant="outline" className="gap-2"
                 onClick={async () => {
                   const n = await downloadMany(slideImages.map((s, i) => ({ url: s, filename: `prism-slide-${i + 1}.png` })));
-                  n ? toast.success(`${n} slides baixados!`) : toast.error("Não consegui baixar os slides");
+                  if (n) toast.success(`${n} slides baixados!`); else toast.error("Não consegui baixar os slides");
                 }}>
                 <Download className="w-3 h-3" /> Baixar PNGs
               </Button>
@@ -848,7 +849,7 @@ const PrismPanel = ({
               <Button size="sm" variant="outline" className="gap-2"
                 onClick={async () => {
                   const n = await downloadMany(storyImages.map((s, i) => ({ url: s, filename: `prism-story-${i + 1}.png` })));
-                  n ? toast.success(`${n} stories baixados!`) : toast.error("Não consegui baixar os stories");
+                  if (n) toast.success(`${n} stories baixados!`); else toast.error("Não consegui baixar os stories");
                 }}>
                 <Download className="w-3 h-3" /> Baixar PNGs
               </Button>
@@ -911,7 +912,11 @@ const PrismPanel = ({
                   <p className="text-[10px] uppercase text-muted-foreground mb-1">Thumbnail — {c.video_notes.thumbnail_frame}</p>
                   <div className="flex gap-2">
                     {videos[0].frames!.map((f, i) => (
-                      <button key={i} type="button" onClick={async () => { (await saveImage(f, `prism-thumb-${i + 1}.png`)) ? toast.success(isMobileDevice() ? "Toque em \"Salvar imagem\" para ir pra galeria" : "Thumbnail baixada!") : toast.error("Falha ao salvar"); }}>
+                      <button key={i} type="button" onClick={async () => {
+                        const saved = await saveImage(f, `prism-thumb-${i + 1}.png`);
+                        if (saved) toast.success(isMobileDevice() ? "Toque em \"Salvar imagem\" para ir pra galeria" : "Thumbnail baixada!");
+                        else toast.error("Falha ao salvar");
+                      }}>
                         <img src={f} alt="" className="w-20 rounded border" style={{ borderColor: "rgba(255,255,255,0.12)" }} />
                       </button>
                     ))}

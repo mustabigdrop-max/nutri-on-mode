@@ -125,8 +125,9 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
 
   const videoRef = useRef<HTMLInputElement>(null);
   const main = photos[0] || null;
-  const at = `@${String(handle || "diogo.mell0").replace("@", "")}`;
-  const brand = watermark ? `${at} · nutrion.app.br` : undefined;
+  const cleanHandle = String(handle || "").replace("@", "").trim();
+  const at = cleanHandle ? `@${cleanHandle}` : "";
+  const brand = watermark ? (at ? `${at} · nutrion.app.br` : "nutrion.app.br") : undefined;
 
   const loadSaved = async () => {
     const { data } = await supabase
@@ -362,7 +363,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     setBusy(true);
     setStep(next ? "Aplicando marca d'água…" : "Removendo marca d'água…");
     try {
-      const footer = next ? `${at} · nutrion.app.br` : undefined;
+      const footer = next ? (at ? `${at} · nutrion.app.br` : "nutrion.app.br") : undefined;
       const imgs: string[] = [];
       for (const d of slides) {
         const bgImage = style === "dark" ? null : await bgFor(d.bg);
@@ -479,11 +480,11 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
 
   const dl = async (url: string, name: string) => {
     const ok = await saveImage(url, name);
-    ok ? toast.success(okMsg(1)) : toast.error("Não consegui salvar o arquivo");
+    if (ok) toast.success(okMsg(1)); else toast.error("Não consegui salvar o arquivo");
   };
   const dlAll = async (list: string[], prefix: string) => {
     const n = await downloadMany(list.map((u, i) => ({ url: u, filename: `${prefix}-${i + 1}.png` })));
-    n ? toast.success(okMsg(n)) : toast.error("Não consegui salvar as imagens");
+    if (n) toast.success(okMsg(n)); else toast.error("Não consegui salvar as imagens");
   };
 
 
@@ -570,7 +571,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
 
         <label className="flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
           <input type="checkbox" checked={watermark} onChange={(e) => toggleWatermark(e.target.checked)} />
-          Incluir marca d'água ({at} · nutrion.app.br) nos slides e stories
+          Incluir marca d'água ({at ? `${at} · ` : ""}nutrion.app.br) nos slides e stories
         </label>
       </Section>
 
@@ -672,7 +673,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
               { url: edits.crop916, filename: "stories-9x16.jpg" },
             ].filter((i) => !!i.url);
             const n = await downloadMany(items);
-            n ? toast.success(`${n} imagens baixadas!`) : toast.error("Não consegui baixar as imagens");
+            if (n) toast.success(`${n} imagens baixadas!`); else toast.error("Não consegui baixar as imagens");
           }}><Download className="w-3 h-3" /> Baixar todas</Button>
         }>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Instagram, Loader2, RefreshCw, Unlink } from "lucide-react";
 import { toast } from "sonner";
 import { ACCENT, ACCENT2, Section } from "./socialUi";
-import type { InstagramAccount } from "@/hooks/useInstagramAccount";
+import type { InstagramAccount, InstagramMedia } from "@/hooks/useInstagramAccount";
 
 type Props = {
   account: InstagramAccount | null;
@@ -67,6 +67,22 @@ const InstagramAccountPanel = ({ account, loading, onConnect, onSync, onDisconne
 
   const media = account.recent_media || [];
 
+  const engagement = (m: InstagramMedia) => (m.like_count ?? 0) + (m.comments_count ?? 0);
+
+  const topMedia = [...media].sort((a, b) => engagement(b) - engagement(a)).slice(0, 3);
+
+  const avgByType = (() => {
+    const groups: Record<string, number[]> = {};
+    media.forEach((m) => {
+      const type = m.media_type === "VIDEO" || m.media_type === "REELS" ? "Reels/Vídeo" : m.media_type === "CAROUSEL_ALBUM" ? "Carrossel" : "Foto";
+      (groups[type] ||= []).push(engagement(m));
+    });
+    return Object.entries(groups)
+      .filter(([, vals]) => vals.length >= 2)
+      .map(([type, vals]) => ({ type, avg: vals.reduce((a, b) => a + b, 0) / vals.length, n: vals.length }))
+      .sort((a, b) => b.avg - a.avg);
+  })();
+
   return (
     <Section
       title="📷 Conta conectada"
@@ -126,18 +142,52 @@ const InstagramAccountPanel = ({ account, loading, onConnect, onSync, onDisconne
         </div>
       </div>
 
+      {topMedia.some((m) => engagement(m) > 0) && (
+        <div className="pt-2 border-t border-white/5 space-y-2">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">🏆 Seus posts que mais engajaram</p>
+          <div className="grid grid-cols-3 gap-2">
+            {topMedia.map((m, i) => (
+              <a key={m.id} href={m.permalink ?? "#"} target="_blank" rel="noreferrer" className="block relative">
+                <img
+                  src={m.media_url ?? ""}
+                  alt={m.caption?.slice(0, 60) || "Publicação do Instagram"}
+                  className="w-full aspect-square object-cover rounded-md border border-white/10"
+                  loading="lazy"
+                />
+                <span
+                  className="absolute top-1 left-1 text-[9px] font-mono px-1 rounded"
+                  style={{ background: "rgba(0,0,0,0.7)", color: i === 0 ? "#FFD700" : ACCENT2 }}
+                >
+                  {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"} {engagement(m).toLocaleString("pt-BR")}
+                </span>
+              </a>
+            ))}
+          </div>
+          {avgByType.length >= 2 && (
+            <p className="text-xs text-muted-foreground">
+              💡 <b style={{ color: ACCENT2 }}>{avgByType[0].type}</b> engaja em média{" "}
+              {avgByType[1].avg > 0 ? `${Math.round((avgByType[0].avg / avgByType[1].avg - 1) * 100)}%` : "muito"} mais que{" "}
+              {avgByType[1].type.toLowerCase()} no seu perfil — priorize esse formato nesta semana.
+            </p>
+          )}
+        </div>
+      )}
+
       {media.length > 0 && (
-        <div className="grid grid-cols-4 gap-1.5 pt-1">
-          {media.slice(0, 8).map((m) => (
-            <a key={m.id} href={m.permalink ?? "#"} target="_blank" rel="noreferrer" className="block">
-              <img
-                src={m.media_url ?? ""}
-                alt={m.caption?.slice(0, 60) || "Publicação do Instagram"}
-                className="w-full aspect-square object-cover rounded-md border border-white/10"
-                loading="lazy"
-              />
-            </a>
-          ))}
+        <div className="pt-2 space-y-1.5">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Últimos posts</p>
+          <div className="grid grid-cols-4 gap-1.5">
+            {media.slice(0, 8).map((m) => (
+              <a key={m.id} href={m.permalink ?? "#"} target="_blank" rel="noreferrer" className="block">
+                <img
+                  src={m.media_url ?? ""}
+                  alt={m.caption?.slice(0, 60) || "Publicação do Instagram"}
+                  className="w-full aspect-square object-cover rounded-md border border-white/10"
+                  loading="lazy"
+                />
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </Section>

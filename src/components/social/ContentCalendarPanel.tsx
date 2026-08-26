@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CalendarPlus, ChevronLeft, ChevronRight, Copy, Loader2 } from "lucide-react";
@@ -36,7 +36,7 @@ export default function ContentCalendarPanel({ onBack }: { onBack?: () => void }
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDow = new Date(year, month, 1).getDay();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const from = iso(new Date(year, month, 1));
@@ -52,9 +52,9 @@ export default function ContentCalendarPanel({ onBack }: { onBack?: () => void }
     } finally {
       setLoading(false);
     }
-  };
+  }, [year, month, daysInMonth]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [year, month]);
+  useEffect(() => { load(); }, [load]);
 
   const byDate = useMemo(() => {
     const m = new Map<string, Row>();

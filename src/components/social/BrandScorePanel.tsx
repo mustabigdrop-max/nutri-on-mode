@@ -27,16 +27,20 @@ const BrandScorePanel = ({ handle, onGenerate }: { handle?: string | null; onGen
   );
 
   const shareStory = async () => {
+    const cleanHandle = String(handle || "").replace("@", "").trim();
     const url = await renderBrandScoreStory({
       score,
       pillars: BRAND_PILLARS.map((p) => ({ label: `${p.emoji} ${p.label}`, value: values[p.key] ?? 0 })),
       followers: followers ? `+${followers} seguidores esta semana` : undefined,
       streak: streak ? `🔥 Streak: ${streak} semanas postando` : undefined,
-      handle: `@${String(handle || "diogo.mell0").replace("@", "")}`,
+      handle: cleanHandle ? `@${cleanHandle}` : "nutrion.app.br",
     });
-    (await saveImage(url, "brand-score.png"))
-      ? toast.success(isMobileDevice() ? 'Toque em "Salvar imagem" para ir pra galeria' : "brand-score.png baixado!")
-      : toast.error("Não consegui salvar a imagem");
+    const saved = await saveImage(url, "brand-score.png");
+    if (saved) {
+      toast.success(isMobileDevice() ? 'Toque em "Salvar imagem" para ir pra galeria' : "brand-score.png baixado!");
+    } else {
+      toast.error("Não consegui salvar a imagem");
+    }
   };
 
   return (

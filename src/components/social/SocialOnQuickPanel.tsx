@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Camera, Check, ChevronLeft, ChevronRight, Copy, Download, Hash,
-  Pause, Play, RefreshCw, Sparkles, Video, X,
+  Camera, Check, ChevronLeft, ChevronRight, Copy, Download, Hash, Instagram,
+  Loader2, Pause, Play, RefreshCw, Send, Sparkles, Video, X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useInstagramAccount } from "@/hooks/useInstagramAccount";
+import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
 
 const C = {
   bg: "#020205", border: "#B8922A22", gold: "#B8922A",
@@ -183,6 +187,14 @@ export default function SocialOnQuickPanel() {
   const [duration, setDuration] = useState(0);
   const [exporting, setExporting] = useState(false);
 
+  const { user } = useAuth();
+  const coachId = user?.id;
+  const ig = useInstagramAccount(!!coachId);
+  const { publish, publishing, stage: publishStage } = usePublishToInstagram();
+  const [igToken, setIgToken] = useState("");
+  const [connecting, setConnecting] = useState(false);
+  const [showConnect, setShowConnect] = useState(false);
+
   const canRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const vidRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -285,37 +297,88 @@ export default function SocialOnQuickPanel() {
     }, 60);
   };
 
+  /** Grava o canvas (mídia + texto aplicado) num Blob de vídeo. Usado tanto pra baixar quanto pra publicar. */
+  const recordStyledVideo = (): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const vid = vidRef.current;
+      const c = canRefs.current[current];
+      if (!isVideo || !vid || !c || !versions) { reject(new Error("Vídeo não está pronto.")); return; }
+      const style = STYLES[current % STYLES.length];
+      const txt = versions[current]?.texto_video || "";
+      const mime = ["video/mp4;codecs=avc1.42E01E", "video/webm;codecs=vp9", "video/webm"]
+        .find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) || "video/webm";
+      const rec = new MediaRecorder(c.captureStream(30), { mimeType: mime });
+      const chunks: BlobPart[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        setPlaying(false);
+        resolve(new Blob(chunks, { type: mime }));
+      };
+      rec.onerror = () => reject(new Error("Falha ao gravar o vídeo."));
+      vid.currentTime = 0;
+      rec.start();
+      vid.play().catch(reject);
+      const loop = () => {
+        drawResult(c, vid, txt, style);
+        if (!vid.paused && !vid.ended) requestAnimationFrame(loop);
+        else { rec.stop(); vid.pause(); }
+      };
+      requestAnimationFrame(loop);
+    });
+
   const saveVideo = async () => {
-    const vid = vidRef.current;
-    const c = canRefs.current[current];
-    if (!isVideo || !vid || !c || !versions || exporting) return;
+    if (!isVideo || exporting) return;
     setExporting(true);
-    const style = STYLES[current % STYLES.length];
-    const txt = versions[current]?.texto_video || "";
-    const mime = ["video/mp4;codecs=avc1.42E01E", "video/webm;codecs=vp9", "video/webm"]
-      .find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) || "video/webm";
-    const rec = new MediaRecorder(c.captureStream(30), { mimeType: mime });
-    const chunks: BlobPart[] = [];
-    rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-    rec.onstop = () => {
-      const ext = mime.startsWith("video/mp4") ? "mp4" : "webm";
+    try {
+      const blob = await recordStyledVideo();
+      const ext = blob.type.startsWith("video/mp4") ? "mp4" : "webm";
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob(chunks, { type: mime }));
+      a.href = URL.createObjectURL(blob);
       a.download = `socialon-${Date.now()}.${ext}`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao gravar o vídeo.");
+    } finally {
       setExporting(false);
-      setPlaying(false);
-    };
-    vid.currentTime = 0;
-    rec.start();
-    await vid.play();
-    const loop = () => {
-      drawResult(c, vid, txt, style);
-      if (!vid.paused && !vid.ended) requestAnimationFrame(loop);
-      else { rec.stop(); vid.pause(); }
-    };
-    requestAnimationFrame(loop);
+    }
+  };
+
+  const connectInstagram = async () => {
+    if (igToken.trim().length < 20) return;
+    setConnecting(true);
+    try {
+      await ig.connect(igToken.trim());
+      setIgToken("");
+      setShowConnect(false);
+      toast.success("Instagram conectado");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao conectar Instagram.");
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const publishNow = async () => {
+    if (!coachId || !versions || !v) return;
+    if (!ig.account) { setShowConnect(true); return; }
+    try {
+      const caption = [v.legenda, "", (v.hashtags ?? []).join(" ")].filter(Boolean).join("\n");
+      if (isVideo) {
+        const blob = await recordStyledVideo();
+        await publish({ coachId, file: blob, mediaKind: "REELS", caption, forceConvert: true });
+      } else {
+        const c = canRefs.current[current];
+        if (!c) throw new Error("Imagem não está pronta.");
+        drawResult(c, mediaEl, v.texto_video || "", STYLES[current % STYLES.length]);
+        const blob: Blob = await new Promise((resolve, reject) =>
+          c.toBlob((b) => (b ? resolve(b) : reject(new Error("Falha ao gerar a imagem."))), "image/jpeg", 0.92));
+        await publish({ coachId, file: blob, mediaKind: "IMAGE", caption });
+      }
+      toast.success("Publicado no Instagram!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao publicar no Instagram.");
+    }
   };
 
   const togglePlay = () => {
@@ -361,7 +424,7 @@ export default function SocialOnQuickPanel() {
             <div style={{ marginTop: 10, ...fM, fontSize: 12, color: C.red, border: `1px solid ${C.red}44`, padding: 8 }}>{error}</div>
           )}
           <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.14em", textAlign: "center", marginTop: 14 }}>
-            SOCIAL ON · NUTRION · @DIOGO.MELL0
+            SOCIAL ON · NUTRION
           </div>
         </div>
       )}
@@ -442,6 +505,64 @@ export default function SocialOnQuickPanel() {
             )}
           </div>
 
+          <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
+            {ig.account ? (
+              <>
+                <span style={{ ...fM, fontSize: 11, color: C.green, display: "flex", alignItems: "center", gap: 6 }}>
+                  <Instagram size={12} /> @{ig.account.username ?? ig.account.ig_user_id} conectado
+                </span>
+                <button
+                  onClick={publishNow}
+                  disabled={publishing}
+                  style={{
+                    width: "100%", padding: "13px 0", background: C.green, border: "none",
+                    ...fT, fontSize: 15, color: "#02150E", cursor: publishing ? "default" : "pointer",
+                    opacity: publishing ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  }}
+                >
+                  {publishing ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+                  {publishing ? (publishStage || "Publicando...") : "PUBLICAR NO INSTAGRAM AGORA"}
+                </button>
+              </>
+            ) : showConnect ? (
+              <>
+                <p style={{ ...fM, fontSize: 11, color: C.textMid, lineHeight: 1.5 }}>
+                  Cole o token de acesso da sua conta Instagram Business/Creator (Meta Graph API) pra publicar direto daqui.
+                </p>
+                <input
+                  type="password"
+                  value={igToken}
+                  onChange={(e) => setIgToken(e.target.value)}
+                  placeholder="Token de acesso do Instagram/Facebook"
+                  style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, color: C.text, padding: "10px 12px", ...fM, fontSize: 13 }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={connectInstagram}
+                    disabled={connecting || igToken.trim().length < 20}
+                    style={{
+                      flex: 1, padding: "10px 0", background: C.gold, border: "none",
+                      ...fT, fontSize: 13, color: C.bg, cursor: connecting ? "default" : "pointer",
+                      opacity: connecting ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}
+                  >
+                    {connecting ? <Loader2 size={13} className="animate-spin" /> : <Instagram size={13} />} CONECTAR
+                  </button>
+                  <button onClick={() => setShowConnect(false)} style={{ padding: "10px 14px", background: "transparent", border: `1px solid ${C.border}`, color: C.textMid, cursor: "pointer" }}>
+                    <X size={13} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                onClick={() => setShowConnect(true)}
+                style={{ width: "100%", padding: "13px 0", background: "transparent", border: `1px dashed ${C.border}`, ...fT, fontSize: 14, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+              >
+                <Instagram size={15} color={C.gold} /> CONECTAR INSTAGRAM E PUBLICAR
+              </button>
+            )}
+          </div>
+
           {v.legenda && (
             <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
               <div style={{ ...fM, fontSize: 12, color: C.text, whiteSpace: "pre-wrap" }}>{v.legenda}</div>
@@ -492,7 +613,7 @@ export default function SocialOnQuickPanel() {
           </button>
 
           <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.14em", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            <Hash size={10} /> SOCIAL ON · NUTRION · @DIOGO.MELL0
+            <Hash size={10} /> SOCIAL ON · NUTRION
           </div>
         </div>
       )}

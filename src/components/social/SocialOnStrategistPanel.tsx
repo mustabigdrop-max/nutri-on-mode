@@ -38,7 +38,7 @@ const QUICK_TEXTS = [
   "O PROCESSO É\nO PRODUTO",
   "DISCIPLINA\nNÃO É TALENTO",
   "TRANSFORMAÇÃO\nÉ SISTEMA",
-  "@diogo.mell0",
+  "RESULTADO\nÉ CONSEQUÊNCIA",
   "MCE",
   "POV:",
   "O SHAPE É\nCONSEQUÊNCIA",
@@ -534,7 +534,7 @@ export default function SocialOnStrategistPanel() {
           <div style={{ textAlign: "center", marginTop: 16 }}>
             <div style={{ ...fT, fontSize: 16, color: C.gold }}>Transformação é sistema.</div>
             <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.14em", marginTop: 2 }}>
-              SOCIAL ON · NUTRION · @DIOGO.MELL0
+              SOCIAL ON · NUTRION
             </div>
           </div>
         </div>
@@ -784,7 +784,7 @@ export default function SocialOnStrategistPanel() {
           )}
 
           <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.14em", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            <Hash size={10} /> SOCIAL ON · NUTRION · @DIOGO.MELL0
+            <Hash size={10} /> SOCIAL ON · NUTRION
           </div>
         </div>
       )}
