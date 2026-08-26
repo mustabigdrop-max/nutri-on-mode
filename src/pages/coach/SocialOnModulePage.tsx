@@ -1060,6 +1060,8 @@ const SocialOnModulePage = () => {
           </TabsContent>
 
         </Tabs>
+        </>
+        )}
       </main>
     </div>
   );
