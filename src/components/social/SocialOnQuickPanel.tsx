@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
+import { useFFmpegConvert } from "@/hooks/useFFmpegConvert";
 
 const C = {
   bg: "#020205", border: "#B8922A22", gold: "#B8922A",
@@ -131,11 +132,24 @@ function compress(file: File, max = 1024): Promise<string | null> {
   });
 }
 
-function frameFromUrl(url: string): Promise<{ dataUrl: string; video: HTMLVideoElement; duration: number }> {
+function frameFromUrl(url: string, timeoutMs = 15000): Promise<{ dataUrl: string; video: HTMLVideoElement; duration: number }> {
   return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      fn();
+    };
+    const timer = window.setTimeout(() => {
+      finish(() => reject(new Error(
+        "Esse vídeo travou pra carregar (formato não suportado pelo navegador). Tenta gravar em MP4 ou usar outro vídeo.",
+      )));
+    }, timeoutMs);
+
     const v = document.createElement("video");
     v.src = url; v.muted = true; v.playsInline = true; v.preload = "auto";
-    v.onerror = () => reject(new Error("Não consegui ler o vídeo."));
+    v.onerror = () => finish(() => reject(new Error("Não consegui ler o vídeo.")));
     v.onloadeddata = () => {
       const onSeek = () => {
         const c = document.createElement("canvas");
@@ -146,7 +160,7 @@ function frameFromUrl(url: string): Promise<{ dataUrl: string; video: HTMLVideoE
         c.width = w; c.height = h;
         c.getContext("2d")?.drawImage(v, 0, 0, w, h);
         v.removeEventListener("seeked", onSeek);
-        resolve({ dataUrl: c.toDataURL("image/jpeg", 0.8), video: v, duration: v.duration || 0 });
+        finish(() => resolve({ dataUrl: c.toDataURL("image/jpeg", 0.8), video: v, duration: v.duration || 0 }));
       };
       v.addEventListener("seeked", onSeek);
       v.currentTime = Math.min(1, (v.duration || 5) * 0.15);
@@ -191,6 +205,7 @@ export default function SocialOnQuickPanel() {
   const coachId = user?.id;
   const ig = useInstagramAccount(!!coachId);
   const { publish, publishing, stage: publishStage } = usePublishToInstagram();
+  const ffConvert = useFFmpegConvert();
   const [igToken, setIgToken] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
@@ -225,12 +240,28 @@ export default function SocialOnQuickPanel() {
   const generate = async (f: File, url: string, vid: boolean) => {
     setPhase("loading"); setError(null);
     const msgs = ["Analisando conteúdo...", "Criando 4 versões...", "Aplicando textos...", "Quase pronto..."];
-    let i = 0; setLoadMsg(msgs[0]);
-    const iv = window.setInterval(() => { i = Math.min(i + 1, msgs.length - 1); setLoadMsg(msgs[i]); }, 3000);
+    let i = 0; let converting = false; setLoadMsg(msgs[0]);
+    const iv = window.setInterval(() => {
+      if (converting) return;
+      i = Math.min(i + 1, msgs.length - 1); setLoadMsg(msgs[i]);
+    }, 3000);
     try {
       let image: string | null = null;
       if (vid) {
-        const d = await frameFromUrl(url);
+        let videoUrl = url;
+        if (ffConvert.needsConversion(f)) {
+          converting = true;
+          setLoadMsg("Convertendo vídeo pra um formato compatível...");
+          const converted = await ffConvert.convertWithFallback(f);
+          converting = false;
+          if (converted !== f) {
+            URL.revokeObjectURL(url);
+            videoUrl = URL.createObjectURL(converted);
+            setFile(converted);
+            setBlobUrl(videoUrl);
+          }
+        }
+        const d = await frameFromUrl(videoUrl);
         image = d.dataUrl;
         vidRef.current = d.video;
         setMediaEl(d.video);
