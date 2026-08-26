@@ -28,7 +28,7 @@ import Protocol24hChecklist from "@/components/mce/Protocol24hChecklist";
 import MceSystemPanel from "@/components/mce/MceSystemPanel";
 import MceDailyCheckin, { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
 import MceOnboarding from "@/components/mce/MceOnboarding";
-import { weekConsistency, weekLabels } from "@/lib/mceSystem";
+import { weekConsistency, weekLabels, rollingScores } from "@/lib/mceSystem";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -592,7 +592,8 @@ export default function MCEIntelligencePage() {
       C: toScore(nextDiagnostics.C),
       E: toScore(nextDiagnostics.E),
     };
-    setLocalScores(diagScores);
+    // Check-ins dos últimos 7 dias continuam tendo prioridade; o diagnóstico é só fallback.
+    setLocalScores(rollingScores(checkins, diagScores, 7));
 
     if (user) {
       void supabase.from("mce_diagnostics").upsert(
