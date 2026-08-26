@@ -592,7 +592,8 @@ export default function MCEIntelligencePage() {
       C: toScore(nextDiagnostics.C),
       E: toScore(nextDiagnostics.E),
     };
-    setLocalScores(diagScores);
+    // Check-ins dos últimos 7 dias continuam tendo prioridade; o diagnóstico é só fallback.
+    setLocalScores(rollingScores(checkins, diagScores, 7));
 
     if (user) {
       void supabase.from("mce_diagnostics").upsert(
