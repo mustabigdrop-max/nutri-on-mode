@@ -29,7 +29,8 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
   | "reel_script" | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post"
   | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo"
-  | "grid_architect" | "bio_optimizer" | "pinned_strategy";
+  | "grid_architect" | "bio_optimizer" | "pinned_strategy"
+  | "conversion_bridge" | "cta_intelligence" | "collab_finder";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
@@ -146,9 +147,23 @@ serve(async (req) => {
         ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
         : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
-      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy"].includes(body?.mode)
+      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder"].includes(body?.mode)
         ? `INSTRUÇÃO ESPECÍFICA DO MODO ${body.mode}: analise o conteúdo fornecido no Tema/Contexto e responda estritamente no schema JSON pedido, sem markdown. Seja direto, objetivo e aplicável ao nicho fitness/nutrição.`
         : "",
+      body?.mode === "conversion_bridge"
+        ? "Você é especialista em funil de conversão Instagram → cliente para coaches fitness 2026. Mapeie o pipeline Conteúdo → DM → Lead → Cliente. O Instagram não é o caixa — é a porta da frente. Mostre QUAL tipo de conteúdo gera mais clientes, não apenas mais likes. Use o ticket médio informado nas estimativas de receita."
+        : "",
+      body?.mode === "cta_intelligence"
+        ? "Você é especialista em CTAs para Instagram 2026 no nicho fitness. CTAs com palavra-gatilho nos comentários geram conversão de dois dígitos quando o trigger é claro e o lead magnet combina com o post."
+        : "",
+      body?.mode === "collab_finder"
+        ? "Você é especialista em parcerias e collabs no Instagram 2026 para o nicho fitness no Brasil. Instagram favorece collabs nativas e conteúdo co-criado."
+        : "",
+      body?.ticket ? `Ticket médio do coach: R$${body.ticket}/mês` : "",
+      body?.funnelStage ? `Estágio do funil do post: ${body.funnelStage} (topo=descoberta, meio=consideração, fundo=decisão)` : "",
+      body?.offer ? `Oferta / lead magnet: ${body.offer}` : "",
+      body?.audienceSize ? `Tamanho da audiência do perfil: ${body.audienceSize}` : "",
+      body?.collabGoal ? `Objetivo da collab: ${body.collabGoal}` : "",
     ].filter(Boolean).join("\n");
 
 
