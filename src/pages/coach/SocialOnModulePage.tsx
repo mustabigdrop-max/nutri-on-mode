@@ -1060,6 +1060,9 @@ const SocialOnModulePage = () => {
           <TabsContent value="estrategista" className="mt-4">
             <SocialOnStrategistPanel />
           </TabsContent>
+          <TabsContent value="intelligence" className="mt-0">
+            <SocialOnCriticalPanel />
+          </TabsContent>
 
         </Tabs>
         </>
