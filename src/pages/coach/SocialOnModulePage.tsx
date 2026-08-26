@@ -37,6 +37,7 @@ import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
 import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
+import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
