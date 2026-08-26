@@ -36,6 +36,7 @@ import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
+import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
@@ -105,6 +106,8 @@ const SocialOnModulePage = () => {
   const uid = user?.id ?? "";
 
   const [tab, setTab] = useState("um_toque");
+  const [view, setView] = useState<"hub" | "tool">("hub");
+  const goTab = (t: string) => { setTab(t); setView("tool"); };
   const [loading, setLoading] = useState(true);
 
   // profile
@@ -352,7 +355,7 @@ const SocialOnModulePage = () => {
     setObjective(idea.objective);
     setProduct(PRODUCT_LADDER.find((p) => p.ideas.includes(idea))?.name.split(" ")[0] ?? null);
     setTopic(idea.topic);
-    setTab("criar");
+    goTab("criar");
     toast.success("Seleção preenchida — clique em GERAR CONTEÚDO");
   };
 
@@ -399,8 +402,39 @@ const SocialOnModulePage = () => {
       </header>
 
       <main className="max-w-5xl mx-auto p-4">
+        {view === "hub" ? (
+          <SocialOnHub
+            handle={ig.account?.username || handle}
+            stats={[
+              {
+                label: "Posts este mês",
+                value: String(contents.filter((c) => (c.scheduled_date || c.created_at).slice(0, 7) === new Date().toISOString().slice(0, 7)).length),
+                color: "#00D4FF",
+              },
+              {
+                label: "Seguidores",
+                value: ig.account?.followers_count != null
+                  ? ig.account.followers_count >= 1000
+                    ? `${(ig.account.followers_count / 1000).toFixed(1)}k`
+                    : String(ig.account.followers_count)
+                  : "—",
+                color: "#22C55E",
+              },
+              { label: "Brand Score", value: bioScore != null ? String(bioScore) : "—", color: "#B8922A" },
+            ]}
+            onOpenTool={goTab}
+          />
+        ) : (
+        <>
+        <button
+          type="button"
+          onClick={() => setView("hub")}
+          className="mb-3 flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Hub SOCIAL ON
+        </button>
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto gap-1 bg-transparent">
+          <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
             <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
@@ -1026,6 +1060,8 @@ const SocialOnModulePage = () => {
           </TabsContent>
 
         </Tabs>
+        </>
+        )}
       </main>
     </div>
   );
