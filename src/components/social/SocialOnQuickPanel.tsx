@@ -142,14 +142,30 @@ function frameFromUrl(url: string, timeoutMs = 15000): Promise<{ dataUrl: string
       fn();
     };
     const timer = window.setTimeout(() => {
-      finish(() => reject(new Error(
-        "Esse vídeo travou pra carregar (formato não suportado pelo navegador). Tenta gravar em MP4 ou usar outro vídeo.",
-      )));
+      finish(() => {
+        v.remove();
+        reject(new Error(
+          "Esse vídeo travou pra carregar (formato não suportado pelo navegador). Tenta gravar em MP4 ou usar outro vídeo.",
+        ));
+      });
     }, timeoutMs);
 
     const v = document.createElement("video");
-    v.src = url; v.muted = true; v.playsInline = true; v.preload = "auto";
-    v.onerror = () => finish(() => reject(new Error("Não consegui ler o vídeo.")));
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    v.setAttribute("muted", "");
+    v.setAttribute("playsinline", "");
+    v.setAttribute("webkit-playsinline", "");
+    // O Safari do iPhone se recusa a carregar/decodificar vídeo em elementos
+    // que não estão de fato inseridos na página — precisa estar no DOM (mesmo
+    // que invisível), senão "loadeddata"/"seeked" nunca disparam e trava pra sempre.
+    Object.assign(v.style, {
+      position: "fixed", left: "-9999px", top: "0", width: "1px", height: "1px", opacity: "0", pointerEvents: "none",
+    });
+    document.body.appendChild(v);
+    v.src = url;
+    v.onerror = () => finish(() => { v.remove(); reject(new Error("Não consegui ler o vídeo.")); });
     v.onloadeddata = () => {
       const onSeek = () => {
         const c = document.createElement("canvas");
@@ -165,6 +181,7 @@ function frameFromUrl(url: string, timeoutMs = 15000): Promise<{ dataUrl: string
       v.addEventListener("seeked", onSeek);
       v.currentTime = Math.min(1, (v.duration || 5) * 0.15);
     };
+    v.load();
   });
 }
 
@@ -237,6 +254,9 @@ export default function SocialOnQuickPanel() {
 
   useEffect(() => () => { if (blobUrl) URL.revokeObjectURL(blobUrl); }, [blobUrl]);
 
+  // Remove o <video> oculto (inserido no DOM pra funcionar no Safari do iPhone) quando o componente desmonta.
+  useEffect(() => () => { vidRef.current?.remove(); }, []);
+
   const generate = async (f: File, url: string, vid: boolean) => {
     setPhase("loading"); setError(null);
     const msgs = ["Analisando conteúdo...", "Criando 4 versões...", "Aplicando textos...", "Quase pronto..."];
@@ -292,6 +312,8 @@ export default function SocialOnQuickPanel() {
     const f = e.target.files?.[0];
     if (!f) return;
     if (blobUrl) URL.revokeObjectURL(blobUrl);
+    vidRef.current?.remove();
+    vidRef.current = null;
     setFile(f); setVersions(null); setCurrent(0); setError(null); setMediaEl(null); setPlaying(false);
     const url = URL.createObjectURL(f);
     setBlobUrl(url);
@@ -311,6 +333,7 @@ export default function SocialOnQuickPanel() {
   const reset = () => {
     setFile(null); setVersions(null); setPhase("upload"); setMediaEl(null);
     setCurrent(0); setError(null); setPlaying(false); setDuration(0);
+    vidRef.current?.remove();
     vidRef.current = null;
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     setBlobUrl(null);
