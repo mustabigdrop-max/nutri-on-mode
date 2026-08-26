@@ -36,6 +36,7 @@ import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
+import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -442,6 +443,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
 
             <TabGroupLabel>🧭 Estratégia e planejamento</TabGroupLabel>
+            <TabsTrigger value="intelligence" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Intelligence</TabsTrigger>
             <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
             <TabsTrigger value="estrategista" className="text-xs gap-1"><Brain className="w-3 h-3" />Estrategista</TabsTrigger>
             <TabsTrigger value="pro" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Social ON Pro</TabsTrigger>
@@ -1057,6 +1059,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="estrategista" className="mt-4">
             <SocialOnStrategistPanel />
+          </TabsContent>
+          <TabsContent value="intelligence" className="mt-0">
+            <SocialOnCriticalPanel />
           </TabsContent>
 
         </Tabs>

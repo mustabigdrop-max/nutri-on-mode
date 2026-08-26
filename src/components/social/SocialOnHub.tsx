@@ -30,6 +30,7 @@ const SECTIONS: HubSection[] = [
     label: "ESTRATÉGIA",
     accent: PURPLE,
     tools: [
+      { id: "intelligence", name: "Intelligence", icon: "✦", desc: "Algoritmo 2026 · 4 sinais críticos", hot: true },
       { id: "prism", name: "PRISM", icon: "◈", desc: "8 modos de inteligência de conteúdo" },
       { id: "estrategista", name: "Estrategista", icon: "🧠", desc: "IA analisa e direciona" },
       { id: "pro", name: "Social ON Pro", icon: "✨", desc: "Modo avançado completo" },
