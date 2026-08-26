@@ -38,6 +38,7 @@ import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
 import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
 import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
+import SocialOnMonetizationPanel from "@/components/social/SocialOnMonetizationPanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -462,6 +463,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="dm" className="text-xs gap-1"><MessageSquare className="w-3 h-3" />DM &amp; Objeções</TabsTrigger>
             <TabsTrigger value="prova" className="text-xs gap-1"><Camera className="w-3 h-3" />Prova social</TabsTrigger>
             <TabsTrigger value="esteira" className="text-xs gap-1"><ShoppingCart className="w-3 h-3" />Esteira</TabsTrigger>
+            <TabsTrigger value="monetizacao" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Monetização</TabsTrigger>
 
             <TabGroupLabel>🎓 Aprender</TabGroupLabel>
             <TabsTrigger value="academia" className="text-xs gap-1"><GraduationCap className="w-3 h-3" />Academia</TabsTrigger>
@@ -1066,6 +1068,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="vitrine" className="mt-0">
             <SocialOnVitrinePanel />
+          </TabsContent>
+          <TabsContent value="monetizacao" className="mt-0">
+            <SocialOnMonetizationPanel />
           </TabsContent>
 
         </Tabs>

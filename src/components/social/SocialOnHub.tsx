@@ -54,6 +54,7 @@ const SECTIONS: HubSection[] = [
       { id: "dm", name: "DM & Objeções", icon: "💬", desc: "Scripts de conversão" },
       { id: "prova", name: "Prova Social", icon: "⭐", desc: "Depoimentos formatados" },
       { id: "esteira", name: "Esteira", icon: "🏗️", desc: "Funil de conteúdo" },
+      { id: "monetizacao", name: "Monetização", icon: "💰", desc: "Conteúdo → Clientes → Receita", hot: true },
     ],
   },
   {
