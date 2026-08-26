@@ -28,7 +28,7 @@ import Protocol24hChecklist from "@/components/mce/Protocol24hChecklist";
 import MceSystemPanel from "@/components/mce/MceSystemPanel";
 import MceDailyCheckin, { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
 import MceOnboarding from "@/components/mce/MceOnboarding";
-import { weekConsistency, weekLabels } from "@/lib/mceSystem";
+import { weekConsistency, weekLabels, rollingScores } from "@/lib/mceSystem";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
