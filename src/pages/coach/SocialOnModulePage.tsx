@@ -37,6 +37,7 @@ import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
 import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
+import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -1062,6 +1063,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="intelligence" className="mt-0">
             <SocialOnCriticalPanel />
+          </TabsContent>
+          <TabsContent value="vitrine" className="mt-0">
+            <SocialOnVitrinePanel />
           </TabsContent>
 
         </Tabs>

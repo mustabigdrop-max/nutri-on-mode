@@ -28,7 +28,8 @@ TOM: direto, científico sem ser acadêmico, português do Brasil, frases curtas
 type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" | "bio_audit" | "feed_audit" | "content_full"
   | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
   | "reel_script" | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post"
-  | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo";
+  | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo"
+  | "grid_architect" | "bio_optimizer" | "pinned_strategy";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
@@ -57,6 +58,9 @@ const SCHEMAS: Record<Mode, string> = {
   hook_analyzer: `{"hook_score": número 0-100,"retention_3s": "provável X% retém","hook_pattern": "qual padrão de hook","strengths": [{"icon": "emoji", "text": "ponto forte curto"}],"weaknesses": [{"icon": "emoji", "text": "ponto fraco curto"}],"rewrite_options": [{"style": "nome do estilo", "text": "reescrita do hook", "why": "por que funciona"}]}` ,
   save_triggers: `{"title": "título do post/carrossel","hook_slide": "texto da capa máx 10 palavras","slides": [{"number": 1, "heading": "título do slide", "content": "conteúdo em 2-3 linhas"}],"caption": "legenda otimizada com CTA de save máx 150 palavras","save_cta": "frase pedindo save","hashtags": ["5 hashtags"],"estimated_save_rate": "estimativa","why_saveable": "1 frase explicando por que vai ser salvo"}` ,
   instagram_seo: `{"seo_score": número 0-100,"keywords_found": ["palavras-chave detectadas"],"keywords_missing": ["palavras-chave que deveria ter"],"keyword_density": "adequada" | "baixa" | "excessiva","searchability": "alta" | "média" | "baixa","hashtag_analysis": {"current": ["hashtags atuais"],"recommended": ["5 hashtags otimizadas"],"remove": ["hashtags que não ajudam"]},"improvements": [{"priority": "alta" | "média", "icon": "emoji", "title": "string", "text": "melhoria específica"}],"rewritten_caption": "versão otimizada da caption","alt_text_suggestion": "texto alternativo sugerido"}` ,
+  grid_architect: `{"grid_score": número 0-100,"first_impression": "o que um visitante entende em 0.4 segundos vendo esse grid","pillar_balance": {"score": número 0-100,"diagnosis": "avaliação do equilíbrio entre pilares","missing": ["pilares sub-representados"]},"visual_flow": {"score": número 0-100,"issues": ["problemas visuais detectados — ex: 2 posts de texto seguidos, sem variação"]},"row_analysis": [{"row": 1,"verdict": "como essa fileira funciona","suggestion": "melhoria"},{"row": 2,"verdict": "...","suggestion": "..."},{"row": 3,"verdict": "...","suggestion": "..."}],"reorder_suggestion": [1,2,3,4,5,6,7,8,9],"improvements": [{"icon": "emoji","title": "título curto","text": "sugestão específica","priority": "alta" | "média"}]}` ,
+  bio_optimizer: `{"current_score": número 0-100 (0 se não tem bio atual),"diagnosis": {"who_you_help": "detectado" | "ausente" | "vago","what_you_deliver": "detectado" | "ausente" | "vago","next_step_cta": "detectado" | "ausente" | "vago","credibility_signal": "detectado" | "ausente"},"issues": [{"icon": "emoji","text": "problema específico"}],"versions": [{"style": "nome do estilo","bio": "bio otimizada (máx 150 chars)","char_count": número,"strengths": ["ponto forte"],"best_for": "quando usar essa versão"},"exatamente 3 versões: uma direta/profissional, uma com personalidade/diferencial, uma focada em conversão"],"name_line_suggestion": "sugestão pro campo Nome (não é o @, é o nome exibido — pode ter keywords)"}` ,
+  pinned_strategy: `{"strategy_score": número 0-100,"overall_verdict": "avaliação geral em 1-2 frases","pins": [{"slot": 1,"role": "identidade" | "resultado" | "oferta","current_fit": "forte" | "adequado" | "fraco" | "ausente","recommendation": "o que esse pin deveria ser/conter especificamente","format_suggestion": "Reel" | "Carrossel" | "Imagem estática" | "Vídeo","hook_suggestion": "sugestão de título/hook pra esse pin","rotation": "fixo" | "mensal" | "por campanha"}, "exatamente 3 itens, slots 1 a 3"],"content_ideas": [{"slot": 1,"idea": "ideia concreta de conteúdo pra esse pin"}],"mistakes_to_avoid": [{"icon": "emoji","text": "erro comum"}]}` ,
 };
 
 
@@ -142,7 +146,7 @@ serve(async (req) => {
         ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
         : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
-      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo"].includes(body?.mode)
+      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy"].includes(body?.mode)
         ? `INSTRUÇÃO ESPECÍFICA DO MODO ${body.mode}: analise o conteúdo fornecido no Tema/Contexto e responda estritamente no schema JSON pedido, sem markdown. Seja direto, objetivo e aplicável ao nicho fitness/nutrição.`
         : "",
     ].filter(Boolean).join("\n");
