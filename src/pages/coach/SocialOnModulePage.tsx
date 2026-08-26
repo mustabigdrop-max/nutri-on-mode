@@ -355,7 +355,7 @@ const SocialOnModulePage = () => {
     setObjective(idea.objective);
     setProduct(PRODUCT_LADDER.find((p) => p.ideas.includes(idea))?.name.split(" ")[0] ?? null);
     setTopic(idea.topic);
-    setTab("criar");
+    goTab("criar");
     toast.success("Seleção preenchida — clique em GERAR CONTEÚDO");
   };
 
