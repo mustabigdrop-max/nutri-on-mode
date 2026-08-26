@@ -1064,6 +1064,9 @@ const SocialOnModulePage = () => {
           <TabsContent value="intelligence" className="mt-0">
             <SocialOnCriticalPanel />
           </TabsContent>
+          <TabsContent value="vitrine" className="mt-0">
+            <SocialOnVitrinePanel />
+          </TabsContent>
 
         </Tabs>
         </>
