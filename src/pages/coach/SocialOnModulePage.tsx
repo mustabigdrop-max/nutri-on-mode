@@ -36,6 +36,7 @@ import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
+import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
@@ -105,6 +106,8 @@ const SocialOnModulePage = () => {
   const uid = user?.id ?? "";
 
   const [tab, setTab] = useState("um_toque");
+  const [view, setView] = useState<"hub" | "tool">("hub");
+  const goTab = (t: string) => { setTab(t); setView("tool"); };
   const [loading, setLoading] = useState(true);
 
   // profile
