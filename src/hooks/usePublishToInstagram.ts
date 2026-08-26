@@ -9,9 +9,9 @@ export type PublishResult = { ig_media_id?: string; permalink: string | null };
 
 /**
  * Publica uma foto ou vídeo direto no Instagram do coach: converte o vídeo
- * pra um formato aceito (se preciso), sobe a mídia pro Storage (URL pública)
- * e chama a função `instagram-publish`. É o atalho "peguei a mídia → postei",
- * sem o usuário precisar hospedar nada manualmente.
+ * pra um formato aceito (se preciso), sobe a mídia pro Storage (URL assinada
+ * temporária) e chama a função `instagram-publish`. É o atalho "peguei a
+ * mídia → postei", sem o usuário precisar hospedar nada manualmente.
  */
 export function usePublishToInstagram() {
   const ff = useFFmpegConvert();

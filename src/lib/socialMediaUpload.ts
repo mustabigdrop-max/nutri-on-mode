@@ -1,8 +1,14 @@
-// SOCIAL ON — sobe foto/vídeo pro Storage e devolve uma URL pública https,
-// que é o formato que a Graph API do Instagram exige pra publicar.
+// SOCIAL ON — sobe foto/vídeo pro Storage e devolve uma URL https temporária
+// (signed URL), que é o formato que a Graph API do Instagram exige pra
+// publicar. O bucket é privado (política de segurança do workspace não
+// permite bucket público), então usamos URL assinada em vez de URL pública —
+// funciona igual pra quem recebe (é um link https normal), mas expira depois
+// de um tempo e só é gerada por quem tem permissão de ler o próprio arquivo.
 import { supabase } from "@/integrations/supabase/client";
 
 const BUCKET = "social-posts";
+/** Tempo de validade da URL assinada — dá folga de sobra pro Instagram baixar e processar o vídeo. */
+const SIGNED_URL_TTL_SECONDS = 3600;
 
 export type UploadableMedia = File | Blob;
 
@@ -19,9 +25,9 @@ function extFor(kind: "image" | "video", source: UploadableMedia): string {
 }
 
 /**
- * Sobe uma foto ou vídeo pro bucket público `social-posts`, dentro da pasta
- * do coach logado, e devolve a URL pública (https) pronta pra publicar no
- * Instagram ou usar em qualquer outro lugar do app.
+ * Sobe uma foto ou vídeo pro bucket privado `social-posts`, dentro da pasta
+ * do coach logado, e devolve uma URL assinada (https, temporária) pronta pra
+ * publicar no Instagram ou usar em qualquer outro lugar do app.
  */
 export async function uploadSocialMedia(
   file: UploadableMedia,
@@ -38,9 +44,13 @@ export async function uploadSocialMedia(
   });
   if (error) throw new Error(`Falha ao subir o arquivo: ${error.message}`);
 
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-  if (!data?.publicUrl) throw new Error("Não consegui gerar a URL pública do arquivo.");
-  return data.publicUrl;
+  const { data, error: signError } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+  if (signError || !data?.signedUrl) {
+    throw new Error(`Não consegui gerar o link temporário do arquivo: ${signError?.message ?? "erro desconhecido"}`);
+  }
+  return data.signedUrl;
 }
 
 /** Converte um data URL (ex: canvas.toDataURL) em Blob, pra poder subir pro Storage. */
