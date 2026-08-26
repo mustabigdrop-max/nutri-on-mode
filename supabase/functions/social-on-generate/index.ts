@@ -29,7 +29,8 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
   | "reel_script" | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post"
   | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo"
-  | "grid_architect" | "bio_optimizer" | "pinned_strategy";
+  | "grid_architect" | "bio_optimizer" | "pinned_strategy"
+  | "conversion_bridge" | "cta_intelligence" | "collab_finder";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
@@ -60,6 +61,9 @@ const SCHEMAS: Record<Mode, string> = {
   instagram_seo: `{"seo_score": número 0-100,"keywords_found": ["palavras-chave detectadas"],"keywords_missing": ["palavras-chave que deveria ter"],"keyword_density": "adequada" | "baixa" | "excessiva","searchability": "alta" | "média" | "baixa","hashtag_analysis": {"current": ["hashtags atuais"],"recommended": ["5 hashtags otimizadas"],"remove": ["hashtags que não ajudam"]},"improvements": [{"priority": "alta" | "média", "icon": "emoji", "title": "string", "text": "melhoria específica"}],"rewritten_caption": "versão otimizada da caption","alt_text_suggestion": "texto alternativo sugerido"}` ,
   grid_architect: `{"grid_score": número 0-100,"first_impression": "o que um visitante entende em 0.4 segundos vendo esse grid","pillar_balance": {"score": número 0-100,"diagnosis": "avaliação do equilíbrio entre pilares","missing": ["pilares sub-representados"]},"visual_flow": {"score": número 0-100,"issues": ["problemas visuais detectados — ex: 2 posts de texto seguidos, sem variação"]},"row_analysis": [{"row": 1,"verdict": "como essa fileira funciona","suggestion": "melhoria"},{"row": 2,"verdict": "...","suggestion": "..."},{"row": 3,"verdict": "...","suggestion": "..."}],"reorder_suggestion": [1,2,3,4,5,6,7,8,9],"improvements": [{"icon": "emoji","title": "título curto","text": "sugestão específica","priority": "alta" | "média"}]}` ,
   bio_optimizer: `{"current_score": número 0-100 (0 se não tem bio atual),"diagnosis": {"who_you_help": "detectado" | "ausente" | "vago","what_you_deliver": "detectado" | "ausente" | "vago","next_step_cta": "detectado" | "ausente" | "vago","credibility_signal": "detectado" | "ausente"},"issues": [{"icon": "emoji","text": "problema específico"}],"versions": [{"style": "nome do estilo","bio": "bio otimizada (máx 150 chars)","char_count": número,"strengths": ["ponto forte"],"best_for": "quando usar essa versão"},"exatamente 3 versões: uma direta/profissional, uma com personalidade/diferencial, uma focada em conversão"],"name_line_suggestion": "sugestão pro campo Nome (não é o @, é o nome exibido — pode ter keywords)"}` ,
+  conversion_bridge: `{"funnel_analysis":{"total_posts": número,"estimated_dms_generated": número,"estimated_leads": número,"estimated_clients": número,"estimated_monthly_revenue":"R$ X.XXX","conversion_rate_content_to_dm":"X%","conversion_rate_dm_to_client":"X%"},"content_roi_ranking":[{"content_type":"tipo de conteúdo","format":"Reel|Carrossel|Feed|Stories","dm_generation":"alto|médio|baixo","client_conversion":"alto|médio|baixo","roi_score": número 0-100,"why":"por que esse tipo converte (1 frase)"}],"funnel_gaps":[{"stage":"conteúdo|dm|lead|cliente","icon":"emoji","problem":"gap detectado","fix":"solução"}],"revenue_multiplier":{"current_estimate":"R$ X.XXX/mês","optimized_estimate":"R$ X.XXX/mês","multiplier":"Xx","key_changes":["mudança 1","mudança 2","mudança 3"]},"content_prescription":[{"frequency":"X/semana","format":"formato","type":"tipo","goal":"objetivo de conversão"}]}`,
+  cta_intelligence: `{"cta_strategy":"estratégia geral pra esse formato + estágio (1-2 frases)","trigger_word_system":{"trigger":"PALAVRA","flow":["Passo 1: pessoa comenta a palavra","Passo 2: DM automática com...","Passo 3: lead magnet entregue","Passo 4: follow-up em 24h"],"dm_template":"mensagem automática exata enviada quando comentam a palavra"},"cta_variations":[{"style":"direto|curioso|urgente|social proof|desafio","cta_text":"texto exato do CTA pra colocar no post","placement":"onde colocar","expected_trigger_rate":"X% dos viewers","best_for":"quando usar"},"4 a 5 variações"],"caption_closers":["3 a 4 fechamentos de caption que direcionam pra ação"],"mistakes":[{"icon":"emoji","text":"erro que mata conversão"}]}`,
+  collab_finder: `{"collab_strategy":"estratégia geral (1-2 frases)","ideal_partners":[{"type":"tipo de conta/profissional","why_complementary":"por que faz sentido (1 frase)","audience_overlap":"baixo|médio|alto","growth_potential":"alto|médio|baixo","collab_formats":[{"format":"Live|Reel collab|Takeover|Carrossel conjunto|Desafio","description":"como executar"}],"content_ideas":["2-3 ideias concretas de conteúdo juntos"],"search_terms":["termos pra buscar esse tipo de conta no Instagram"]},"4 a 5 tipos complementares"],"outreach_templates":[{"style":"direto|valor primeiro|proposta","message":"DM de abordagem (máx 100 palavras)","best_for":"quando usar"}],"collab_rules":[{"icon":"emoji","title":"regra","text":"explicação"}]}`,
   pinned_strategy: `{"strategy_score": número 0-100,"overall_verdict": "avaliação geral em 1-2 frases","pins": [{"slot": 1,"role": "identidade" | "resultado" | "oferta","current_fit": "forte" | "adequado" | "fraco" | "ausente","recommendation": "o que esse pin deveria ser/conter especificamente","format_suggestion": "Reel" | "Carrossel" | "Imagem estática" | "Vídeo","hook_suggestion": "sugestão de título/hook pra esse pin","rotation": "fixo" | "mensal" | "por campanha"}, "exatamente 3 itens, slots 1 a 3"],"content_ideas": [{"slot": 1,"idea": "ideia concreta de conteúdo pra esse pin"}],"mistakes_to_avoid": [{"icon": "emoji","text": "erro comum"}]}` ,
 };
 
@@ -146,9 +150,23 @@ serve(async (req) => {
         ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
         : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
-      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy"].includes(body?.mode)
+      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder"].includes(body?.mode)
         ? `INSTRUÇÃO ESPECÍFICA DO MODO ${body.mode}: analise o conteúdo fornecido no Tema/Contexto e responda estritamente no schema JSON pedido, sem markdown. Seja direto, objetivo e aplicável ao nicho fitness/nutrição.`
         : "",
+      body?.mode === "conversion_bridge"
+        ? "Você é especialista em funil de conversão Instagram → cliente para coaches fitness 2026. Mapeie o pipeline Conteúdo → DM → Lead → Cliente. O Instagram não é o caixa — é a porta da frente. Mostre QUAL tipo de conteúdo gera mais clientes, não apenas mais likes. Use o ticket médio informado nas estimativas de receita."
+        : "",
+      body?.mode === "cta_intelligence"
+        ? "Você é especialista em CTAs para Instagram 2026 no nicho fitness. CTAs com palavra-gatilho nos comentários geram conversão de dois dígitos quando o trigger é claro e o lead magnet combina com o post."
+        : "",
+      body?.mode === "collab_finder"
+        ? "Você é especialista em parcerias e collabs no Instagram 2026 para o nicho fitness no Brasil. Instagram favorece collabs nativas e conteúdo co-criado."
+        : "",
+      body?.ticket ? `Ticket médio do coach: R$${body.ticket}/mês` : "",
+      body?.funnelStage ? `Estágio do funil do post: ${body.funnelStage} (topo=descoberta, meio=consideração, fundo=decisão)` : "",
+      body?.offer ? `Oferta / lead magnet: ${body.offer}` : "",
+      body?.audienceSize ? `Tamanho da audiência do perfil: ${body.audienceSize}` : "",
+      body?.collabGoal ? `Objetivo da collab: ${body.collabGoal}` : "",
     ].filter(Boolean).join("\n");
 
 
