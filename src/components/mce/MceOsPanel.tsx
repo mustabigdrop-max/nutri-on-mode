@@ -113,7 +113,18 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
   const pct = Math.round((done / total) * 100);
   const allDone = done === total;
   const [expanded, setExpanded] = useState(active);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const prevDone = useRef(done);
+
+  const toggleAudio = useCallback(() => {
+    if (audioPlaying) { mceAmbient.stop(); setAudioPlaying(false); return; }
+    const key = block.audio ? AUDIO_TO_AMBIENT[block.audio] : undefined;
+    if (!key) return;
+    const ms = mceAmbient.play(key, () => setAudioPlaying(false));
+    if (ms > 0) setAudioPlaying(true);
+  }, [audioPlaying, block.audio]);
+
+  useEffect(() => () => { mceAmbient.stop(); }, []);
 
   useEffect(() => {
     if (soundEnabled && done > prevDone.current && done === total) mceSounds.blockComplete();
