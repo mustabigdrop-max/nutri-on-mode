@@ -347,10 +347,33 @@ export default function MceOsPanel({ streak = 0, rankName = "Iniciante" }: { str
           }} />
         </div>
       </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+        <button
+          onClick={() => { const n = !soundEnabled; setSoundEnabled(n); if (n) mceSounds.tick(); }}
+          aria-pressed={soundEnabled}
+          style={{
+            background: soundEnabled ? `${C.cyan}10` : C.s3, border: `1px solid ${soundEnabled ? `${C.cyan}40` : C.border}`,
+            padding: "5px 9px", cursor: "pointer", fontFamily: F.m, fontSize: 9, letterSpacing: 1,
+            color: soundEnabled ? C.cyan : C.dim,
+          }}
+        >{soundEnabled ? "🔊 SOM" : "🔇 SOM"}</button>
+      </div>
+
+      <McePatternDetector
+        scores={scores}
+        streak={streak}
+        hour={hour}
+        doneItems={doneItems}
+        totalItems={TOTAL_ITEMS}
+        weakBlock={weakBlock}
+        weakPillar={weakPillar}
+        soundEnabled={soundEnabled}
+      />
 
       {BLOCKS.map((b) => (
-        <Block key={b.id} block={b} hour={hour} checked={checked} onCheck={toggle} />
+        <Block key={b.id} block={b} hour={hour} checked={checked} onCheck={toggle} soundEnabled={soundEnabled} />
       ))}
+
 
       <MceScoreInput scores={scores} onChange={setScores} />
 
