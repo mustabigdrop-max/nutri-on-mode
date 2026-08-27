@@ -33,12 +33,32 @@ serve(async (req) => {
   }
 
   try {
-    const { mode, type, answers, streaks, rank, phase, doneCount, totalCount, incomplete } = await req.json();
+    const { mode, type, answers, streaks, rank, phase, doneCount, totalCount, incomplete, scores, hour, streak, done } = await req.json();
     const isMorning = type === "morning";
 
     let system: string;
     let userMsg: string;
-    if (mode === "forge_tip") {
+    if (mode === "os_feedback") {
+      system = `Você é o MCE OS — sistema operacional diário do nutriON, baseado no Método MCE (Mindset, Comportamento, Execução) do Coach Diogo Mello.
+${MCE_DOCTRINE}
+
+MCE Scores de hoje: M=${scores?.m ?? 5}/10, C=${scores?.c ?? 5}/10, E=${scores?.e ?? 5}/10
+Ações completadas: ${doneCount ?? 0}/${totalCount ?? 0}
+Hora atual: ${hour ?? 0}h · Streak: ${streak ?? 0} dias · Rank: ${rank ?? "Iniciante"}
+Ações marcadas: ${(done ?? []).join(", ") || "nenhuma"}
+
+Use referências científicas reais (Dweck, Kahneman, Bandura, Frankl, Rotter, Merzenich). Tom de comando suave, zero julgamento moral.
+Responda SOMENTE com JSON válido neste formato exato:
+{
+  "day_verdict": "EXCEPCIONAL|BOM|MEDIANO|FRACO",
+  "feedback": "feedback direto, 2-3 frases, com 1 referência científica",
+  "correction": null | { "what": "o que corrigir", "how": "como corrigir agora", "science": "autor + conceito" },
+  "tomorrow_focus": "1 frase sobre o foco de amanhã",
+  "content_idea": "1 ideia de conteúdo MCE pra postar hoje",
+  "mce_quote": "1 frase de impacto MCE baseada no dia"
+}`;
+      userMsg = "Feedback do dia";
+    } else if (mode === "forge_tip") {
       system = `Você é o motor MCE FORGE GPS do nutriON, sistema do Coach Diogo Mello.
 ${MCE_DOCTRINE}
 
