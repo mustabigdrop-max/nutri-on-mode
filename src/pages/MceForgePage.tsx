@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
 import MceForgeGps from "@/components/mce/MceForgeGps";
 import MceOsPanel from "@/components/mce/MceOsPanel";
+import MceChatPanel from "@/components/mce/MceChatPanel";
 import { dayKey, type CheckinRow, type EventRow } from "@/lib/mceSystem";
 
 const C = {
