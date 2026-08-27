@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { mceSounds, type MceSoundName } from "@/lib/mceSounds";
+import McePatternDetector from "./McePatternDetector";
 
 const C = {
   bg: "#020205", s1: "#0B0B12", s2: "#10101A", s3: "#181824",
@@ -14,7 +16,9 @@ type OsItem = { id: string; text: string; ref: string };
 type OsBlock = {
   id: string; name: string; time: string; pilar: string; pilarColor: string;
   duration: string; science: string; from: number; to: number; items: OsItem[];
+  sound?: MceSoundName; audio?: string; audioDur?: string;
 };
+
 
 const BLOCKS: OsBlock[] = [
   {
