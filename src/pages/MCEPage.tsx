@@ -3,7 +3,7 @@ import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
 import {
   Activity, ArrowLeft, BookOpen, Brain, Briefcase, CheckCircle2, Clock, Dumbbell,
-  FileDown, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
+  FileDown, Flame, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
