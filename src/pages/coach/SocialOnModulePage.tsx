@@ -27,6 +27,7 @@ import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
 import PrismHub from "@/components/social/PrismHub";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
+import SocialOnSignalPanel from "@/components/social/SocialOnSignalPanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
@@ -441,6 +442,7 @@ const SocialOnModulePage = () => {
           <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
+            <TabsTrigger value="signal" className="text-xs gap-1"><Zap className="w-3 h-3" />SIGNAL</TabsTrigger>
             <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
             <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
@@ -1075,6 +1077,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="studio" className="mt-0">
             <SocialOnStudioPanel />
+          </TabsContent>
+          <TabsContent value="signal" className="mt-0">
+            <SocialOnSignalPanel />
           </TabsContent>
 
         </Tabs>
