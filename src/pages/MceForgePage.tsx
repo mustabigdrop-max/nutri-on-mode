@@ -133,15 +133,21 @@ function CheckIn({ type, streaks, rankName, onSubmit }: { type: "morning" | "nig
       // Persiste: mapeia respostas para o check-in diário + score da IA
       const scale = (i: number) => Math.max(1, Math.min(10, i * 2 + 2));
       const today = dayKey(new Date());
+      const { data: prev } = await supabase
+        .from("mce_checkins")
+        .select("sleep_quality, stress_level, nutrition_adherence, hydration, movement, focus_clarity")
+        .eq("user_id", user.id)
+        .eq("checkin_date", today)
+        .maybeSingle();
       const row = {
         user_id: user.id,
         checkin_date: today,
-        sleep_quality: isMorning ? scale(answers.sleep) : 7,
-        stress_level: isMorning ? scale(4 - answers.plan) : 5,
-        nutrition_adherence: isMorning ? 7 : scale(answers.nutrition),
-        hydration: isMorning ? 7 : scale(answers.execution),
-        movement: isMorning ? 6 : scale(answers.training),
-        focus_clarity: isMorning ? scale(answers.mindset) : 7,
+        sleep_quality: isMorning ? scale(answers.sleep) : prev?.sleep_quality ?? 7,
+        stress_level: isMorning ? scale(4 - answers.plan) : prev?.stress_level ?? 5,
+        nutrition_adherence: isMorning ? prev?.nutrition_adherence ?? 7 : scale(answers.nutrition),
+        hydration: isMorning ? prev?.hydration ?? 7 : scale(answers.execution),
+        movement: isMorning ? prev?.movement ?? 6 : scale(answers.training),
+        focus_clarity: isMorning ? scale(answers.mindset) : prev?.focus_clarity ?? 7,
       };
       await supabase.from("mce_checkins").upsert(row, { onConflict: "user_id,checkin_date" });
       await supabase.from("mce_scores").insert({
