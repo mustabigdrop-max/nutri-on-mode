@@ -3,7 +3,7 @@ import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
 import {
   Activity, ArrowLeft, BookOpen, Brain, Briefcase, CheckCircle2, Clock, Dumbbell,
-  FileDown, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
+  FileDown, Flame, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
@@ -628,6 +628,7 @@ export default function MCEIntelligencePage() {
     { key: "protocolo24h", label: "24H", badge: "#E8A020", group: "action" as const, Icon: Clock },
     { key: "progresso", label: "PROGRESSO", group: "action" as const, Icon: TrendingUp },
     { key: "audio", label: "ÁUDIO", badge: "#E8A020", group: "action" as const, Icon: Headphones },
+    { key: "forge", label: "FORGE", badge: "#A855F7", group: "action" as const, Icon: Flame },
     { key: "business", label: "BUSINESS", badge: "#00D4FF", group: "action" as const, Icon: Briefcase },
   ];
   const socialAuthors = Object.values(PILLAR_DATA).flatMap((item) => item.authors).filter((author, index, all) => all.findIndex((candidate) => candidate.name === author.name) === index).slice(0, 12);
@@ -827,6 +828,7 @@ export default function MCEIntelligencePage() {
             active={tab}
             onChange={(k) => {
               if (k === "business") navigate("/mce/business");
+              else if (k === "forge") navigate("/mce/forge");
               else setTab(k);
             }}
           />
