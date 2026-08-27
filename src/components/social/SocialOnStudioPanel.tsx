@@ -665,12 +665,13 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
   const clearFile = () => {
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setFile(null); setFileUrl(null); setIsVideo(false);
-    setSubtitles([]); setOverlays([]); setVersions(null);
+    setSubtitles([]); setOverlays([]); setVersions(null); setVision(null);
   };
 
   const tabs = [
     { id: "legendas", label: "Legendas", icon: "💬", color: T.cyan },
     { id: "texto", label: "Texto", icon: "✏️", color: T.gold },
+    { id: "analise", label: "Análise", icon: "🧠", color: T.purple },
     { id: "versoes", label: "4 Versões", icon: "✦", color: T.green },
   ];
 
