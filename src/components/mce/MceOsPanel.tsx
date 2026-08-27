@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mceSounds, mceAmbient, AUDIO_TO_AMBIENT, type MceSoundName } from "@/lib/mceSounds";
+import { OS_AUDIO_SCRIPTS, OS_AUDIO_META, type OsAudioKey } from "@/data/mceOsScripts";
 import McePatternDetector from "./McePatternDetector";
 
 const C = {
@@ -16,8 +17,9 @@ type OsItem = { id: string; text: string; ref: string };
 type OsBlock = {
   id: string; name: string; time: string; pilar: string; pilarColor: string;
   duration: string; science: string; from: number; to: number; items: OsItem[];
-  sound?: MceSoundName; audio?: string; audioDur?: string;
+  sound?: MceSoundName; audio?: string; audioDur?: string; audioKey?: OsAudioKey;
 };
+
 
 
 const BLOCKS: OsBlock[] = [
