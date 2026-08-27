@@ -33,10 +33,23 @@ serve(async (req) => {
   }
 
   try {
-    const { type, answers, streaks, rank } = await req.json();
+    const { mode, type, answers, streaks, rank, phase, doneCount, totalCount, incomplete } = await req.json();
     const isMorning = type === "morning";
 
-    const system = `Você é o motor MCE FORGE do nutriON, sistema do Coach Diogo Mello.
+    let system: string;
+    let userMsg: string;
+    if (mode === "forge_tip") {
+      system = `Você é o motor MCE FORGE GPS do nutriON, sistema do Coach Diogo Mello.
+${MCE_DOCTRINE}
+
+O usuário está na fase "${phase}" do GPS (${doneCount}/${totalCount} passos completos).
+Passos incompletos: ${(incomplete ?? []).join(", ")}
+Dê 1 dica tática específica pra desbloquear o próximo passo. Tom direto, militar suave. Máx 3 frases.
+Responda SOMENTE com JSON válido neste formato exato:
+{ "next_focus": "qual passo atacar agora", "tip": "dica específica e acionável", "mce_principle": "qual princípio MCE aplica aqui (1 frase)" }`;
+      userMsg = "Próximo passo";
+    } else {
+      system = `Você é o motor MCE FORGE do nutriON, sistema do Coach Diogo Mello.
 ${MCE_DOCTRINE}
 
 Analise o check-in ${isMorning ? "matinal" : "noturno"} e gere feedback.
@@ -44,6 +57,8 @@ Se detectar desvio do plano (respostas abaixo de "bom"), gere um PROTOCOLO DE CO
 Contexto do usuário: streaks atuais ${JSON.stringify(streaks ?? {})}, rank ${rank ?? "Iniciante"}.
 Responda SOMENTE com JSON válido neste formato exato:
 ${FORGE_SCHEMA}`;
+      userMsg = `Check-in ${type}: ${JSON.stringify(answers)}`;
+    }
 
     const res = await fetch(AI_URL, {
       method: "POST",
@@ -52,7 +67,7 @@ ${FORGE_SCHEMA}`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: system },
-          { role: "user", content: `Check-in ${type}: ${JSON.stringify(answers)}` },
+          { role: "user", content: userMsg },
         ],
         response_format: { type: "json_object" },
       }),

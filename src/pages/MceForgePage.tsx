@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
+import MceForgeGps from "@/components/mce/MceForgeGps";
 import { dayKey, type CheckinRow, type EventRow } from "@/lib/mceSystem";
 
 const C = {
@@ -361,6 +362,7 @@ export default function MceForgePage() {
     { id: "dashboard", label: "Painel", icon: "◈" },
     { id: "checkin", label: hour < 14 ? "Check-in ☀" : "Check-in 🌙", icon: "✓" },
     { id: "momentum", label: "Momentum", icon: "📈" },
+    { id: "gps", label: "GPS", icon: "🧭" },
     { id: "rank", label: "Rank", icon: "★" },
   ];
 
@@ -562,6 +564,9 @@ export default function MceForgePage() {
             </div>
           </div>
         )}
+
+        {/* ══ GPS ══ */}
+        {tab === "gps" && <MceForgeGps />}
 
         {/* ══ RANK ══ */}
         {tab === "rank" && (
