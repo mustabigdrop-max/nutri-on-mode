@@ -463,8 +463,110 @@ function TextOverlayEditor({ overlays, onChange, config }: {
 type Version = {
   name: string; format: string; caption: string; hashtags: string[];
   text_overlays?: { text: string; position: string; style: string }[];
-  cta: string; tone: string;
+  cta: string; tone: string; objective?: string;
+  predicted_performance?: { views?: string; saves?: string; shares?: string };
 };
+
+type Vision = {
+  viral_score: number;
+  predicted_views?: string; predicted_saves?: string; predicted_shares?: string;
+  detected_elements?: { icon: string; label: string; detail: string }[];
+  optimizations?: { text: string; priority: string }[];
+  best_time?: string; hook_suggestion?: string; content_pillars_match?: string[];
+};
+
+/* Painel de análise visual */
+function VisionPanel({ analysis, loading, onRun }: { analysis: Vision | null; loading: boolean; onRun: () => void }) {
+  if (loading) {
+    return (
+      <div style={{ padding: "28px 0" }}>
+        {["Analisando conteúdo visual", "Detectando elementos-chave", "Mapeando potencial viral", "Calculando performance"].map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, opacity: 0.5 }}>
+            <span style={{ width: 6, height: 6, background: T.cyan, display: "inline-block" }} />
+            <span style={{ fontFamily: T.fm, fontSize: 11, color: T.muted }}>{s}...</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (!analysis) {
+    return (
+      <div style={{ textAlign: "center", padding: "28px 0" }}>
+        <p style={{ fontFamily: T.fb, fontSize: 13, color: T.muted, marginBottom: 12 }}>
+          Analise o potencial do conteúdo antes de postar.
+        </p>
+        <button onClick={onRun} style={{
+          padding: "12px 26px", background: `${T.cyan}15`, border: `1px solid ${T.cyan}40`, borderRadius: 0,
+          cursor: "pointer", fontFamily: T.ft, fontSize: 15, fontWeight: 700, color: T.cyan, letterSpacing: 1,
+        }}>🧠 ANALISAR CONTEÚDO</button>
+      </div>
+    );
+  }
+  const score = analysis.viral_score ?? 0;
+  const scoreColor = score >= 70 ? T.green : score >= 40 ? T.gold : T.red;
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, marginBottom: 14 }}>
+        {[
+          { l: "VIEWS", v: analysis.predicted_views, c: T.cyan },
+          { l: "SAVES", v: analysis.predicted_saves, c: T.gold },
+          { l: "SHARES", v: analysis.predicted_shares, c: T.purple },
+          { l: "SCORE", v: `${score}/100`, c: scoreColor },
+        ].map((s, i) => (
+          <div key={i} style={{ background: T.surface2, padding: "10px 6px", textAlign: "center" }}>
+            <div style={{ fontFamily: T.ft, fontSize: 16, fontWeight: 700, color: s.c }}>{s.v || "—"}</div>
+            <div style={{ fontFamily: T.fm, fontSize: 8, color: T.muted, letterSpacing: 1 }}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {!!analysis.detected_elements?.length && (
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontFamily: T.fm, fontSize: 10, color: T.muted, letterSpacing: 2, margin: "0 0 8px" }}>DETECTADO</p>
+          {analysis.detected_elements.map((el, i) => (
+            <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", background: T.surface2, padding: "8px 10px", marginBottom: 4 }}>
+              <span style={{ fontSize: 14 }}>{el.icon}</span>
+              <span style={{ fontFamily: T.ft, fontSize: 13, fontWeight: 700, color: T.white }}>{el.label}</span>
+              <span style={{ fontFamily: T.fb, fontSize: 11, color: T.muted }}>{el.detail}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!!analysis.optimizations?.length && (
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontFamily: T.fm, fontSize: 10, color: T.muted, letterSpacing: 2, margin: "0 0 8px" }}>OTIMIZAÇÕES</p>
+          {analysis.optimizations.map((o, i) => (
+            <div key={i} style={{ background: T.surface2, padding: "8px 10px", marginBottom: 4, borderLeft: `2px solid ${o.priority === "alta" ? T.red : T.gold}` }}>
+              <span style={{ fontFamily: T.fm, fontSize: 8, color: o.priority === "alta" ? T.red : T.gold, letterSpacing: 1 }}>{(o.priority || "").toUpperCase()}</span>
+              <p style={{ fontFamily: T.fb, fontSize: 12, color: T.text, margin: "2px 0 0" }}>{o.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {analysis.hook_suggestion && (
+        <div style={{ background: `${T.cyan}08`, padding: "10px 12px", marginBottom: 8 }}>
+          <span style={{ fontFamily: T.fm, fontSize: 9, color: T.muted, letterSpacing: 1 }}>HOOK SUGERIDO</span>
+          <p style={{ fontFamily: T.ft, fontSize: 15, fontWeight: 700, color: T.cyan, margin: "2px 0 0" }}>{analysis.hook_suggestion}</p>
+        </div>
+      )}
+
+      {analysis.best_time && (
+        <div style={{ background: `${T.gold}08`, padding: "10px 12px", marginBottom: 8 }}>
+          <span style={{ fontFamily: T.fm, fontSize: 9, color: T.muted, letterSpacing: 1 }}>MELHOR HORÁRIO</span>
+          <p style={{ fontFamily: T.ft, fontSize: 15, fontWeight: 700, color: T.gold, margin: "2px 0 0" }}>{analysis.best_time}</p>
+        </div>
+      )}
+
+      <button onClick={onRun} style={{
+        background: `${T.cyan}10`, border: `1px solid ${T.cyan}30`, borderRadius: 0,
+        padding: "6px 14px", cursor: "pointer", fontFamily: T.fm, fontSize: 10, color: T.cyan,
+      }}>⚡ Refazer análise</button>
+    </div>
+  );
+}
+
 
 export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unknown> }) {
   const [file, setFile] = useState<File | null>(null);
