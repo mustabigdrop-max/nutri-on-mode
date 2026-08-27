@@ -33,12 +33,37 @@ serve(async (req) => {
   }
 
   try {
-    const { mode, type, answers, streaks, rank, phase, doneCount, totalCount, incomplete, scores, hour, streak, done } = await req.json();
+    const { mode, type, answers, streaks, rank, phase, doneCount, totalCount, incomplete, scores, hour, streak, done, weakBlock, weakBlockPct, weakPillar } = await req.json();
     const isMorning = type === "morning";
 
     let system: string;
     let userMsg: string;
-    if (mode === "os_feedback") {
+    if (mode === "pattern_detect") {
+      system = `Você é o Pattern Detector do MCE OS — sistema do Coach Diogo Mello. Detecte padrões negativos ANTES que virem abandono.
+${MCE_DOCTRINE}
+
+Dados:
+- MCE Scores: M=${scores?.m ?? 5}/10, C=${scores?.c ?? 5}/10, E=${scores?.e ?? 5}/10
+- Progresso do dia: ${doneCount ?? 0}/${totalCount ?? 0}
+- Bloco mais fraco: ${weakBlock ?? "nenhum"} (${weakBlockPct ?? 100}%)
+- Pilar mais fraco: ${weakPillar ?? "—"}
+- Streak: ${streak ?? 0} dias · Hora: ${hour ?? 0}h
+
+Use os autores reais do MCE (Dweck, Kahneman, Bandura, Frankl, Rotter, Merzenich, Baumeister). Tom direto, zero julgamento moral.
+Responda SOMENTE com JSON válido neste formato exato:
+{
+  "pattern_detected": true|false,
+  "risk_level": "baixo|médio|alto|crítico",
+  "pattern_name": "nome curto do padrão",
+  "explanation": "1-2 frases citando um autor",
+  "micro_intervention": { "exercise": "Pausa 10s|Diário de Locus|Mapa Autoeficácia|Reframe Cognitivo", "instruction": "instrução exata em 1-2 frases", "duration": "tempo estimado", "science": "autor + conceito" },
+  "audio_suggestion": "Despertar|Corrida 30min|Micro-áudio 2min|Pré-sono|Dia Difícil",
+  "streak_risk": "1 frase sobre o risco da streak de ${streak ?? 0} dias",
+  "prediction": "se esse padrão continuar, qual a consequência"
+}`;
+      userMsg = "Detectar padrões";
+    } else if (mode === "os_feedback") {
+
       system = `Você é o MCE OS — sistema operacional diário do nutriON, baseado no Método MCE (Mindset, Comportamento, Execução) do Coach Diogo Mello.
 ${MCE_DOCTRINE}
 
