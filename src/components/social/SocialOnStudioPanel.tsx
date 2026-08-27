@@ -272,9 +272,44 @@ function SubtitleEditor({ subtitles, onChange, config, onConfigChange }: {
 
 /* ---------------- Preview ---------------- */
 
-function Preview({ fileUrl, subtitles, overlays, config, isVideo }: {
-  fileUrl: string | null; subtitles: Subtitle[]; overlays: Overlay[]; config: StudioConfig; isVideo: boolean;
+const FORMATS = [
+  { id: "reels", label: "REELS 9:16", ratio: "9/16" },
+  { id: "feed", label: "FEED 1:1", ratio: "1/1" },
+  { id: "stories", label: "STORIES 9:16", ratio: "9/16" },
+  { id: "carousel", label: "CARROSSEL 4:5", ratio: "4/5" },
+];
+
+/** Legenda palavra a palavra, estilo CapCut. */
+function AnimatedSubtitle({ text, style, textStyle, highlight }: {
+  text: string; style: React.CSSProperties; textStyle: React.CSSProperties; highlight: string;
 }) {
+  const words = text.split(" ").filter(Boolean);
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    if (words.length < 2) return;
+    const id = setInterval(() => setActive((p) => (p + 1) % words.length), 420);
+    return () => clearInterval(id);
+  }, [words.length]);
+
+  return (
+    <div style={{ ...style, display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+      {words.map((w, i) => (
+        <span key={i} style={{
+          ...textStyle,
+          background: i === active ? highlight : "transparent",
+          color: i === active ? "#000" : textStyle.color,
+          padding: "1px 6px",
+          transition: "all 0.15s",
+        }}>{w}</span>
+      ))}
+    </div>
+  );
+}
+
+function Preview({ fileUrl, subtitles, overlays, config, isVideo, format = "reels" }: {
+  fileUrl: string | null; subtitles: Subtitle[]; overlays: Overlay[]; config: StudioConfig; isVideo: boolean; format?: string;
+}) {
+  const fmt = FORMATS.find((f) => f.id === format) || FORMATS[0];
   const font = FONTS.find((f) => f.id === config.font) || FONTS[0];
   const style = SUBTITLE_STYLES.find((s) => s.id === config.subtitleStyle) || SUBTITLE_STYLES[0];
   const pos = CAPTION_POSITIONS.find((p) => p.id === config.position) || CAPTION_POSITIONS[0];
