@@ -838,8 +838,18 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
                                 <div style={{ display: "flex", gap: 4 }}>
                                   <span style={{ fontFamily: T.fm, fontSize: 9, color: colors[i % 4], background: `${colors[i % 4]}12`, padding: "2px 6px" }}>{v.format}</span>
                                   <span style={{ fontFamily: T.fm, fontSize: 9, color: T.muted, background: T.surface3, padding: "2px 6px" }}>{v.tone}</span>
+                                  {v.objective && (
+                                    <span style={{ fontFamily: T.fm, fontSize: 9, color: T.gold, background: `${T.gold}12`, padding: "2px 6px" }}>{v.objective}</span>
+                                  )}
                                 </div>
                               </div>
+                              {v.predicted_performance && (
+                                <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
+                                  <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>👁 {v.predicted_performance.views}</span>
+                                  <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>💾 {v.predicted_performance.saves}</span>
+                                  <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>📤 {v.predicted_performance.shares}</span>
+                                </div>
+                              )}
                               <p style={{ fontFamily: T.fb, fontSize: 12, color: T.text, margin: "0 0 8px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{v.caption}</p>
                               {v.text_overlays?.map((to, j) => (
                                 <div key={j} style={{ background: `${colors[i % 4]}08`, padding: "6px 10px", marginBottom: 4, display: "flex", gap: 6, alignItems: "center" }}>
