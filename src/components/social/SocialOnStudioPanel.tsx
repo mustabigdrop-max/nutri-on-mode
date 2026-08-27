@@ -332,7 +332,7 @@ function Preview({ fileUrl, subtitles, overlays, config, isVideo, format = "reel
 
   return (
     <div style={{
-      position: "relative", width: "100%", aspectRatio: "9/16",
+      position: "relative", width: "100%", aspectRatio: fmt.ratio,
       background: isVideo ? "#000" : fileUrl ? `url(${fileUrl}) center/cover` : T.surface2,
       overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
     }}>
@@ -364,7 +364,16 @@ function Preview({ fileUrl, subtitles, overlays, config, isVideo, format = "reel
         bottom: pos.y === 80 ? "10%" : "auto",
         padding: "0 12px",
       }}>
-        <div style={textStyle}>{previewText}</div>
+        {(style as { animated?: boolean }).animated ? (
+          <AnimatedSubtitle
+            text={previewText}
+            style={{ maxWidth: "92%" }}
+            textStyle={{ ...textStyle, maxWidth: "none", padding: 0 }}
+            highlight={(style as { highlight?: string }).highlight || T.cyan}
+          />
+        ) : (
+          <div style={textStyle}>{previewText}</div>
+        )}
       </div>
 
       {/* Grid de terços */}
@@ -376,8 +385,10 @@ function Preview({ fileUrl, subtitles, overlays, config, isVideo, format = "reel
       </div>
 
       <div style={{ position: "absolute", top: 8, left: 8, fontFamily: T.fm, fontSize: 9, color: T.muted, background: "#000000AA", padding: "3px 8px" }}>
-        9:16 · REELS
+        {fmt.label}
       </div>
+      {/* Zona segura */}
+      <div style={{ position: "absolute", top: "12%", bottom: "16%", left: "6%", right: "6%", border: "1px dashed #ffffff10", pointerEvents: "none" }} />
     </div>
   );
 }
