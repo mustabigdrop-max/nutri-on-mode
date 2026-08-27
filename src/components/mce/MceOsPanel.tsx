@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { mceSounds, type MceSoundName } from "@/lib/mceSounds";
+import { mceSounds, mceAmbient, AUDIO_TO_AMBIENT, type MceSoundName } from "@/lib/mceSounds";
 import McePatternDetector from "./McePatternDetector";
 
 const C = {
@@ -113,7 +113,18 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
   const pct = Math.round((done / total) * 100);
   const allDone = done === total;
   const [expanded, setExpanded] = useState(active);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const prevDone = useRef(done);
+
+  const toggleAudio = useCallback(() => {
+    if (audioPlaying) { mceAmbient.stop(); setAudioPlaying(false); return; }
+    const key = block.audio ? AUDIO_TO_AMBIENT[block.audio] : undefined;
+    if (!key) return;
+    const ms = mceAmbient.play(key, () => setAudioPlaying(false));
+    if (ms > 0) setAudioPlaying(true);
+  }, [audioPlaying, block.audio]);
+
+  useEffect(() => () => { mceAmbient.stop(); }, []);
 
   useEffect(() => {
     if (soundEnabled && done > prevDone.current && done === total) mceSounds.blockComplete();
@@ -165,12 +176,21 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
         </div>
 
         {block.audio && (
-          <span style={{
-            display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
-            border: `1px solid ${C.border}`, background: C.s2, padding: "3px 6px",
-          }}>
-            <span style={{ fontSize: 10 }}>🎧</span>
-            <span style={{ fontFamily: F.m, fontSize: 8, color: C.muted }}>{block.audio}{block.audioDur ? ` · ${block.audioDur}` : ""}</span>
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={`${audioPlaying ? "Pausar" : "Tocar"} áudio ${block.audio}`}
+            onClick={(e) => { e.stopPropagation(); toggleAudio(); }}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleAudio(); } }}
+            style={{
+              display: "flex", alignItems: "center", gap: 5, flexShrink: 0, cursor: "pointer",
+              border: `1px solid ${audioPlaying ? block.pilarColor : C.border}`,
+              background: audioPlaying ? `${block.pilarColor}15` : C.s2, padding: "3px 7px",
+            }}>
+            <span style={{ fontSize: 10 }}>{audioPlaying ? "⏸" : "▶"}</span>
+            <span style={{ fontFamily: F.m, fontSize: 8, color: audioPlaying ? block.pilarColor : C.muted }}>
+              {block.audio}{block.audioDur ? ` · ${block.audioDur}` : ""}
+            </span>
           </span>
         )}
 
