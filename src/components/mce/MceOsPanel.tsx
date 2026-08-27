@@ -228,10 +228,11 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
               border: `1px solid ${audioPlaying ? block.pilarColor : C.border}`,
               background: audioPlaying ? `${block.pilarColor}15` : C.s2, padding: "3px 7px",
             }}>
-            <span style={{ fontSize: 10 }}>{audioPlaying ? "⏸" : "▶"}</span>
+            <span style={{ fontSize: 10 }}>{audioLoading ? "⏳" : audioPlaying ? "⏸" : "▶"}</span>
             <span style={{ fontFamily: F.m, fontSize: 8, color: audioPlaying ? block.pilarColor : C.muted }}>
-              {block.audio}{block.audioDur ? ` · ${block.audioDur}` : ""}
+              {audioLoading ? "PREPARANDO…" : `${block.audio}${block.audioDur ? ` · ${block.audioDur}` : ""}`}
             </span>
+
           </span>
         )}
 
