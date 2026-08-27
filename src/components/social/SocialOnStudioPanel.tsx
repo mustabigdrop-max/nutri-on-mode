@@ -582,6 +582,27 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
   });
   const [versions, setVersions] = useState<Version[] | null>(null);
   const [genLoading, setGenLoading] = useState(false);
+  const [previewFormat, setPreviewFormat] = useState("reels");
+  const [vision, setVision] = useState<Vision | null>(null);
+  const [visionLoading, setVisionLoading] = useState(false);
+
+  const runVision = useCallback(async (f: File) => {
+    setVisionLoading(true);
+    try {
+      const r = await callSocialAI({
+        mode: "studio_vision",
+        mediaInfo: `${f.name} (${f.type}, ${(f.size / 1024 / 1024).toFixed(1)}MB)`,
+        topic: `Conteúdo ${f.type.startsWith("video") ? "em vídeo" : "em imagem"} do Coach Diogo Mello (fitness/nutrição, Método MCE) para Instagram.`,
+        ...(ctx || {}),
+      });
+      if (r?.viral_score !== undefined) setVision(r as Vision);
+      else toast.error("Não foi possível analisar a mídia");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setVisionLoading(false);
+    }
+  }, [ctx]);
 
   const handleFile = useCallback((f: File) => {
     const url = URL.createObjectURL(f);
@@ -591,7 +612,9 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
     setSubtitles([]);
     setOverlays([]);
     setVersions(null);
-  }, []);
+    setVision(null);
+    runVision(f);
+  }, [runVision]);
 
   const transcribe = async () => {
     if (!file) return;
