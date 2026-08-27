@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
 import MceForgeGps from "@/components/mce/MceForgeGps";
+import MceOsPanel from "@/components/mce/MceOsPanel";
 import { dayKey, type CheckinRow, type EventRow } from "@/lib/mceSystem";
 
 const C = {
@@ -567,6 +568,8 @@ export default function MceForgePage() {
         )}
 
         {/* ══ GPS ══ */}
+        {tab === "os" && <MceOsPanel streak={totalStreak} rankName={rank.name} />}
+
         {tab === "gps" && <MceForgeGps />}
 
         {/* ══ RANK ══ */}
