@@ -2,7 +2,7 @@
 // fontes/estilos, textos overlay e geração de 4 versões prontas pra postar.
 // IA via Edge Function `social-on-generate` (modos studio_subtitles / studio_versions).
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { callSocialAI } from "./socialUi";
 
@@ -25,6 +25,7 @@ const FONTS = [
 ];
 
 const SUBTITLE_STYLES = [
+  { id: "capcut", name: "CapCut Viral", bg: "transparent", color: "#FFF", shadow: true, outline: false, bgBox: false, glow: false, animated: true, highlight: "#00D4FF" },
   { id: "minimal", name: "Minimal", bg: "transparent", color: "#FFF", shadow: true, outline: false, bgBox: false, glow: false },
   { id: "boxed", name: "Caixa", bg: "#000000CC", color: "#FFF", shadow: false, outline: false, bgBox: true, glow: false },
   { id: "highlight", name: "Highlight", bg: "#00D4FF", color: "#000", shadow: false, outline: false, bgBox: true, glow: false },
@@ -271,9 +272,44 @@ function SubtitleEditor({ subtitles, onChange, config, onConfigChange }: {
 
 /* ---------------- Preview ---------------- */
 
-function Preview({ fileUrl, subtitles, overlays, config, isVideo }: {
-  fileUrl: string | null; subtitles: Subtitle[]; overlays: Overlay[]; config: StudioConfig; isVideo: boolean;
+const FORMATS = [
+  { id: "reels", label: "REELS 9:16", ratio: "9/16" },
+  { id: "feed", label: "FEED 1:1", ratio: "1/1" },
+  { id: "stories", label: "STORIES 9:16", ratio: "9/16" },
+  { id: "carousel", label: "CARROSSEL 4:5", ratio: "4/5" },
+];
+
+/** Legenda palavra a palavra, estilo CapCut. */
+function AnimatedSubtitle({ text, style, textStyle, highlight }: {
+  text: string; style: React.CSSProperties; textStyle: React.CSSProperties; highlight: string;
 }) {
+  const words = text.split(" ").filter(Boolean);
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    if (words.length < 2) return;
+    const id = setInterval(() => setActive((p) => (p + 1) % words.length), 420);
+    return () => clearInterval(id);
+  }, [words.length]);
+
+  return (
+    <div style={{ ...style, display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+      {words.map((w, i) => (
+        <span key={i} style={{
+          ...textStyle,
+          background: i === active ? highlight : "transparent",
+          color: i === active ? "#000" : textStyle.color,
+          padding: "1px 6px",
+          transition: "all 0.15s",
+        }}>{w}</span>
+      ))}
+    </div>
+  );
+}
+
+function Preview({ fileUrl, subtitles, overlays, config, isVideo, format = "reels" }: {
+  fileUrl: string | null; subtitles: Subtitle[]; overlays: Overlay[]; config: StudioConfig; isVideo: boolean; format?: string;
+}) {
+  const fmt = FORMATS.find((f) => f.id === format) || FORMATS[0];
   const font = FONTS.find((f) => f.id === config.font) || FONTS[0];
   const style = SUBTITLE_STYLES.find((s) => s.id === config.subtitleStyle) || SUBTITLE_STYLES[0];
   const pos = CAPTION_POSITIONS.find((p) => p.id === config.position) || CAPTION_POSITIONS[0];
@@ -296,7 +332,7 @@ function Preview({ fileUrl, subtitles, overlays, config, isVideo }: {
 
   return (
     <div style={{
-      position: "relative", width: "100%", aspectRatio: "9/16",
+      position: "relative", width: "100%", aspectRatio: fmt.ratio,
       background: isVideo ? "#000" : fileUrl ? `url(${fileUrl}) center/cover` : T.surface2,
       overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
     }}>
@@ -328,7 +364,16 @@ function Preview({ fileUrl, subtitles, overlays, config, isVideo }: {
         bottom: pos.y === 80 ? "10%" : "auto",
         padding: "0 12px",
       }}>
-        <div style={textStyle}>{previewText}</div>
+        {(style as { animated?: boolean }).animated ? (
+          <AnimatedSubtitle
+            text={previewText}
+            style={{ maxWidth: "92%" }}
+            textStyle={{ ...textStyle, maxWidth: "none", padding: 0 }}
+            highlight={(style as { highlight?: string }).highlight || T.cyan}
+          />
+        ) : (
+          <div style={textStyle}>{previewText}</div>
+        )}
       </div>
 
       {/* Grid de terços */}
@@ -340,8 +385,10 @@ function Preview({ fileUrl, subtitles, overlays, config, isVideo }: {
       </div>
 
       <div style={{ position: "absolute", top: 8, left: 8, fontFamily: T.fm, fontSize: 9, color: T.muted, background: "#000000AA", padding: "3px 8px" }}>
-        9:16 · REELS
+        {fmt.label}
       </div>
+      {/* Zona segura */}
+      <div style={{ position: "absolute", top: "12%", bottom: "16%", left: "6%", right: "6%", border: "1px dashed #ffffff10", pointerEvents: "none" }} />
     </div>
   );
 }
@@ -416,8 +463,110 @@ function TextOverlayEditor({ overlays, onChange, config }: {
 type Version = {
   name: string; format: string; caption: string; hashtags: string[];
   text_overlays?: { text: string; position: string; style: string }[];
-  cta: string; tone: string;
+  cta: string; tone: string; objective?: string;
+  predicted_performance?: { views?: string; saves?: string; shares?: string };
 };
+
+type Vision = {
+  viral_score: number;
+  predicted_views?: string; predicted_saves?: string; predicted_shares?: string;
+  detected_elements?: { icon: string; label: string; detail: string }[];
+  optimizations?: { text: string; priority: string }[];
+  best_time?: string; hook_suggestion?: string; content_pillars_match?: string[];
+};
+
+/* Painel de análise visual */
+function VisionPanel({ analysis, loading, onRun }: { analysis: Vision | null; loading: boolean; onRun: () => void }) {
+  if (loading) {
+    return (
+      <div style={{ padding: "28px 0" }}>
+        {["Analisando conteúdo visual", "Detectando elementos-chave", "Mapeando potencial viral", "Calculando performance"].map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, opacity: 0.5 }}>
+            <span style={{ width: 6, height: 6, background: T.cyan, display: "inline-block" }} />
+            <span style={{ fontFamily: T.fm, fontSize: 11, color: T.muted }}>{s}...</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (!analysis) {
+    return (
+      <div style={{ textAlign: "center", padding: "28px 0" }}>
+        <p style={{ fontFamily: T.fb, fontSize: 13, color: T.muted, marginBottom: 12 }}>
+          Analise o potencial do conteúdo antes de postar.
+        </p>
+        <button onClick={onRun} style={{
+          padding: "12px 26px", background: `${T.cyan}15`, border: `1px solid ${T.cyan}40`, borderRadius: 0,
+          cursor: "pointer", fontFamily: T.ft, fontSize: 15, fontWeight: 700, color: T.cyan, letterSpacing: 1,
+        }}>🧠 ANALISAR CONTEÚDO</button>
+      </div>
+    );
+  }
+  const score = analysis.viral_score ?? 0;
+  const scoreColor = score >= 70 ? T.green : score >= 40 ? T.gold : T.red;
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, marginBottom: 14 }}>
+        {[
+          { l: "VIEWS", v: analysis.predicted_views, c: T.cyan },
+          { l: "SAVES", v: analysis.predicted_saves, c: T.gold },
+          { l: "SHARES", v: analysis.predicted_shares, c: T.purple },
+          { l: "SCORE", v: `${score}/100`, c: scoreColor },
+        ].map((s, i) => (
+          <div key={i} style={{ background: T.surface2, padding: "10px 6px", textAlign: "center" }}>
+            <div style={{ fontFamily: T.ft, fontSize: 16, fontWeight: 700, color: s.c }}>{s.v || "—"}</div>
+            <div style={{ fontFamily: T.fm, fontSize: 8, color: T.muted, letterSpacing: 1 }}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {!!analysis.detected_elements?.length && (
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontFamily: T.fm, fontSize: 10, color: T.muted, letterSpacing: 2, margin: "0 0 8px" }}>DETECTADO</p>
+          {analysis.detected_elements.map((el, i) => (
+            <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", background: T.surface2, padding: "8px 10px", marginBottom: 4 }}>
+              <span style={{ fontSize: 14 }}>{el.icon}</span>
+              <span style={{ fontFamily: T.ft, fontSize: 13, fontWeight: 700, color: T.white }}>{el.label}</span>
+              <span style={{ fontFamily: T.fb, fontSize: 11, color: T.muted }}>{el.detail}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!!analysis.optimizations?.length && (
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontFamily: T.fm, fontSize: 10, color: T.muted, letterSpacing: 2, margin: "0 0 8px" }}>OTIMIZAÇÕES</p>
+          {analysis.optimizations.map((o, i) => (
+            <div key={i} style={{ background: T.surface2, padding: "8px 10px", marginBottom: 4, borderLeft: `2px solid ${o.priority === "alta" ? T.red : T.gold}` }}>
+              <span style={{ fontFamily: T.fm, fontSize: 8, color: o.priority === "alta" ? T.red : T.gold, letterSpacing: 1 }}>{(o.priority || "").toUpperCase()}</span>
+              <p style={{ fontFamily: T.fb, fontSize: 12, color: T.text, margin: "2px 0 0" }}>{o.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {analysis.hook_suggestion && (
+        <div style={{ background: `${T.cyan}08`, padding: "10px 12px", marginBottom: 8 }}>
+          <span style={{ fontFamily: T.fm, fontSize: 9, color: T.muted, letterSpacing: 1 }}>HOOK SUGERIDO</span>
+          <p style={{ fontFamily: T.ft, fontSize: 15, fontWeight: 700, color: T.cyan, margin: "2px 0 0" }}>{analysis.hook_suggestion}</p>
+        </div>
+      )}
+
+      {analysis.best_time && (
+        <div style={{ background: `${T.gold}08`, padding: "10px 12px", marginBottom: 8 }}>
+          <span style={{ fontFamily: T.fm, fontSize: 9, color: T.muted, letterSpacing: 1 }}>MELHOR HORÁRIO</span>
+          <p style={{ fontFamily: T.ft, fontSize: 15, fontWeight: 700, color: T.gold, margin: "2px 0 0" }}>{analysis.best_time}</p>
+        </div>
+      )}
+
+      <button onClick={onRun} style={{
+        background: `${T.cyan}10`, border: `1px solid ${T.cyan}30`, borderRadius: 0,
+        padding: "6px 14px", cursor: "pointer", fontFamily: T.fm, fontSize: 10, color: T.cyan,
+      }}>⚡ Refazer análise</button>
+    </div>
+  );
+}
+
 
 export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unknown> }) {
   const [file, setFile] = useState<File | null>(null);
@@ -433,6 +582,27 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
   });
   const [versions, setVersions] = useState<Version[] | null>(null);
   const [genLoading, setGenLoading] = useState(false);
+  const [previewFormat, setPreviewFormat] = useState("reels");
+  const [vision, setVision] = useState<Vision | null>(null);
+  const [visionLoading, setVisionLoading] = useState(false);
+
+  const runVision = useCallback(async (f: File) => {
+    setVisionLoading(true);
+    try {
+      const r = await callSocialAI({
+        mode: "studio_vision",
+        mediaInfo: `${f.name} (${f.type}, ${(f.size / 1024 / 1024).toFixed(1)}MB)`,
+        topic: `Conteúdo ${f.type.startsWith("video") ? "em vídeo" : "em imagem"} do Coach Diogo Mello (fitness/nutrição, Método MCE) para Instagram.`,
+        ...(ctx || {}),
+      });
+      if (r?.viral_score !== undefined) setVision(r as Vision);
+      else toast.error("Não foi possível analisar a mídia");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setVisionLoading(false);
+    }
+  }, [ctx]);
 
   const handleFile = useCallback((f: File) => {
     const url = URL.createObjectURL(f);
@@ -442,7 +612,9 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
     setSubtitles([]);
     setOverlays([]);
     setVersions(null);
-  }, []);
+    setVision(null);
+    runVision(f);
+  }, [runVision]);
 
   const transcribe = async () => {
     if (!file) return;
@@ -493,12 +665,13 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
   const clearFile = () => {
     if (fileUrl) URL.revokeObjectURL(fileUrl);
     setFile(null); setFileUrl(null); setIsVideo(false);
-    setSubtitles([]); setOverlays([]); setVersions(null);
+    setSubtitles([]); setOverlays([]); setVersions(null); setVision(null);
   };
 
   const tabs = [
     { id: "legendas", label: "Legendas", icon: "💬", color: T.cyan },
     { id: "texto", label: "Texto", icon: "✏️", color: T.gold },
+    { id: "analise", label: "Análise", icon: "🧠", color: T.purple },
     { id: "versoes", label: "4 Versões", icon: "✦", color: T.green },
   ];
 
@@ -552,8 +725,18 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
         <div style={{ display: "flex", flexWrap: "wrap" }}>
           {/* Preview */}
           <div style={{ width: 280, flexShrink: 0, background: T.surface, borderRight: "1px solid #ffffff06", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid #ffffff06" }}>
+              {FORMATS.map((f) => (
+                <button key={f.id} onClick={() => setPreviewFormat(f.id)} style={{
+                  flex: 1, padding: "8px 2px", background: previewFormat === f.id ? `${T.cyan}06` : "transparent",
+                  border: "none", borderBottom: previewFormat === f.id ? `2px solid ${T.cyan}` : "2px solid transparent",
+                  cursor: "pointer", fontFamily: T.fm, fontSize: 8, letterSpacing: 1,
+                  color: previewFormat === f.id ? T.cyan : T.muted,
+                }}>{f.id.toUpperCase()}</button>
+              ))}
+            </div>
             <div style={{ flex: 1, padding: 12, display: "flex", alignItems: "center" }}>
-              <Preview fileUrl={fileUrl} subtitles={subtitles} overlays={overlays} config={config} isVideo={isVideo} />
+              <Preview fileUrl={fileUrl} subtitles={subtitles} overlays={overlays} config={config} isVideo={isVideo} format={previewFormat} />
             </div>
             <div style={{ padding: "10px 12px", borderTop: "1px solid #ffffff06" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -614,6 +797,10 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
                 <TextOverlayEditor overlays={overlays} onChange={setOverlays} config={config} />
               )}
 
+              {tab === "analise" && (
+                <VisionPanel analysis={vision} loading={visionLoading} onRun={() => file && runVision(file)} />
+              )}
+
               {tab === "versoes" && (
                 <div>
                   {!versions ? (
@@ -651,8 +838,18 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
                                 <div style={{ display: "flex", gap: 4 }}>
                                   <span style={{ fontFamily: T.fm, fontSize: 9, color: colors[i % 4], background: `${colors[i % 4]}12`, padding: "2px 6px" }}>{v.format}</span>
                                   <span style={{ fontFamily: T.fm, fontSize: 9, color: T.muted, background: T.surface3, padding: "2px 6px" }}>{v.tone}</span>
+                                  {v.objective && (
+                                    <span style={{ fontFamily: T.fm, fontSize: 9, color: T.gold, background: `${T.gold}12`, padding: "2px 6px" }}>{v.objective}</span>
+                                  )}
                                 </div>
                               </div>
+                              {v.predicted_performance && (
+                                <div style={{ display: "flex", gap: 10, marginBottom: 8 }}>
+                                  <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>👁 {v.predicted_performance.views}</span>
+                                  <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>💾 {v.predicted_performance.saves}</span>
+                                  <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>📤 {v.predicted_performance.shares}</span>
+                                </div>
+                              )}
                               <p style={{ fontFamily: T.fb, fontSize: 12, color: T.text, margin: "0 0 8px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{v.caption}</p>
                               {v.text_overlays?.map((to, j) => (
                                 <div key={j} style={{ background: `${colors[i % 4]}08`, padding: "6px 10px", marginBottom: 4, display: "flex", gap: 6, alignItems: "center" }}>
