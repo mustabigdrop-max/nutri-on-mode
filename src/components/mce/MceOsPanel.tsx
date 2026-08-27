@@ -164,6 +164,16 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
           <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, marginTop: 2 }}>{block.time} · {block.duration}</div>
         </div>
 
+        {block.audio && (
+          <span style={{
+            display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+            border: `1px solid ${C.border}`, background: C.s2, padding: "3px 6px",
+          }}>
+            <span style={{ fontSize: 10 }}>🎧</span>
+            <span style={{ fontFamily: F.m, fontSize: 8, color: C.muted }}>{block.audio}{block.audioDur ? ` · ${block.audioDur}` : ""}</span>
+          </span>
+        )}
+
         <span style={{ fontFamily: F.m, fontSize: 11, color: C.dim }}>{expanded ? "▾" : "▸"}</span>
       </button>
 
@@ -181,7 +191,8 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
             return (
               <div key={item.id} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
                 <button
-                  onClick={() => onCheck(item.id)}
+                  onClick={() => { onCheck(item.id); if (!isDone && soundEnabled) mceSounds.tick(); }}
+
                   aria-pressed={isDone}
                   style={{
                     width: 22, height: 22, background: isDone ? C.green : C.s3,
