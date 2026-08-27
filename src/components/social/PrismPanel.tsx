@@ -559,7 +559,7 @@ const PrismPanel = ({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*,video/mp4,video/quicktime,video/*"
+          accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo,video/3gpp,video/*"
           multiple
           className="hidden"
           onChange={(e) => {

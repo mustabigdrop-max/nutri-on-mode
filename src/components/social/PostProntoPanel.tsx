@@ -493,7 +493,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
       <Section title="📸 Passo 1 — seu conteúdo">
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => addPhotos(e.target.files, photos.length > 0)} />
         <input ref={extraRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} />
-        <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/*" className="hidden" onChange={(e) => addVideo(e.target.files?.[0])} />
+        <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/webm,video/x-msvideo,video/3gpp,video/*" className="hidden" onChange={(e) => addVideo(e.target.files?.[0])} />
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); addPhotos(e.dataTransfer.files); }}
@@ -548,7 +548,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
           <p className="text-xs font-semibold">📹 Vídeo (opcional)</p>
           {video ? (
             <div className="space-y-2">
-              <video src={video.url} controls className="w-full max-h-56 rounded-lg bg-black" />
+              <video src={video.url} controls playsInline autoPlay muted loop className="w-full max-h-56 rounded-lg bg-black" />
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[11px] font-mono text-muted-foreground">{video.name} · {video.duration}s</p>
                 <div className="flex gap-1">
