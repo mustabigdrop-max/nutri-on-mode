@@ -84,3 +84,80 @@ export const mceSounds = {
 };
 
 export type MceSoundName = keyof typeof mceSounds;
+
+/* ── Áudios contextuais por bloco (ambiências curtas geradas) ───────────── */
+
+let ambientNodes: OscillatorNode[] = [];
+let ambientTimer: number | null = null;
+
+function pad(freq: number, at: number, dur: number, gain = 0.06, type: OscillatorType = "sine") {
+  const ac = getCtx();
+  if (!ac) return;
+  const t0 = ac.currentTime + at;
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(gain, t0 + dur * 0.35);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g).connect(ac.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.05);
+  ambientNodes.push(osc);
+}
+
+const AMBIENT_SEQ: Record<string, { total: number; play: () => void }> = {
+  despertar: {
+    total: 10,
+    play: () => {
+      [[130.81, 0, 4], [196.0, 1, 4], [164.81, 3, 4], [261.63, 4.5, 3.5], [196.0, 6, 3.5]].forEach(([f, a, d]) => pad(f, a, d, 0.055));
+    },
+  },
+  corrida: {
+    total: 4,
+    play: () => {
+      [329.63, 392.0, 440.0, 493.88, 659.25, 493.88, 440.0, 392.0].forEach((f, i) => pad(f, i * 0.2, 0.22, 0.07, "triangle"));
+      for (let i = 0; i < 8; i++) pad(65.41, i * 0.4, 0.12, 0.05, "square");
+    },
+  },
+  microaudio: {
+    total: 8,
+    play: () => {
+      [[659.25, 0, 2.4], [493.88, 2.5, 2.4], [783.99, 5, 2.6]].forEach(([f, a, d]) => pad(f, a, d, 0.06));
+    },
+  },
+  presono: {
+    total: 15,
+    play: () => {
+      [[130.81, 0, 5], [164.81, 3, 5], [196.0, 6, 5], [130.81, 9, 5.5]].forEach(([f, a, d]) => pad(f, a, d, 0.045));
+    },
+  },
+};
+
+export type MceAmbientName = keyof typeof AMBIENT_SEQ;
+
+export const AUDIO_TO_AMBIENT: Record<string, MceAmbientName> = {
+  "Despertar": "despertar",
+  "Corrida 30min": "corrida",
+  "Micro-áudio 2min": "microaudio",
+  "Pré-sono": "presono",
+};
+
+export const mceAmbient = {
+  stop() {
+    ambientNodes.forEach((n) => { try { n.stop(); } catch { /* já parado */ } try { n.disconnect(); } catch { /* noop */ } });
+    ambientNodes = [];
+    if (ambientTimer !== null) { window.clearTimeout(ambientTimer); ambientTimer = null; }
+  },
+  /** Toca a ambiência e devolve a duração em ms (0 = indisponível). */
+  play(name: MceAmbientName, onEnd?: () => void): number {
+    mceAmbient.stop();
+    const seq = AMBIENT_SEQ[name];
+    if (!seq || !getCtx()) return 0;
+    seq.play();
+    const ms = seq.total * 1000;
+    ambientTimer = window.setTimeout(() => { mceAmbient.stop(); onEnd?.(); }, ms);
+    return ms;
+  },
+};
