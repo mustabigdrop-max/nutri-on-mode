@@ -67,7 +67,7 @@ ${FORGE_SCHEMA}`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: system },
-          { role: "user", content: `Check-in ${type}: ${JSON.stringify(answers)}` },
+          { role: "user", content: userMsg },
         ],
         response_format: { type: "json_object" },
       }),
