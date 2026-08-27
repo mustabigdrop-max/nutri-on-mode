@@ -2,7 +2,7 @@
 // fontes/estilos, textos overlay e geração de 4 versões prontas pra postar.
 // IA via Edge Function `social-on-generate` (modos studio_subtitles / studio_versions).
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { callSocialAI } from "./socialUi";
 
@@ -25,6 +25,7 @@ const FONTS = [
 ];
 
 const SUBTITLE_STYLES = [
+  { id: "capcut", name: "CapCut Viral", bg: "transparent", color: "#FFF", shadow: true, outline: false, bgBox: false, glow: false, animated: true, highlight: "#00D4FF" },
   { id: "minimal", name: "Minimal", bg: "transparent", color: "#FFF", shadow: true, outline: false, bgBox: false, glow: false },
   { id: "boxed", name: "Caixa", bg: "#000000CC", color: "#FFF", shadow: false, outline: false, bgBox: true, glow: false },
   { id: "highlight", name: "Highlight", bg: "#00D4FF", color: "#000", shadow: false, outline: false, bgBox: true, glow: false },
