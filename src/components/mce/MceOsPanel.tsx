@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { mceSounds, type MceSoundName } from "@/lib/mceSounds";
+import McePatternDetector from "./McePatternDetector";
 
 const C = {
   bg: "#020205", s1: "#0B0B12", s2: "#10101A", s3: "#181824",
@@ -14,11 +16,13 @@ type OsItem = { id: string; text: string; ref: string };
 type OsBlock = {
   id: string; name: string; time: string; pilar: string; pilarColor: string;
   duration: string; science: string; from: number; to: number; items: OsItem[];
+  sound?: MceSoundName; audio?: string; audioDur?: string;
 };
+
 
 const BLOCKS: OsBlock[] = [
   {
-    id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MINDSET", pilarColor: C.purple,
+    sound: "ignition", audio: "Despertar", audioDur: "5 min", id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MINDSET", pilarColor: C.purple,
     duration: "15-20 min", from: 5, to: 6,
     science: "Kahneman: Sistema 2 está no pico pela manhã. Programe agora ou o Sistema 1 comanda o dia.",
     items: [
@@ -29,7 +33,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "execution", name: "EXECUÇÃO PRIMÁRIA", time: "06:00–12:00", pilar: "EXECUÇÃO", pilarColor: C.gold,
+    sound: "tick", audio: "Corrida 30min", audioDur: "30 min", id: "execution", name: "EXECUÇÃO PRIMÁRIA", time: "06:00–12:00", pilar: "EXECUÇÃO", pilarColor: C.gold,
     duration: "Bloco de fazer", from: 6, to: 12,
     science: "Cortisol e testosterona nos picos. Força de vontade cheia. Período de ouro.",
     items: [
@@ -40,7 +44,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "recalibration", name: "RECALIBRAÇÃO", time: "12:00–13:00", pilar: "COMPORTAMENTO", pilarColor: C.cyan,
+    sound: "recalibration", audio: "Micro-áudio 2min", audioDur: "2 min", id: "recalibration", name: "RECALIBRAÇÃO", time: "12:00–13:00", pilar: "COMPORTAMENTO", pilarColor: C.cyan,
     duration: "5-10 min", from: 12, to: 13,
     science: "Rotter: locus de controle interno monitora resultados. Nunca deixe 2 erros seguidos acontecerem.",
     items: [
@@ -50,7 +54,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "sustain", name: "SUSTENTAÇÃO", time: "13:00–18:00", pilar: "COMPORTAMENTO + EXECUÇÃO", pilarColor: C.green,
+    sound: "tick", id: "sustain", name: "SUSTENTAÇÃO", time: "13:00–18:00", pilar: "COMPORTAMENTO + EXECUÇÃO", pilarColor: C.green,
     duration: "Bloco onde a maioria desiste", from: 13, to: 18,
     science: "Cortisol caiu, força de vontade gasta, Sistema 1 dominando. Ambiente > vontade.",
     items: [
@@ -61,7 +65,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MINDSET + COMPORTAMENTO", pilarColor: C.purple,
+    sound: "consolidation", audio: "Pré-sono", audioDur: "10 min", id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MINDSET + COMPORTAMENTO", pilarColor: C.purple,
     duration: "15-20 min", from: 20, to: 22,
     science: "Hipocampo transfere memórias de curto pra longo prazo durante o sono. A última hora consolida o dia.",
     items: [
@@ -102,13 +106,19 @@ type OsResult = {
   mce_quote?: string;
 };
 
-function Block({ block, hour, checked, onCheck }: { block: OsBlock; hour: number; checked: Record<string, boolean>; onCheck: (id: string) => void }) {
+function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock; hour: number; checked: Record<string, boolean>; onCheck: (id: string) => void; soundEnabled: boolean }) {
   const active = hour >= block.from && hour < block.to;
   const done = block.items.filter((i) => checked[i.id]).length;
   const total = block.items.length;
   const pct = Math.round((done / total) * 100);
   const allDone = done === total;
   const [expanded, setExpanded] = useState(active);
+  const prevDone = useRef(done);
+
+  useEffect(() => {
+    if (soundEnabled && done > prevDone.current && done === total) mceSounds.blockComplete();
+    prevDone.current = done;
+  }, [done, total, soundEnabled]);
 
   const R = 14, CIRC = 2 * Math.PI * R;
 
@@ -118,7 +128,8 @@ function Block({ block, hour, checked, onCheck }: { block: OsBlock; hour: number
       border: `1px solid ${active ? `${block.pilarColor}25` : C.border}`,
       marginBottom: 10, position: "relative",
     }}>
-      <button onClick={() => setExpanded(!expanded)} style={{
+      <button onClick={() => { const next = !expanded; setExpanded(next); if (next && soundEnabled && block.sound) mceSounds[block.sound](); }} style={{
+
         width: "100%", padding: "12px 16px", background: "transparent", border: "none", cursor: "pointer",
         display: "flex", alignItems: "center", gap: 10, textAlign: "left",
       }}>
@@ -153,6 +164,16 @@ function Block({ block, hour, checked, onCheck }: { block: OsBlock; hour: number
           <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, marginTop: 2 }}>{block.time} · {block.duration}</div>
         </div>
 
+        {block.audio && (
+          <span style={{
+            display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+            border: `1px solid ${C.border}`, background: C.s2, padding: "3px 6px",
+          }}>
+            <span style={{ fontSize: 10 }}>🎧</span>
+            <span style={{ fontFamily: F.m, fontSize: 8, color: C.muted }}>{block.audio}{block.audioDur ? ` · ${block.audioDur}` : ""}</span>
+          </span>
+        )}
+
         <span style={{ fontFamily: F.m, fontSize: 11, color: C.dim }}>{expanded ? "▾" : "▸"}</span>
       </button>
 
@@ -170,7 +191,8 @@ function Block({ block, hour, checked, onCheck }: { block: OsBlock; hour: number
             return (
               <div key={item.id} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
                 <button
-                  onClick={() => onCheck(item.id)}
+                  onClick={() => { onCheck(item.id); if (!isDone && soundEnabled) mceSounds.tick(); }}
+
                   aria-pressed={isDone}
                   style={{
                     width: 22, height: 22, background: isDone ? C.green : C.s3,
@@ -240,6 +262,7 @@ export default function MceOsPanel({ streak = 0, rankName = "Iniciante" }: { str
   const [result, setResult] = useState<OsResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: todayKey(), checked })); } catch { /* ignore */ }
@@ -247,6 +270,20 @@ export default function MceOsPanel({ streak = 0, rankName = "Iniciante" }: { str
 
   const doneItems = useMemo(() => Object.values(checked).filter(Boolean).length, [checked]);
   const dayPct = Math.round((doneItems / TOTAL_ITEMS) * 100);
+
+  const prevDoneRef = useRef(doneItems);
+  useEffect(() => {
+    if (soundEnabled && doneItems === TOTAL_ITEMS && prevDoneRef.current < TOTAL_ITEMS) mceSounds.dayComplete();
+    prevDoneRef.current = doneItems;
+  }, [doneItems, soundEnabled]);
+
+  const blocksStatus = useMemo(() => BLOCKS.map((b) => {
+    const d = b.items.filter((i) => checked[i.id]).length;
+    return { name: b.name, done: d, total: b.items.length, pct: Math.round((d / b.items.length) * 100) };
+  }), [checked]);
+  const weakBlock = useMemo(() => blocksStatus.filter((b) => b.pct < 50).sort((a, b) => a.pct - b.pct)[0] ?? null, [blocksStatus]);
+  const weakPillar = scores.m <= scores.c && scores.m <= scores.e ? "Mindset" : scores.c <= scores.e ? "Comportamento" : "Execução";
+
 
   const toggle = useCallback((id: string) => {
     setChecked((prev) => {
@@ -310,10 +347,33 @@ export default function MceOsPanel({ streak = 0, rankName = "Iniciante" }: { str
           }} />
         </div>
       </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+        <button
+          onClick={() => { const n = !soundEnabled; setSoundEnabled(n); if (n) mceSounds.tick(); }}
+          aria-pressed={soundEnabled}
+          style={{
+            background: soundEnabled ? `${C.cyan}10` : C.s3, border: `1px solid ${soundEnabled ? `${C.cyan}40` : C.border}`,
+            padding: "5px 9px", cursor: "pointer", fontFamily: F.m, fontSize: 9, letterSpacing: 1,
+            color: soundEnabled ? C.cyan : C.dim,
+          }}
+        >{soundEnabled ? "🔊 SOM" : "🔇 SOM"}</button>
+      </div>
+
+      <McePatternDetector
+        scores={scores}
+        streak={streak}
+        hour={hour}
+        doneItems={doneItems}
+        totalItems={TOTAL_ITEMS}
+        weakBlock={weakBlock}
+        weakPillar={weakPillar}
+        soundEnabled={soundEnabled}
+      />
 
       {BLOCKS.map((b) => (
-        <Block key={b.id} block={b} hour={hour} checked={checked} onCheck={toggle} />
+        <Block key={b.id} block={b} hour={hour} checked={checked} onCheck={toggle} soundEnabled={soundEnabled} />
       ))}
+
 
       <MceScoreInput scores={scores} onChange={setScores} />
 
