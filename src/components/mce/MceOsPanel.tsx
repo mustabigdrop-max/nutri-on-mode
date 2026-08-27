@@ -116,17 +116,56 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
   const allDone = done === total;
   const [expanded, setExpanded] = useState(active);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [showScript, setShowScript] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const urlRef = useRef<string | null>(null);
   const prevDone = useRef(done);
 
-  const toggleAudio = useCallback(() => {
-    if (audioPlaying) { mceAmbient.stop(); setAudioPlaying(false); return; }
+  const stopAll = useCallback(() => {
+    mceAmbient.stop();
+    if (audioRef.current) { audioRef.current.pause(); }
+    setAudioPlaying(false);
+  }, []);
+
+  const playAmbient = useCallback(() => {
     const key = block.audio ? AUDIO_TO_AMBIENT[block.audio] : undefined;
     if (!key) return;
     const ms = mceAmbient.play(key, () => setAudioPlaying(false));
     if (ms > 0) setAudioPlaying(true);
-  }, [audioPlaying, block.audio]);
+  }, [block.audio]);
 
-  useEffect(() => () => { mceAmbient.stop(); }, []);
+  const toggleAudio = useCallback(async () => {
+    if (audioPlaying) { stopAll(); return; }
+    if (!block.audioKey) { playAmbient(); return; }
+
+    // Narração real do Coach Diogo Mello (gerada/cacheada no backend).
+    try {
+      setAudioLoading(true);
+      if (!urlRef.current) {
+        const { data, error } = await supabase.functions.invoke("mce-os-audio", {
+          body: { block: block.audioKey },
+        });
+        if (error || !data?.url) throw new Error(error?.message || "sem url");
+        urlRef.current = data.url as string;
+      }
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
+        audioRef.current.onended = () => setAudioPlaying(false);
+      }
+      if (audioRef.current.src !== urlRef.current) audioRef.current.src = urlRef.current;
+      await audioRef.current.play();
+      setAudioPlaying(true);
+    } catch {
+      urlRef.current = null;
+      playAmbient(); // fallback: ambiência sintetizada
+    } finally {
+      setAudioLoading(false);
+    }
+  }, [audioPlaying, block.audioKey, playAmbient, stopAll]);
+
+  useEffect(() => () => { mceAmbient.stop(); audioRef.current?.pause(); }, []);
+
 
   useEffect(() => {
     if (soundEnabled && done > prevDone.current && done === total) mceSounds.blockComplete();
