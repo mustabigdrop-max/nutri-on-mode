@@ -156,7 +156,7 @@ export default function BehavioralTriggersPage() {
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-6 pb-4 border-b border-border">
-        <button onClick={() => activeFeature ? setActiveFeature(null) : navigate(-1)} className="p-2 rounded-xl hover:bg-muted transition-colors">
+        <button onClick={() => activeFeature ? setActiveFeature(null) : navigate("/coach/dashboard")} className="p-2 rounded-xl hover:bg-muted transition-colors">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">

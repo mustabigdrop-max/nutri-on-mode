@@ -25,7 +25,7 @@ const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrappe
     return (
       <UpgradeModal
         open={true}
-        onClose={() => window.history.back()}
+        onClose={() => navigate("/coach/dashboard")}
         fromPlan="ON +"
         lockedFeature={featureName}
       />
@@ -37,7 +37,7 @@ const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrappe
       <>
         <UpgradeModal
           open={true}
-          onClose={() => window.history.back()}
+          onClose={() => navigate("/coach/dashboard")}
           fromPlan={plan === "free" ? "ON" : plan}
           lockedFeature={featureName}
         />

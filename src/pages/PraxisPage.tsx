@@ -111,7 +111,7 @@ const PraxisPage = () => {
     <div className="min-h-screen flex flex-col" style={{ background: BG, color: "#fff" }}>
       <div className="px-4 pt-5 max-w-3xl w-full mx-auto">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/coach/dashboard")}
           className="flex items-center gap-1.5 text-xs font-semibold"
           style={{ color: "#8a8a8a" }}
         >

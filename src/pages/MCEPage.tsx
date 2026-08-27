@@ -681,7 +681,7 @@ export default function MCEIntelligencePage() {
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/coach/dashboard")}
               aria-label="Voltar"
               className="mce-icon-button"
               style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.72)", cursor: "pointer", display: "flex" }}

@@ -206,7 +206,7 @@ const VideoFormPage = () => {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border px-4 py-4 sticky top-0 bg-background/90 backdrop-blur z-10">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/coach/dashboard")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <Video className="w-6 h-6 text-primary" />

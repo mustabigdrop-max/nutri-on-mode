@@ -171,7 +171,7 @@ const BehavioralNutritionPage = () => {
       <div className="max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg border border-border">
+          <button onClick={() => navigate("/coach/dashboard")} className="p-2 rounded-lg border border-border">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>

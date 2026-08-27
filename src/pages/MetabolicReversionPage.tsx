@@ -123,7 +123,7 @@ export default function MetabolicReversionPage() {
     <div className="min-h-screen bg-black text-white pb-24">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
+        <button onClick={() => navigate("/coach/dashboard")} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">

@@ -366,7 +366,7 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
         </div>
       ) : (
         <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3" style={{ background: "rgba(3,3,10,0.95)", borderBottom: `1px solid ${GOLD}22` }}>
-          <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ color: GOLD }}>
+          <button onClick={() => navigate("/coach/dashboard")} aria-label="Voltar" style={{ color: GOLD }}>
             <ArrowLeft className="w-5 h-5" />
           </button>
           <Headphones className="w-5 h-5" style={{ color: GOLD }} />

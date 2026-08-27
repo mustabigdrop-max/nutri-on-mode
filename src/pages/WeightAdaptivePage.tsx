@@ -55,7 +55,7 @@ const WeightAdaptivePage = () => {
     <div className="min-h-screen bg-background pb-24">
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
-          <button onClick={() => navigate(-1)}><ArrowLeft className="w-5 h-5 text-muted-foreground" /></button>
+          <button onClick={() => navigate("/coach/dashboard")}><ArrowLeft className="w-5 h-5 text-muted-foreground" /></button>
           <div className="flex-1">
             <h1 className="text-sm font-heading font-bold text-foreground">MCE ADAPTATIVO</h1>
             <p className="text-[9px] font-mono text-muted-foreground">Motor de Calibração Metabólica Real</p>
