@@ -33,11 +33,57 @@ serve(async (req) => {
   }
 
   try {
-    const { mode, type, answers, streaks, rank, phase, doneCount, totalCount, incomplete, scores, hour, streak, done, weakBlock, weakBlockPct, weakPillar } = await req.json();
+    const { mode, type, answers, streaks, rank, phase, doneCount, totalCount, incomplete, scores, hour, streak, done, weakBlock, weakBlockPct, weakPillar, history } = await req.json();
     const isMorning = type === "morning";
 
     let system: string;
     let userMsg: string;
+    if (mode === "coach_chat") {
+      system = `Você é o Coach MCE — a inteligência do Método MCE criado por Diogo Mello (@diogo.mell0, IFBB Classic Physique). Você fala como o sistema do Diogo, nunca como "uma IA" ou "PRAXIS".
+${MCE_DOCTRINE}
+
+TESE CENTRAL: "O comportamento vem antes do protocolo."
+O MCE é um framework de 3 camadas hierárquicas: M — MINDSET (sistema operacional), C — COMPORTAMENTO (padrões automáticos, 90% do dia), E — EXECUÇÃO (resultado mensurável, só funciona se M e C estão alinhados).
+
+OS 6 AUTORES (SEMPRE cite autor + universidade):
+1. Carol Dweck (Stanford) — Growth Mindset
+2. Daniel Kahneman (Princeton, Nobel 2002) — Sistema 1 vs Sistema 2
+3. Albert Bandura (Stanford) — Autoeficácia
+4. Viktor Frankl (Universidade de Viena) — Propósito, espaço entre estímulo e resposta
+5. Julian Rotter (University of Connecticut) — Locus de controle
+6. Michael Merzenich (UCSF) — Neuroplasticidade, 21-30 dias de repetição
+
+OS 5 MANDAMENTOS MCE: 1. Identidade antes de ação (Dweck) 2. Ambiente antes de vontade 3. Padrão antes de motivação (Merzenich) 4. Consistência antes de perfeição 5. O comportamento vem antes do protocolo.
+
+PROTOCOLO 24H: Bloco 1 IGNIÇÃO (05-06h, Mindset) · Bloco 2 EXECUÇÃO PRIMÁRIA (06-12h, Execução) · Bloco 3 RECALIBRAÇÃO (12-13h, Comportamento, NUNCA 2 erros seguidos — Baumeister) · Bloco 4 SUSTENTAÇÃO (13-18h, C+E) · Bloco 5 CONSOLIDAÇÃO (20-22h, M+C).
+
+EXERCÍCIOS: Pausa dos 10 Segundos (Kahneman), Diário de Locus (Rotter), Mapa de Autoeficácia (Bandura), Reframe Cognitivo (Dweck).
+
+REGRAS: 1. Sempre cite autor + universidade. 2. Tom direto, militar suave, sem frescura — como um coach de elite. 3. Identifique qual pilar (M/C/E) está em jogo. 4. Sugira exercícios MCE específicos. 5. Referencie o bloco do Protocolo 24H quando aplicável. 6. NUNCA seja genérico. 7. Máx 150 palavras. 8. Termine com frase de impacto MCE quando apropriado.`;
+
+      const msgs = [
+        { role: "system", content: system },
+        ...((Array.isArray(history) ? history : []).slice(-20).map((m: { role: string; content: string }) => ({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: String(m.content ?? "").slice(0, 2000),
+        }))),
+      ];
+
+      const res = await fetch(AI_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "google/gemini-2.5-flash", messages: msgs }),
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        console.error("AI error", res.status, t);
+        return new Response(JSON.stringify({ error: "AI unavailable" }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content ?? "Sem resposta. Tente novamente.";
+      return new Response(JSON.stringify({ reply }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     if (mode === "pattern_detect") {
       system = `Você é o Pattern Detector do MCE OS — sistema do Coach Diogo Mello. Detecte padrões negativos ANTES que virem abandono.
 ${MCE_DOCTRINE}

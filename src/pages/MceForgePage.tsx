@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
 import MceForgeGps from "@/components/mce/MceForgeGps";
 import MceOsPanel from "@/components/mce/MceOsPanel";
+import MceChatPanel from "@/components/mce/MceChatPanel";
 import { dayKey, type CheckinRow, type EventRow } from "@/lib/mceSystem";
 
 const C = {
@@ -362,6 +363,7 @@ export default function MceForgePage() {
   const tabs = [
     { id: "dashboard", label: "Painel", icon: "◈" },
     { id: "os", label: "OS 24H", icon: "⌘" },
+    { id: "coach", label: "Coach", icon: "🧠" },
     { id: "checkin", label: hour < 14 ? "Check-in ☀" : "Check-in 🌙", icon: "✓" },
     { id: "momentum", label: "Momentum", icon: "📈" },
     { id: "gps", label: "GPS", icon: "🧭" },
@@ -569,6 +571,8 @@ export default function MceForgePage() {
 
         {/* ══ GPS ══ */}
         {tab === "os" && <MceOsPanel streak={totalStreak} rankName={rank.name} />}
+
+        {tab === "coach" && <MceChatPanel />}
 
         {tab === "gps" && <MceForgeGps />}
 
