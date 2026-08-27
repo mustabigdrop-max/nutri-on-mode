@@ -118,6 +118,7 @@ const BiomechanicsVaultPage = lazy(() => import("./pages/BiomechanicsVaultPage")
 const MetabolicONPage = lazy(() => import("./pages/MetabolicONPage"));
 const MCEPage = lazy(() => import("./pages/MCEPage"));
 const MceForgePage = lazy(() => import("./pages/MceForgePage"));
+const MceCoachDashboardPage = lazy(() => import("./pages/coach/MceCoachDashboardPage"));
 const MCEBusinessPage = lazy(() => import("./pages/MCEBusinessPage"));
 const GymPartnerDashboardPage = lazy(() => import("./pages/GymPartnerDashboardPage"));
 const GymChallengesPage = lazy(() => import("./pages/GymChallengesPage"));
@@ -295,6 +296,7 @@ const App = () => (
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
             <Route path="/mce" element={<ProtectedRoute><MCEPage /></ProtectedRoute>} />
             <Route path="/mce/forge" element={<ProtectedRoute><MceForgePage /></ProtectedRoute>} />
+            <Route path="/mce/coach" element={<CoachToolRoute><ProtectedRoute><MceCoachDashboardPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/mce/business" element={<ProtectedRoute><MCEBusinessPage /></ProtectedRoute>} />
             <Route path="/mce/academia" element={<ProtectedRoute><GymPartnerDashboardPage /></ProtectedRoute>} />
             <Route path="/mce/business/challenges" element={<ProtectedRoute><BusinessChallengesPage /></ProtectedRoute>} />
