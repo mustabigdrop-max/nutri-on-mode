@@ -30,7 +30,8 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "reel_script" | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post"
   | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo"
   | "grid_architect" | "bio_optimizer" | "pinned_strategy"
-  | "conversion_bridge" | "cta_intelligence" | "collab_finder";
+  | "conversion_bridge" | "cta_intelligence" | "collab_finder"
+  | "studio_subtitles" | "studio_versions";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
@@ -64,6 +65,8 @@ const SCHEMAS: Record<Mode, string> = {
   conversion_bridge: `{"funnel_analysis":{"total_posts": número,"estimated_dms_generated": número,"estimated_leads": número,"estimated_clients": número,"estimated_monthly_revenue":"R$ X.XXX","conversion_rate_content_to_dm":"X%","conversion_rate_dm_to_client":"X%"},"content_roi_ranking":[{"content_type":"tipo de conteúdo","format":"Reel|Carrossel|Feed|Stories","dm_generation":"alto|médio|baixo","client_conversion":"alto|médio|baixo","roi_score": número 0-100,"why":"por que esse tipo converte (1 frase)"}],"funnel_gaps":[{"stage":"conteúdo|dm|lead|cliente","icon":"emoji","problem":"gap detectado","fix":"solução"}],"revenue_multiplier":{"current_estimate":"R$ X.XXX/mês","optimized_estimate":"R$ X.XXX/mês","multiplier":"Xx","key_changes":["mudança 1","mudança 2","mudança 3"]},"content_prescription":[{"frequency":"X/semana","format":"formato","type":"tipo","goal":"objetivo de conversão"}]}`,
   cta_intelligence: `{"cta_strategy":"estratégia geral pra esse formato + estágio (1-2 frases)","trigger_word_system":{"trigger":"PALAVRA","flow":["Passo 1: pessoa comenta a palavra","Passo 2: DM automática com...","Passo 3: lead magnet entregue","Passo 4: follow-up em 24h"],"dm_template":"mensagem automática exata enviada quando comentam a palavra"},"cta_variations":[{"style":"direto|curioso|urgente|social proof|desafio","cta_text":"texto exato do CTA pra colocar no post","placement":"onde colocar","expected_trigger_rate":"X% dos viewers","best_for":"quando usar"},"4 a 5 variações"],"caption_closers":["3 a 4 fechamentos de caption que direcionam pra ação"],"mistakes":[{"icon":"emoji","text":"erro que mata conversão"}]}`,
   collab_finder: `{"collab_strategy":"estratégia geral (1-2 frases)","ideal_partners":[{"type":"tipo de conta/profissional","why_complementary":"por que faz sentido (1 frase)","audience_overlap":"baixo|médio|alto","growth_potential":"alto|médio|baixo","collab_formats":[{"format":"Live|Reel collab|Takeover|Carrossel conjunto|Desafio","description":"como executar"}],"content_ideas":["2-3 ideias concretas de conteúdo juntos"],"search_terms":["termos pra buscar esse tipo de conta no Instagram"]},"4 a 5 tipos complementares"],"outreach_templates":[{"style":"direto|valor primeiro|proposta","message":"DM de abordagem (máx 100 palavras)","best_for":"quando usar"}],"collab_rules":[{"icon":"emoji","title":"regra","text":"explicação"}]}`,
+  studio_subtitles: `{"subtitles":[{"start":"00:00","end":"00:03","text":"texto da legenda, máx 8-10 palavras por linha"}, "5 a 8 linhas"],"detected_language":"pt-BR","total_duration":"00:XX"}`,
+  studio_versions: `{"versions":[{"name":"nome da versão","format":"Feed 1:1|Reels 9:16|Stories 9:16|Carrossel 1:1","caption":"legenda otimizada máx 100 palavras seguindo as regras de legenda da marca","hashtags":["5 hashtags"],"text_overlays":[{"text":"texto curto","position":"top|center|bottom","style":"bold|clean|impact"}],"cta":"CTA específico","tone":"educativo|viral|vendas|autoridade"}, "exatamente 4 itens, um de cada formato"]}`,
   pinned_strategy: `{"strategy_score": número 0-100,"overall_verdict": "avaliação geral em 1-2 frases","pins": [{"slot": 1,"role": "identidade" | "resultado" | "oferta","current_fit": "forte" | "adequado" | "fraco" | "ausente","recommendation": "o que esse pin deveria ser/conter especificamente","format_suggestion": "Reel" | "Carrossel" | "Imagem estática" | "Vídeo","hook_suggestion": "sugestão de título/hook pra esse pin","rotation": "fixo" | "mensal" | "por campanha"}, "exatamente 3 itens, slots 1 a 3"],"content_ideas": [{"slot": 1,"idea": "ideia concreta de conteúdo pra esse pin"}],"mistakes_to_avoid": [{"icon": "emoji","text": "erro comum"}]}` ,
 };
 
@@ -150,7 +153,7 @@ serve(async (req) => {
         ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
         : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
-      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder"].includes(body?.mode)
+      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder", "studio_subtitles", "studio_versions"].includes(body?.mode)
         ? `INSTRUÇÃO ESPECÍFICA DO MODO ${body.mode}: analise o conteúdo fornecido no Tema/Contexto e responda estritamente no schema JSON pedido, sem markdown. Seja direto, objetivo e aplicável ao nicho fitness/nutrição.`
         : "",
       body?.mode === "conversion_bridge"
@@ -162,6 +165,14 @@ serve(async (req) => {
       body?.mode === "collab_finder"
         ? "Você é especialista em parcerias e collabs no Instagram 2026 para o nicho fitness no Brasil. Instagram favorece collabs nativas e conteúdo co-criado."
         : "",
+      body?.mediaInfo ? `Arquivo enviado pelo coach (nome/tipo): ${body.mediaInfo}` : "",
+      body?.mode === "studio_subtitles"
+        ? "Você é um sistema de transcrição e legendagem para Reels fitness 2026. Gere legendas com timestamps realistas para o contexto informado. Cada linha com no máximo 8-10 palavras pra caber na tela 9:16. Frases curtas e faladas, tom de conversa."
+        : "",
+      body?.mode === "studio_versions"
+        ? "Você é especialista em conteúdo fitness para Instagram 2026. Dado o texto/legendas de um vídeo, gere 4 versões de post prontas pra postar, uma pra cada formato. Varie os tons entre as versões."
+        : "",
+      body?.overlays ? `Textos overlay planejados na tela: ${body.overlays}` : "",
       body?.ticket ? `Ticket médio do coach: R$${body.ticket}/mês` : "",
       body?.funnelStage ? `Estágio do funil do post: ${body.funnelStage} (topo=descoberta, meio=consideração, fundo=decisão)` : "",
       body?.offer ? `Oferta / lead magnet: ${body.offer}` : "",

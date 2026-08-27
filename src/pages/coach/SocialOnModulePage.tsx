@@ -39,6 +39,7 @@ import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel
 import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
 import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
 import SocialOnMonetizationPanel from "@/components/social/SocialOnMonetizationPanel";
+import SocialOnStudioPanel from "@/components/social/SocialOnStudioPanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -1071,6 +1072,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="monetizacao" className="mt-0">
             <SocialOnMonetizationPanel />
+          </TabsContent>
+          <TabsContent value="studio" className="mt-0">
+            <SocialOnStudioPanel />
           </TabsContent>
 
         </Tabs>
