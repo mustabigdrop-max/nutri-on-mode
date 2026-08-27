@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mceSounds, mceAmbient, AUDIO_TO_AMBIENT, type MceSoundName } from "@/lib/mceSounds";
+import { OS_AUDIO_SCRIPTS, OS_AUDIO_META, type OsAudioKey } from "@/data/mceOsScripts";
 import McePatternDetector from "./McePatternDetector";
 
 const C = {
@@ -16,13 +17,14 @@ type OsItem = { id: string; text: string; ref: string };
 type OsBlock = {
   id: string; name: string; time: string; pilar: string; pilarColor: string;
   duration: string; science: string; from: number; to: number; items: OsItem[];
-  sound?: MceSoundName; audio?: string; audioDur?: string;
+  sound?: MceSoundName; audio?: string; audioDur?: string; audioKey?: OsAudioKey;
 };
+
 
 
 const BLOCKS: OsBlock[] = [
   {
-    sound: "ignition", audio: "Despertar", audioDur: "5 min", id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MINDSET", pilarColor: C.purple,
+    sound: "ignition", audio: "Despertar", audioDur: "5 min", audioKey: "despertar", id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MINDSET", pilarColor: C.purple,
     duration: "15-20 min", from: 5, to: 6,
     science: "Kahneman: Sistema 2 está no pico pela manhã. Programe agora ou o Sistema 1 comanda o dia.",
     items: [
@@ -33,7 +35,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    sound: "tick", audio: "Corrida 30min", audioDur: "30 min", id: "execution", name: "EXECUÇÃO PRIMÁRIA", time: "06:00–12:00", pilar: "EXECUÇÃO", pilarColor: C.gold,
+    sound: "tick", audio: "Corrida Mental", audioDur: "3 min", audioKey: "corrida_mental", id: "execution", name: "EXECUÇÃO PRIMÁRIA", time: "06:00–12:00", pilar: "EXECUÇÃO", pilarColor: C.gold,
     duration: "Bloco de fazer", from: 6, to: 12,
     science: "Cortisol e testosterona nos picos. Força de vontade cheia. Período de ouro.",
     items: [
@@ -44,7 +46,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    sound: "recalibration", audio: "Micro-áudio 2min", audioDur: "2 min", id: "recalibration", name: "RECALIBRAÇÃO", time: "12:00–13:00", pilar: "COMPORTAMENTO", pilarColor: C.cyan,
+    sound: "recalibration", audio: "Micro-áudio", audioDur: "2 min", audioKey: "recalibracao", id: "recalibration", name: "RECALIBRAÇÃO", time: "12:00–13:00", pilar: "COMPORTAMENTO", pilarColor: C.cyan,
     duration: "5-10 min", from: 12, to: 13,
     science: "Rotter: locus de controle interno monitora resultados. Nunca deixe 2 erros seguidos acontecerem.",
     items: [
@@ -65,7 +67,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    sound: "consolidation", audio: "Pré-sono", audioDur: "10 min", id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MINDSET + COMPORTAMENTO", pilarColor: C.purple,
+    sound: "consolidation", audio: "Pré-sono", audioDur: "7 min", audioKey: "pre_sono", id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MINDSET + COMPORTAMENTO", pilarColor: C.purple,
     duration: "15-20 min", from: 20, to: 22,
     science: "Hipocampo transfere memórias de curto pra longo prazo durante o sono. A última hora consolida o dia.",
     items: [
@@ -114,17 +116,56 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
   const allDone = done === total;
   const [expanded, setExpanded] = useState(active);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [showScript, setShowScript] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const urlRef = useRef<string | null>(null);
   const prevDone = useRef(done);
 
-  const toggleAudio = useCallback(() => {
-    if (audioPlaying) { mceAmbient.stop(); setAudioPlaying(false); return; }
+  const stopAll = useCallback(() => {
+    mceAmbient.stop();
+    if (audioRef.current) { audioRef.current.pause(); }
+    setAudioPlaying(false);
+  }, []);
+
+  const playAmbient = useCallback(() => {
     const key = block.audio ? AUDIO_TO_AMBIENT[block.audio] : undefined;
     if (!key) return;
     const ms = mceAmbient.play(key, () => setAudioPlaying(false));
     if (ms > 0) setAudioPlaying(true);
-  }, [audioPlaying, block.audio]);
+  }, [block.audio]);
 
-  useEffect(() => () => { mceAmbient.stop(); }, []);
+  const toggleAudio = useCallback(async () => {
+    if (audioPlaying) { stopAll(); return; }
+    if (!block.audioKey) { playAmbient(); return; }
+
+    // Narração real do Coach Diogo Mello (gerada/cacheada no backend).
+    try {
+      setAudioLoading(true);
+      if (!urlRef.current) {
+        const { data, error } = await supabase.functions.invoke("mce-os-audio", {
+          body: { block: block.audioKey },
+        });
+        if (error || !data?.url) throw new Error(error?.message || "sem url");
+        urlRef.current = data.url as string;
+      }
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
+        audioRef.current.onended = () => setAudioPlaying(false);
+      }
+      if (audioRef.current.src !== urlRef.current) audioRef.current.src = urlRef.current;
+      await audioRef.current.play();
+      setAudioPlaying(true);
+    } catch {
+      urlRef.current = null;
+      playAmbient(); // fallback: ambiência sintetizada
+    } finally {
+      setAudioLoading(false);
+    }
+  }, [audioPlaying, block.audioKey, playAmbient, stopAll]);
+
+  useEffect(() => () => { mceAmbient.stop(); audioRef.current?.pause(); }, []);
+
 
   useEffect(() => {
     if (soundEnabled && done > prevDone.current && done === total) mceSounds.blockComplete();
@@ -187,10 +228,11 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
               border: `1px solid ${audioPlaying ? block.pilarColor : C.border}`,
               background: audioPlaying ? `${block.pilarColor}15` : C.s2, padding: "3px 7px",
             }}>
-            <span style={{ fontSize: 10 }}>{audioPlaying ? "⏸" : "▶"}</span>
+            <span style={{ fontSize: 10 }}>{audioLoading ? "⏳" : audioPlaying ? "⏸" : "▶"}</span>
             <span style={{ fontFamily: F.m, fontSize: 8, color: audioPlaying ? block.pilarColor : C.muted }}>
-              {block.audio}{block.audioDur ? ` · ${block.audioDur}` : ""}
+              {audioLoading ? "PREPARANDO…" : `${block.audio}${block.audioDur ? ` · ${block.audioDur}` : ""}`}
             </span>
+
           </span>
         )}
 
@@ -205,6 +247,30 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
           }}>
             {block.science}
           </div>
+
+          {block.audioKey && (
+            <div style={{ marginBottom: 10 }}>
+              <button
+                onClick={() => setShowScript((v) => !v)}
+                style={{
+                  background: "transparent", border: `1px solid ${C.border}`, color: C.muted,
+                  fontFamily: F.m, fontSize: 8, letterSpacing: 1, padding: "4px 8px", cursor: "pointer",
+                }}
+              >
+                {showScript ? "▾ OCULTAR ROTEIRO" : "▸ VER ROTEIRO"} · {OS_AUDIO_META[block.audioKey].pilar.toUpperCase()}
+              </button>
+              {showScript && (
+                <pre style={{
+                  marginTop: 8, background: C.s2, border: `1px solid ${C.border}`, padding: "10px 12px",
+                  fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.7,
+                  whiteSpace: "pre-wrap", maxHeight: 320, overflowY: "auto",
+                }}>
+                  {OS_AUDIO_SCRIPTS[block.audioKey].replace(/\[\d+s\]/g, "···")}
+                </pre>
+              )}
+            </div>
+          )}
+
 
           {block.items.map((item) => {
             const isDone = !!checked[item.id];

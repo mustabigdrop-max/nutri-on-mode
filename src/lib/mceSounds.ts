@@ -139,10 +139,11 @@ export type MceAmbientName = keyof typeof AMBIENT_SEQ;
 
 export const AUDIO_TO_AMBIENT: Record<string, MceAmbientName> = {
   "Despertar": "despertar",
-  "Corrida 30min": "corrida",
-  "Micro-áudio 2min": "microaudio",
+  "Corrida Mental": "corrida",
+  "Micro-áudio": "microaudio",
   "Pré-sono": "presono",
 };
+
 
 export const mceAmbient = {
   stop() {
