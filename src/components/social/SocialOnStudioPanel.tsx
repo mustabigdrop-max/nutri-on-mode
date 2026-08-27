@@ -317,7 +317,7 @@ function Preview({ fileUrl, subtitles, overlays, config, isVideo, format = "reel
 
   const textStyle: React.CSSProperties = {
     fontFamily: font.family,
-    fontSize: config.fontSize,
+    fontSize: `clamp(14px, 3.5vw, ${config.fontSize}px)`,
     fontWeight: config.fontWeight,
     color: config.textColor || style.color,
     textShadow: style.shadow ? "0 2px 8px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.5)" : style.glow ? `0 0 20px ${style.color}, 0 0 40px ${style.color}50` : "none",

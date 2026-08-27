@@ -373,7 +373,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
               padding: preview ? 10 : "40px 24px", textAlign: "center", cursor: "pointer", marginBottom: 20,
             }}
           >
-            <input ref={fileRef} type="file" accept="image/*,video/*,.heic,.heif,.mov,.mkv,.m4v,.3gp" onChange={handleFile} style={{ display: "none" }} />
+            <input ref={fileRef} type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo,video/3gpp,video/*,.heic,.heif" onChange={handleFile} style={{ display: "none" }} />
             {preview ? (
               <div>
                 <img src={preview} alt="Prévia do conteúdo enviado" style={{ maxHeight: 220, margin: "0 auto", display: "block", objectFit: "contain" }} />
