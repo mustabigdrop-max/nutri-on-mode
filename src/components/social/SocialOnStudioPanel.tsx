@@ -725,8 +725,18 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
         <div style={{ display: "flex", flexWrap: "wrap" }}>
           {/* Preview */}
           <div style={{ width: 280, flexShrink: 0, background: T.surface, borderRight: "1px solid #ffffff06", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid #ffffff06" }}>
+              {FORMATS.map((f) => (
+                <button key={f.id} onClick={() => setPreviewFormat(f.id)} style={{
+                  flex: 1, padding: "8px 2px", background: previewFormat === f.id ? `${T.cyan}06` : "transparent",
+                  border: "none", borderBottom: previewFormat === f.id ? `2px solid ${T.cyan}` : "2px solid transparent",
+                  cursor: "pointer", fontFamily: T.fm, fontSize: 8, letterSpacing: 1,
+                  color: previewFormat === f.id ? T.cyan : T.muted,
+                }}>{f.id.toUpperCase()}</button>
+              ))}
+            </div>
             <div style={{ flex: 1, padding: 12, display: "flex", alignItems: "center" }}>
-              <Preview fileUrl={fileUrl} subtitles={subtitles} overlays={overlays} config={config} isVideo={isVideo} />
+              <Preview fileUrl={fileUrl} subtitles={subtitles} overlays={overlays} config={config} isVideo={isVideo} format={previewFormat} />
             </div>
             <div style={{ padding: "10px 12px", borderTop: "1px solid #ffffff06" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -785,6 +795,10 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
 
               {tab === "texto" && (
                 <TextOverlayEditor overlays={overlays} onChange={setOverlays} config={config} />
+              )}
+
+              {tab === "analise" && (
+                <VisionPanel analysis={vision} loading={visionLoading} onRun={() => file && runVision(file)} />
               )}
 
               {tab === "versoes" && (
