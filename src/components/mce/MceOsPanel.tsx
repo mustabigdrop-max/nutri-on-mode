@@ -22,7 +22,7 @@ type OsBlock = {
 
 const BLOCKS: OsBlock[] = [
   {
-    id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MINDSET", pilarColor: C.purple,
+    sound: "ignition", audio: "Despertar", audioDur: "5 min", id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MINDSET", pilarColor: C.purple,
     duration: "15-20 min", from: 5, to: 6,
     science: "Kahneman: Sistema 2 está no pico pela manhã. Programe agora ou o Sistema 1 comanda o dia.",
     items: [
@@ -33,7 +33,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "execution", name: "EXECUÇÃO PRIMÁRIA", time: "06:00–12:00", pilar: "EXECUÇÃO", pilarColor: C.gold,
+    sound: "tick", audio: "Corrida 30min", audioDur: "30 min", id: "execution", name: "EXECUÇÃO PRIMÁRIA", time: "06:00–12:00", pilar: "EXECUÇÃO", pilarColor: C.gold,
     duration: "Bloco de fazer", from: 6, to: 12,
     science: "Cortisol e testosterona nos picos. Força de vontade cheia. Período de ouro.",
     items: [
@@ -44,7 +44,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "recalibration", name: "RECALIBRAÇÃO", time: "12:00–13:00", pilar: "COMPORTAMENTO", pilarColor: C.cyan,
+    sound: "recalibration", audio: "Micro-áudio 2min", audioDur: "2 min", id: "recalibration", name: "RECALIBRAÇÃO", time: "12:00–13:00", pilar: "COMPORTAMENTO", pilarColor: C.cyan,
     duration: "5-10 min", from: 12, to: 13,
     science: "Rotter: locus de controle interno monitora resultados. Nunca deixe 2 erros seguidos acontecerem.",
     items: [
@@ -54,7 +54,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "sustain", name: "SUSTENTAÇÃO", time: "13:00–18:00", pilar: "COMPORTAMENTO + EXECUÇÃO", pilarColor: C.green,
+    sound: "tick", id: "sustain", name: "SUSTENTAÇÃO", time: "13:00–18:00", pilar: "COMPORTAMENTO + EXECUÇÃO", pilarColor: C.green,
     duration: "Bloco onde a maioria desiste", from: 13, to: 18,
     science: "Cortisol caiu, força de vontade gasta, Sistema 1 dominando. Ambiente > vontade.",
     items: [
@@ -65,7 +65,7 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MINDSET + COMPORTAMENTO", pilarColor: C.purple,
+    sound: "consolidation", audio: "Pré-sono", audioDur: "10 min", id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MINDSET + COMPORTAMENTO", pilarColor: C.purple,
     duration: "15-20 min", from: 20, to: 22,
     science: "Hipocampo transfere memórias de curto pra longo prazo durante o sono. A última hora consolida o dia.",
     items: [
