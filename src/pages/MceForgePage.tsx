@@ -133,16 +133,16 @@ function CheckIn({ type, streaks, rankName, onSubmit }: { type: "morning" | "nig
       // Persiste: mapeia respostas para o check-in diário + score da IA
       const scale = (i: number) => Math.max(1, Math.min(10, i * 2 + 2));
       const today = dayKey(new Date());
-      const row: Record<string, unknown> = { user_id: user.id, checkin_date: today };
-      if (isMorning) {
-        row.sleep_quality = scale(answers.sleep);
-        row.focus_clarity = scale(answers.mindset);
-        row.stress_level = scale(4 - answers.plan);
-      } else {
-        row.movement = scale(answers.training);
-        row.nutrition_adherence = scale(answers.nutrition);
-        row.hydration = scale(answers.execution);
-      }
+      const row = {
+        user_id: user.id,
+        checkin_date: today,
+        sleep_quality: isMorning ? scale(answers.sleep) : 7,
+        stress_level: isMorning ? scale(4 - answers.plan) : 5,
+        nutrition_adherence: isMorning ? 7 : scale(answers.nutrition),
+        hydration: isMorning ? 7 : scale(answers.execution),
+        movement: isMorning ? 6 : scale(answers.training),
+        focus_clarity: isMorning ? scale(answers.mindset) : 7,
+      };
       await supabase.from("mce_checkins").upsert(row, { onConflict: "user_id,checkin_date" });
       await supabase.from("mce_scores").insert({
         user_id: user.id,
