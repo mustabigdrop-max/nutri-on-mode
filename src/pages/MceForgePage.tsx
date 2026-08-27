@@ -565,6 +565,9 @@ export default function MceForgePage() {
           </div>
         )}
 
+        {/* ══ GPS ══ */}
+        {tab === "gps" && <MceForgeGps />}
+
         {/* ══ RANK ══ */}
         {tab === "rank" && (
           <div>
