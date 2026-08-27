@@ -248,6 +248,30 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
             {block.science}
           </div>
 
+          {block.audioKey && (
+            <div style={{ marginBottom: 10 }}>
+              <button
+                onClick={() => setShowScript((v) => !v)}
+                style={{
+                  background: "transparent", border: `1px solid ${C.border}`, color: C.muted,
+                  fontFamily: F.m, fontSize: 8, letterSpacing: 1, padding: "4px 8px", cursor: "pointer",
+                }}
+              >
+                {showScript ? "▾ OCULTAR ROTEIRO" : "▸ VER ROTEIRO"} · {OS_AUDIO_META[block.audioKey].pilar.toUpperCase()}
+              </button>
+              {showScript && (
+                <pre style={{
+                  marginTop: 8, background: C.s2, border: `1px solid ${C.border}`, padding: "10px 12px",
+                  fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.7,
+                  whiteSpace: "pre-wrap", maxHeight: 320, overflowY: "auto",
+                }}>
+                  {OS_AUDIO_SCRIPTS[block.audioKey].replace(/\[\d+s\]/g, "···")}
+                </pre>
+              )}
+            </div>
+          )}
+
+
           {block.items.map((item) => {
             const isDone = !!checked[item.id];
             return (
