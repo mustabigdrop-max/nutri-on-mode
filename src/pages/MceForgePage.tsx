@@ -360,6 +360,7 @@ export default function MceForgePage() {
 
   const tabs = [
     { id: "dashboard", label: "Painel", icon: "◈" },
+    { id: "os", label: "OS 24H", icon: "⌘" },
     { id: "checkin", label: hour < 14 ? "Check-in ☀" : "Check-in 🌙", icon: "✓" },
     { id: "momentum", label: "Momentum", icon: "📈" },
     { id: "gps", label: "GPS", icon: "🧭" },
