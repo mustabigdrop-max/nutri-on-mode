@@ -193,7 +193,7 @@ export default function VeraPage() {
       <div style={{ padding: "16px 24px 20px", borderBottom: "0.5px solid rgba(167,139,250,0.12)", background: "linear-gradient(180deg, rgba(167,139,250,0.06) 0%, transparent 100%)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ width: 36, height: 36, background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "rgba(255,255,255,0.55)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <button onClick={() => navigate("/coach/dashboard")} aria-label="Voltar" style={{ width: 36, height: 36, background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "rgba(255,255,255,0.55)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div style={{ width: 52, height: 52, background: "rgba(167,139,250,0.1)", border: "0.5px solid rgba(167,139,250,0.3)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: PURPLE, flexShrink: 0 }}>✦</div>

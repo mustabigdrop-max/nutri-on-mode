@@ -109,7 +109,7 @@ export default function MCEBusinessPage() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/coach/dashboard")}
               aria-label="Voltar"
               style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", display: "flex" }}
             >

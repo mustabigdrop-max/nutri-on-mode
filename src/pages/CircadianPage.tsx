@@ -96,7 +96,7 @@ const CircadianPage = () => {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2">
+          <button onClick={() => navigate("/coach/dashboard")} className="p-2 -ml-2">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
           <div className="text-center">

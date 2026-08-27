@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Brain, Zap, Target, FlaskConical, Search, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import AdvancedSearch from "@/components/mental/AdvancedSearch";
 import { useMentalPerformance } from "@/hooks/useMentalPerformance";
 
 const MentalPerformancePage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const mp = useMentalPerformance();
 
@@ -22,7 +24,7 @@ const MentalPerformancePage = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-[hsl(263,70%,20%)] via-background to-background" />
         <div className="relative px-4 pt-6 pb-4">
           <div className="flex items-center gap-2 mb-4">
-            <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/coach/dashboard")}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <Brain className="w-6 h-6 text-[hsl(263,70%,58%)]" />

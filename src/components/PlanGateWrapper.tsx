@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePlanGate, type PlanTier } from "@/hooks/usePlanGate";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 
@@ -9,6 +10,7 @@ interface PlanGateWrapperProps {
 }
 
 const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrapperProps) => {
+  const navigate = useNavigate();
   const { plan, loading, hasAccess, isCoachStudent } = usePlanGate();
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -25,7 +27,7 @@ const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrappe
     return (
       <UpgradeModal
         open={true}
-        onClose={() => window.history.back()}
+        onClose={() => navigate("/coach/dashboard")}
         fromPlan="ON +"
         lockedFeature={featureName}
       />
@@ -37,7 +39,7 @@ const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrappe
       <>
         <UpgradeModal
           open={true}
-          onClose={() => window.history.back()}
+          onClose={() => navigate("/coach/dashboard")}
           fromPlan={plan === "free" ? "ON" : plan}
           lockedFeature={featureName}
         />

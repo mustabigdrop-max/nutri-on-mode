@@ -286,7 +286,7 @@ const MetabolicONPage = () => {
       {/* Header */}
       <header className="border-b px-4 py-4" style={{ borderColor: "rgba(74,222,128,0.12)" }}>
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/coach/dashboard")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <Flame className="w-6 h-6" style={{ color: "#4ade80" }} />

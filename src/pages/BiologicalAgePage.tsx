@@ -175,7 +175,7 @@ const BiologicalAgePage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)}>
+        <button onClick={() => navigate("/coach/dashboard")}>
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <Dna className="w-5 h-5 text-[hsl(var(--accent))]" />

@@ -443,7 +443,7 @@ export default function EmotionalScanPage() {
       <div ref={resultRef} className="min-h-screen pb-24" style={{ background: "#080b10" }}>
         <div className="max-w-lg mx-auto px-4 pt-4">
           {/* Header */}
-          <button onClick={() => navigate(-1)} className="text-gray-500 mb-4"><ArrowLeft className="w-5 h-5" /></button>
+          <button onClick={() => navigate("/coach/dashboard")} className="text-gray-500 mb-4"><ArrowLeft className="w-5 h-5" /></button>
 
           {/* Profile badge */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-6">
@@ -635,7 +635,7 @@ export default function EmotionalScanPage() {
       <div className="max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => step === 0 ? navigate(-1) : setStep(s => s - 1)} className="text-gray-500">
+          <button onClick={() => step === 0 ? navigate("/coach/dashboard") : setStep(s => s - 1)} className="text-gray-500">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <p className="text-xs text-gray-600 font-mono">{step + 1}/5</p>

@@ -230,7 +230,7 @@ export default function RefeicaoSnapPage() {
     <div className="min-h-screen bg-[#080b10] text-foreground pb-24">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-[#080b10]/95 backdrop-blur border-b border-green-500/10 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => (analysis ? resetInput() : navigate(-1))} className="text-muted-foreground"><ArrowLeft className="w-5 h-5" /></button>
+        <button onClick={() => (analysis ? resetInput() : navigate("/coach/dashboard"))} className="text-muted-foreground"><ArrowLeft className="w-5 h-5" /></button>
         <div>
           <h1 className="text-lg font-bold text-green-400 font-mono">Refeição Snap</h1>
           <p className="text-xs text-muted-foreground">Análise instantânea pelo sistema</p>

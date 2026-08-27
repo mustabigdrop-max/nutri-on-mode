@@ -156,7 +156,7 @@ export default function TrainingPage() {
 
       {/* ── HUD Header ── */}
       <div className="ton-header">
-        <button onClick={() => navigate(-1)} className="ton-back" aria-label="Voltar">
+        <button onClick={() => navigate("/coach/dashboard")} className="ton-back" aria-label="Voltar">
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="ton-logo">T↑N</div>

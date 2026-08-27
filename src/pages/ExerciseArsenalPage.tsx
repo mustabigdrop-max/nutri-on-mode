@@ -13,7 +13,7 @@ const ExerciseArsenalPage = () => {
       <div className="relative z-10 flex-shrink-0 px-4 pt-4 pb-3 border-b border-border bg-background/95 backdrop-blur">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/coach/dashboard")}
             className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center"
           >
             <ArrowLeft className="w-4 h-4 text-foreground" />

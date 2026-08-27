@@ -83,7 +83,7 @@ const CoachHub = () => {
       <div className="px-4 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/coach/dashboard")}
             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105"
             style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}
           >

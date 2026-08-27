@@ -141,7 +141,7 @@ const SubstitutionsAgentPage = () => {
     <div className="min-h-screen bg-background pb-24">
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/coach/dashboard")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
