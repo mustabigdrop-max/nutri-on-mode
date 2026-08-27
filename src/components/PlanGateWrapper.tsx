@@ -10,6 +10,7 @@ interface PlanGateWrapperProps {
 }
 
 const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrapperProps) => {
+  const navigate = useNavigate();
   const { plan, loading, hasAccess, isCoachStudent } = usePlanGate();
   const [showUpgrade, setShowUpgrade] = useState(false);
 

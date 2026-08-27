@@ -13,6 +13,7 @@ import AdvancedSearch from "@/components/mental/AdvancedSearch";
 import { useMentalPerformance } from "@/hooks/useMentalPerformance";
 
 const MentalPerformancePage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const mp = useMentalPerformance();
 
