@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePlanGate, type PlanTier } from "@/hooks/usePlanGate";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 
