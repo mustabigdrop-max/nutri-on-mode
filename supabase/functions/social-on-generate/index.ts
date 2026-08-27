@@ -31,7 +31,8 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo"
   | "grid_architect" | "bio_optimizer" | "pinned_strategy"
   | "conversion_bridge" | "cta_intelligence" | "collab_finder"
-  | "studio_subtitles" | "studio_versions" | "studio_vision";
+  | "studio_subtitles" | "studio_versions" | "studio_vision"
+  | "daily_brief" | "content_score";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
@@ -67,6 +68,8 @@ const SCHEMAS: Record<Mode, string> = {
   collab_finder: `{"collab_strategy":"estratégia geral (1-2 frases)","ideal_partners":[{"type":"tipo de conta/profissional","why_complementary":"por que faz sentido (1 frase)","audience_overlap":"baixo|médio|alto","growth_potential":"alto|médio|baixo","collab_formats":[{"format":"Live|Reel collab|Takeover|Carrossel conjunto|Desafio","description":"como executar"}],"content_ideas":["2-3 ideias concretas de conteúdo juntos"],"search_terms":["termos pra buscar esse tipo de conta no Instagram"]},"4 a 5 tipos complementares"],"outreach_templates":[{"style":"direto|valor primeiro|proposta","message":"DM de abordagem (máx 100 palavras)","best_for":"quando usar"}],"collab_rules":[{"icon":"emoji","title":"regra","text":"explicação"}]}`,
   studio_subtitles: `{"subtitles":[{"start":"00:00","end":"00:03","text":"texto da legenda, máx 8-10 palavras por linha"}, "5 a 8 linhas"],"detected_language":"pt-BR","total_duration":"00:XX"}`,
   studio_versions: `{"versions":[{"name":"nome da versão","format":"Feed 1:1|Reels 9:16|Stories 9:16|Carrossel 1:1","objective":"descoberta|engajamento|autoridade|conversão","caption":"legenda otimizada máx 100 palavras seguindo as regras de legenda da marca","hashtags":["5 hashtags"],"text_overlays":[{"text":"texto curto","position":"top|center|bottom","style":"bold|clean|impact"}],"cta":"CTA específico","tone":"educativo|viral|vendas|autoridade","predicted_performance":{"views":"Xk","saves":"X","shares":"X"}}, "exatamente 4 itens, um de cada formato"]}`,
+  daily_brief: `{"greeting":"saudação curta e motivacional, direta","actions":[{"type":"postar|responder|reciclar|engajar|analisar|criar","title":"ação curta","detail":"detalhe em 1 frase","urgency":"alta|média|baixa","time":"horário sugerido ou vazio"}, "4 a 5 ações concretas e específicas pro dia"],"insight":"1 insight estratégico do dia baseado em tendências fitness","alerts":[{"icon":"emoji","text":"oportunidade ou alerta acionável em 1 frase","color_hint":"green|cyan|orange"}, "3 itens"]}`,
+  content_score: `{"total_score": número 0-100 combinando shareability (peso 30%), hook (25%), SEO (25%) e save potential (20%),"breakdown":{"share":0-100,"hook":0-100,"seo":0-100,"save":0-100},"verdict":"PUBLICAR"|"OTIMIZAR"|"REFAZER","top_fix":"a melhoria mais impactante em 1 frase","optimized_hook":"hook reescrito pra máximo impacto"}`,
   studio_vision: `{"viral_score": número 0-100,"predicted_views":"Xk-Yk","predicted_saves":"X-Y","predicted_shares":"X-Y","detected_elements":[{"icon":"emoji","label":"elemento detectado","detail":"detalhe curto"}, "3 a 5 itens"],"optimizations":[{"text":"otimização específica e aplicável","priority":"alta"|"média"}, "3 a 5 itens"],"best_time":"melhor horário pra postar (ex: Ter 19h-21h)","hook_suggestion":"hook sugerido pra máxima retenção","content_pillars_match":["pilares que o conteúdo toca"]}`,
   pinned_strategy: `{"strategy_score": número 0-100,"overall_verdict": "avaliação geral em 1-2 frases","pins": [{"slot": 1,"role": "identidade" | "resultado" | "oferta","current_fit": "forte" | "adequado" | "fraco" | "ausente","recommendation": "o que esse pin deveria ser/conter especificamente","format_suggestion": "Reel" | "Carrossel" | "Imagem estática" | "Vídeo","hook_suggestion": "sugestão de título/hook pra esse pin","rotation": "fixo" | "mensal" | "por campanha"}, "exatamente 3 itens, slots 1 a 3"],"content_ideas": [{"slot": 1,"idea": "ideia concreta de conteúdo pra esse pin"}],"mistakes_to_avoid": [{"icon": "emoji","text": "erro comum"}]}` ,
 };
@@ -154,7 +157,7 @@ serve(async (req) => {
         ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
         : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
-      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder", "studio_subtitles", "studio_versions", "studio_vision"].includes(body?.mode)
+      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder", "studio_subtitles", "studio_versions", "studio_vision", "daily_brief", "content_score"].includes(body?.mode)
         ? `INSTRUÇÃO ESPECÍFICA DO MODO ${body.mode}: analise o conteúdo fornecido no Tema/Contexto e responda estritamente no schema JSON pedido, sem markdown. Seja direto, objetivo e aplicável ao nicho fitness/nutrição.`
         : "",
       body?.mode === "conversion_bridge"
@@ -177,6 +180,14 @@ serve(async (req) => {
         ? "Você é um sistema de análise visual de conteúdo para Instagram 2026 no nicho fitness. Com base no arquivo e no contexto informados, gere previsões de performance realistas, elementos detectados, otimizações aplicáveis e melhor horário de publicação. Nada de números inflados nem promessas."
         : "",
       body?.overlays ? `Textos overlay planejados na tela: ${body.overlays}` : "",
+      body?.mode === "daily_brief"
+        ? "Você é o Coach IA do Social ON. Gere o briefing diário do coach com ações concretas e específicas pro dia informado. Considere a data, o dia da semana, os pilares da marca e as tendências fitness atuais. Seja direto, zero clichê motivacional vazio."
+        : "",
+      body?.today ? `Hoje é: ${body.today}` : "",
+      body?.mode === "content_score"
+        ? "Você é um avaliador de conteúdo para Instagram 2026 no nicho fitness. Analise o conteúdo fornecido e dê o CONTENT SCORE unificado: shareability (peso 30%), hook (peso 25%), SEO (peso 25%), save potential (peso 20%). Seja rigoroso e realista — score acima de 90 só pra conteúdo excepcional."
+        : "",
+      body?.content ? `Conteúdo a avaliar:\n${body.content}` : "",
       body?.ticket ? `Ticket médio do coach: R$${body.ticket}/mês` : "",
       body?.funnelStage ? `Estágio do funil do post: ${body.funnelStage} (topo=descoberta, meio=consideração, fundo=decisão)` : "",
       body?.offer ? `Oferta / lead magnet: ${body.offer}` : "",

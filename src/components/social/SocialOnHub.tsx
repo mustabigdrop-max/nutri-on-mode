@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SocialOnCommandCenter from "./SocialOnCommandCenter";
 
 const CYAN = "#00D4FF";
 const GOLD = "#B8922A";
@@ -153,6 +154,11 @@ export default function SocialOnHub({
         {handle && (
           <span style={{ fontFamily: fontMono, fontSize: 11, color: CYAN }}>@{handle.replace("@", "")}</span>
         )}
+      </div>
+
+      {/* Command Center */}
+      <div style={{ marginBottom: 24 }}>
+        <SocialOnCommandCenter handle={handle} stats={stats} onOpenTool={onOpenTool} />
       </div>
 
       {/* Hero: 1 Toque CTA */}
