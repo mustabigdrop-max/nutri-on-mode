@@ -262,6 +262,7 @@ export default function MceOsPanel({ streak = 0, rankName = "Iniciante" }: { str
   const [result, setResult] = useState<OsResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: todayKey(), checked })); } catch { /* ignore */ }
@@ -269,6 +270,20 @@ export default function MceOsPanel({ streak = 0, rankName = "Iniciante" }: { str
 
   const doneItems = useMemo(() => Object.values(checked).filter(Boolean).length, [checked]);
   const dayPct = Math.round((doneItems / TOTAL_ITEMS) * 100);
+
+  const prevDoneRef = useRef(doneItems);
+  useEffect(() => {
+    if (soundEnabled && doneItems === TOTAL_ITEMS && prevDoneRef.current < TOTAL_ITEMS) mceSounds.dayComplete();
+    prevDoneRef.current = doneItems;
+  }, [doneItems, soundEnabled]);
+
+  const blocksStatus = useMemo(() => BLOCKS.map((b) => {
+    const d = b.items.filter((i) => checked[i.id]).length;
+    return { name: b.name, done: d, total: b.items.length, pct: Math.round((d / b.items.length) * 100) };
+  }), [checked]);
+  const weakBlock = useMemo(() => blocksStatus.filter((b) => b.pct < 50).sort((a, b) => a.pct - b.pct)[0] ?? null, [blocksStatus]);
+  const weakPillar = scores.m <= scores.c && scores.m <= scores.e ? "Mindset" : scores.c <= scores.e ? "Comportamento" : "Execução";
+
 
   const toggle = useCallback((id: string) => {
     setChecked((prev) => {
