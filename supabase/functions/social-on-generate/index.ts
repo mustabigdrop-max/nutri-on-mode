@@ -158,7 +158,7 @@ serve(async (req) => {
         ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
         : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
-      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder", "studio_subtitles", "studio_versions", "studio_vision", "daily_brief", "content_score"].includes(body?.mode)
+      ["share_score", "hook_analyzer", "save_triggers", "instagram_seo", "grid_architect", "bio_optimizer", "pinned_strategy", "conversion_bridge", "cta_intelligence", "collab_finder", "studio_subtitles", "studio_versions", "studio_vision", "daily_brief", "content_score", "daily_signal"].includes(body?.mode)
         ? `INSTRUÇÃO ESPECÍFICA DO MODO ${body.mode}: analise o conteúdo fornecido no Tema/Contexto e responda estritamente no schema JSON pedido, sem markdown. Seja direto, objetivo e aplicável ao nicho fitness/nutrição.`
         : "",
       body?.mode === "conversion_bridge"
@@ -189,6 +189,9 @@ serve(async (req) => {
         ? "Você é um avaliador de conteúdo para Instagram 2026 no nicho fitness. Analise o conteúdo fornecido e dê o CONTENT SCORE unificado: shareability (peso 30%), hook (peso 25%), SEO (peso 25%), save potential (peso 20%). Seja rigoroso e realista — score acima de 90 só pra conteúdo excepcional."
         : "",
       body?.content ? `Conteúdo a avaliar:\n${body.content}` : "",
+      body?.mode === "daily_signal"
+        ? "Você é o SIGNAL — o sistema de briefing diário do Social ON para o coach Diogo Mello (fitness, Método MCE, automação e IA no fitness). Gere o briefing COMPLETO do dia informado: específico, tático e acionável. Nada genérico. Considere que ele posta conteúdo de fitness, MCE e nutrição."
+        : "",
       body?.ticket ? `Ticket médio do coach: R$${body.ticket}/mês` : "",
       body?.funnelStage ? `Estágio do funil do post: ${body.funnelStage} (topo=descoberta, meio=consideração, fundo=decisão)` : "",
       body?.offer ? `Oferta / lead magnet: ${body.offer}` : "",
