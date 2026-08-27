@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { mceSounds, type MceSoundName } from "@/lib/mceSounds";
+import { mceSounds, mceAmbient, AUDIO_TO_AMBIENT, type MceSoundName } from "@/lib/mceSounds";
 import McePatternDetector from "./McePatternDetector";
 
 const C = {
