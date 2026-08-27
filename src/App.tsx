@@ -296,6 +296,7 @@ const App = () => (
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
             <Route path="/mce" element={<ProtectedRoute><MCEPage /></ProtectedRoute>} />
             <Route path="/mce/forge" element={<ProtectedRoute><MceForgePage /></ProtectedRoute>} />
+            <Route path="/mce/coach" element={<CoachToolRoute><ProtectedRoute><MceCoachDashboardPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/mce/business" element={<ProtectedRoute><MCEBusinessPage /></ProtectedRoute>} />
             <Route path="/mce/academia" element={<ProtectedRoute><GymPartnerDashboardPage /></ProtectedRoute>} />
             <Route path="/mce/business/challenges" element={<ProtectedRoute><BusinessChallengesPage /></ProtectedRoute>} />
