@@ -27,6 +27,7 @@ import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
 import PrismHub from "@/components/social/PrismHub";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
+import SocialOnSignalPanel from "@/components/social/SocialOnSignalPanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
@@ -1075,6 +1076,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="studio" className="mt-0">
             <SocialOnStudioPanel />
+          </TabsContent>
+          <TabsContent value="signal" className="mt-0">
+            <SocialOnSignalPanel />
           </TabsContent>
 
         </Tabs>
