@@ -106,13 +106,19 @@ type OsResult = {
   mce_quote?: string;
 };
 
-function Block({ block, hour, checked, onCheck }: { block: OsBlock; hour: number; checked: Record<string, boolean>; onCheck: (id: string) => void }) {
+function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock; hour: number; checked: Record<string, boolean>; onCheck: (id: string) => void; soundEnabled: boolean }) {
   const active = hour >= block.from && hour < block.to;
   const done = block.items.filter((i) => checked[i.id]).length;
   const total = block.items.length;
   const pct = Math.round((done / total) * 100);
   const allDone = done === total;
   const [expanded, setExpanded] = useState(active);
+  const prevDone = useRef(done);
+
+  useEffect(() => {
+    if (soundEnabled && done > prevDone.current && done === total) mceSounds.blockComplete();
+    prevDone.current = done;
+  }, [done, total, soundEnabled]);
 
   const R = 14, CIRC = 2 * Math.PI * R;
 
@@ -122,7 +128,8 @@ function Block({ block, hour, checked, onCheck }: { block: OsBlock; hour: number
       border: `1px solid ${active ? `${block.pilarColor}25` : C.border}`,
       marginBottom: 10, position: "relative",
     }}>
-      <button onClick={() => setExpanded(!expanded)} style={{
+      <button onClick={() => { const next = !expanded; setExpanded(next); if (next && soundEnabled && block.sound) mceSounds[block.sound](); }} style={{
+
         width: "100%", padding: "12px 16px", background: "transparent", border: "none", cursor: "pointer",
         display: "flex", alignItems: "center", gap: 10, textAlign: "left",
       }}>
