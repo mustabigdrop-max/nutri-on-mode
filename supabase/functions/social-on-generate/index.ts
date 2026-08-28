@@ -29,7 +29,7 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
   | "reel_script" | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post"
   | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo"
-  | "grid_architect" | "bio_optimizer" | "pinned_strategy"
+  | "grid_architect" | "bio_optimizer" | "pinned_strategy" | "profile_audit"
   | "conversion_bridge" | "cta_intelligence" | "collab_finder"
   | "studio_subtitles" | "studio_versions" | "studio_vision"
   | "daily_brief" | "content_score" | "daily_signal";
@@ -41,7 +41,7 @@ const SCHEMAS: Record<Mode, string> = {
   hashtags: `{"grandes":["5 hashtags de alto volume"],"medias":["10 hashtags de volume médio"],"nichadas":["5 hashtags de nicho"]}` ,
   stories: `{"manha":["4 stories"],"tarde":["4 stories"],"noite":["3 stories"],"enquete":"pergunta de enquete do dia"}` ,
   audit: `{"bio_score":0,"bio_issues":["..."],"bio_suggestion":"bio completa em até 150 caracteres com emojis e quebras de linha","content_mix":{"educativo":0,"pessoal":0,"prova_social":0,"entretenimento":0,"venda":0},"content_mix_ideal":{"educativo":35,"pessoal":25,"prova_social":20,"entretenimento":15,"venda":12},"frequency_current":0,"frequency_ideal":5,"issues":["..."],"quick_wins":["3 ações imediatas"],"content_pillars_suggested":["4 a 5 pilares"],"series_suggestions":["séries recorrentes"]}` ,
-  bio_audit: `{"score":0,"criteria":[{"key":"nome_busca","label":"Nome otimizado pra busca","ok":false,"points":-10}, "... um item para cada critério enviado"],"options":[{"id":"A","style":"autoridade","bio":"bio completa com quebras de linha \\n"},{"id":"B","style":"storytelling","bio":"..."},{"id":"C","style":"direto ao ponto","bio":"..."}]}` ,
+  bio_audit: `{"score":0,"criteria":[{"key":"nome_busca","label":"Nome otimizado pra busca","ok":false,"points":-10}, "... um item para cada critério enviado"],"options":[{"id":"A","style":"autoridade","bio":"bio completa com quebras de linha \\n (MÁXIMO 150 caracteres)","char_count":0},{"id":"B","style":"storytelling","bio":"...","char_count":0},{"id":"C","style":"direto ao ponto","bio":"...","char_count":0}]}` ,
   feed_audit: `{"current_mix":{"educativo":0,"pessoal":0,"prova_social":0,"entretenimento":0,"venda":0},"ideal_mix":{"educativo":30,"pessoal":25,"prova_social":15,"entretenimento":20,"venda":10},"problems":["3 a 4 problemas objetivos comparando os mixes"],"actions":["3 ações imediatas"]}` ,
   repurpose: `{"pieces":[{"key":"carrossel","title":"...","blocks":["Slide 1: ...","Slide 2: ...","Slide 3: ...","Slide 4: ...","Slide 5: CTA + @handle"],"note":"dica de produção"},{"key":"stories","title":"...","blocks":["Story 1: ...","Story 2: ...","Story 3: ...","Story 4: enquete ou CTA"]},{"key":"legenda","title":"...","content":"legenda longa com quebras de linha \\n"},{"key":"reel_curto","title":"...","content":"roteiro de 15s: hook + 1 ponto + CTA"},{"key":"thread","title":"...","blocks":["comentário 1","comentário 2","comentário 3"]},{"key":"live","title":"...","blocks":["bloco 1 (0-2min)","bloco 2","bloco 3","encerramento"]},{"key":"repost_30d","title":"novo hook, mesma essência","content":"versão reformulada"}]}` ,
   dm_variation: `{"conversation":"conversa completa de DM em 5 etapas (CONEXÃO, DIAGNÓSTICO, DEMONSTRAÇÃO, OFERTA, OBJEÇÃO) com falas do lead e respostas do coach, texto puro com quebras de linha \\n"}` ,
@@ -72,9 +72,34 @@ const SCHEMAS: Record<Mode, string> = {
   content_score: `{"total_score": número 0-100 combinando shareability (peso 30%), hook (25%), SEO (25%) e save potential (20%),"breakdown":{"share":0-100,"hook":0-100,"seo":0-100,"save":0-100},"verdict":"PUBLICAR"|"OTIMIZAR"|"REFAZER","top_fix":"a melhoria mais impactante em 1 frase","optimized_hook":"hook reescrito pra máximo impacto"}`,
   daily_signal: `{"signal_message":"mensagem motivacional curta e direta (máx 15 palavras, tom de comando)","yesterday_review":{"summary":"o que aconteceu ontem em 1-2 frases (simule baseado no dia da semana)","top_post":"qual tipo de post performou melhor","metric_highlight":"1 métrica que se destacou","lesson":"1 lição de ontem pra aplicar hoje"},"today_actions":[{"type":"postar|responder|reciclar|engajar|criar|stories|comentar|agendar|otimizar|colaborar","title":"ação específica","detail":"o que fazer exatamente (1-2 frases)","urgency":"alta|média|baixa","time":"horário sugerido (ex: 07:30)","content_idea":"ideia de conteúdo ou null"}, "6 a 8 ações específicas, distribuídas em horários realistas"],"recycle_opportunity":{"original":"post antigo que pode ser reciclado","new_format":"formato sugerido","new_angle":"como abordar diferente","urgency":"por que reciclar isso agora"},"trend_alert":{"trend":"tendência do momento no nicho fitness","heat": número 1-5,"lifespan":"curta|média|longa","content_suggestion":"como surfar essa onda com conteúdo"},"best_posting_times":["horário 1","horário 2","horário 3"],"week_overview":{"posts_done": número,"posts_goal":7,"day_of_week": número 0-6,"on_track": true ou false,"adjustment":"ajuste de rota se necessário"},"mce_daily":"1 frase do MCE pra guiar o dia (conecte Mindset, Comportamento ou Execução com a agenda de hoje)","closing":"frase de fechamento curta e impactante"}`,
   studio_vision: `{"viral_score": número 0-100,"predicted_views":"Xk-Yk","predicted_saves":"X-Y","predicted_shares":"X-Y","detected_elements":[{"icon":"emoji","label":"elemento detectado","detail":"detalhe curto"}, "3 a 5 itens"],"optimizations":[{"text":"otimização específica e aplicável","priority":"alta"|"média"}, "3 a 5 itens"],"best_time":"melhor horário pra postar (ex: Ter 19h-21h)","hook_suggestion":"hook sugerido pra máxima retenção","content_pillars_match":["pilares que o conteúdo toca"]}`,
+  profile_audit: `{"overall_score": número 0-100 (média ponderada: bio 30%, nome_seo 20%, categoria 10%, cta_link 20%, consistencia 20%),"summary":"diagnóstico geral em 2 frases diretas","scores":[{"key":"bio","label":"Bio","score":0,"verdict":"frase curta de veredito","findings":["2 a 3 observações objetivas"],"fix":"a correção mais importante em 1 frase"},{"key":"nome_seo","label":"Nome (SEO)","score":0,"verdict":"...","findings":["..."],"fix":"..."},{"key":"categoria","label":"Categoria do perfil","score":0,"verdict":"...","findings":["..."],"fix":"..."},{"key":"cta_link","label":"CTA e link","score":0,"verdict":"...","findings":["..."],"fix":"..."},{"key":"consistencia","label":"Consistência de nicho","score":0,"verdict":"...","findings":["..."],"fix":"..."}],"bio_versions":[{"id":"1","style":"Autoridade + CTA","bio":"bio pronta com quebras de linha \\n","char_count": número exato de caracteres da bio,"why":"por que essa versão funciona"},{"id":"2","style":"Impacto + benefício","bio":"...","char_count":0,"why":"..."},{"id":"3","style":"Minimalista + direto","bio":"...","char_count":0,"why":"..."}],"name_analysis":{"current":"nome atual ou vazio","score":0,"keyword_found": true ou false,"issues":["..."],"suggestions":[{"name":"Nome real | Palavra-chave","char_count":0,"why":"palavra-chave pesquisável usada"},"exatamente 3 sugestões, cada uma com no máximo 30 caracteres"]},"category_suggestion":{"recommended":"ex: Coach Pessoal","alternatives":["2 alternativas"],"why":"por que essa categoria"},"link_strategy":{"verdict":"avaliação do link atual","recommended":"o que colocar no link","why":"1 frase"},"highlights":{"current_estimate": número de destaques detectados ou 0,"essentials":[{"name":"Resultados","purpose":"para que serve","capa":"sugestão de capa","first_stories":["2 stories iniciais"]},{"name":"Método"},{"name":"Sobre mim"},{"name":"Depoimentos"},{"name":"Consultoria"},"exatamente 5 itens, todos com purpose, capa e first_stories"],"missing":["destaques essenciais que o perfil ainda não tem"]},"pinned":[{"slot":1,"role":"Maior conversão","why":"por que esse pin importa","what_to_pin":"o que exatamente fixar","hook":"título/hook sugerido"},{"slot":2,"role":"Maior autoridade","why":"...","what_to_pin":"...","hook":"..."},{"slot":3,"role":"Maior prova social","why":"...","what_to_pin":"...","hook":"..."}],"quick_wins":["4 ações imediatas e específicas"]}` ,
   pinned_strategy: `{"strategy_score": número 0-100,"overall_verdict": "avaliação geral em 1-2 frases","pins": [{"slot": 1,"role": "identidade" | "resultado" | "oferta","current_fit": "forte" | "adequado" | "fraco" | "ausente","recommendation": "o que esse pin deveria ser/conter especificamente","format_suggestion": "Reel" | "Carrossel" | "Imagem estática" | "Vídeo","hook_suggestion": "sugestão de título/hook pra esse pin","rotation": "fixo" | "mensal" | "por campanha"}, "exatamente 3 itens, slots 1 a 3"],"content_ideas": [{"slot": 1,"idea": "ideia concreta de conteúdo pra esse pin"}],"mistakes_to_avoid": [{"icon": "emoji","text": "erro comum"}]}` ,
 };
 
+
+/** Garante o teto de 150 caracteres do Instagram em qualquer bio sugerida. */
+const trimBio = (bio: string) => {
+  const text = String(bio ?? "");
+  if (text.length <= 150) return text;
+  const cut = text.slice(0, 150);
+  const stop = Math.max(cut.lastIndexOf("\n"), cut.lastIndexOf(" "));
+  return (stop > 110 ? cut.slice(0, stop) : cut).trimEnd();
+};
+
+const enforceBioLimit = (result: unknown) => {
+  const r = result as Record<string, any>;
+  if (!r || typeof r !== "object") return;
+  for (const key of ["versions", "options", "bio_versions"]) {
+    if (Array.isArray(r[key])) {
+      r[key] = r[key].map((v: any) => {
+        if (!v || typeof v !== "object" || typeof v.bio !== "string") return v;
+        const bio = trimBio(v.bio);
+        return { ...v, bio, char_count: bio.length };
+      });
+    }
+  }
+  if (typeof r.bio_suggestion === "string") r.bio_suggestion = trimBio(r.bio_suggestion);
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -197,6 +222,17 @@ serve(async (req) => {
       body?.offer ? `Oferta / lead magnet: ${body.offer}` : "",
       body?.audienceSize ? `Tamanho da audiência do perfil: ${body.audienceSize}` : "",
       body?.collabGoal ? `Objetivo da collab: ${body.collabGoal}` : "",
+      body?.profile_name ? `Campo NOME do perfil (não é o @): ${body.profile_name}` : "",
+      body?.category ? `Categoria atual do perfil: ${body.category}` : "",
+      body?.link ? `Link atual na bio: ${body.link}` : "",
+      body?.highlights ? `Destaques atuais informados pelo coach: ${body.highlights}` : "",
+      body?.pinnedPosts ? `Posts fixados atuais: ${body.pinnedPosts}` : "",
+      ["bio_audit", "bio_optimizer", "profile_audit", "audit"].includes(body?.mode)
+        ? `REGRA OBRIGATÓRIA DE BIO: cada sugestão de bio DEVE ter no MÁXIMO 150 caracteres, incluindo espaços, emojis e quebras de linha. CONTE os caracteres antes de retornar. Se ultrapassar 150, ENCURTE até caber. Preencha char_count com a contagem exata e real da string. Bios acima de 150 caracteres são inválidas.`
+        : "",
+      body?.mode === "profile_audit"
+        ? `Você é um auditor sênior de perfis de Instagram no nicho fitness/nutrição no Brasil. Faça um diagnóstico profissional, rigoroso e específico — nada genérico. Scores realistas: acima de 90 só para perfis excepcionais. As 3 versões de bio devem ter abordagens diferentes: (1) Autoridade + CTA, (2) Impacto + benefício, (3) Minimalista + direto. Nunca mencione que você é um sistema automatizado.`
+        : "",
     ].filter(Boolean).join("\n");
 
 
@@ -233,6 +269,8 @@ serve(async (req) => {
     } catch {
       parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
     }
+
+    enforceBioLimit(parsed);
 
     return new Response(JSON.stringify({ mode, result: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -27,6 +27,7 @@ import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
 import PrismHub from "@/components/social/PrismHub";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
+import ProfileAuditPanel from "@/components/social/ProfileAuditPanel";
 import SocialOnSignalPanel from "@/components/social/SocialOnSignalPanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
@@ -550,38 +551,17 @@ const SocialOnModulePage = () => {
             )}
 
             {step === 2 && (
-              <Section title="Análise da bio">
-                <Textarea value={bioCurrent} onChange={(e) => setBioCurrent(e.target.value)} rows={5} placeholder="Cole sua bio atual" />
+              <div className="space-y-3">
+                <ProfileAuditPanel
+                  handle={handle}
+                  bio={bioCurrent}
+                  profileName={ig.account?.full_name || ""}
+                  ctx={{ niches, products, differentials }}
+                />
                 <div className="flex flex-wrap gap-2 pt-1">
-                  <Button onClick={runBioAudit} disabled={busy === "bio"} className="gap-2">
-                    {busy === "bio" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Analisar
-                  </Button>
+                  <Button onClick={() => setStep(3)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button>
                 </div>
-
-                {bioResult && (
-                  <div className="space-y-3">
-                    <p className="text-2xl font-bold font-mono" style={{ color: ACCENT }}>{bioResult.score}/100</p>
-                    <div className="space-y-1">
-                      {(bioResult.criteria || []).map((c: any) => (
-                        <div key={c.key} className="flex items-center justify-between text-sm">
-                          <span className={c.ok ? "text-foreground" : "text-muted-foreground"}>{c.ok ? "☑" : "☐"} {c.label}</span>
-                          <span className="font-mono text-xs" style={{ color: c.ok ? "#00FF88" : "#FF5C5C" }}>{c.points > 0 ? `+${c.points}` : c.points}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {(bioResult.options || []).map((o: any) => (
-                      <div key={o.id} className="rounded-lg border p-3 space-y-2" style={{ borderColor: `${ACCENT}22` }}>
-                        <p className="text-[11px] uppercase font-mono text-muted-foreground">Opção {o.id} ({o.style})</p>
-                        <pre className="text-sm whitespace-pre-wrap font-sans">{o.bio}</pre>
-                        <Button size="sm" variant="outline" className="gap-2" onClick={() => copy(o.bio)}>
-                          <Copy className="w-3 h-3" /> Copiar {o.id}
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-2 pt-1"><Button onClick={() => setStep(3)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button></div>
-              </Section>
+              </div>
             )}
 
             {step === 3 && (
