@@ -258,13 +258,27 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         backgroundImage: bg,
         overlay: "rgba(2,2,5,0.62)",
         title: s.title,
-        body: [s.body, s.sticker && s.sticker !== "NENHUM" ? `Adicione o sticker ${s.sticker} aqui ↑` : ""].filter(Boolean).join("\n\n"),
+        // Só a legenda real entra na imagem — sticker/enquete viram dica abaixo do preview.
+        body: s.body,
         footer,
         accent: i === 0 ? undefined : ACCENT2,
+        captionStyle: capStyle,
       }));
     }
     setStoryImages(st);
   };
+
+  // Reaplica o estilo da legenda nas imagens já geradas.
+  useEffect(() => {
+    if (!slides.length && !storyImages.length) return;
+    const t = setTimeout(async () => {
+      if (slides.length) setSlideImages(await renderSlides(slides, style));
+      if (pkg) await buildStories(pkg, brand, edits.crop916);
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capStyle.size, capStyle.position, capStyle.color, capStyle.bg]);
+
 
   const addVideo = async (file?: File | null) => {
     if (!file) return;
