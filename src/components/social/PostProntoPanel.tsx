@@ -203,6 +203,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         body: d.body,
         footer: brand,
         accent: d.accent,
+        captionStyle: capStyle,
       }));
     }
     return out;
