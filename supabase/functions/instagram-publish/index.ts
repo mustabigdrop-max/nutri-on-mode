@@ -293,9 +293,12 @@ serve(async (req) => {
       if (scheduledAt.getTime() < Date.now() - 60_000) return json({ error: "Escolha um horário no futuro" }, 400);
 
       const { data: acc } = await admin
-        .from("social_instagram_accounts").select("ig_user_id")
+        .from("social_instagram_accounts").select("ig_user_id, source")
         .eq("coach_id", coachId).maybeSingle();
       if (!acc) return json({ error: "Conecte sua conta do Instagram antes de agendar" }, 400);
+      if (acc.source === "screenshot") {
+        return json({ error: "Agendamento automático exige conexão com token da Meta (opção avançada)." }, 400);
+      }
 
       const { data: row, error } = await admin.from("social_instagram_posts").insert({
         coach_id: coachId,
