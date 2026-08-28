@@ -122,6 +122,9 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
   const [frames, setFrames] = useState<string[]>([]);
   const [thumb, setThumb] = useState<string | null>(null);
   const [reel, setReel] = useState<ReelScript | null>(null);
+  const [capStyle, setCapStyle] = useState<CaptionStyle>({ ...DEFAULT_CAPTION_STYLE });
+  const [capOpen, setCapOpen] = useState(false);
+
 
   const videoRef = useRef<HTMLInputElement>(null);
   const main = photos[0] || null;
