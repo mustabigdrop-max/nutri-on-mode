@@ -25,6 +25,16 @@ export type InstagramAccount = {
   synced_at: string | null;
   token_expires_at: string | null;
   connected_at: string | null;
+  source?: string | null;
+};
+
+export type InstagramExtracted = {
+  full_name: string | null;
+  username: string | null;
+  biography: string | null;
+  followers_count: number | null;
+  follows_count: number | null;
+  media_count: number | null;
 };
 
 const callIg = async <T,>(payload: Record<string, unknown>): Promise<T> => {
