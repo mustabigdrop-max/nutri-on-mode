@@ -207,13 +207,55 @@ serve(async (req) => {
       return json({ result: { connected: true, account: saved } });
     }
 
+    if (action === "analyze_screenshot") {
+      const image = String(body?.image ?? "");
+      if (!/^data:image\/(png|jpe?g|webp|heic);base64,/i.test(image)) {
+        return json({ error: "Envie um print em PNG, JPG ou WEBP." }, 400);
+      }
+      if (image.length > 12_000_000) return json({ error: "Imagem muito grande (máx. ~8MB)." }, 400);
+      const extracted = await analyzeScreenshot(image);
+      return json({ result: { extracted } });
+    }
+
+    if (action === "connect_manual") {
+      const username = String(body?.username ?? "").trim().replace(/^@/, "").slice(0, 60);
+      if (username.length < 1) return json({ error: "Informe o @ do perfil" }, 400);
+      const { error } = await admin.from("social_instagram_accounts").upsert({
+        coach_id: coachId,
+        ig_user_id: `manual:${username.toLowerCase()}`,
+        username,
+        full_name: String(body?.full_name ?? "").trim().slice(0, 120) || null,
+        biography: String(body?.biography ?? "").trim().slice(0, 1000) || null,
+        followers_count: Number.isFinite(Number(body?.followers_count)) ? Number(body?.followers_count) : null,
+        follows_count: Number.isFinite(Number(body?.follows_count)) ? Number(body?.follows_count) : null,
+        media_count: Number.isFinite(Number(body?.media_count)) ? Number(body?.media_count) : null,
+        access_token: "",
+        page_id: null,
+        token_expires_at: null,
+        recent_media: [],
+        source: "screenshot",
+        synced_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw new Error(error.message);
+      const { data: saved } = await admin
+        .from("social_instagram_accounts")
+        .select(PROFILE_COLUMNS)
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      return json({ result: { connected: true, account: saved } });
+    }
+
     if (action === "sync_profile") {
       const { data: acc } = await admin
         .from("social_instagram_accounts")
-        .select("ig_user_id, access_token")
+        .select("ig_user_id, access_token, source")
         .eq("coach_id", coachId)
         .maybeSingle();
       if (!acc) return json({ error: "Conecte sua conta do Instagram primeiro" }, 400);
+      if (acc.source === "screenshot" || !acc.access_token) {
+        return json({ error: "Conta conectada por screenshot: envie um novo print para atualizar os dados." }, 400);
+      }
 
       const snapshot = await fetchProfileSnapshot(acc.ig_user_id, acc.access_token);
       const { error } = await admin
