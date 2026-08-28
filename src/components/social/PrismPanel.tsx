@@ -320,12 +320,13 @@ const PrismPanel = ({
       storyOut.push(
         await renderStoryFrame({
           backgroundImage: at(s.file_index) ?? images[i]?.thumb ?? null,
-          eyebrow: s.sticker && s.sticker !== "nenhum" ? s.sticker.toUpperCase() : undefined,
           title: s.text,
-          body: s.body || s.sticker_content,
+          // Sticker/enquete são apenas dicas — não entram na imagem.
+          body: s.body,
           footer,
           accent: PRISM,
         })
+
       );
     }
     setSlideImages(slideOut);
@@ -840,12 +841,22 @@ const PrismPanel = ({
                 {storyImages.map((s, i) => (
                   <div key={i} className="space-y-1">
                     <img src={s} alt={`story ${i + 1}`} className="w-full rounded-lg border" style={{ borderColor: "rgba(255,255,255,0.12)" }} />
-                    <p className="text-[10px] text-center text-muted-foreground">
-                      📌 {(c?.stories_frames?.[i]?.sticker || "nenhum").toUpperCase()}
-                    </p>
+                    <p className="text-[10px] text-center text-muted-foreground">frame {i + 1}</p>
                   </div>
                 ))}
               </div>
+              <div className="rounded-lg border p-3 space-y-1" style={{ borderColor: `${PRISM}33` }}>
+                <p className="text-xs font-semibold" style={{ color: PRISM }}>💡 Dicas de engajamento</p>
+                <p className="text-[11px] text-muted-foreground">Cole no app do Instagram — não entram na imagem.</p>
+                {(c?.stories_frames || []).slice(0, storyImages.length).map((s, i) => (
+                  <p key={i} className="text-[11px] text-muted-foreground">
+                    <span className="font-mono">Frame {i + 1}:</span>{" "}
+                    {s.sticker && s.sticker !== "nenhum" ? `sticker ${s.sticker}` : "sem sticker"}
+                    {s.sticker_content ? ` — ${s.sticker_content}` : ""}
+                  </p>
+                ))}
+              </div>
+
               <Button size="sm" variant="outline" className="gap-2"
                 onClick={async () => {
                   const n = await downloadMany(storyImages.map((s, i) => ({ url: s, filename: `prism-story-${i + 1}.png` })));

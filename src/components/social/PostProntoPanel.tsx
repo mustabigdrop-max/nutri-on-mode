@@ -11,6 +11,7 @@ import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/d
 import {
   cropToRatio, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration, isMobileDevice, saveImage,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
+  DEFAULT_CAPTION_STYLE, type CaptionStyle,
 } from "@/lib/socialImageKit";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
 
@@ -122,6 +123,9 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
   const [frames, setFrames] = useState<string[]>([]);
   const [thumb, setThumb] = useState<string | null>(null);
   const [reel, setReel] = useState<ReelScript | null>(null);
+  const [capStyle, setCapStyle] = useState<CaptionStyle>({ ...DEFAULT_CAPTION_STYLE });
+  const [capOpen, setCapOpen] = useState(false);
+
 
   const videoRef = useRef<HTMLInputElement>(null);
   const main = photos[0] || null;
@@ -199,6 +203,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         body: d.body,
         footer: brand,
         accent: d.accent,
+        captionStyle: capStyle,
       }));
     }
     return out;
@@ -254,13 +259,27 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         backgroundImage: bg,
         overlay: "rgba(2,2,5,0.62)",
         title: s.title,
-        body: [s.body, s.sticker && s.sticker !== "NENHUM" ? `Adicione o sticker ${s.sticker} aqui ↑` : ""].filter(Boolean).join("\n\n"),
+        // Só a legenda real entra na imagem — sticker/enquete viram dica abaixo do preview.
+        body: s.body,
         footer,
         accent: i === 0 ? undefined : ACCENT2,
+        captionStyle: capStyle,
       }));
     }
     setStoryImages(st);
   };
+
+  // Reaplica o estilo da legenda nas imagens já geradas.
+  useEffect(() => {
+    if (!slides.length && !storyImages.length) return;
+    const t = setTimeout(async () => {
+      if (slides.length) setSlideImages(await renderSlides(slides, style));
+      if (pkg) await buildStories(pkg, brand, edits.crop916);
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capStyle.size, capStyle.position, capStyle.color, capStyle.bg]);
+
 
   const addVideo = async (file?: File | null) => {
     if (!file) return;
@@ -692,18 +711,93 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
       )}
 
       {pkg?.caption && (
-        <Section title="2. Legenda pronta" right={
+        <Section title="2. Legenda pronta (editável)" right={
           <div className="flex gap-1">
             <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => copyText(pkg.caption!)}><Copy className="w-3 h-3" /> Copiar</Button>
             <Button size="sm" variant="ghost" className="h-7" disabled={busy} onClick={() => generate(false)}>🔄 Outra</Button>
           </div>
         }>
-          <p className="text-sm whitespace-pre-wrap">{pkg.caption}</p>
+          <Textarea
+            rows={6}
+            value={pkg.caption || ""}
+            onFocus={() => setCapOpen(true)}
+            onChange={(e) => setPkg((p) => (p ? { ...p, caption: e.target.value } : p))}
+            className="text-sm"
+            style={{ fontSize: "clamp(13px, 3vw, 18px)" }}
+            aria-label="Editar legenda"
+          />
+          <button
+            type="button"
+            onClick={() => setCapOpen((v) => !v)}
+            className="text-[11px] underline text-muted-foreground text-left"
+          >
+            {capOpen ? "Esconder controles de texto" : "Mostrar controles de texto"}
+          </button>
+
+          {capOpen && (
+            <div className="rounded-lg border p-3 space-y-3" style={{ borderColor: `${ACCENT}33` }}>
+              <div className="space-y-1">
+                <label className="text-[11px] text-muted-foreground">
+                  Tamanho da fonte na imagem: {capStyle.size ?? 18}px
+                </label>
+                <input
+                  type="range"
+                  min={12}
+                  max={32}
+                  step={1}
+                  value={capStyle.size ?? 18}
+                  onChange={(e) => setCapStyle((s) => ({ ...s, size: Number(e.target.value) }))}
+                  className="w-full"
+                  aria-label="Tamanho da fonte da legenda"
+                />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] text-muted-foreground">Posição</p>
+                <div className="flex gap-2">
+                  {([["top", "Topo"], ["center", "Centro"], ["bottom", "Base"]] as const).map(([v, l]) => (
+                    <button key={v} type="button" onClick={() => setCapStyle((s) => ({ ...s, position: v }))}
+                      className="px-3 py-1.5 rounded-lg text-xs border"
+                      style={{ borderColor: capStyle.position === v ? ACCENT : "rgba(255,255,255,0.12)", background: capStyle.position === v ? `${ACCENT}22` : "transparent" }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] text-muted-foreground">Cor do texto</p>
+                <div className="flex gap-2">
+                  {([["#FFFFFF", "Branco"], ["#0A0A0A", "Preto"], ["#F5C518", "Amarelo"], ["#00D4FF", "Cyan"]] as const).map(([v, l]) => (
+                    <button key={v} type="button" onClick={() => setCapStyle((s) => ({ ...s, color: v }))}
+                      aria-label={`Cor ${l}`}
+                      className="w-8 h-8 rounded-full border-2"
+                      style={{ background: v, borderColor: capStyle.color === v ? ACCENT : "rgba(255,255,255,0.2)" }} />
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] text-muted-foreground">Fundo do texto</p>
+                <div className="flex gap-2">
+                  {([["none", "Nenhum"], ["shadow", "Sombra"], ["box", "Box translúcido"]] as const).map(([v, l]) => (
+                    <button key={v} type="button" onClick={() => setCapStyle((s) => ({ ...s, bg: v }))}
+                      className="px-3 py-1.5 rounded-lg text-xs border"
+                      style={{ borderColor: capStyle.bg === v ? ACCENT2 : "rgba(255,255,255,0.12)", background: capStyle.bg === v ? `${ACCENT2}22` : "transparent" }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                O texto na imagem nunca ocupa mais de 30% da área da foto.
+              </p>
+            </div>
+          )}
+
           <p className="text-[11px] text-muted-foreground">
             Troque o tom no Passo 4 e clique em "Outra" para uma versão completamente diferente.
           </p>
         </Section>
       )}
+
 
       {slideImages.length > 0 && (
         <Section title={`3. Carrossel (${slideImages.length} slides)`} right={
@@ -737,17 +831,28 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
             {storyImages.map((s, i) => (
               <div key={i} className="shrink-0 w-40 space-y-1">
                 <img src={s} alt={`Story ${i + 1}`} className="h-52 rounded-lg mx-auto" />
-                <p className="text-[10px] font-mono" style={{ color: ACCENT2 }}>
-                  📌 {pkg?.stories?.[i]?.sticker || "NENHUM"}
-                </p>
-                {pkg?.stories?.[i]?.sticker_content && (
-                  <p className="text-[10px] text-muted-foreground whitespace-pre-wrap">{pkg.stories[i].sticker_content}</p>
-                )}
+                <p className="text-[10px] font-mono text-center text-muted-foreground">frame {i + 1}</p>
               </div>
             ))}
           </div>
+          <div className="rounded-lg border p-3 space-y-2" style={{ borderColor: `${ACCENT2}33` }}>
+            <p className="text-xs font-semibold" style={{ color: ACCENT2 }}>💡 Dicas de engajamento</p>
+            <p className="text-[11px] text-muted-foreground">
+              Sugestões pra colar por cima no app do Instagram — elas não entram na imagem.
+            </p>
+            <ul className="space-y-1">
+              {(pkg?.stories || []).slice(0, storyImages.length).map((s, i) => (
+                <li key={i} className="text-[11px] text-muted-foreground">
+                  <span className="font-mono">Frame {i + 1}:</span>{" "}
+                  {s.sticker && s.sticker !== "NENHUM" ? `sticker ${s.sticker}` : "sem sticker"}
+                  {s.sticker_content ? ` — ${s.sticker_content}` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
         </Section>
       )}
+
 
       {reel && (
         <Section
