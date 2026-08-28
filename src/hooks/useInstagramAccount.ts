@@ -25,6 +25,16 @@ export type InstagramAccount = {
   synced_at: string | null;
   token_expires_at: string | null;
   connected_at: string | null;
+  source?: string | null;
+};
+
+export type InstagramExtracted = {
+  full_name: string | null;
+  username: string | null;
+  biography: string | null;
+  followers_count: number | null;
+  follows_count: number | null;
+  media_count: number | null;
 };
 
 const callIg = async <T,>(payload: Record<string, unknown>): Promise<T> => {
@@ -60,6 +70,21 @@ export const useInstagramAccount = (enabled = true) => {
     return res.account;
   }, []);
 
+  /** Lê um print do perfil e devolve os dados extraídos (sem salvar). */
+  const analyzeScreenshot = useCallback(async (imageDataUrl: string) => {
+    const res = await callIg<{ extracted: InstagramExtracted }>({ action: "analyze_screenshot", image: imageDataUrl });
+    return res.extracted;
+  }, []);
+
+  /** Salva o perfil confirmado pelo usuário (conexão por screenshot). */
+  const connectManual = useCallback(async (data: InstagramExtracted) => {
+    const res = await callIg<{ account: InstagramAccount }>({ action: "connect_manual", ...data });
+    setAccount(res.account);
+    return res.account;
+  }, []);
+
+
+
   const sync = useCallback(async () => {
     const res = await callIg<{ account: InstagramAccount }>({ action: "sync_profile" });
     setAccount(res.account);
@@ -71,7 +96,7 @@ export const useInstagramAccount = (enabled = true) => {
     setAccount(null);
   }, []);
 
-  return { account, loading, refresh, connect, sync, disconnect };
+  return { account, loading, refresh, connect, sync, disconnect, analyzeScreenshot, connectManual };
 };
 
 export default useInstagramAccount;

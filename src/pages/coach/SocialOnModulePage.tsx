@@ -502,6 +502,16 @@ const SocialOnModulePage = () => {
                 if (acc?.biography) setBioCurrent(acc.biography);
               }}
               onDisconnect={ig.disconnect}
+              onAnalyzeScreenshot={ig.analyzeScreenshot}
+              onConnectManual={async (data) => {
+                const acc = await ig.connectManual(data);
+                if (acc?.username) {
+                  setHandle(acc.username);
+                  await saveProfile({ instagram_handle: acc.username, bio_current: acc.biography || bioCurrent });
+                  if (acc.biography) setBioCurrent(acc.biography);
+                }
+                setStep((s) => Math.max(s, 2));
+              }}
             />
 
             <div className="flex items-center gap-2">

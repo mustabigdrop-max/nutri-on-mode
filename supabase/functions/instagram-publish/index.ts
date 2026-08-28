@@ -58,7 +58,66 @@ async function resolveAccount(token: string) {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const PROFILE_COLUMNS =
-  "ig_user_id, username, full_name, biography, profile_picture_url, followers_count, follows_count, media_count, recent_media, synced_at, token_expires_at, connected_at";
+  "ig_user_id, username, full_name, biography, profile_picture_url, followers_count, follows_count, media_count, recent_media, synced_at, token_expires_at, connected_at, source";
+
+/** Converte "12,3 mil" / "1.2K" / "45.678" em número. */
+function parseCount(raw: unknown): number | null {
+  if (typeof raw === "number" && isFinite(raw)) return Math.round(raw);
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (!s) return null;
+  const mult = /mil|k/.test(s) ? 1e3 : /mi\b|m\b|milh/.test(s) ? 1e6 : 1;
+  const cleaned = s.replace(/[^\d.,]/g, "");
+  if (!cleaned) return null;
+  const normalized = mult > 1
+    ? cleaned.replace(",", ".")
+    : cleaned.replace(/[.,](?=\d{3}\b)/g, "").replace(",", ".");
+  const n = Number(normalized);
+  if (!isFinite(n)) return null;
+  return Math.round(n * mult);
+}
+
+/** Lê um print do perfil do Instagram e extrai nome, @, bio e números. */
+async function analyzeScreenshot(imageDataUrl: string) {
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key) throw new Error("Serviço de leitura de imagem indisponível.");
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-3.7-flash",
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text:
+              "Analise este screenshot de perfil do Instagram e extraia as informações.\n" +
+              "Responda SOMENTE JSON:\n" +
+              '{\n  "nome": "nome exibido",\n  "username": "@handle",\n  "bio": "texto completo da bio",\n' +
+              '  "seguidores": "número",\n  "seguindo": "número",\n  "posts": "número"\n}',
+          },
+          { type: "image_url", image_url: { url: imageDataUrl } },
+        ],
+      }],
+    }),
+  });
+  if (res.status === 429) throw new Error("Muitas leituras seguidas. Aguarde alguns segundos e tente de novo.");
+  if (res.status === 402) throw new Error("Créditos de IA esgotados no workspace. Adicione créditos para continuar.");
+  if (!res.ok) throw new Error(`Falha ao ler o screenshot (${res.status})`);
+  const data = await res.json();
+  const text = String(data?.choices?.[0]?.message?.content ?? "");
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Não consegui ler os dados desse print. Envie um print da tela do perfil completo.");
+  const parsed = JSON.parse(match[0]) as Record<string, unknown>;
+  return {
+    full_name: String(parsed.nome ?? "").trim() || null,
+    username: String(parsed.username ?? "").trim().replace(/^@/, "") || null,
+    biography: String(parsed.bio ?? "").trim() || null,
+    followers_count: parseCount(parsed.seguidores),
+    follows_count: parseCount(parsed.seguindo),
+    media_count: parseCount(parsed.posts),
+  };
+}
 
 /** Fetches name, bio, photo and recent media for the connected IG business account. */
 async function fetchProfileSnapshot(igUserId: string, token: string) {
@@ -136,7 +195,47 @@ serve(async (req) => {
         page_id: account.page_id,
         access_token: token,
         token_expires_at: expires,
+        source: "token",
         ...snapshot,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw new Error(error.message);
+      const { data: saved } = await admin
+        .from("social_instagram_accounts")
+        .select(PROFILE_COLUMNS)
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      return json({ result: { connected: true, account: saved } });
+    }
+
+    if (action === "analyze_screenshot") {
+      const image = String(body?.image ?? "");
+      if (!/^data:image\/(png|jpe?g|webp|heic);base64,/i.test(image)) {
+        return json({ error: "Envie um print em PNG, JPG ou WEBP." }, 400);
+      }
+      if (image.length > 12_000_000) return json({ error: "Imagem muito grande (máx. ~8MB)." }, 400);
+      const extracted = await analyzeScreenshot(image);
+      return json({ result: { extracted } });
+    }
+
+    if (action === "connect_manual") {
+      const username = String(body?.username ?? "").trim().replace(/^@/, "").slice(0, 60);
+      if (username.length < 1) return json({ error: "Informe o @ do perfil" }, 400);
+      const { error } = await admin.from("social_instagram_accounts").upsert({
+        coach_id: coachId,
+        ig_user_id: `manual:${username.toLowerCase()}`,
+        username,
+        full_name: String(body?.full_name ?? "").trim().slice(0, 120) || null,
+        biography: String(body?.biography ?? "").trim().slice(0, 1000) || null,
+        followers_count: Number.isFinite(Number(body?.followers_count)) ? Number(body?.followers_count) : null,
+        follows_count: Number.isFinite(Number(body?.follows_count)) ? Number(body?.follows_count) : null,
+        media_count: Number.isFinite(Number(body?.media_count)) ? Number(body?.media_count) : null,
+        access_token: "",
+        page_id: null,
+        token_expires_at: null,
+        recent_media: [],
+        source: "screenshot",
+        synced_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
       if (error) throw new Error(error.message);
@@ -151,10 +250,13 @@ serve(async (req) => {
     if (action === "sync_profile") {
       const { data: acc } = await admin
         .from("social_instagram_accounts")
-        .select("ig_user_id, access_token")
+        .select("ig_user_id, access_token, source")
         .eq("coach_id", coachId)
         .maybeSingle();
       if (!acc) return json({ error: "Conecte sua conta do Instagram primeiro" }, 400);
+      if (acc.source === "screenshot" || !acc.access_token) {
+        return json({ error: "Conta conectada por screenshot: envie um novo print para atualizar os dados." }, 400);
+      }
 
       const snapshot = await fetchProfileSnapshot(acc.ig_user_id, acc.access_token);
       const { error } = await admin
@@ -191,9 +293,12 @@ serve(async (req) => {
       if (scheduledAt.getTime() < Date.now() - 60_000) return json({ error: "Escolha um horário no futuro" }, 400);
 
       const { data: acc } = await admin
-        .from("social_instagram_accounts").select("ig_user_id")
+        .from("social_instagram_accounts").select("ig_user_id, source")
         .eq("coach_id", coachId).maybeSingle();
       if (!acc) return json({ error: "Conecte sua conta do Instagram antes de agendar" }, 400);
+      if (acc.source === "screenshot") {
+        return json({ error: "Agendamento automático exige conexão com token da Meta (opção avançada)." }, 400);
+      }
 
       const { data: row, error } = await admin.from("social_instagram_posts").insert({
         coach_id: coachId,
@@ -244,10 +349,13 @@ serve(async (req) => {
 
       const { data: acc } = await admin
         .from("social_instagram_accounts")
-        .select("ig_user_id, access_token, username")
+        .select("ig_user_id, access_token, username, source")
         .eq("coach_id", coachId)
         .maybeSingle();
       if (!acc) return json({ error: "Conecte sua conta do Instagram antes de publicar" }, 400);
+      if (acc.source === "screenshot" || !acc.access_token) {
+        return json({ error: "Publicação automática exige conexão com token da Meta (opção avançada)." }, 400);
+      }
 
       try {
         // 1) container
