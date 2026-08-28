@@ -70,6 +70,21 @@ export const useInstagramAccount = (enabled = true) => {
     return res.account;
   }, []);
 
+  /** Lê um print do perfil e devolve os dados extraídos (sem salvar). */
+  const analyzeScreenshot = useCallback(async (imageDataUrl: string) => {
+    const res = await callIg<{ extracted: InstagramExtracted }>({ action: "analyze_screenshot", image: imageDataUrl });
+    return res.extracted;
+  }, []);
+
+  /** Salva o perfil confirmado pelo usuário (conexão por screenshot). */
+  const connectManual = useCallback(async (data: InstagramExtracted) => {
+    const res = await callIg<{ account: InstagramAccount }>({ action: "connect_manual", ...data });
+    setAccount(res.account);
+    return res.account;
+  }, []);
+
+
+
   const sync = useCallback(async () => {
     const res = await callIg<{ account: InstagramAccount }>({ action: "sync_profile" });
     setAccount(res.account);
