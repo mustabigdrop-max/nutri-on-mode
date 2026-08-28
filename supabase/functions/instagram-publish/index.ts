@@ -58,7 +58,66 @@ async function resolveAccount(token: string) {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const PROFILE_COLUMNS =
-  "ig_user_id, username, full_name, biography, profile_picture_url, followers_count, follows_count, media_count, recent_media, synced_at, token_expires_at, connected_at";
+  "ig_user_id, username, full_name, biography, profile_picture_url, followers_count, follows_count, media_count, recent_media, synced_at, token_expires_at, connected_at, source";
+
+/** Converte "12,3 mil" / "1.2K" / "45.678" em número. */
+function parseCount(raw: unknown): number | null {
+  if (typeof raw === "number" && isFinite(raw)) return Math.round(raw);
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (!s) return null;
+  const mult = /mil|k/.test(s) ? 1e3 : /mi\b|m\b|milh/.test(s) ? 1e6 : 1;
+  const cleaned = s.replace(/[^\d.,]/g, "");
+  if (!cleaned) return null;
+  const normalized = mult > 1
+    ? cleaned.replace(",", ".")
+    : cleaned.replace(/[.,](?=\d{3}\b)/g, "").replace(",", ".");
+  const n = Number(normalized);
+  if (!isFinite(n)) return null;
+  return Math.round(n * mult);
+}
+
+/** Lê um print do perfil do Instagram e extrai nome, @, bio e números. */
+async function analyzeScreenshot(imageDataUrl: string) {
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key) throw new Error("Serviço de leitura de imagem indisponível.");
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-3.7-flash",
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text:
+              "Analise este screenshot de perfil do Instagram e extraia as informações.\n" +
+              "Responda SOMENTE JSON:\n" +
+              '{\n  "nome": "nome exibido",\n  "username": "@handle",\n  "bio": "texto completo da bio",\n' +
+              '  "seguidores": "número",\n  "seguindo": "número",\n  "posts": "número"\n}',
+          },
+          { type: "image_url", image_url: { url: imageDataUrl } },
+        ],
+      }],
+    }),
+  });
+  if (res.status === 429) throw new Error("Muitas leituras seguidas. Aguarde alguns segundos e tente de novo.");
+  if (res.status === 402) throw new Error("Créditos de IA esgotados no workspace. Adicione créditos para continuar.");
+  if (!res.ok) throw new Error(`Falha ao ler o screenshot (${res.status})`);
+  const data = await res.json();
+  const text = String(data?.choices?.[0]?.message?.content ?? "");
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Não consegui ler os dados desse print. Envie um print da tela do perfil completo.");
+  const parsed = JSON.parse(match[0]) as Record<string, unknown>;
+  return {
+    full_name: String(parsed.nome ?? "").trim() || null,
+    username: String(parsed.username ?? "").trim().replace(/^@/, "") || null,
+    biography: String(parsed.bio ?? "").trim() || null,
+    followers_count: parseCount(parsed.seguidores),
+    follows_count: parseCount(parsed.seguindo),
+    media_count: parseCount(parsed.posts),
+  };
+}
 
 /** Fetches name, bio, photo and recent media for the connected IG business account. */
 async function fetchProfileSnapshot(igUserId: string, token: string) {
