@@ -195,6 +195,7 @@ serve(async (req) => {
         page_id: account.page_id,
         access_token: token,
         token_expires_at: expires,
+        source: "token",
         ...snapshot,
         updated_at: new Date().toISOString(),
       });
