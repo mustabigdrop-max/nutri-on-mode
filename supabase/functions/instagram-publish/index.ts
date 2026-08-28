@@ -349,10 +349,13 @@ serve(async (req) => {
 
       const { data: acc } = await admin
         .from("social_instagram_accounts")
-        .select("ig_user_id, access_token, username")
+        .select("ig_user_id, access_token, username, source")
         .eq("coach_id", coachId)
         .maybeSingle();
       if (!acc) return json({ error: "Conecte sua conta do Instagram antes de publicar" }, 400);
+      if (acc.source === "screenshot" || !acc.access_token) {
+        return json({ error: "Publicação automática exige conexão com token da Meta (opção avançada)." }, 400);
+      }
 
       try {
         // 1) container
