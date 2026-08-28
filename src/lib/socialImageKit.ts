@@ -245,6 +245,23 @@ const drawBlock = (
   return y + lines.length * size * lineGap;
 };
 
+/** Ajustes de legenda na imagem controlados pelo usuário. */
+export type CaptionStyle = {
+  /** Tamanho em px de tela (12–32). Convertido pra escala do canvas. */
+  size?: number;
+  position?: "top" | "center" | "bottom";
+  color?: string;
+  /** Fundo do texto: nenhum, sombra ou box semi-transparente. */
+  bg?: "none" | "shadow" | "box";
+};
+
+export const DEFAULT_CAPTION_STYLE: Required<CaptionStyle> = {
+  size: 18,
+  position: "bottom",
+  color: "#FFFFFF",
+  bg: "shadow",
+};
+
 export type SlideSpec = {
   backgroundImage?: string | null;
   overlay?: string;
@@ -257,7 +274,12 @@ export type SlideSpec = {
   gradient?: [string, string];
   /** Aumenta o tamanho do título (Gradient Bold) */
   bigTitle?: boolean;
+  /** Controles do usuário para a legenda desenhada sobre a foto. */
+  captionStyle?: CaptionStyle;
 };
+
+/** Fração máxima da área da imagem que o bloco de legenda pode ocupar. */
+const MAX_CAPTION_AREA = 0.3;
 
 export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
   const { canvas, ctx } = ctxOf(w, h);
@@ -293,14 +315,59 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
     ctx.fillRect(pad, pad, 72, 6);
   }
 
-  let y = pad + 40;
+  const cs = { ...DEFAULT_CAPTION_STYLE, ...(spec.captionStyle || {}) };
+  // 390px é a largura de referência do preview mobile.
+  const k = w / 390;
+
+  const eyeSize = Math.round(w * 0.028);
+  let titleSize = Math.round(cs.size * 1.55 * k);
+  let bodySize = Math.round(cs.size * k);
+
+  const measure = (text: string, size: number, weight: string, gap: number) => {
+    ctx.font = `${weight} ${size}px 'Space Grotesk', 'Rajdhani', system-ui, sans-serif`;
+    return wrapLines(ctx, text, maxW).length * size * gap;
+  };
+  const totalHeight = () =>
+    (spec.eyebrow ? measure(spec.eyebrow.toUpperCase(), eyeSize, "700", 1.4) + 24 : 0) +
+    measure(spec.title, titleSize, "900", 1.1) +
+    (spec.body ? 28 + measure(spec.body, bodySize, "500", 1.4) : 0);
+
+  // A legenda nunca cobre mais de 30% da área da imagem.
+  for (let i = 0; i < 6 && totalHeight() > h * MAX_CAPTION_AREA; i++) {
+    const f = Math.max(0.7, (h * MAX_CAPTION_AREA) / totalHeight());
+    titleSize = Math.max(Math.round(w * 0.03), Math.round(titleSize * f));
+    bodySize = Math.max(Math.round(w * 0.018), Math.round(bodySize * f));
+  }
+
+  const blockH = totalHeight();
+  let y =
+    cs.position === "top"
+      ? pad + 40
+      : cs.position === "center"
+        ? Math.max(pad + 40, (h - blockH) / 2)
+        : Math.max(pad + 40, h - pad - (spec.footer ? 90 : 40) - blockH);
+
+  if (cs.bg === "box") {
+    ctx.fillStyle = "rgba(2,2,5,0.55)";
+    ctx.fillRect(pad - 24, y - 24, maxW + 48, blockH + 48);
+  }
+  if (cs.bg === "shadow") {
+    ctx.shadowColor = "rgba(0,0,0,0.85)";
+    ctx.shadowBlur = Math.round(w * 0.018);
+    ctx.shadowOffsetY = Math.round(w * 0.004);
+  }
+
   if (spec.eyebrow) {
-    y = drawBlock(ctx, spec.eyebrow.toUpperCase(), pad, y, maxW, Math.round(w * 0.028), "700", accent, 1.4) + 24;
+    y = drawBlock(ctx, spec.eyebrow.toUpperCase(), pad, y, maxW, eyeSize, "700", accent, 1.4) + 24;
   }
-  y = drawBlock(ctx, spec.title, pad, y, maxW, Math.round(w * (spec.bigTitle ? 0.105 : 0.075)), "900", "#ffffff", 1.1) + 28;
+  y = drawBlock(ctx, spec.title, pad, y, maxW, titleSize, "900", cs.color, 1.1) + 28;
   if (spec.body) {
-    y = drawBlock(ctx, spec.body, pad, y, maxW, Math.round(w * 0.038), "500", "rgba(255,255,255,0.82)", 1.4);
+    y = drawBlock(ctx, spec.body, pad, y, maxW, bodySize, "500", cs.color, 1.4);
   }
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
 
   if (spec.footer) {
     ctx.font = `700 ${Math.round(w * 0.028)}px 'Space Grotesk', system-ui, sans-serif`;
