@@ -320,12 +320,13 @@ const PrismPanel = ({
       storyOut.push(
         await renderStoryFrame({
           backgroundImage: at(s.file_index) ?? images[i]?.thumb ?? null,
-          eyebrow: s.sticker && s.sticker !== "nenhum" ? s.sticker.toUpperCase() : undefined,
           title: s.text,
-          body: s.body || s.sticker_content,
+          // Sticker/enquete são apenas dicas — não entram na imagem.
+          body: s.body,
           footer,
           accent: PRISM,
         })
+
       );
     }
     setSlideImages(slideOut);
