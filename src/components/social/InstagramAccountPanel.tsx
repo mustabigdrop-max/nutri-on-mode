@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Instagram, Loader2, RefreshCw, Unlink } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Camera, Check, Instagram, Loader2, RefreshCw, Unlink } from "lucide-react";
 import { toast } from "sonner";
 import { ACCENT, ACCENT2, Section } from "./socialUi";
-import type { InstagramAccount, InstagramMedia } from "@/hooks/useInstagramAccount";
+import type { InstagramAccount, InstagramExtracted, InstagramMedia } from "@/hooks/useInstagramAccount";
 
 type Props = {
   account: InstagramAccount | null;
@@ -12,11 +13,32 @@ type Props = {
   onConnect: (token: string) => Promise<unknown>;
   onSync: () => Promise<unknown>;
   onDisconnect: () => Promise<unknown>;
+  onAnalyzeScreenshot?: (imageDataUrl: string) => Promise<InstagramExtracted>;
+  onConnectManual?: (data: InstagramExtracted) => Promise<unknown>;
 };
 
-const InstagramAccountPanel = ({ account, loading, onConnect, onSync, onDisconnect }: Props) => {
+const readAsDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result));
+    fr.onerror = () => reject(new Error("Não consegui ler a imagem."));
+    fr.readAsDataURL(file);
+  });
+
+const InstagramAccountPanel = ({
+  account,
+  loading,
+  onConnect,
+  onSync,
+  onDisconnect,
+  onAnalyzeScreenshot,
+  onConnectManual,
+}: Props) => {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [mode, setMode] = useState<"screenshot" | "token">("screenshot");
+  const [draft, setDraft] = useState<InstagramExtracted | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const run = async (key: string, fn: () => Promise<unknown>, ok: string) => {
     setBusy(key);
@@ -29,6 +51,40 @@ const InstagramAccountPanel = ({ account, loading, onConnect, onSync, onDisconne
       setBusy(null);
     }
   };
+
+  const handleScreenshot = async (file: File) => {
+    if (!onAnalyzeScreenshot) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máx. 8MB).");
+      return;
+    }
+    setBusy("shot");
+    try {
+      const dataUrl = await readAsDataUrl(file);
+      const extracted = await onAnalyzeScreenshot(dataUrl);
+      setDraft(extracted);
+      toast.success("Dados lidos do print. Confira antes de salvar.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não consegui ler esse print.");
+    } finally {
+      setBusy(null);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const numField = (label: string, key: "followers_count" | "follows_count" | "media_count") => (
+    <div className="space-y-1">
+      <label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</label>
+      <Input
+        type="number"
+        inputMode="numeric"
+        value={draft?.[key] ?? ""}
+        onChange={(e) =>
+          setDraft((d) => (d ? { ...d, [key]: e.target.value === "" ? null : Number(e.target.value) } : d))
+        }
+      />
+    </div>
+  );
 
   if (loading) {
     return (
@@ -44,23 +100,122 @@ const InstagramAccountPanel = ({ account, loading, onConnect, onSync, onDisconne
     return (
       <Section title="📷 Conectar Instagram">
         <p className="text-sm text-muted-foreground">
-          Conecte sua conta Instagram Business/Creator para trazer nome, bio e fotos reais para a Prova Social e para os DM scripts.
+          Traga nome, bio e números reais do seu perfil para a Prova Social e para os DM scripts.
         </p>
-        <Input
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          placeholder="Cole aqui o token de acesso da Meta"
-          type="password"
-        />
-        <Button
-          size="sm"
-          className="gap-2"
-          style={{ background: ACCENT }}
-          disabled={busy === "connect" || token.trim().length < 20}
-          onClick={() => run("connect", () => onConnect(token).then(() => setToken("")), "Instagram conectado")}
-        >
-          {busy === "connect" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Instagram className="w-3 h-3" />} Conectar conta
-        </Button>
+
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant={mode === "screenshot" ? "default" : "outline"}
+            className="gap-2"
+            style={mode === "screenshot" ? { background: ACCENT } : undefined}
+            onClick={() => setMode("screenshot")}
+          >
+            <Camera className="w-3 h-3" /> 📸 Conectar por screenshot
+          </Button>
+          <Button size="sm" variant={mode === "token" ? "default" : "outline"} onClick={() => setMode("token")}>
+            Token da Meta (avançado)
+          </Button>
+        </div>
+
+        {mode === "screenshot" ? (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Jeito mais fácil: tire um print da tela do seu perfil (nome, @, bio e números visíveis) e envie aqui.
+            </p>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleScreenshot(e.target.files[0])}
+            />
+            <Button
+              size="sm"
+              className="gap-2"
+              style={{ background: ACCENT }}
+              disabled={busy === "shot" || !onAnalyzeScreenshot}
+              onClick={() => fileRef.current?.click()}
+            >
+              {busy === "shot" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+              {busy === "shot" ? "Lendo o print…" : "Enviar screenshot do perfil"}
+            </Button>
+
+            {draft && (
+              <div className="space-y-3 rounded-lg border border-white/10 p-3">
+                <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: ACCENT2 }}>
+                  Confira os dados extraídos
+                </p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Nome</label>
+                    <Input
+                      value={draft.full_name ?? ""}
+                      onChange={(e) => setDraft({ ...draft, full_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Username</label>
+                    <Input
+                      value={draft.username ?? ""}
+                      onChange={(e) => setDraft({ ...draft, username: e.target.value.replace(/^@/, "") })}
+                      placeholder="seu.perfil"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Bio</label>
+                  <Textarea
+                    rows={4}
+                    value={draft.biography ?? ""}
+                    onChange={(e) => setDraft({ ...draft, biography: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {numField("Seguidores", "followers_count")}
+                  {numField("Seguindo", "follows_count")}
+                  {numField("Posts", "media_count")}
+                </div>
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  style={{ background: ACCENT }}
+                  disabled={busy === "manual" || !draft.username?.trim() || !onConnectManual}
+                  onClick={() =>
+                    run("manual", async () => {
+                      await onConnectManual?.(draft);
+                      setDraft(null);
+                    }, "Perfil conectado")
+                  }
+                >
+                  {busy === "manual" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                  Confirmar dados
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Conexão completa com a API (permite publicar e agendar). Exige conta Business/Creator vinculada a uma Página do Facebook.
+            </p>
+            <Input
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="Cole aqui o token de acesso da Meta"
+              type="password"
+            />
+            <Button
+              size="sm"
+              className="gap-2"
+              style={{ background: ACCENT }}
+              disabled={busy === "connect" || token.trim().length < 20}
+              onClick={() => run("connect", () => onConnect(token).then(() => setToken("")), "Instagram conectado")}
+            >
+              {busy === "connect" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Instagram className="w-3 h-3" />} Conectar conta
+            </Button>
+          </div>
+        )}
       </Section>
     );
   }
