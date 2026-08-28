@@ -243,15 +243,17 @@ const InstagramAccountPanel = ({
       title="📷 Conta conectada"
       right={
         <div className="flex gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 gap-1"
-            disabled={busy === "sync"}
-            onClick={() => run("sync", onSync, "Perfil atualizado")}
-          >
-            {busy === "sync" ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />} Sincronizar
-          </Button>
+          {account.source !== "screenshot" && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 gap-1"
+              disabled={busy === "sync"}
+              onClick={() => run("sync", onSync, "Perfil atualizado")}
+            >
+              {busy === "sync" ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />} Sincronizar
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"
