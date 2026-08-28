@@ -756,17 +756,28 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
             {storyImages.map((s, i) => (
               <div key={i} className="shrink-0 w-40 space-y-1">
                 <img src={s} alt={`Story ${i + 1}`} className="h-52 rounded-lg mx-auto" />
-                <p className="text-[10px] font-mono" style={{ color: ACCENT2 }}>
-                  📌 {pkg?.stories?.[i]?.sticker || "NENHUM"}
-                </p>
-                {pkg?.stories?.[i]?.sticker_content && (
-                  <p className="text-[10px] text-muted-foreground whitespace-pre-wrap">{pkg.stories[i].sticker_content}</p>
-                )}
+                <p className="text-[10px] font-mono text-center text-muted-foreground">frame {i + 1}</p>
               </div>
             ))}
           </div>
+          <div className="rounded-lg border p-3 space-y-2" style={{ borderColor: `${ACCENT2}33` }}>
+            <p className="text-xs font-semibold" style={{ color: ACCENT2 }}>💡 Dicas de engajamento</p>
+            <p className="text-[11px] text-muted-foreground">
+              Sugestões pra colar por cima no app do Instagram — elas não entram na imagem.
+            </p>
+            <ul className="space-y-1">
+              {(pkg?.stories || []).slice(0, storyImages.length).map((s, i) => (
+                <li key={i} className="text-[11px] text-muted-foreground">
+                  <span className="font-mono">Frame {i + 1}:</span>{" "}
+                  {s.sticker && s.sticker !== "NENHUM" ? `sticker ${s.sticker}` : "sem sticker"}
+                  {s.sticker_content ? ` — ${s.sticker_content}` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
         </Section>
       )}
+
 
       {reel && (
         <Section
