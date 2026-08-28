@@ -27,6 +27,7 @@ import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
 import PrismHub from "@/components/social/PrismHub";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
+import ProfileAuditPanel from "@/components/social/ProfileAuditPanel";
 import SocialOnSignalPanel from "@/components/social/SocialOnSignalPanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
@@ -554,7 +555,7 @@ const SocialOnModulePage = () => {
                 <ProfileAuditPanel
                   handle={handle}
                   bio={bioCurrent}
-                  profileName={account?.full_name || ""}
+                  profileName={ig.account?.full_name || ""}
                   ctx={{ niches, products, differentials }}
                 />
                 <div className="flex flex-wrap gap-2 pt-1">
