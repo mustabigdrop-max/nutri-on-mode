@@ -11,6 +11,7 @@ import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/d
 import {
   cropToRatio, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration, isMobileDevice, saveImage,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
+  DEFAULT_CAPTION_STYLE, type CaptionStyle,
 } from "@/lib/socialImageKit";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
 
