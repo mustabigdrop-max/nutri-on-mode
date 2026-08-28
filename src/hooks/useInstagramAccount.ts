@@ -96,7 +96,7 @@ export const useInstagramAccount = (enabled = true) => {
     setAccount(null);
   }, []);
 
-  return { account, loading, refresh, connect, sync, disconnect };
+  return { account, loading, refresh, connect, sync, disconnect, analyzeScreenshot, connectManual };
 };
 
 export default useInstagramAccount;
