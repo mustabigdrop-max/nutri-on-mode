@@ -6,9 +6,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BRAND = `MARCA: nutriON (nutrion.app.br) — plataforma de coaching nutricional.
-COACH: @diogo.mell0 — Coach Nutricional, IFBB Classic Physique, criador do Método MCE (Mindset, Comportamento, Execução).
-TAGLINE: "Sua fome nunca foi de comida. O comportamento vem antes do alimento."
+// Regras da PLATAFORMA — válidas pra qualquer coach que usa o Social ON,
+// não uma identidade pessoal. A identidade de quem está gerando o conteúdo
+// (nome, nicho, diferenciais) é montada por request em coachIdentity(),
+// com os dados reais que cada coach preencheu no próprio perfil — nunca
+// cravada aqui, senão todo mundo que usa a plataforma geraria conteúdo
+// assinado com a mesma pessoa.
+const BRAND = `MARCA: nutriON (nutrion.app.br) — plataforma de coaching nutricional, sistema de conteúdo "Método MCE" (Mindset, Comportamento, Execução).
 PALETA: #020205 / #00D4FF / #00FF88. Tipografia Rajdhani.
 PILARES: mce_drop (educativo 30%), bastidor (pessoal 25%), transformacao (prova social 20%), entretenimento (15%), cta (venda suave 10%).
 REGRAS OBRIGATÓRIAS DE LEGENDA (todas as legendas, sempre):
@@ -24,6 +28,31 @@ REGRAS OBRIGATÓRIAS DE LEGENDA (todas as legendas, sempre):
 10. Hashtags nunca dentro do texto da legenda — só no campo hashtags.
 
 TOM: direto, científico sem ser acadêmico, português do Brasil, frases curtas, zero clichê motivacional vazio. Nunca se apresente como IA.`;
+
+/**
+ * Identidade de quem está gerando o conteúdo NESTA chamada — construída a
+ * partir do que o próprio coach preencheu no perfil (handle, nichos,
+ * produtos, diferenciais). Sem esses dados, fica genérica de propósito:
+ * nunca assume a identidade/credenciais de outro coach da plataforma.
+ */
+function coachIdentity(body: Record<string, unknown>): string {
+  const handle = typeof body?.handle === "string" ? body.handle.replace("@", "").trim() : "";
+  const niches = Array.isArray(body?.niches) ? (body.niches as string[]).filter(Boolean) : [];
+  const products = Array.isArray(body?.products) ? (body.products as string[]).filter(Boolean) : [];
+  const differentials = Array.isArray(body?.differentials) ? (body.differentials as string[]).filter(Boolean) : [];
+
+  if (!handle && !niches.length && !products.length && !differentials.length) {
+    return "COACH: perfil ainda não preenchido pelo coach nesta plataforma — escreva de forma profissional e genérica pro nicho fitness/nutrição, SEM inventar nome, credenciais, história pessoal ou conquistas específicas.";
+  }
+
+  return [
+    handle ? `COACH: @${handle}` : "COACH: (sem @ informado)",
+    niches.length ? `Nicho: ${niches.join(", ")}` : "",
+    products.length ? `Produtos/serviços: ${products.join(", ")}` : "",
+    differentials.length ? `Diferenciais únicos (use pra personalizar a voz, sem inventar além disso): ${differentials.join(", ")}` : "",
+    "Escreva na voz desse coach específico, com os dados acima — nunca assuma nome, credencial ou história pessoal que não foi informada aqui.",
+  ].filter(Boolean).join("\n");
+}
 
 type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" | "bio_audit" | "feed_audit" | "content_full"
   | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
@@ -223,7 +252,7 @@ serve(async (req) => {
         : "",
       body?.content ? `Conteúdo a avaliar:\n${body.content}` : "",
       body?.mode === "daily_signal"
-        ? "Você é o SIGNAL — o sistema de briefing diário do Social ON para o coach Diogo Mello (fitness, Método MCE, automação e IA no fitness). Gere o briefing COMPLETO do dia informado: específico, tático e acionável. Nada genérico. Considere que ele posta conteúdo de fitness, MCE e nutrição."
+        ? "Você é o SIGNAL — o sistema de briefing diário do Social ON, pro coach identificado acima (fitness/nutrição, sistema Método MCE). Gere o briefing COMPLETO do dia informado: específico, tático e acionável. Nada genérico."
         : "",
       body?.ticket ? `Ticket médio do coach: R$${body.ticket}/mês` : "",
       body?.funnelStage ? `Estágio do funil do post: ${body.funnelStage} (topo=descoberta, meio=consideração, fundo=decisão)` : "",
@@ -255,7 +284,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: `${BRAND}\n\nVocê é o motor SOCIAL ON. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown.` },
+          { role: "system", content: `${BRAND}\n\n${coachIdentity(body)}\n\nVocê é o motor SOCIAL ON. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown.` },
           { role: "user", content: userContent },
         ],
         response_format: { type: "json_object" },

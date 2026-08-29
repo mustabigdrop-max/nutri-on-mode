@@ -191,7 +191,7 @@ export default function SocialOnSignalPanel() {
 
         {/* Signal Message */}
         <div style={{ background: `linear-gradient(135deg, ${C.cyan}08, ${C.gold}08)`, border: `1px solid ${C.cyan}20`, borderRadius: 16, padding: 24, marginBottom: 12 }}>
-          <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, letterSpacing: 2, marginBottom: 8 }}>{greeting}, Diogo.</div>
+          <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, letterSpacing: 2, marginBottom: 8 }}>{greeting}.</div>
           <div style={{ fontFamily: F.t, fontSize: 24, fontWeight: 800, color: C.white, lineHeight: 1.25, marginBottom: 12 }}>{data.signal_message}</div>
           {data.mce_daily && (
             <div style={{ display: "flex", gap: 10, padding: "10px 14px", background: `${C.gold}08`, borderRadius: 8, alignItems: "flex-start" }}>
