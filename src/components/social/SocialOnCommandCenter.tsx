@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
 import { renderSlide, downloadMany } from "@/lib/socialImageKit";
+import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 
 const C = {
   bg: "#020205", s1: "#0B0B12", s2: "#10101A", s3: "#181824",
@@ -35,7 +36,10 @@ interface Brief {
 interface CarouselSlideSpec { title?: string; body?: string }
 interface ReadyContent {
   hook?: string; caption?: string; hashtags?: string[]; self_comment?: string; best_time?: string;
+  // gerado sem foto — cards de texto (post_package)
   carousel?: CarouselSlideSpec[]; slideImages?: string[];
+  // gerado a partir de foto/vídeo real do coach (prism-analyze)
+  mediaFile?: File; mediaPreview?: string; mediaKind?: "image" | "video";
 }
 
 const readyText = (r: ReadyContent) =>
@@ -58,7 +62,8 @@ function DailyCoach({
   const [ready, setReady] = useState<Record<number, ReadyContent>>({});
   const [generating, setGenerating] = useState<number | null>(null);
   const [publishingIdx, setPublishingIdx] = useState<number | null>(null);
-  const { publishCarousel } = usePublishToInstagram();
+  const { publish, publishCarousel } = usePublishToInstagram();
+  const fileRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
   const generateReady = async (i: number, action: BriefAction) => {
     setGenerating(i);
@@ -83,6 +88,50 @@ function DailyCoach({
     }
   };
 
+  /** Gera o conteúdo a partir de uma foto/vídeo real que o coach mandou (não um card de texto). */
+  const generateFromMedia = async (i: number, action: BriefAction, file: File) => {
+    setGenerating(i);
+    try {
+      const isVideo = file.type.startsWith("video/");
+      let image: string | null = null;
+      let images: string[] | null = null;
+      let preview: string;
+      if (isVideo) {
+        const url = URL.createObjectURL(file);
+        const board = await storyboardFromUrl(url);
+        images = board.frames;
+        preview = board.frames[0];
+        board.video.remove();
+        URL.revokeObjectURL(url);
+      } else {
+        image = await compressImageFile(file);
+        if (!image) throw new Error("Não consegui ler essa imagem.");
+        preview = image;
+      }
+      const { data: res, error: fnErr } = await supabase.functions.invoke("prism-analyze", {
+        body: images
+          ? { mode: "social_versoes", images, from_video: true }
+          : { mode: "social_versoes", image, from_video: false },
+      });
+      if (fnErr) throw new Error(fnErr.message);
+      if ((res as { error?: string })?.error) throw new Error((res as { error?: string }).error as string);
+      const versoes = ((res as { result?: { versoes?: { legenda?: string; hashtags?: string[]; self_comment?: string }[] } })?.result?.versoes || []).filter(Boolean);
+      if (!versoes.length) throw new Error("A IA não devolveu nenhuma versão.");
+      const v = versoes[0];
+      setReady((p) => ({
+        ...p,
+        [i]: {
+          caption: v.legenda, hashtags: v.hashtags, self_comment: v.self_comment,
+          mediaFile: file, mediaPreview: preview, mediaKind: isVideo ? "video" : "image",
+        },
+      }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não consegui analisar sua mídia");
+    } finally {
+      setGenerating(null);
+    }
+  };
+
   const downloadReady = async (i: number) => {
     const r = ready[i];
     if (!r?.slideImages?.length) return;
@@ -92,16 +141,24 @@ function DailyCoach({
 
   const publishReady = async (i: number) => {
     const r = ready[i];
-    if (!coachId || !r?.slideImages?.length) return;
+    if (!coachId || !r) return;
     if (!canPublish) { onConnectInstagram(); return; }
     setPublishingIdx(i);
     try {
-      const blobs = await Promise.all(r.slideImages.map((url) => fetch(url).then((res) => res.blob())));
       const caption = [r.hook, "", r.caption, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
-      await publishCarousel({ coachId, images: blobs, caption, selfComment: r.self_comment });
-      toast.success("Carrossel publicado no Instagram!");
+      if (r.mediaFile) {
+        await publish({
+          coachId, file: r.mediaFile, mediaKind: r.mediaKind === "video" ? "REELS" : "IMAGE",
+          caption, selfComment: r.self_comment, forceConvert: false,
+        });
+        toast.success("Publicado no Instagram!");
+      } else if (r.slideImages?.length) {
+        const blobs = await Promise.all(r.slideImages.map((url) => fetch(url).then((res) => res.blob())));
+        await publishCarousel({ coachId, images: blobs, caption, selfComment: r.self_comment });
+        toast.success("Carrossel publicado no Instagram!");
+      }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao publicar carrossel");
+      toast.error(e instanceof Error ? e.message : "Falha ao publicar");
     } finally {
       setPublishingIdx(null);
     }
@@ -163,18 +220,39 @@ function DailyCoach({
                 )}
 
                 {action.type !== "analisar" && !ready[i] && (
-                  <button
-                    type="button"
-                    onClick={() => generateReady(i, action)}
-                    disabled={generating === i}
-                    style={{
-                      marginTop: 8, padding: "6px 12px", background: `${C.cyan}12`, border: `1px solid ${C.cyan}40`,
-                      borderRadius: 6, cursor: generating === i ? "default" : "pointer", fontFamily: F.t,
-                      fontSize: 11, fontWeight: 700, color: C.cyan, opacity: generating === i ? 0.6 : 1,
-                    }}
-                  >
-                    {generating === i ? "Gerando..." : "✦ GERAR PRONTO PRA POSTAR"}
-                  </button>
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => generateReady(i, action)}
+                      disabled={generating === i}
+                      style={{
+                        padding: "6px 12px", background: `${C.cyan}12`, border: `1px solid ${C.cyan}40`,
+                        borderRadius: 6, cursor: generating === i ? "default" : "pointer", fontFamily: F.t,
+                        fontSize: 11, fontWeight: 700, color: C.cyan, opacity: generating === i ? 0.6 : 1,
+                      }}
+                    >
+                      {generating === i ? "Gerando..." : "✦ GERAR SEM FOTO"}
+                    </button>
+                    <input
+                      ref={(el) => { fileRefs.current[i] = el; }}
+                      type="file"
+                      accept="image/*,video/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) generateFromMedia(i, action, f); e.target.value = ""; }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileRefs.current[i]?.click()}
+                      disabled={generating === i}
+                      style={{
+                        padding: "6px 12px", background: `${C.gold}12`, border: `1px solid ${C.gold}40`,
+                        borderRadius: 6, cursor: generating === i ? "default" : "pointer", fontFamily: F.t,
+                        fontSize: 11, fontWeight: 700, color: C.gold, opacity: generating === i ? 0.6 : 1,
+                      }}
+                    >
+                      📷 USAR MINHA FOTO/VÍDEO
+                    </button>
+                  </div>
                 )}
 
                 {ready[i] && (
@@ -184,6 +262,11 @@ function DailyCoach({
                         {ready[i].slideImages!.map((url, idx) => (
                           <img key={idx} src={url} alt={`Slide ${idx + 1}`} style={{ width: 72, height: 90, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: `1px solid ${C.border}` }} />
                         ))}
+                      </div>
+                    )}
+                    {ready[i].mediaPreview && (
+                      <div style={{ marginBottom: 8 }}>
+                        <img src={ready[i].mediaPreview} alt="Sua mídia" style={{ width: 90, height: 112, objectFit: "cover", borderRadius: 6, border: `1px solid ${C.border}` }} />
                       </div>
                     )}
                     <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
@@ -206,19 +289,19 @@ function DailyCoach({
                           BAIXAR IMAGENS
                         </button>
                       )}
-                      {ready[i].slideImages && ready[i].slideImages!.length >= 2 && (
+                      {(ready[i].mediaFile || (ready[i].slideImages?.length ?? 0) >= 2) && (
                         <button
                           type="button"
                           onClick={() => publishReady(i)}
                           disabled={publishingIdx === i}
                           style={{ flex: 1, minWidth: 120, padding: "6px 0", background: canPublish ? C.green : "transparent", border: canPublish ? "none" : `1px solid ${C.green}60`, borderRadius: 6, cursor: publishingIdx === i ? "default" : "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: canPublish ? "#02150E" : C.green, opacity: publishingIdx === i ? 0.6 : 1 }}
                         >
-                          {publishingIdx === i ? "Publicando..." : canPublish ? "PUBLICAR CARROSSEL" : "CONECTAR E PUBLICAR"}
+                          {publishingIdx === i ? "Publicando..." : canPublish ? (ready[i].mediaFile ? "PUBLICAR" : "PUBLICAR CARROSSEL") : "CONECTAR E PUBLICAR"}
                         </button>
                       )}
                       <button
                         type="button"
-                        onClick={() => generateReady(i, action)}
+                        onClick={() => (ready[i].mediaFile ? generateFromMedia(i, action, ready[i].mediaFile!) : generateReady(i, action))}
                         disabled={generating === i}
                         style={{ padding: "6px 10px", background: "transparent", border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer", fontFamily: F.m, fontSize: 10, color: C.muted }}
                       >
