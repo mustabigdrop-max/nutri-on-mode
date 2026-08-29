@@ -154,9 +154,47 @@ export function usePublishToInstagram() {
     }
   };
 
+  /** Publica um carrossel (2 a 10 imagens) direto no Instagram — sobe cada imagem e cria os containers. */
+  const publishCarousel = async (opts: {
+    coachId: string;
+    images: UploadableMedia[];
+    caption: string;
+    calendarId?: string | null;
+    selfComment?: string | null;
+  }): Promise<PublishResult> => {
+    if (opts.images.length < 2) throw new Error("Carrossel precisa de pelo menos 2 imagens.");
+    setPublishing(true);
+    try {
+      setStage("Enviando imagens...");
+      const mediaUrls: string[] = [];
+      for (const img of opts.images) {
+        mediaUrls.push(await uploadSocialMedia(img, { coachId: opts.coachId, kind: "image" }));
+      }
+
+      setStage("Publicando carrossel no Instagram...");
+      const { data, error } = await supabase.functions.invoke("instagram-publish", {
+        body: {
+          action: "publish",
+          media_type: "CAROUSEL",
+          media_urls: mediaUrls,
+          caption: opts.caption,
+          calendar_id: opts.calendarId ?? null,
+          self_comment: opts.selfComment ?? null,
+        },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error);
+      return (data as { result: PublishResult }).result;
+    } finally {
+      setPublishing(false);
+      setStage("");
+    }
+  };
+
   return {
     publish,
     schedule,
+    publishCarousel,
     publishing,
     stage,
     converting: ff.isConverting,

@@ -339,14 +339,26 @@ serve(async (req) => {
     }
 
     if (action === "publish") {
-      const mediaUrl = String(body?.media_url ?? "").trim();
       const caption = String(body?.caption ?? "").slice(0, 2200);
       const mediaType: string = body?.media_type === "REELS" ? "REELS"
-        : body?.media_type === "STORIES" ? "STORIES" : "IMAGE";
+        : body?.media_type === "STORIES" ? "STORIES"
+        : body?.media_type === "CAROUSEL" ? "CAROUSEL" : "IMAGE";
       const calendarId: string | null = body?.calendar_id ?? null;
       const selfComment = String(body?.self_comment ?? "").trim().slice(0, 2200);
 
-      if (!/^https:\/\/.+/i.test(mediaUrl)) {
+      const mediaUrls: string[] = mediaType === "CAROUSEL"
+        ? (Array.isArray(body?.media_urls) ? body.media_urls.map((u: unknown) => String(u).trim()) : [])
+        : [];
+      const mediaUrl = mediaType === "CAROUSEL" ? mediaUrls.join(",") : String(body?.media_url ?? "").trim();
+
+      if (mediaType === "CAROUSEL") {
+        if (mediaUrls.length < 2 || mediaUrls.length > 10) {
+          return json({ error: "Carrossel precisa de 2 a 10 imagens" }, 400);
+        }
+        if (mediaUrls.some((u) => !/^https:\/\/.+/i.test(u))) {
+          return json({ error: "Todas as imagens do carrossel precisam de URL pública https" }, 400);
+        }
+      } else if (!/^https:\/\/.+/i.test(mediaUrl)) {
         return json({ error: "Informe uma URL pública https da imagem ou do vídeo" }, 400);
       }
 
@@ -361,35 +373,58 @@ serve(async (req) => {
       }
 
       try {
-        // 1) container
-        const isVideo = mediaType === "REELS" || (mediaType === "STORIES" && /\.(mp4|mov)(\?|$)/i.test(mediaUrl));
-        const container = await graph(`/${acc.ig_user_id}/media`, {
-          access_token: acc.access_token,
-          ...(mediaType === "STORIES" ? {} : { caption }),
-          ...(mediaType === "REELS" ? { media_type: "REELS", video_url: mediaUrl } : {}),
-          ...(mediaType === "STORIES"
-            ? { media_type: "STORIES", ...(isVideo ? { video_url: mediaUrl } : { image_url: mediaUrl }) }
-            : {}),
-          ...(mediaType === "IMAGE" ? { image_url: mediaUrl } : {}),
-        }, "POST");
+        let containerId: string;
 
-        // 2) wait for processing (videos)
-        if (isVideo) {
-          for (let i = 0; i < 20; i++) {
-            const st = await graph(`/${container.id}`, {
-              fields: "status_code",
+        if (mediaType === "CAROUSEL") {
+          // 1) um container "filho" por imagem, depois o container "pai" do carrossel
+          const childIds: string[] = [];
+          for (const url of mediaUrls) {
+            const child = await graph(`/${acc.ig_user_id}/media`, {
               access_token: acc.access_token,
-            });
-            if (st.status_code === "FINISHED") break;
-            if (st.status_code === "ERROR") throw new Error("Falha ao processar o vídeo no Instagram");
-            await sleep(3000);
+              image_url: url,
+              is_carousel_item: "true",
+            }, "POST");
+            childIds.push(child.id);
           }
+          const parent = await graph(`/${acc.ig_user_id}/media`, {
+            access_token: acc.access_token,
+            media_type: "CAROUSEL",
+            caption,
+            children: childIds.join(","),
+          }, "POST");
+          containerId = parent.id;
+        } else {
+          // 1) container
+          const isVideo = mediaType === "REELS" || (mediaType === "STORIES" && /\.(mp4|mov)(\?|$)/i.test(mediaUrl));
+          const container = await graph(`/${acc.ig_user_id}/media`, {
+            access_token: acc.access_token,
+            ...(mediaType === "STORIES" ? {} : { caption }),
+            ...(mediaType === "REELS" ? { media_type: "REELS", video_url: mediaUrl } : {}),
+            ...(mediaType === "STORIES"
+              ? { media_type: "STORIES", ...(isVideo ? { video_url: mediaUrl } : { image_url: mediaUrl }) }
+              : {}),
+            ...(mediaType === "IMAGE" ? { image_url: mediaUrl } : {}),
+          }, "POST");
+
+          // 2) wait for processing (videos)
+          if (isVideo) {
+            for (let i = 0; i < 20; i++) {
+              const st = await graph(`/${container.id}`, {
+                fields: "status_code",
+                access_token: acc.access_token,
+              });
+              if (st.status_code === "FINISHED") break;
+              if (st.status_code === "ERROR") throw new Error("Falha ao processar o vídeo no Instagram");
+              await sleep(3000);
+            }
+          }
+          containerId = container.id;
         }
 
         // 3) publish
         const published = await graph(`/${acc.ig_user_id}/media_publish`, {
           access_token: acc.access_token,
-          creation_id: container.id,
+          creation_id: containerId,
         }, "POST");
 
         let permalink: string | null = null;

@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useInstagramAccount } from "@/hooks/useInstagramAccount";
+import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
+import { renderSlide, downloadMany } from "@/lib/socialImageKit";
 
 const C = {
   bg: "#020205", s1: "#0B0B12", s2: "#10101A", s3: "#181824",
@@ -28,10 +32,14 @@ interface Brief {
   alerts?: { icon?: string; text?: string; color_hint?: string }[];
 }
 
-interface ReadyContent { hook?: string; caption?: string; cta?: string; hashtags?: string[] }
+interface CarouselSlideSpec { title?: string; body?: string }
+interface ReadyContent {
+  hook?: string; caption?: string; hashtags?: string[]; self_comment?: string; best_time?: string;
+  carousel?: CarouselSlideSpec[]; slideImages?: string[];
+}
 
 const readyText = (r: ReadyContent) =>
-  [r.hook, "", r.caption, "", r.cta, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
+  [r.hook, "", r.caption, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
 
 const copyReady = (r: ReadyContent) => {
   navigator.clipboard.writeText(readyText(r));
@@ -39,28 +47,63 @@ const copyReady = (r: ReadyContent) => {
 };
 
 function DailyCoach({
-  brief, loading, identity,
+  brief, loading, identity, coachId, canPublish, onConnectInstagram,
 }: {
   brief: Brief | null; loading: boolean;
   identity: { handle?: string; niches?: string[]; products?: string[]; differentials?: string[] };
+  coachId?: string;
+  canPublish: boolean;
+  onConnectInstagram: () => void;
 }) {
   const [ready, setReady] = useState<Record<number, ReadyContent>>({});
   const [generating, setGenerating] = useState<number | null>(null);
+  const [publishingIdx, setPublishingIdx] = useState<number | null>(null);
+  const { publishCarousel } = usePublishToInstagram();
 
   const generateReady = async (i: number, action: BriefAction) => {
     setGenerating(i);
     try {
       const r = await callSocialAI({
-        mode: "caption",
-        format: "post_unico",
+        mode: "post_package",
+        format: "carrossel",
         topic: [action.title, action.detail].filter(Boolean).join(" — "),
         ...identity,
       });
-      setReady((p) => ({ ...p, [i]: r as ReadyContent }));
+      const slides: CarouselSlideSpec[] = (r?.carousel || []).slice(0, 6);
+      const slideImages = await Promise.all(
+        slides.map((s, idx) =>
+          renderSlide({ title: s.title || "", body: s.body, eyebrow: idx === 0 ? "MÉTODO MCE" : undefined, accent: C.cyan })
+        ),
+      );
+      setReady((p) => ({ ...p, [i]: { ...(r as ReadyContent), carousel: slides, slideImages } }));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar o conteúdo");
     } finally {
       setGenerating(null);
+    }
+  };
+
+  const downloadReady = async (i: number) => {
+    const r = ready[i];
+    if (!r?.slideImages?.length) return;
+    const n = await downloadMany(r.slideImages.map((url, idx) => ({ url, filename: `post-${i + 1}-slide-${idx + 1}.png` })));
+    if (n) toast.success(`${n} imagens baixadas!`); else toast.error("Não consegui baixar as imagens");
+  };
+
+  const publishReady = async (i: number) => {
+    const r = ready[i];
+    if (!coachId || !r?.slideImages?.length) return;
+    if (!canPublish) { onConnectInstagram(); return; }
+    setPublishingIdx(i);
+    try {
+      const blobs = await Promise.all(r.slideImages.map((url) => fetch(url).then((res) => res.blob())));
+      const caption = [r.hook, "", r.caption, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
+      await publishCarousel({ coachId, images: blobs, caption, selfComment: r.self_comment });
+      toast.success("Carrossel publicado no Instagram!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao publicar carrossel");
+    } finally {
+      setPublishingIdx(null);
     }
   };
 
@@ -136,17 +179,43 @@ function DailyCoach({
 
                 {ready[i] && (
                   <div style={{ marginTop: 8, background: C.s3, border: `1px solid ${C.border}`, borderRadius: 8, padding: 10 }}>
+                    {!!ready[i].slideImages?.length && (
+                      <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8, paddingBottom: 2 }}>
+                        {ready[i].slideImages!.map((url, idx) => (
+                          <img key={idx} src={url} alt={`Slide ${idx + 1}`} style={{ width: 72, height: 90, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: `1px solid ${C.border}` }} />
+                        ))}
+                      </div>
+                    )}
                     <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
                       {readyText(ready[i])}
                     </div>
-                    <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                    <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                       <button
                         type="button"
                         onClick={() => copyReady(ready[i])}
-                        style={{ flex: 1, padding: "6px 0", background: C.cyan, border: "none", borderRadius: 6, cursor: "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: C.bg }}
+                        style={{ flex: 1, minWidth: 90, padding: "6px 0", background: C.cyan, border: "none", borderRadius: 6, cursor: "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: C.bg }}
                       >
-                        COPIAR
+                        COPIAR TEXTO
                       </button>
+                      {!!ready[i].slideImages?.length && (
+                        <button
+                          type="button"
+                          onClick={() => downloadReady(i)}
+                          style={{ flex: 1, minWidth: 90, padding: "6px 0", background: C.gold, border: "none", borderRadius: 6, cursor: "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: C.bg }}
+                        >
+                          BAIXAR IMAGENS
+                        </button>
+                      )}
+                      {ready[i].slideImages && ready[i].slideImages!.length >= 2 && (
+                        <button
+                          type="button"
+                          onClick={() => publishReady(i)}
+                          disabled={publishingIdx === i}
+                          style={{ flex: 1, minWidth: 120, padding: "6px 0", background: canPublish ? C.green : "transparent", border: canPublish ? "none" : `1px solid ${C.green}60`, borderRadius: 6, cursor: publishingIdx === i ? "default" : "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: canPublish ? "#02150E" : C.green, opacity: publishingIdx === i ? 0.6 : 1 }}
+                        >
+                          {publishingIdx === i ? "Publicando..." : canPublish ? "PUBLICAR CARROSSEL" : "CONECTAR E PUBLICAR"}
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => generateReady(i, action)}
@@ -407,6 +476,10 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
   const [brief, setBrief] = useState<Brief | null>(null);
   const [briefLoading, setBriefLoading] = useState(true);
   const identity = { handle, niches, products, differentials };
+  const { user } = useAuth();
+  const coachId = user?.id;
+  const ig = useInstagramAccount(!!coachId);
+  const canPublish = !!ig.account && ig.account.source !== "screenshot";
 
   useEffect(() => {
     (async () => {
@@ -458,7 +531,11 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
 
       {/* Two columns */}
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 14, alignItems: "start" }}>
-        <DailyCoach brief={brief} loading={briefLoading} identity={identity} />
+        <DailyCoach
+          brief={brief} loading={briefLoading} identity={identity}
+          coachId={coachId} canPublish={canPublish}
+          onConnectInstagram={() => onOpenTool?.("um_toque")}
+        />
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ContentScore />
           <QuickActions onOpenTool={onOpenTool} />
