@@ -1293,6 +1293,9 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     return sessionStorage.getItem("apex_virilization_risk_accepted") === "1";
   });
   const [showRiskInline, setShowRiskInline] = useState(false);
+  // Editar o protocolo farmacológico direto na aba de resultado, sem precisar
+  // voltar pro formulário inicial / começar uma análise nova.
+  const [showCompostosEdit, setShowCompostosEdit] = useState(false);
   // MediaPipe auto-detect bundle (sobrescreve landmarks do sistema quando presente)
   const [mpAutoBundle, setMpAutoBundle] = useState<{
     front: ApexAutoDetectResult | null;
@@ -2073,6 +2076,63 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                   {farmMeta.choEstrategia && <Pill label="CHO" value={farmMeta.choEstrategia} color="#C47A15" />}
                   {farmMeta.gestaoE2 && <Pill label="E2" value={farmMeta.gestaoE2} color="#E07030" />}
                   {farmMeta.alertaCardio && <Pill label="Cardio" value={farmMeta.alertaCardio} color="#D94040" />}
+                </div>
+
+                {/* Protocolo farmacológico — editável aqui, sem precisar voltar pro
+                    formulário inicial ou começar uma análise nova só pra informar. */}
+                <div
+                  className="rounded-lg p-3 text-[11px]"
+                  style={{ background: "rgba(83,74,183,0.06)", border: "1px solid rgba(83,74,183,0.25)" }}
+                >
+                  {showCompostosEdit ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={formData.compostos}
+                        onChange={(e) => setFormData({ ...formData, compostos: e.target.value })}
+                        placeholder="Ex: Testosterona Enantato 300mg/sem, Trembolona 200mg/sem, Masteron 200mg/sem, HGH 2UI/dia..."
+                        rows={3}
+                        className="w-full rounded-md p-2 text-[12px]"
+                        style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(83,74,183,0.4)", color: "inherit", resize: "vertical" }}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowCompostosEdit(false)}
+                          className="px-3 py-1.5 rounded-md text-[11px] font-semibold"
+                          style={{ background: "#534AB7", color: "#fff" }}
+                        >
+                          Salvar
+                        </button>
+                        <span className="text-muted-foreground self-center">
+                          Vale pra próxima vez que rodar o Dr. VERTEX
+                        </span>
+                      </div>
+                    </div>
+                  ) : formData.compostos ? (
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="font-bold" style={{ color: "#A78BFA" }}>💊 Protocolo informado: </span>
+                        <span className="text-muted-foreground">{formData.compostos}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowCompostosEdit(true)}
+                        className="shrink-0 px-2 py-1 rounded-md text-[10px] font-semibold border"
+                        style={{ borderColor: "rgba(83,74,183,0.5)", color: "#A78BFA" }}
+                      >
+                        editar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowCompostosEdit(true)}
+                      className="text-muted-foreground hover:opacity-80"
+                    >
+                      ➕ Sem protocolo farmacológico informado — clique pra adicionar (opcional)
+                    </button>
+                  )}
                 </div>
 
                 {/* Sub-tabs */}
