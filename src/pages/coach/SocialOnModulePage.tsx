@@ -37,6 +37,7 @@ import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
 import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
+import SocialOnBatchPanel from "@/components/social/SocialOnBatchPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
 import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
 import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
@@ -443,6 +444,7 @@ const SocialOnModulePage = () => {
           <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
+            <TabsTrigger value="lote" className="text-xs gap-1"><Rocket className="w-3 h-3" />Modo Lote</TabsTrigger>
             <TabsTrigger value="signal" className="text-xs gap-1"><Zap className="w-3 h-3" />SIGNAL</TabsTrigger>
             <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
             <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
@@ -1052,6 +1054,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="um_toque" className="mt-4">
             <SocialOnQuickPanel />
+          </TabsContent>
+          <TabsContent value="lote" className="mt-4">
+            <SocialOnBatchPanel />
           </TabsContent>
           <TabsContent value="estrategista" className="mt-4">
             <SocialOnStrategistPanel />

@@ -22,6 +22,7 @@ const SECTIONS: HubSection[] = [
     tools: [
       { id: "signal", name: "SIGNAL", icon: "📡", desc: "Briefing diário completo", hot: true },
       { id: "um_toque", name: "1 Toque", icon: "✦", desc: "Upload → 4 versões prontas", hot: true },
+      { id: "lote", name: "Modo Lote", icon: "🚀", desc: "Sobe a semana toda → agenda sozinho", hot: true, isNew: true },
       { id: "studio", name: "Studio", icon: "🎬", desc: "Legendas auto + editor + 4 versões", hot: true },
       { id: "post_pronto", name: "Post Pronto", icon: "📋", desc: "Templates editáveis" },
       { id: "editor", name: "Editor", icon: "✏️", desc: "Texto + mídia em tempo real" },

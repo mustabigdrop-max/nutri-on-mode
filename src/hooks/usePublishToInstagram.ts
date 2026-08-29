@@ -67,8 +67,61 @@ export function usePublishToInstagram() {
     }
   };
 
+  /** Mesmo pipeline (converte + sobe), mas agenda pra publicar sozinho no horário escolhido. */
+  const schedule = async (opts: {
+    coachId: string;
+    file: UploadableMedia;
+    mediaKind: PublishMediaKind;
+    caption: string;
+    scheduledAt: string | Date;
+    calendarId?: string | null;
+    forceConvert?: boolean;
+  }): Promise<{ post: { id: string } }> => {
+    setPublishing(true);
+    try {
+      const isVideo = opts.mediaKind !== "IMAGE";
+      let toUpload: UploadableMedia = opts.file;
+
+      if (isVideo) {
+        const asFile = opts.file instanceof File
+          ? opts.file
+          : new File([opts.file], `socialon-${Date.now()}.webm`, { type: opts.file.type || "video/webm" });
+        if (opts.forceConvert || ff.needsConversion(asFile)) {
+          setStage("Convertendo vídeo para um formato aceito pelo Instagram...");
+          toUpload = await ff.convertWithFallback(asFile);
+        } else {
+          toUpload = asFile;
+        }
+      }
+
+      setStage("Enviando mídia...");
+      const mediaUrl = await uploadSocialMedia(toUpload, { coachId: opts.coachId, kind: isVideo ? "video" : "image" });
+
+      setStage("Agendando...");
+      const scheduledAtIso = opts.scheduledAt instanceof Date ? opts.scheduledAt.toISOString() : opts.scheduledAt;
+      const { data, error } = await supabase.functions.invoke("instagram-publish", {
+        body: {
+          action: "schedule",
+          kind: opts.mediaKind === "STORIES" ? "stories" : "reel",
+          media_type: opts.mediaKind,
+          media_url: mediaUrl,
+          caption: opts.caption,
+          calendar_id: opts.calendarId ?? null,
+          scheduled_at: scheduledAtIso,
+        },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error);
+      return (data as { result: { post: { id: string } } }).result;
+    } finally {
+      setPublishing(false);
+      setStage("");
+    }
+  };
+
   return {
     publish,
+    schedule,
     publishing,
     stage,
     converting: ff.isConverting,

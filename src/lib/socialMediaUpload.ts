@@ -7,8 +7,13 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const BUCKET = "social-posts";
-/** Tempo de validade da URL assinada — dá folga de sobra pro Instagram baixar e processar o vídeo. */
-const SIGNED_URL_TTL_SECONDS = 3600;
+/**
+ * Tempo de validade padrão da URL assinada. Precisa cobrir tanto uma
+ * publicação imediata quanto um post AGENDADO pra dias à frente — o
+ * agendador só baixa a mídia quando o horário chega, então a URL tem que
+ * continuar válida até lá. 7 dias cobre uma semana inteira de agendamento.
+ */
+const SIGNED_URL_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 export type UploadableMedia = File | Blob;
 
