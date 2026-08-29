@@ -132,7 +132,33 @@ function compress(file: File, max = 1024): Promise<string | null> {
   });
 }
 
-function frameFromUrl(url: string, timeoutMs = 15000): Promise<{ dataUrl: string; video: HTMLVideoElement; duration: number }> {
+/** Frações da duração onde os frames são capturados — cobre abertura, desenvolvimento e fechamento do vídeo. */
+const STORYBOARD_FRACTIONS = [0.06, 0.28, 0.5, 0.72, 0.92];
+
+function captureFrame(v: HTMLVideoElement): string {
+  const c = document.createElement("canvas");
+  let w = v.videoWidth, h = v.videoHeight;
+  if (w > 1024 || h > 1024) {
+    if (w > h) { h = Math.round((h * 1024) / w); w = 1024; } else { w = Math.round((w * 1024) / h); h = 1024; }
+  }
+  c.width = w; c.height = h;
+  c.getContext("2d")?.drawImage(v, 0, 0, w, h);
+  return c.toDataURL("image/jpeg", 0.75);
+}
+
+const seekTo = (v: HTMLVideoElement, t: number): Promise<void> =>
+  new Promise((resolve) => {
+    const onSeek = () => { v.removeEventListener("seeked", onSeek); resolve(); };
+    v.addEventListener("seeked", onSeek);
+    v.currentTime = t;
+  });
+
+/**
+ * Carrega o vídeo e captura vários frames espalhados pela linha do tempo
+ * (abertura, meio, fim) — dá pra IA uma visão do vídeo inteiro, não só de
+ * um instante parado.
+ */
+function storyboardFromUrl(url: string, timeoutMs = 25000): Promise<{ frames: string[]; video: HTMLVideoElement; duration: number }> {
   return new Promise((resolve, reject) => {
     let settled = false;
     const finish = (fn: () => void) => {
@@ -166,20 +192,24 @@ function frameFromUrl(url: string, timeoutMs = 15000): Promise<{ dataUrl: string
     document.body.appendChild(v);
     v.src = url;
     v.onerror = () => finish(() => { v.remove(); reject(new Error("Não consegui ler o vídeo.")); });
-    v.onloadeddata = () => {
-      const onSeek = () => {
-        const c = document.createElement("canvas");
-        let w = v.videoWidth, h = v.videoHeight;
-        if (w > 1024 || h > 1024) {
-          if (w > h) { h = Math.round((h * 1024) / w); w = 1024; } else { w = Math.round((w * 1024) / h); h = 1024; }
+    v.onloadeddata = async () => {
+      const duration = v.duration || 0;
+      const frames: string[] = [];
+      try {
+        for (const frac of STORYBOARD_FRACTIONS) {
+          await seekTo(v, Math.max(0, Math.min(duration || 1, duration * frac)));
+          frames.push(captureFrame(v));
         }
-        c.width = w; c.height = h;
-        c.getContext("2d")?.drawImage(v, 0, 0, w, h);
-        v.removeEventListener("seeked", onSeek);
-        finish(() => resolve({ dataUrl: c.toDataURL("image/jpeg", 0.8), video: v, duration: v.duration || 0 }));
-      };
-      v.addEventListener("seeked", onSeek);
-      v.currentTime = Math.min(1, (v.duration || 5) * 0.15);
+      } catch {
+        // segue com os frames que conseguiu capturar
+      }
+      if (!frames.length) {
+        finish(() => { v.remove(); reject(new Error("Não consegui capturar nenhum frame do vídeo.")); });
+        return;
+      }
+      // reposiciona no primeiro frame pra manter a prévia/reprodução consistente
+      await seekTo(v, Math.max(0, Math.min(duration || 1, duration * STORYBOARD_FRACTIONS[0])));
+      finish(() => resolve({ frames, video: v, duration }));
     };
     v.load();
   });
@@ -267,6 +297,7 @@ export default function SocialOnQuickPanel() {
     }, 3000);
     try {
       let image: string | null = null;
+      let frames: string[] | null = null;
       if (vid) {
         let videoUrl = url;
         if (ffConvert.needsConversion(f)) {
@@ -281,8 +312,10 @@ export default function SocialOnQuickPanel() {
             setBlobUrl(videoUrl);
           }
         }
-        const d = await frameFromUrl(videoUrl);
-        image = d.dataUrl;
+        // Captura vários frames espalhados pelo vídeo inteiro (não só 1 instante
+        // parado), pra IA entender abertura, desenvolvimento e fechamento.
+        const d = await storyboardFromUrl(videoUrl);
+        frames = d.frames;
         vidRef.current = d.video;
         setMediaEl(d.video);
         setDuration(d.duration);
@@ -291,7 +324,9 @@ export default function SocialOnQuickPanel() {
         if (!image) throw new Error("Erro ao processar a imagem.");
       }
       const { data: res, error: fnErr } = await supabase.functions.invoke("prism-analyze", {
-        body: { mode: "social_versoes", image, from_video: vid },
+        body: frames
+          ? { mode: "social_versoes", images: frames, from_video: true }
+          : { mode: "social_versoes", image, from_video: false },
       });
       if (fnErr) throw new Error(fnErr.message);
       if ((res as { error?: string })?.error) throw new Error((res as { error?: string }).error as string);

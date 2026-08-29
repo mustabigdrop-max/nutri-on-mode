@@ -422,7 +422,12 @@ Gere o JSON completo.`;
 
     // ---- MODO SOCIAL VERSOES: 1 mídia -> 4 versões prontas pra postar ----
     if (body?.mode === "social_versoes") {
-      const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
+      const isVideo = !!body?.from_video;
+      // Vídeo manda vários frames espalhados pela linha do tempo (storyboard);
+      // foto manda 1 imagem só. `image` continua aceito por compatibilidade.
+      const storyboard: string[] = isVideo && images.length > 0 ? images
+        : (typeof body?.image === "string" && body.image ? [body.image] : (images[0] ? [images[0]] : []));
+      const frame = storyboard[0] ?? null;
 
       const sysV = `Você é o sistema de conteúdo do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0).
 
@@ -433,6 +438,7 @@ REGRAS:
 - NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
 - Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
 - Cada "texto_video" é curto (máx 6 palavras) e bate forte na tela.
+${isVideo && storyboard.length > 1 ? `- As imagens enviadas são ${storyboard.length} frames tirados EM ORDEM ao longo do vídeo inteiro (abertura → desenvolvimento → fechamento), não fotos soltas. Entenda a cena como uma sequência: o que muda do primeiro pro último frame (movimento, expressão, ambiente, texto na tela do próprio vídeo se houver) e use isso pra escrever com muito mais precisão — cite o que realmente acontece no vídeo, não só o que aparece parado numa foto.` : ""}
 
 Analise a mídia e gere 4 VERSÕES DIFERENTES de conteúdo pro Instagram, cada uma com estilo e propósito próprio.
 
@@ -445,10 +451,10 @@ Responda SOMENTE JSON válido neste schema:
 ]}`;
 
       const vContent: unknown[] = [];
-      if (frame) vContent.push({ type: "image_url", image_url: { url: frame } });
+      storyboard.forEach((f) => vContent.push({ type: "image_url", image_url: { url: f } }));
       vContent.push({
         type: "text",
-        text: `Analise ${frame ? (body?.from_video ? "este frame do vídeo" : "esta imagem") : "o contexto"} e gere as 4 versões.
+        text: `Analise ${frame ? (isVideo ? `esses ${storyboard.length} frames do vídeo, em ordem cronológica` : "esta imagem") : "o contexto"} e gere as 4 versões.
 ${context ? `Contexto do coach: ${context}` : "Sem contexto adicional."}
 Responda JSON puro.`,
       });
@@ -462,8 +468,8 @@ Responda JSON puro.`,
         try {
           await adminClient().from("prism_analyses").insert({
             coach_id: auth.userId,
-            files_count: frame ? 1 : 0,
-            file_types: [body?.from_video ? "video" : "image"],
+            files_count: storyboard.length,
+            file_types: [isVideo ? "video" : "image"],
             context,
             mode: "social_versoes",
             subtype: "4-versoes",
