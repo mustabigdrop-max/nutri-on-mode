@@ -29,6 +29,8 @@ export function usePublishToInstagram() {
     forceConvert?: boolean;
     /** Comentário pra postar sozinho logo após publicar (puxa DM/engajamento). */
     selfComment?: string | null;
+    /** Também posta a mesma mídia nos Stories logo em seguida (mais alcance, sem esforço extra). */
+    alsoStory?: boolean;
   }): Promise<PublishResult> => {
     setPublishing(true);
     try {
@@ -63,7 +65,20 @@ export function usePublishToInstagram() {
       });
       if (error) throw new Error(error.message);
       if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error);
-      return (data as { result: PublishResult }).result;
+      const result = (data as { result: PublishResult }).result;
+
+      if (opts.alsoStory && opts.mediaKind !== "STORIES") {
+        setStage("Postando também nos Stories...");
+        try {
+          await supabase.functions.invoke("instagram-publish", {
+            body: { action: "publish", media_type: "STORIES", media_url: mediaUrl },
+          });
+        } catch {
+          // best-effort: o post principal já saiu, o repost pro Stories é bônus
+        }
+      }
+
+      return result;
     } finally {
       setPublishing(false);
       setStage("");
@@ -81,6 +96,8 @@ export function usePublishToInstagram() {
     forceConvert?: boolean;
     /** Comentário pra postar sozinho logo após publicar (puxa DM/engajamento). */
     selfComment?: string | null;
+    /** Também agenda a mesma mídia pros Stories, no mesmo horário (mais alcance, sem esforço extra). */
+    alsoStory?: boolean;
   }): Promise<{ post: { id: string } }> => {
     setPublishing(true);
     try {
@@ -118,7 +135,19 @@ export function usePublishToInstagram() {
       });
       if (error) throw new Error(error.message);
       if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error);
-      return (data as { result: { post: { id: string } } }).result;
+      const result = (data as { result: { post: { id: string } } }).result;
+
+      if (opts.alsoStory && opts.mediaKind !== "STORIES") {
+        try {
+          await supabase.functions.invoke("instagram-publish", {
+            body: { action: "schedule", kind: "stories", media_type: "STORIES", media_url: mediaUrl, scheduled_at: scheduledAtIso },
+          });
+        } catch {
+          // best-effort: o agendamento principal já foi feito, o repost pro Stories é bônus
+        }
+      }
+
+      return result;
     } finally {
       setPublishing(false);
       setStage("");

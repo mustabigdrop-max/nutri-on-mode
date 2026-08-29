@@ -156,6 +156,7 @@ export default function SocialOnQuickPanel() {
   const [igToken, setIgToken] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
+  const [alsoStory, setAlsoStory] = useState(true);
 
   const canRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const vidRef = useRef<HTMLVideoElement | null>(null);
@@ -355,14 +356,14 @@ export default function SocialOnQuickPanel() {
       const caption = [v.legenda, "", (v.hashtags ?? []).join(" ")].filter(Boolean).join("\n");
       if (isVideo) {
         const blob = await recordStyledVideo();
-        await publish({ coachId, file: blob, mediaKind: "REELS", caption, forceConvert: true, selfComment: v.self_comment });
+        await publish({ coachId, file: blob, mediaKind: "REELS", caption, forceConvert: true, selfComment: v.self_comment, alsoStory });
       } else {
         const c = canRefs.current[current];
         if (!c) throw new Error("Imagem não está pronta.");
         drawResult(c, mediaEl, v.texto_video || "", STYLES[current % STYLES.length]);
         const blob: Blob = await new Promise((resolve, reject) =>
           c.toBlob((b) => (b ? resolve(b) : reject(new Error("Falha ao gerar a imagem."))), "image/jpeg", 0.92));
-        await publish({ coachId, file: blob, mediaKind: "IMAGE", caption, selfComment: v.self_comment });
+        await publish({ coachId, file: blob, mediaKind: "IMAGE", caption, selfComment: v.self_comment, alsoStory });
       }
       toast.success("Publicado no Instagram!");
     } catch (e) {
@@ -512,6 +513,10 @@ export default function SocialOnQuickPanel() {
                   {publishing ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                   {publishing ? (publishStage || "Publicando...") : "PUBLICAR NO INSTAGRAM AGORA"}
                 </button>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                  <input type="checkbox" checked={alsoStory} onChange={(e) => setAlsoStory(e.target.checked)} />
+                  <span style={{ ...fM, fontSize: 11, color: C.textMid }}>Também postar nos Stories (mais alcance, sem esforço extra)</span>
+                </label>
               </>
             ) : ig.account && ig.account.source === "screenshot" ? (
               <>

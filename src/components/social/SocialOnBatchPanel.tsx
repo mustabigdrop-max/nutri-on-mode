@@ -70,6 +70,7 @@ export default function SocialOnBatchPanel() {
   const [items, setItems] = useState<Item[]>([]);
   const [processingAll, setProcessingAll] = useState(false);
   const [schedulingAll, setSchedulingAll] = useState(false);
+  const [alsoStory, setAlsoStory] = useState(true);
   const [showConnect, setShowConnect] = useState(false);
   const [igToken, setIgToken] = useState("");
   const [connecting, setConnecting] = useState(false);
@@ -191,6 +192,7 @@ export default function SocialOnBatchPanel() {
         scheduledAt: new Date(item.scheduledAt),
         forceConvert: false,
         selfComment: item.version.self_comment,
+        alsoStory,
       });
       setItems((p) => p.map((i) => (i.id === item.id ? { ...i, outcome: "scheduled" } : i)));
       toast.success("Agendado!");
@@ -211,6 +213,7 @@ export default function SocialOnBatchPanel() {
         caption,
         forceConvert: false,
         selfComment: item.version.self_comment,
+        alsoStory,
       });
       setItems((p) => p.map((i) => (i.id === item.id ? { ...i, outcome: "published" } : i)));
       toast.success("Publicado!");
@@ -347,14 +350,20 @@ export default function SocialOnBatchPanel() {
           {doneCount > 0 && (
             <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
               {canPublish ? (
-                <button
-                  onClick={scheduleAll}
-                  disabled={schedulingAll || doneCount === scheduledCount}
-                  style={{ width: "100%", padding: "13px 0", background: C.green, border: "none", ...fT, fontSize: 15, color: "#02150E", cursor: schedulingAll ? "default" : "pointer", opacity: schedulingAll ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-                >
-                  {schedulingAll ? <Loader2 size={15} className="animate-spin" /> : <Calendar size={15} />}
-                  {schedulingAll ? "Agendando a semana..." : `AGENDAR A SEMANA TODA (${doneCount - scheduledCount})`}
-                </button>
+                <>
+                  <button
+                    onClick={scheduleAll}
+                    disabled={schedulingAll || doneCount === scheduledCount}
+                    style={{ width: "100%", padding: "13px 0", background: C.green, border: "none", ...fT, fontSize: 15, color: "#02150E", cursor: schedulingAll ? "default" : "pointer", opacity: schedulingAll ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                  >
+                    {schedulingAll ? <Loader2 size={15} className="animate-spin" /> : <Calendar size={15} />}
+                    {schedulingAll ? "Agendando a semana..." : `AGENDAR A SEMANA TODA (${doneCount - scheduledCount})`}
+                  </button>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                    <input type="checkbox" checked={alsoStory} onChange={(e) => setAlsoStory(e.target.checked)} />
+                    <span style={{ ...fM, fontSize: 11, color: C.textMid }}>Também postar cada um nos Stories (mais alcance, sem esforço extra)</span>
+                  </label>
+                </>
               ) : showConnect ? (
                 <>
                   <p style={{ ...fM, fontSize: 11, color: C.textMid, lineHeight: 1.5 }}>
