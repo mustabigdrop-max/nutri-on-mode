@@ -42,6 +42,7 @@ const SECTIONS: HubSection[] = [
       { id: "auditoria", name: "Auditoria", icon: "🔍", desc: "Diagnóstico do perfil" },
       { id: "calendario", name: "Calendário", icon: "📅", desc: "Planejamento visual" },
       { id: "metricas", name: "Métricas", icon: "📊", desc: "KPIs e performance" },
+      { id: "kit_midia", name: "Kit de Mídia", icon: "🎤", desc: "Link p/ convites, palestras e parcerias", hot: true, isNew: true },
     ],
   },
   {

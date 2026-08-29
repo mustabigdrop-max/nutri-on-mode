@@ -29,6 +29,7 @@ import PrismHub from "@/components/social/PrismHub";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
 import ProfileAuditPanel from "@/components/social/ProfileAuditPanel";
 import SocialOnSignalPanel from "@/components/social/SocialOnSignalPanel";
+import MediaKitPanel from "@/components/social/MediaKitPanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
@@ -461,6 +462,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="auditoria" className="text-xs gap-1"><Search className="w-3 h-3" />Auditoria</TabsTrigger>
             <TabsTrigger value="calendario" className="text-xs gap-1"><CalendarDays className="w-3 h-3" />Calendário</TabsTrigger>
             <TabsTrigger value="metricas" className="text-xs gap-1"><BarChart3 className="w-3 h-3" />Métricas</TabsTrigger>
+            <TabsTrigger value="kit_midia" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Kit de Mídia</TabsTrigger>
 
             <TabGroupLabel>📈 Crescimento e vendas</TabGroupLabel>
             <TabsTrigger value="viral" className="text-xs gap-1"><Microscope className="w-3 h-3" />Viral</TabsTrigger>
@@ -915,6 +917,11 @@ const SocialOnModulePage = () => {
                 <p key={String(a)} className="text-sm" style={{ color: "#FFB800" }}>⚠️ {a}</p>
               ))}
             </Section>
+          </TabsContent>
+
+          {/* ─────────── KIT DE MÍDIA ─────────── */}
+          <TabsContent value="kit_midia" className="space-y-4 mt-4">
+            <MediaKitPanel coachId={uid} />
           </TabsContent>
 
           {/* ─────────── ACADEMIA ─────────── */}

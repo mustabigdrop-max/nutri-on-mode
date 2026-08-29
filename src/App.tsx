@@ -139,6 +139,7 @@ const CoachAnamnesisPage = lazy(() => import("./pages/coach/CoachAnamnesisPage")
 const PatientTeamHubPage = lazy(() => import("./pages/coach/PatientTeamHubPage"));
 const MyTeamPage = lazy(() => import("./pages/athlete/MyTeamPage"));
 const AnamnesisPublicPage = lazy(() => import("./pages/AnamnesisPublicPage"));
+const MediaKitPublicPage = lazy(() => import("./pages/MediaKitPublicPage"));
 const APEXPoseAnalysisPage = lazy(() => import("./pages/coach/APEXPoseAnalysisPage"));
 const DrNexusPage = lazy(() => import("./pages/DrNexusPage"));
 const VideoFormPage = lazy(() => import("./pages/VideoFormPage"));
@@ -329,6 +330,7 @@ const App = () => (
             <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/anamneses" element={<CoachToolRoute><ProtectedRoute><CoachAnamnesisPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/anamnese/:token" element={<AnamnesisPublicPage />} />
+            <Route path="/kit/:token" element={<MediaKitPublicPage />} />
             <Route path="/coach/equipe" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
             <Route path="/coach/equipe/:patientId" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
             <Route path="/minha-equipe" element={<ProtectedRoute><MyTeamPage /></ProtectedRoute>} />
