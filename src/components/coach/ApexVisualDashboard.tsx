@@ -1284,13 +1284,15 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [vertexV4Elapsed, setVertexV4Elapsed] = useState(0);
   const [vertexV4Attempts, setVertexV4Attempts] = useState(0);
 
-  // Consentimento de risco virilizante — exigido a cada sessão antes de gerar farmacologia
+  // Consentimento de risco virilizante — exigido a cada sessão antes de gerar farmacologia.
+  // Antes era um AlertDialog (portal + z-index própria) que o coach relatou não abrir
+  // em alguns casos; agora é um bloco inline (mesmo fluxo do documento, sem portal,
+  // sem dependência de z-index) — não tem como "não abrir".
   const [virilizationRiskAccepted, setVirilizationRiskAccepted] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem("apex_virilization_risk_accepted") === "1";
   });
-  const [showVirilizationModal, setShowVirilizationModal] = useState(false);
-  const [pendingVertexAction, setPendingVertexAction] = useState<null | (() => void)>(null);
+  const [showRiskInline, setShowRiskInline] = useState(false);
   // MediaPipe auto-detect bundle (sobrescreve landmarks do sistema quando presente)
   const [mpAutoBundle, setMpAutoBundle] = useState<{
     front: ApexAutoDetectResult | null;
@@ -2095,30 +2097,14 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                   <button
                     type="button"
                     onClick={() => {
-                      console.log("[DR.VERTEX DEBUG] Botão clicado");
-                      console.log("[DR.VERTEX DEBUG] Handler registrado no botão", typeof runVertexV4);
-                      console.log("[DR.VERTEX DEBUG] Props recebidas:", {
-                        analysisId: savedAnalysisId,
-                        compounds: formData?.compostos,
-                        profileData: { athlete, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte },
-                      });
-                      console.log("[DR.VERTEX DEBUG] Estados de bloqueio:", {
-                        vertexV4Loading,
-                        virilizationRiskAccepted,
-                        temAnaliseAnterior: !!vertexV4Analysis,
-                      });
                       if (vertexV4Loading) {
-                        console.warn("[DR.VERTEX DEBUG] Clique ignorado: análise em andamento");
                         toast({ title: "Dr. VERTEX v4.0", description: `Análise em andamento (${vertexV4Elapsed}s). Aguarde a conclusão.` });
                         return;
                       }
                       if (virilizationRiskAccepted) {
-                        console.log("[DR.VERTEX DEBUG] Risco aceito → chamando runVertexV4()");
                         runVertexV4();
                       } else {
-                        console.log("[DR.VERTEX DEBUG] Risco NÃO aceito → abrindo modal de consentimento (ação pendente)");
-                        setPendingVertexAction(() => () => runVertexV4());
-                        setShowVirilizationModal(true);
+                        setShowRiskInline(true);
                       }
                     }}
                     className="px-[18px] py-[10px] text-[13px] font-semibold rounded-md border transition-all"
@@ -2158,6 +2144,52 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                     <span className="text-[10px] font-mono" style={{ color: "#34D399" }}>
                       ✓ Análise PhD ativa — JSON estruturado
                     </span>
+                  )}
+
+                  {/* Consentimento de risco — inline (não é modal: sem portal, sem z-index,
+                      renderiza sempre no fluxo normal da página, então não tem como "não abrir"). */}
+                  {showRiskInline && !virilizationRiskAccepted && (
+                    <div
+                      className="w-full rounded-xl p-4 mt-1 text-[12px] space-y-3"
+                      style={{ background: "rgba(217,64,64,0.06)", border: "1px solid #D9404066" }}
+                    >
+                      <div className="font-bold flex items-center gap-2" style={{ color: "#FF6B6B" }}>
+                        ⚠️ Consentimento de risco — Farmacologia
+                      </div>
+                      <div style={{ color: "hsl(var(--muted-foreground))", lineHeight: 1.6 }}>
+                        Toda recomendação farmacológica gerada pelo <b style={{ color: "#A78BFA" }}>Dr. VERTEX</b> envolve
+                        compostos androgênicos/anabolizantes com <b style={{ color: "#FF6B6B" }}>risco virilizante</b> (especialmente
+                        em atletas femininas): engrossamento da voz, hirsutismo, clitoromegalia, acne severa, queda capilar,
+                        alteração do ciclo menstrual — alguns efeitos podem ser <b>irreversíveis</b>. Esta ferramenta é destinada
+                        a <b>profissionais qualificados</b>. Ao continuar, você confirma que o atleta tem ≥ 18 anos e consentiu o
+                        uso, que há acompanhamento médico e exames laboratoriais em dia, que você compreende os sinais de
+                        virilização e interromperá o protocolo ao primeiro sinal, e que a responsabilidade clínica é sua — o
+                        NutriON não prescreve medicamentos.
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => setShowRiskInline(false)}
+                          className="px-3 py-1.5 rounded-md border text-[11px] font-semibold"
+                          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVirilizationRiskAccepted(true);
+                            try { sessionStorage.setItem("apex_virilization_risk_accepted", "1"); } catch { /* sessionStorage indisponível */ }
+                            setShowRiskInline(false);
+                            runVertexV4();
+                          }}
+                          className="px-3 py-1.5 rounded-md text-[11px] font-semibold"
+                          style={{ background: "#D94040", color: "#fff" }}
+                        >
+                          Entendi os riscos — iniciar análise
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {/* Tela de status */}
@@ -2972,67 +3004,6 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               style={{ background: APEX.crimson, color: "#fff", border: "none" }}
             >
               Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Consentimento obrigatório — risco virilizante antes de gerar farmacologia */}
-      <AlertDialog
-        open={showVirilizationModal}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowVirilizationModal(false);
-            setPendingVertexAction(null);
-          }
-        }}
-      >
-        <AlertDialogContent style={{ background: APEX.surface, border: `1px solid #D94040`, color: APEX.textPrimary, maxWidth: 540 }}>
-          <AlertDialogHeader>
-            <AlertDialogTitle style={{ color: "#FF6B6B", display: "flex", alignItems: "center", gap: 8 }}>
-              ⚠️ Consentimento de risco — Farmacologia
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div style={{ color: APEX.textSecondary, fontSize: 13, lineHeight: 1.55, marginTop: 8 }}>
-                <p style={{ marginBottom: 10 }}>
-                  Toda recomendação farmacológica gerada pelo <b style={{ color: "#A78BFA" }}>Dr. VERTEX</b> envolve compostos
-                  androgênicos/anabolizantes com <b style={{ color: "#FF6B6B" }}>risco virilizante</b> (especialmente em atletas
-                  femininas): engrossamento da voz, hirsutismo, clitoromegalia, acne severa, queda capilar, alteração do ciclo
-                  menstrual — alguns efeitos podem ser <b>irreversíveis</b>.
-                </p>
-                <p style={{ marginBottom: 10 }}>
-                  Esta ferramenta é destinada a <b>profissionais qualificados</b>. Você confirma que:
-                </p>
-                <ul style={{ paddingLeft: 18, marginBottom: 10, listStyle: "disc" }}>
-                  <li>O atleta tem <b>≥ 18 anos</b> e consentiu o uso.</li>
-                  <li>Há <b>acompanhamento médico</b> e exames laboratoriais em dia.</li>
-                  <li>Você compreende os <b>sinais de virilização</b> e interromperá o protocolo ao primeiro sinal.</li>
-                  <li>A responsabilidade clínica é <b>sua</b> — o NutriON não prescreve medicamentos.</li>
-                </ul>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              style={{ background: "transparent", color: APEX.textSecondary, border: `1px solid ${APEX.border}` }}
-              onClick={() => { setShowVirilizationModal(false); setPendingVertexAction(null); }}
-            >
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                console.log("[DR.VERTEX DEBUG] Consentimento aceito no modal de virilização");
-                setVirilizationRiskAccepted(true);
-                try { sessionStorage.setItem("apex_virilization_risk_accepted", "1"); } catch {}
-                setShowVirilizationModal(false);
-                const action = pendingVertexAction;
-                setPendingVertexAction(null);
-                console.log("[DR.VERTEX DEBUG] Ação pendente presente?", !!action);
-                if (action) action();
-              }}
-              style={{ background: "#D94040", color: "#fff", border: "none", fontWeight: 700 }}
-            >
-              Aceito o risco e prosseguir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
