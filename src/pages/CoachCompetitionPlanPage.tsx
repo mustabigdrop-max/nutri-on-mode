@@ -95,7 +95,7 @@ const CoachCompetitionPlanPage = () => {
 
       if (error || !data) {
         toast({ title: "Plano não encontrado", variant: "destructive" });
-        navigate(-1);
+        navigate("/coach/dashboard");
         return;
       }
       const p = data as unknown as Plan;
@@ -133,7 +133,7 @@ const CoachCompetitionPlanPage = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
         <div className="relative px-4 pt-4 pb-6 max-w-5xl mx-auto">
           <div className="flex items-center gap-2 mb-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/coach/dashboard")}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <Trophy className="w-5 h-5 text-primary" />

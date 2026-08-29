@@ -27,6 +27,8 @@ import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
 import PrismHub from "@/components/social/PrismHub";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
+import ProfileAuditPanel from "@/components/social/ProfileAuditPanel";
+import SocialOnSignalPanel from "@/components/social/SocialOnSignalPanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
@@ -36,6 +38,11 @@ import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
+import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
+import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
+import SocialOnMonetizationPanel from "@/components/social/SocialOnMonetizationPanel";
+import SocialOnStudioPanel from "@/components/social/SocialOnStudioPanel";
+import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
@@ -105,6 +112,8 @@ const SocialOnModulePage = () => {
   const uid = user?.id ?? "";
 
   const [tab, setTab] = useState("um_toque");
+  const [view, setView] = useState<"hub" | "tool">("hub");
+  const goTab = (t: string) => { setTab(t); setView("tool"); };
   const [loading, setLoading] = useState(true);
 
   // profile
@@ -352,7 +361,7 @@ const SocialOnModulePage = () => {
     setObjective(idea.objective);
     setProduct(PRODUCT_LADDER.find((p) => p.ideas.includes(idea))?.name.split(" ")[0] ?? null);
     setTopic(idea.topic);
-    setTab("criar");
+    goTab("criar");
     toast.success("Seleção preenchida — clique em GERAR CONTEÚDO");
   };
 
@@ -399,15 +408,48 @@ const SocialOnModulePage = () => {
       </header>
 
       <main className="max-w-5xl mx-auto p-4">
+        {view === "hub" ? (
+          <SocialOnHub
+            handle={ig.account?.username || handle}
+            stats={[
+              {
+                label: "Posts este mês",
+                value: String(contents.filter((c) => (c.scheduled_date || c.created_at).slice(0, 7) === new Date().toISOString().slice(0, 7)).length),
+                color: "#00D4FF",
+              },
+              {
+                label: "Seguidores",
+                value: ig.account?.followers_count != null
+                  ? ig.account.followers_count >= 1000
+                    ? `${(ig.account.followers_count / 1000).toFixed(1)}k`
+                    : String(ig.account.followers_count)
+                  : "—",
+                color: "#22C55E",
+              },
+              { label: "Brand Score", value: bioScore != null ? String(bioScore) : "—", color: "#B8922A" },
+            ]}
+            onOpenTool={goTab}
+          />
+        ) : (
+        <>
+        <button
+          type="button"
+          onClick={() => setView("hub")}
+          className="mb-3 flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Hub SOCIAL ON
+        </button>
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto gap-1 bg-transparent">
+          <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
+            <TabsTrigger value="signal" className="text-xs gap-1"><Zap className="w-3 h-3" />SIGNAL</TabsTrigger>
             <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
             <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
 
             <TabGroupLabel>🧭 Estratégia e planejamento</TabGroupLabel>
+            <TabsTrigger value="intelligence" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Intelligence</TabsTrigger>
             <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
             <TabsTrigger value="estrategista" className="text-xs gap-1"><Brain className="w-3 h-3" />Estrategista</TabsTrigger>
             <TabsTrigger value="pro" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Social ON Pro</TabsTrigger>
@@ -425,6 +467,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="dm" className="text-xs gap-1"><MessageSquare className="w-3 h-3" />DM &amp; Objeções</TabsTrigger>
             <TabsTrigger value="prova" className="text-xs gap-1"><Camera className="w-3 h-3" />Prova social</TabsTrigger>
             <TabsTrigger value="esteira" className="text-xs gap-1"><ShoppingCart className="w-3 h-3" />Esteira</TabsTrigger>
+            <TabsTrigger value="monetizacao" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Monetização</TabsTrigger>
 
             <TabGroupLabel>🎓 Aprender</TabGroupLabel>
             <TabsTrigger value="academia" className="text-xs gap-1"><GraduationCap className="w-3 h-3" />Academia</TabsTrigger>
@@ -460,6 +503,16 @@ const SocialOnModulePage = () => {
                 if (acc?.biography) setBioCurrent(acc.biography);
               }}
               onDisconnect={ig.disconnect}
+              onAnalyzeScreenshot={ig.analyzeScreenshot}
+              onConnectManual={async (data) => {
+                const acc = await ig.connectManual(data);
+                if (acc?.username) {
+                  setHandle(acc.username);
+                  await saveProfile({ instagram_handle: acc.username, bio_current: acc.biography || bioCurrent });
+                  if (acc.biography) setBioCurrent(acc.biography);
+                }
+                setStep((s) => Math.max(s, 2));
+              }}
             />
 
             <div className="flex items-center gap-2">
@@ -498,38 +551,17 @@ const SocialOnModulePage = () => {
             )}
 
             {step === 2 && (
-              <Section title="Análise da bio">
-                <Textarea value={bioCurrent} onChange={(e) => setBioCurrent(e.target.value)} rows={5} placeholder="Cole sua bio atual" />
+              <div className="space-y-3">
+                <ProfileAuditPanel
+                  handle={handle}
+                  bio={bioCurrent}
+                  profileName={ig.account?.full_name || ""}
+                  ctx={{ niches, products, differentials }}
+                />
                 <div className="flex flex-wrap gap-2 pt-1">
-                  <Button onClick={runBioAudit} disabled={busy === "bio"} className="gap-2">
-                    {busy === "bio" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Analisar
-                  </Button>
+                  <Button onClick={() => setStep(3)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button>
                 </div>
-
-                {bioResult && (
-                  <div className="space-y-3">
-                    <p className="text-2xl font-bold font-mono" style={{ color: ACCENT }}>{bioResult.score}/100</p>
-                    <div className="space-y-1">
-                      {(bioResult.criteria || []).map((c: any) => (
-                        <div key={c.key} className="flex items-center justify-between text-sm">
-                          <span className={c.ok ? "text-foreground" : "text-muted-foreground"}>{c.ok ? "☑" : "☐"} {c.label}</span>
-                          <span className="font-mono text-xs" style={{ color: c.ok ? "#00FF88" : "#FF5C5C" }}>{c.points > 0 ? `+${c.points}` : c.points}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {(bioResult.options || []).map((o: any) => (
-                      <div key={o.id} className="rounded-lg border p-3 space-y-2" style={{ borderColor: `${ACCENT}22` }}>
-                        <p className="text-[11px] uppercase font-mono text-muted-foreground">Opção {o.id} ({o.style})</p>
-                        <pre className="text-sm whitespace-pre-wrap font-sans">{o.bio}</pre>
-                        <Button size="sm" variant="outline" className="gap-2" onClick={() => copy(o.bio)}>
-                          <Copy className="w-3 h-3" /> Copiar {o.id}
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-2 pt-1"><Button onClick={() => setStep(3)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button></div>
-              </Section>
+              </div>
             )}
 
             {step === 3 && (
@@ -1024,8 +1056,25 @@ const SocialOnModulePage = () => {
           <TabsContent value="estrategista" className="mt-4">
             <SocialOnStrategistPanel />
           </TabsContent>
+          <TabsContent value="intelligence" className="mt-0">
+            <SocialOnCriticalPanel />
+          </TabsContent>
+          <TabsContent value="vitrine" className="mt-0">
+            <SocialOnVitrinePanel />
+          </TabsContent>
+          <TabsContent value="monetizacao" className="mt-0">
+            <SocialOnMonetizationPanel />
+          </TabsContent>
+          <TabsContent value="studio" className="mt-0">
+            <SocialOnStudioPanel />
+          </TabsContent>
+          <TabsContent value="signal" className="mt-0">
+            <SocialOnSignalPanel />
+          </TabsContent>
 
         </Tabs>
+        </>
+        )}
       </main>
     </div>
   );

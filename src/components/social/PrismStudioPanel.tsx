@@ -315,7 +315,7 @@ export default function PrismStudioPanel({
             <input
               ref={inputRef}
               type="file"
-              accept="image/*,video/*,.heic,.heif,.mov,.avi,.mkv,.m4v,.3gp"
+              accept="image/*,video/mp4,video/quicktime,video/webm,video/x-msvideo,video/3gpp,video/*,.heic,.heif"
               multiple
               hidden
               onChange={(e) => { addFiles(e.target.files); e.currentTarget.value = ""; }}

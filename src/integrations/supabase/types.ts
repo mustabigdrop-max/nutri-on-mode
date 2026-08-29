@@ -10302,13 +10302,14 @@ export type Database = {
           page_id: string | null
           profile_picture_url: string | null
           recent_media: Json | null
+          source: string
           synced_at: string | null
           token_expires_at: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
-          access_token: string
+          access_token?: string
           biography?: string | null
           coach_id: string
           connected_at?: string
@@ -10320,6 +10321,7 @@ export type Database = {
           page_id?: string | null
           profile_picture_url?: string | null
           recent_media?: Json | null
+          source?: string
           synced_at?: string | null
           token_expires_at?: string | null
           updated_at?: string
@@ -10338,6 +10340,7 @@ export type Database = {
           page_id?: string | null
           profile_picture_url?: string | null
           recent_media?: Json | null
+          source?: string
           synced_at?: string | null
           token_expires_at?: string | null
           updated_at?: string

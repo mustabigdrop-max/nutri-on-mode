@@ -212,7 +212,7 @@ export default function LearnPage() {
       <div className="sticky top-0 z-10 border-b border-border/40 backdrop-blur-xl bg-[#0A0A0F]/80">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/coach/dashboard")}
             className="h-9 w-9 rounded-lg border border-border flex items-center justify-center hover:bg-muted/30 transition"
             aria-label="Voltar"
           >

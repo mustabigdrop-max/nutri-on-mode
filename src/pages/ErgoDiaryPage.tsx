@@ -262,7 +262,7 @@ export default function ErgoDiaryPage() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/coach/dashboard")}
             className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] opacity-70 hover:opacity-100"
             style={{ fontFamily: FONT_MONO, color: PALETTE.cream }}
           >

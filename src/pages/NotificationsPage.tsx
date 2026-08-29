@@ -18,7 +18,7 @@ const NotificationsPage = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto space-y-4">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
+        <Button variant="ghost" onClick={() => navigate("/coach/dashboard")}>
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
         </Button>
 

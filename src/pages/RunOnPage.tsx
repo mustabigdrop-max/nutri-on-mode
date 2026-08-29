@@ -719,7 +719,7 @@ export default function RunOnPage() {
 
             <div className="flex flex-col items-end gap-2 shrink-0">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/coach/dashboard")}
                 className="runon-back"
                 style={{ ...mono(7, RC.cyan, 2), border: `1px solid ${RC.cyan}22`, borderRadius: 4, padding: "6px 12px" }}
               >

@@ -427,7 +427,7 @@ const MicrobiomePage = () => {
       <div className="max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg border border-green-900/40 hover:bg-green-900/10">
+          <button onClick={() => navigate("/coach/dashboard")} className="p-2 rounded-lg border border-green-900/40 hover:bg-green-900/10">
             <ArrowLeft className="w-4 h-4 text-green-400" />
           </button>
           <div className="flex-1">

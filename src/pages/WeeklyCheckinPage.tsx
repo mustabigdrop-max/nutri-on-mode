@@ -139,7 +139,7 @@ const WeeklyCheckinPage = () => {
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/coach/dashboard")}><ArrowLeft className="h-5 w-5" /></Button>
           <div>
             <h1 className="text-2xl font-bold">Check-in da Semana</h1>
             <p className="text-sm text-muted-foreground">Etapa {step + 1} de {STEPS.length} — {STEPS[step]}</p>

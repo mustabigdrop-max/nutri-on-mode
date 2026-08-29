@@ -58,7 +58,7 @@ const ConsentGate = ({ onAccept }: ConsentGateProps) => {
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/coach/dashboard")}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar

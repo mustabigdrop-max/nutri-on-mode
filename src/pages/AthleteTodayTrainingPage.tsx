@@ -252,7 +252,7 @@ export default function AthleteTodayTrainingPage() {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-3xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+          <Button variant="ghost" onClick={() => navigate("/coach/dashboard")} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
           </Button>
           <Card className="p-8 text-center">
@@ -268,7 +268,7 @@ export default function AthleteTodayTrainingPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-3xl mx-auto p-6 space-y-6">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
+        <Button variant="ghost" onClick={() => navigate("/coach/dashboard")}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
         </Button>
 

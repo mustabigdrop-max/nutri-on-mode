@@ -384,7 +384,7 @@ export default function APEXPoseAnalysisPage() {
       {/* Top bar */}
       <header className="apex-no-print" style={{ borderBottom: `1px solid ${C.border}`, background: C.card }}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm" style={{ color: C.textSec }}>
+          <button onClick={() => navigate("/coach/dashboard")} className="flex items-center gap-1 text-sm" style={{ color: C.textSec }}>
             <ArrowLeft size={16} /> Voltar
           </button>
           <div className="flex items-center gap-2 ml-2">
