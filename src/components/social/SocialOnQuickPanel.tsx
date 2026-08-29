@@ -450,7 +450,7 @@ export default function SocialOnQuickPanel() {
 
   const publishNow = async () => {
     if (!coachId || !versions || !v) return;
-    if (!ig.account) { setShowConnect(true); return; }
+    if (!ig.account || ig.account.source === "screenshot") { setShowConnect(true); return; }
     try {
       const caption = [v.legenda, "", (v.hashtags ?? []).join(" ")].filter(Boolean).join("\n");
       if (isVideo) {
@@ -595,7 +595,7 @@ export default function SocialOnQuickPanel() {
           </div>
 
           <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
-            {ig.account ? (
+            {ig.account && ig.account.source !== "screenshot" ? (
               <>
                 <span style={{ ...fM, fontSize: 11, color: C.green, display: "flex", alignItems: "center", gap: 6 }}>
                   <Instagram size={12} /> @{ig.account.username ?? ig.account.ig_user_id} conectado
@@ -611,6 +611,21 @@ export default function SocialOnQuickPanel() {
                 >
                   {publishing ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                   {publishing ? (publishStage || "Publicando...") : "PUBLICAR NO INSTAGRAM AGORA"}
+                </button>
+              </>
+            ) : ig.account && ig.account.source === "screenshot" ? (
+              <>
+                <span style={{ ...fM, fontSize: 11, color: C.textMid, display: "flex", alignItems: "center", gap: 6 }}>
+                  <Instagram size={12} /> @{ig.account.username} conectado (só leitura, via print)
+                </span>
+                <p style={{ ...fM, fontSize: 11, color: C.textMid, lineHeight: 1.5 }}>
+                  Pra publicar automaticamente daqui, sua conta precisa estar conectada com o token da Meta (opção avançada) — a conexão por print só traz nome/bio/números.
+                </p>
+                <button
+                  onClick={() => setShowConnect(true)}
+                  style={{ width: "100%", padding: "11px 0", background: "transparent", border: `1px dashed ${C.border}`, ...fT, fontSize: 13, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                >
+                  <Instagram size={14} color={C.gold} /> CONECTAR COM TOKEN
                 </button>
               </>
             ) : showConnect ? (
