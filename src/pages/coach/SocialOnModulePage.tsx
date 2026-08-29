@@ -412,6 +412,9 @@ const SocialOnModulePage = () => {
         {view === "hub" ? (
           <SocialOnHub
             handle={ig.account?.username || handle}
+            niches={niches}
+            products={products}
+            differentials={differentials}
             stats={[
               {
                 label: "Posts este mês",

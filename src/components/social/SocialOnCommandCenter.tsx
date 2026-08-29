@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const C = {
@@ -27,7 +28,42 @@ interface Brief {
   alerts?: { icon?: string; text?: string; color_hint?: string }[];
 }
 
-function DailyCoach({ brief, loading }: { brief: Brief | null; loading: boolean }) {
+interface ReadyContent { hook?: string; caption?: string; cta?: string; hashtags?: string[] }
+
+const readyText = (r: ReadyContent) =>
+  [r.hook, "", r.caption, "", r.cta, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
+
+const copyReady = (r: ReadyContent) => {
+  navigator.clipboard.writeText(readyText(r));
+  toast.success("Copiado — já pode colar e postar");
+};
+
+function DailyCoach({
+  brief, loading, identity,
+}: {
+  brief: Brief | null; loading: boolean;
+  identity: { handle?: string; niches?: string[]; products?: string[]; differentials?: string[] };
+}) {
+  const [ready, setReady] = useState<Record<number, ReadyContent>>({});
+  const [generating, setGenerating] = useState<number | null>(null);
+
+  const generateReady = async (i: number, action: BriefAction) => {
+    setGenerating(i);
+    try {
+      const r = await callSocialAI({
+        mode: "caption",
+        format: "post_unico",
+        topic: [action.title, action.detail].filter(Boolean).join(" — "),
+        ...identity,
+      });
+      setReady((p) => ({ ...p, [i]: r as ReadyContent }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não consegui gerar o conteúdo");
+    } finally {
+      setGenerating(null);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ background: C.s1, border: `1px solid ${C.border}`, borderRadius: 10, padding: 20 }}>
@@ -54,7 +90,7 @@ function DailyCoach({ brief, loading }: { brief: Brief | null; loading: boolean 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 20 }}>🧠</span>
           <div>
-            <div style={{ fontFamily: F.m, fontSize: 8, color: C.cyan, letterSpacing: 2 }}>COACH IA</div>
+            <div style={{ fontFamily: F.m, fontSize: 8, color: C.cyan, letterSpacing: 2 }}>PLANO DE HOJE</div>
             <div style={{ fontFamily: F.t, fontSize: 16, fontWeight: 700, color: C.white }}>{brief.greeting}</div>
           </div>
         </div>
@@ -81,6 +117,46 @@ function DailyCoach({ brief, loading }: { brief: Brief | null; loading: boolean 
                 <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.4 }}>{action.detail}</div>
                 {action.time && (
                   <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, marginTop: 3 }}>⏰ {action.time}</div>
+                )}
+
+                {action.type !== "analisar" && !ready[i] && (
+                  <button
+                    type="button"
+                    onClick={() => generateReady(i, action)}
+                    disabled={generating === i}
+                    style={{
+                      marginTop: 8, padding: "6px 12px", background: `${C.cyan}12`, border: `1px solid ${C.cyan}40`,
+                      borderRadius: 6, cursor: generating === i ? "default" : "pointer", fontFamily: F.t,
+                      fontSize: 11, fontWeight: 700, color: C.cyan, opacity: generating === i ? 0.6 : 1,
+                    }}
+                  >
+                    {generating === i ? "Gerando..." : "✦ GERAR PRONTO PRA POSTAR"}
+                  </button>
+                )}
+
+                {ready[i] && (
+                  <div style={{ marginTop: 8, background: C.s3, border: `1px solid ${C.border}`, borderRadius: 8, padding: 10 }}>
+                    <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                      {readyText(ready[i])}
+                    </div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => copyReady(ready[i])}
+                        style={{ flex: 1, padding: "6px 0", background: C.cyan, border: "none", borderRadius: 6, cursor: "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: C.bg }}
+                      >
+                        COPIAR
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => generateReady(i, action)}
+                        disabled={generating === i}
+                        style={{ padding: "6px 10px", background: "transparent", border: `1px solid ${C.border}`, borderRadius: 6, cursor: "pointer", fontFamily: F.m, fontSize: 10, color: C.muted }}
+                      >
+                        outra versão
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -319,14 +395,18 @@ function ZoneCard({ icon, name, desc, color, count, onClick }: {
 // ═══════════════════════════════════════════════════
 interface Props {
   handle?: string;
+  niches?: string[];
+  products?: string[];
+  differentials?: string[];
   stats?: { label: string; value: string; color: string }[];
   weekPosted?: boolean[];
   onOpenTool?: (id: string) => void;
 }
 
-export default function SocialOnCommandCenter({ handle, stats, weekPosted, onOpenTool }: Props) {
+export default function SocialOnCommandCenter({ handle, niches, products, differentials, stats, weekPosted, onOpenTool }: Props) {
   const [brief, setBrief] = useState<Brief | null>(null);
   const [briefLoading, setBriefLoading] = useState(true);
+  const identity = { handle, niches, products, differentials };
 
   useEffect(() => {
     (async () => {
@@ -378,7 +458,7 @@ export default function SocialOnCommandCenter({ handle, stats, weekPosted, onOpe
 
       {/* Two columns */}
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 14, alignItems: "start" }}>
-        <DailyCoach brief={brief} loading={briefLoading} />
+        <DailyCoach brief={brief} loading={briefLoading} identity={identity} />
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ContentScore />
           <QuickActions onOpenTool={onOpenTool} />
@@ -389,7 +469,7 @@ export default function SocialOnCommandCenter({ handle, stats, weekPosted, onOpe
       {/* Activity Feed */}
       {brief?.alerts && brief.alerts.length > 0 && (
         <div style={{ background: C.s1, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px" }}>
-          <div style={{ fontFamily: F.m, fontSize: 8, color: C.muted, letterSpacing: 2, marginBottom: 10 }}>ALERTAS DO COACH IA</div>
+          <div style={{ fontFamily: F.m, fontSize: 8, color: C.muted, letterSpacing: 2, marginBottom: 10 }}>ALERTAS DO DIA</div>
           {brief.alerts.map((a, i) => (
             <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
               <span style={{ fontSize: 14 }}>{a.icon}</span>

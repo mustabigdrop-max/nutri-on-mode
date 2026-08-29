@@ -136,10 +136,16 @@ function ToolCard({ tool, accent, onClick }: { tool: Tool; accent: string; onCli
 
 export default function SocialOnHub({
   handle,
+  niches,
+  products,
+  differentials,
   stats,
   onOpenTool,
 }: {
   handle?: string;
+  niches?: string[];
+  products?: string[];
+  differentials?: string[];
   stats: { label: string; value: string; color: string }[];
   onOpenTool: (tabId: string) => void;
 }) {
@@ -160,7 +166,7 @@ export default function SocialOnHub({
 
       {/* Command Center */}
       <div style={{ marginBottom: 24 }}>
-        <SocialOnCommandCenter handle={handle} stats={stats} onOpenTool={onOpenTool} />
+        <SocialOnCommandCenter handle={handle} niches={niches} products={products} differentials={differentials} stats={stats} onOpenTool={onOpenTool} />
       </div>
 
       {/* Hero: 1 Toque CTA */}
