@@ -64,10 +64,13 @@ function DailyCoach({
   const [publishingIdx, setPublishingIdx] = useState<number | null>(null);
   const { publish, publishCarousel } = usePublishToInstagram();
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  const coverFileRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
-  const generateReady = async (i: number, action: BriefAction) => {
+  /** Gera o carrossel de cards; se `coverFile` vier, a capa usa sua foto real de fundo em vez do gradiente puro. */
+  const generateReady = async (i: number, action: BriefAction, coverFile?: File) => {
     setGenerating(i);
     try {
+      const coverImage = coverFile ? await compressImageFile(coverFile) : null;
       const r = await callSocialAI({
         mode: "post_package",
         format: "carrossel",
@@ -80,12 +83,15 @@ function DailyCoach({
       const slideImages = await Promise.all(
         slides.map((s, idx) => {
           const isCover = idx === 0;
+          const hasCoverPhoto = isCover && !!coverImage;
           return renderSlide({
             title: s.title || "",
             body: s.body,
             eyebrow: isCover ? "MÉTODO MCE" : `0${idx + 1}`,
             accent: isCover ? C.gold : C.cyan,
             gradient: isCover ? ["#0d0904", "#1c1006"] : ["#020510", "#03141c"],
+            backgroundImage: hasCoverPhoto ? coverImage : null,
+            overlay: hasCoverPhoto ? "rgba(10,6,2,0.62)" : undefined,
             footer,
           });
         }),
@@ -261,6 +267,26 @@ function DailyCoach({
                       }}
                     >
                       📷 USAR MINHA FOTO/VÍDEO
+                    </button>
+                    <input
+                      ref={(el) => { coverFileRefs.current[i] = el; }}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) generateReady(i, action, f); e.target.value = ""; }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => coverFileRefs.current[i]?.click()}
+                      disabled={generating === i}
+                      title="Carrossel de cards, mas com sua foto real na capa — melhor pra viralizar"
+                      style={{
+                        padding: "6px 12px", background: `${C.purple}12`, border: `1px solid ${C.purple}40`,
+                        borderRadius: 6, cursor: generating === i ? "default" : "pointer", fontFamily: F.t,
+                        fontSize: 11, fontWeight: 700, color: C.purple, opacity: generating === i ? 0.6 : 1,
+                      }}
+                    >
+                      🖼️ CAPA COM SUA FOTO
                     </button>
                   </div>
                 )}
