@@ -2536,8 +2536,17 @@ function OverlayLayer({
       <div className="absolute inset-0 pointer-events-none">
         {/* Education Mode balloons — apenas quando eduMode ativo (toggle) */}
         {eduMode && (() => {
+          // Só mostra a tag educativa em landmarks com desvio de verdade —
+          // antes, aparecia uma pra cada ombro/quadril/joelho sempre, mesmo
+          // 100% normais, virando uma pilha de caixinhas sobrepostas na foto.
+          const deviatedAnchors = new Set(
+            Object.entries(data.angles || {})
+              .filter(([, a]) => severityOf(a.value, a.normal) !== "ok")
+              .map(([k]) => anchorLandmark(data.view, k))
+              .filter(Boolean),
+          );
           const eduItems = Object.entries(lm)
-            .filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k]);
+            .filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k] && deviatedAnchors.has(k));
 
           // Collapse bilateral pairs (left/right < 10% distance)
           type EduItem = { keys: string[]; anchors: Landmark[]; label: string; reveals: string; dom?: string; inh?: string };

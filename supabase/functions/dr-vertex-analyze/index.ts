@@ -346,7 +346,11 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        // Schema muito grande/estrito (5 seções obrigatórias, várias com arrays
+        // de objetos com 10+ campos required) — flash falha ou devolve JSON
+        // incompleto com frequência nesse tamanho. Pro é o que as outras
+        // funções com schema pesado (stratum-analyze, prism-analyze, etc) usam.
+        model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: VERTEX_SYSTEM_PROMPT },
           { role: "user", content: userPrompt },

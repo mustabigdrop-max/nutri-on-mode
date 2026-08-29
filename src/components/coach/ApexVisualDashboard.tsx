@@ -2,12 +2,13 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { autoDetectAllViews, mergeAiWithMediaPipe, type ApexAutoDetectResult, type DetectionSource } from "@/lib/apexAutoDetect";
 import ApexPlanoMestre from "@/components/coach/ApexPlanoMestre";
 import ApexReportExport from "@/components/coach/ApexReportExport";
+import { prettyLabel } from "@/lib/apexReportImage";
 
 const VERTEX_ERROR_INFO: Record<string, { icon: string; label: string; hint: string }> = {
   timeout: {
     icon: "⏱",
     label: "Timeout na análise",
-    hint: "O modelo demorou demais para responder. Tente novamente — normalmente conclui em ~45s.",
+    hint: "O modelo demorou demais para responder. Tente novamente — normalmente conclui em 60-90s.",
   },
   not_found: {
     icon: "🔍",
@@ -894,7 +895,9 @@ const parseSegments = (text: string) => {
       const rest = restParts.join(":");
       const score = parseInt(rest.match(/(\d+)\/10/)?.[1] || "0", 10);
       const diag = rest.replace(/\d+\/10/, "").replace(/^[\s\-—]+/, "").trim();
-      return { label: labelPart.trim(), score, diag };
+      // O sistema às vezes escreve o rótulo em CAIXA_COM_UNDERSCORE
+      // (ex.: "DELTOIDES_POSTERIORES") — prettyLabel deixa sempre legível.
+      return { label: prettyLabel(labelPart.trim()), score, diag };
     })
     .filter(s => s.label && s.score > 0);
 };
@@ -1409,7 +1412,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   // Dr. VERTEX v4.0 — dispara análise farmacológica PhD em JSON
   const runVertexV4 = useCallback(async () => {
     console.log("[DR.VERTEX DEBUG] runVertexV4() iniciado");
-    toast({ title: "Dr. VERTEX v4.0", description: "Análise farmacológica iniciada — leva ~45s." });
+    toast({ title: "Dr. VERTEX v4.0", description: "Análise farmacológica iniciada — leva 60 a 90s (schema PhD é grande)." });
     setVertexV4Loading(true);
     setVertexV4Error(null);
     setVertexV4ErrorKind(null);
@@ -1454,7 +1457,7 @@ Suporte em uso: ${suporte || "não informado"}`;
       console.log("[DR.VERTEX DEBUG] Iniciando chamada para:", "edge function: dr-vertex-analyze");
       console.log("[DR.VERTEX DEBUG] Payload enviado:", JSON.stringify(payload, null, 2));
 
-      // Chamada direta com timeout controlado (a análise leva ~45s; invoke sem timeout
+      // Chamada direta com timeout controlado (a análise leva 60-90s; invoke sem timeout
       // pode ficar pendurado indefinidamente e dar a impressão de "nada acontece").
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
@@ -2169,12 +2172,12 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                       {vertexV4Loading ? (
                         <>
                           <div className="font-bold" style={{ color: "#c0b8ff" }}>
-                            Dr. VERTEX processando · {vertexV4Elapsed}s / ~90s
+                            Dr. VERTEX processando · {vertexV4Elapsed}s / ~120s
                           </div>
                           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
                             <div
                               className="h-full transition-all"
-                              style={{ width: `${Math.min(97, (vertexV4Elapsed / 90) * 100)}%`, background: "#9080ff" }}
+                              style={{ width: `${Math.min(97, (vertexV4Elapsed / 120) * 100)}%`, background: "#9080ff" }}
                             />
                           </div>
                           <div className="text-muted-foreground">
