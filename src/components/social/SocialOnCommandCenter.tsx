@@ -75,10 +75,20 @@ function DailyCoach({
         ...identity,
       });
       const slides: CarouselSlideSpec[] = (r?.carousel || []).slice(0, 6);
+      const cleanHandle = (identity.handle || "").replace("@", "").trim();
+      const footer = cleanHandle ? `@${cleanHandle} · nutrion.app.br` : "nutrion.app.br";
       const slideImages = await Promise.all(
-        slides.map((s, idx) =>
-          renderSlide({ title: s.title || "", body: s.body, eyebrow: idx === 0 ? "MÉTODO MCE" : undefined, accent: C.cyan })
-        ),
+        slides.map((s, idx) => {
+          const isCover = idx === 0;
+          return renderSlide({
+            title: s.title || "",
+            body: s.body,
+            eyebrow: isCover ? "MÉTODO MCE" : `0${idx + 1}`,
+            accent: isCover ? C.gold : C.cyan,
+            gradient: isCover ? ["#0d0904", "#1c1006"] : ["#020510", "#03141c"],
+            footer,
+          });
+        }),
       );
       setReady((p) => ({ ...p, [i]: { ...(r as ReadyContent), carousel: slides, slideImages } }));
     } catch (e) {
