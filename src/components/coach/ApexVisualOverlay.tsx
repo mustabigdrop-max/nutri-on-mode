@@ -719,7 +719,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             );
           })}
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 items-center">
           <button
             onClick={() => setEduMode((v) => !v)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
@@ -732,67 +732,89 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             <BookOpen className="w-3.5 h-3.5" />
             Modo Educação
           </button>
-          <button
-            onClick={() => setChainMode((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-            style={{
-              borderColor: chainMode ? C.red : "hsl(var(--border))",
-              color: chainMode ? C.red : "hsl(var(--muted-foreground))",
-              background: chainMode ? `${C.red}1A` : "transparent",
-            }}
-          >
-            <Link2 className="w-3.5 h-3.5" />
-            Cadeia Cinética
-          </button>
-          <button
-            onClick={() => setGridMode((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-            style={{
-              borderColor: gridMode ? C.gold : "hsl(var(--border))",
-              color: gridMode ? C.gold : "hsl(var(--muted-foreground))",
-              background: gridMode ? `${C.gold}1A` : "transparent",
-            }}
-            title="Exibe arcos goniométricos sobre cada linha de análise"
-          >
-            📐 Grade simetrográfica
-          </button>
-          <button
-            onClick={() => setModoTecnico((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-            style={{
-              borderColor: modoTecnico ? "rgba(255,255,255,0.3)" : "hsl(var(--border))",
-              color: modoTecnico ? "rgba(255,255,255,0.8)" : "hsl(var(--muted-foreground))",
-              background: modoTecnico ? "rgba(255,255,255,0.12)" : "transparent",
-            }}
-            title={modoTecnico ? "Ocultar landmarks" : "Mostrar landmarks"}
-          >
-            {modoTecnico ? "◎ Landmarks ON" : "◎ Landmarks OFF"}
-          </button>
-          <button
-            onClick={activateManualMode}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-            style={{
-              borderColor: manualMode ? C.gold : "hsl(var(--border))",
-              color: manualMode ? C.gold : "hsl(var(--muted-foreground))",
-              background: manualMode ? `${C.gold}1A` : "transparent",
-            }}
-            title="Ajustar manualmente a Linha de Prumo"
-          >
-            <Crosshair className="w-3.5 h-3.5" />
-            ⊕ Ajustar Prumo
-          </button>
-          <button
-            onClick={() => setShowAnatomyGuide((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-            style={{
-              borderColor: showAnatomyGuide ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
-              color: showAnatomyGuide ? C.gold : "hsl(var(--muted-foreground))",
-              background: showAnatomyGuide ? "rgba(184,146,42,0.2)" : "transparent",
-            }}
-            title="Mostrar guia anatômico — onde ficam C7 e L5"
-          >
-            🦴 Guia
-          </button>
+
+          {/* Ajustes técnicos — recolhidos por padrão. A detecção já é automática;
+              isso aqui é só pra quem quer conferir/ajustar manualmente, não é
+              um passo obrigatório do fluxo. */}
+          <details className="relative">
+            <summary
+              className="list-none inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border cursor-pointer select-none"
+              style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
+            >
+              ⚙ Ajustes técnicos (opcional)
+            </summary>
+            <div
+              className="absolute z-20 mt-1.5 p-2 rounded-lg border flex flex-wrap gap-1.5"
+              style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", width: 380, maxWidth: "80vw" }}
+            >
+              <button
+                onClick={() => setChainMode((v) => !v)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+                style={{
+                  borderColor: chainMode ? C.red : "hsl(var(--border))",
+                  color: chainMode ? C.red : "hsl(var(--muted-foreground))",
+                  background: chainMode ? `${C.red}1A` : "transparent",
+                }}
+              >
+                <Link2 className="w-3.5 h-3.5" />
+                Cadeia Cinética
+              </button>
+              <button
+                onClick={() => setGridMode((v) => !v)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+                style={{
+                  borderColor: gridMode ? C.gold : "hsl(var(--border))",
+                  color: gridMode ? C.gold : "hsl(var(--muted-foreground))",
+                  background: gridMode ? `${C.gold}1A` : "transparent",
+                }}
+                title="Exibe arcos goniométricos sobre cada linha de análise"
+              >
+                📐 Grade simetrográfica
+              </button>
+              <button
+                onClick={() => setModoTecnico((v) => !v)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+                style={{
+                  borderColor: modoTecnico ? "rgba(255,255,255,0.3)" : "hsl(var(--border))",
+                  color: modoTecnico ? "rgba(255,255,255,0.8)" : "hsl(var(--muted-foreground))",
+                  background: modoTecnico ? "rgba(255,255,255,0.12)" : "transparent",
+                }}
+                title={modoTecnico ? "Ocultar landmarks" : "Mostrar landmarks"}
+              >
+                {modoTecnico ? "◎ Landmarks ON" : "◎ Landmarks OFF"}
+              </button>
+              <button
+                onClick={activateManualMode}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+                style={{
+                  borderColor: manualMode ? C.gold : "hsl(var(--border))",
+                  color: manualMode ? C.gold : "hsl(var(--muted-foreground))",
+                  background: manualMode ? `${C.gold}1A` : "transparent",
+                }}
+                title="Ajustar manualmente a Linha de Prumo — só precisa se a detecção automática errar"
+              >
+                <Crosshair className="w-3.5 h-3.5" />
+                ⊕ Ajustar Prumo
+              </button>
+              <button
+                onClick={() => setShowAnatomyGuide((v) => !v)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+                style={{
+                  borderColor: showAnatomyGuide ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
+                  color: showAnatomyGuide ? C.gold : "hsl(var(--muted-foreground))",
+                  background: showAnatomyGuide ? "rgba(184,146,42,0.2)" : "transparent",
+                }}
+                title="Mostrar guia anatômico — onde ficam C7 e L5"
+              >
+                🦴 Guia
+              </button>
+              <p className="w-full text-[10px] text-muted-foreground leading-snug pt-1">
+                A análise já roda sozinha (IA detecta o corpo automaticamente). Só mexa aqui se quiser
+                conferir os pontos ou corrigir manualmente um caso específico.
+              </p>
+            </div>
+          </details>
+
           <button
             onClick={() => setModoMarketing((v) => !v)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
@@ -1167,8 +1189,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             const s = currentPlumb.source;
             const cfg = s === "C7+L5"
               ? { bg: "#064E3B", fg: "#6EE7B7", text: "📐 Prumo ancorado em C7/L5" }
+              : s === "shoulders+hips"
+              ? { bg: "#064E3B", fg: "#6EE7B7", text: "📐 Prumo automático (ombros/quadril)" }
               : s === "frame-center"
-              ? { bg: "#7F1D1D", fg: "#FCA5A5", text: "✕ Prumo estimado — reenviar foto de costas" }
+              ? { bg: "#7F1D1D", fg: "#FCA5A5", text: "✕ Não detectou o corpo — reenviar foto de costas" }
               : { bg: "#78350F", fg: "#FCD34D", text: `⚠ Prumo parcial (${s} apenas)` };
             return (
               <div
@@ -1571,7 +1595,7 @@ function snapToPlumbLine<T extends Record<string, any>>(
 // Eixo gravitacional real do atleta — calculado a partir de C7/L5.
 // Quando ambos estão posicionados, a linha PASSA pelos dois pontos
 // (inclinação real). Sistema de coordenadas: viewBox 0..100.
-export type PlumbSource = "C7+L5" | "C7" | "L5" | "frame-center";
+export type PlumbSource = "C7+L5" | "C7" | "L5" | "shoulders+hips" | "frame-center";
 export interface PlumbLine {
   x1: number; y1: number; x2: number; y2: number;
   axisX: number;
@@ -1599,6 +1623,29 @@ export function calcPlumbLine(
   }
   if (valid(c7)) return { x1: c7.x, y1: 0, x2: c7.x, y2: imageHeight, axisX: c7.x, source: "C7", inclinacao: 0 };
   if (valid(l5)) return { x1: l5.x, y1: 0, x2: l5.x, y2: imageHeight, axisX: l5.x, source: "L5", inclinacao: 0 };
+
+  // Sem C7/L5 (detecção falhou nesses dois pontos específicos) — antes de
+  // desistir pro centro cru da imagem, tenta o eixo ombro→quadril, que o
+  // MediaPipe detecta com muito mais confiança que a coluna. Fica menos
+  // preciso que C7/L5 de verdade, mas ainda é um prumo real do corpo do
+  // atleta, não um chute — evita empurrar o coach pro ajuste manual à toa.
+  const sL = landmarks?.shoulder_left, sR = landmarks?.shoulder_right;
+  const hL = landmarks?.hip_left, hR = landmarks?.hip_right;
+  const shoulderMid = valid(sL) && valid(sR) ? { x: (sL.x + sR.x) / 2, y: (sL.y + sR.y) / 2 } : null;
+  const hipMid = valid(hL) && valid(hR) ? { x: (hL.x + hR.x) / 2, y: (hL.y + hR.y) / 2 } : null;
+  if (shoulderMid && hipMid) {
+    const dx = hipMid.x - shoulderMid.x;
+    const dy = hipMid.y - shoulderMid.y;
+    const slope = dy !== 0 ? dx / dy : 0;
+    const x1 = shoulderMid.x - slope * shoulderMid.y;
+    const x2 = shoulderMid.x + slope * (imageHeight - shoulderMid.y);
+    const inclinacao = Math.round(Math.atan2(dx, dy) * (180 / Math.PI) * 10) / 10;
+    const axisX = (shoulderMid.x + hipMid.x) / 2;
+    return { x1, y1: 0, x2, y2: imageHeight, axisX, source: "shoulders+hips", inclinacao };
+  }
+  const midOnly = shoulderMid || hipMid;
+  if (midOnly) return { x1: midOnly.x, y1: 0, x2: midOnly.x, y2: imageHeight, axisX: midOnly.x, source: "shoulders+hips", inclinacao: 0 };
+
   const cx = imageWidth / 2;
   return { x1: cx, y1: 0, x2: cx, y2: imageHeight, axisX: cx, source: "frame-center", inclinacao: 0 };
 }
