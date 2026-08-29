@@ -333,7 +333,7 @@ export default function SocialOnCommandCenter({ handle, stats, weekPosted, onOpe
       try {
         const r = await callSocialAI({
           mode: "daily_brief",
-          handle: handle || "diogo.mell0",
+          handle: handle || "",
           today: new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
         });
         setBrief(r);

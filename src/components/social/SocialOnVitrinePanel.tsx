@@ -182,10 +182,10 @@ function GridArchitect() {
               border: `1px solid ${T.gold}50`, display: "flex", alignItems: "center", justifyContent: "center",
               fontFamily: T.fontTitle, fontSize: 12, fontWeight: 700, color: T.gold,
             }}>
-              DM
+              SP
             </div>
             <div>
-              <div style={{ fontFamily: T.fontTitle, fontSize: 12, fontWeight: 700, color: T.white }}>@diogo.mell0</div>
+              <div style={{ fontFamily: T.fontTitle, fontSize: 12, fontWeight: 700, color: T.white }}>@seu.perfil</div>
               <div style={{ fontFamily: T.fontMono, fontSize: 8, color: T.muted }}>Preview do grid</div>
             </div>
           </div>

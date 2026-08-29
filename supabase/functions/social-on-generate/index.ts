@@ -125,6 +125,11 @@ serve(async (req) => {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
 
+    // Frames reais da foto/vídeo enviado (data URLs), quando o modo precisa
+    // de análise visual de verdade (ex: studio_vision) — sem isso a IA só
+    // recebia nome/tipo do arquivo em texto e "analisava" sem nunca ver a mídia.
+    const images: string[] = Array.isArray(body?.images) ? body.images.slice(0, 6) : [];
+
     const ctx = [
       body?.pillar ? `Pilar: ${body.pillar}` : "",
       body?.format ? `Formato: ${body.format}` : "",
@@ -196,6 +201,9 @@ serve(async (req) => {
         ? "Você é especialista em parcerias e collabs no Instagram 2026 para o nicho fitness no Brasil. Instagram favorece collabs nativas e conteúdo co-criado."
         : "",
       body?.mediaInfo ? `Arquivo enviado pelo coach (nome/tipo): ${body.mediaInfo}` : "",
+      images.length
+        ? `Você está recebendo ${images.length} imagem(ns) real(is) do arquivo enviado — ${images.length > 1 ? "frames em ordem cronológica do vídeo (abertura → fechamento)" : "a foto enviada"}. Baseie a análise no que você REALMENTE vê nas imagens, não invente elementos que não estão lá.`
+        : "",
       body?.mode === "studio_subtitles"
         ? "Você é um sistema de transcrição e legendagem para Reels fitness 2026. Gere legendas com timestamps realistas para o contexto informado. Cada linha com no máximo 8-10 palavras pra caber na tela 9:16. Frases curtas e faladas, tom de conversa."
         : "",
@@ -236,6 +244,11 @@ serve(async (req) => {
     ].filter(Boolean).join("\n");
 
 
+    const userText = `${ctx}\n\nGere no schema:\n${SCHEMAS[mode]}`;
+    const userContent = images.length
+      ? [...images.map((img) => ({ type: "image_url", image_url: { url: img } })), { type: "text", text: userText }]
+      : userText;
+
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -243,7 +256,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: `${BRAND}\n\nVocê é o motor SOCIAL ON. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown.` },
-          { role: "user", content: `${ctx}\n\nGere no schema:\n${SCHEMAS[mode]}` },
+          { role: "user", content: userContent },
         ],
         response_format: { type: "json_object" },
       }),

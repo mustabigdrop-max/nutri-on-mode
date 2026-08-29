@@ -5,6 +5,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { callSocialAI } from "./socialUi";
+import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 
 const T = {
   bg: "#020205", surface: "#0A0A0F", surface2: "#111118", surface3: "#1A1A24",
@@ -585,14 +586,34 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
   const [previewFormat, setPreviewFormat] = useState("reels");
   const [vision, setVision] = useState<Vision | null>(null);
   const [visionLoading, setVisionLoading] = useState(false);
+  const [mediaFrames, setMediaFrames] = useState<string[] | null>(null);
 
-  const runVision = useCallback(async (f: File) => {
+  /** Captura frame(s) reais da mídia — 1 pra foto, storyboard (abertura→fim) pra vídeo. */
+  const captureFrames = async (f: File): Promise<string[]> => {
+    if (f.type.startsWith("image/")) {
+      const img = await compressImageFile(f);
+      return img ? [img] : [];
+    }
+    const url = URL.createObjectURL(f);
+    try {
+      const board = await storyboardFromUrl(url);
+      board.video.remove();
+      return board.frames;
+    } catch {
+      return [];
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const runVision = useCallback(async (f: File, frames: string[]) => {
     setVisionLoading(true);
     try {
       const r = await callSocialAI({
         mode: "studio_vision",
         mediaInfo: `${f.name} (${f.type}, ${(f.size / 1024 / 1024).toFixed(1)}MB)`,
-        topic: `Conteúdo ${f.type.startsWith("video") ? "em vídeo" : "em imagem"} do Coach Diogo Mello (fitness/nutrição, Método MCE) para Instagram.`,
+        images: frames,
+        topic: `Conteúdo ${f.type.startsWith("video") ? "em vídeo" : "em imagem"} de fitness/nutrição para Instagram.`,
         ...(ctx || {}),
       });
       if (r?.viral_score !== undefined) setVision(r as Vision);
@@ -613,7 +634,12 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
     setOverlays([]);
     setVersions(null);
     setVision(null);
-    runVision(f);
+    setMediaFrames(null);
+    (async () => {
+      const frames = await captureFrames(f);
+      setMediaFrames(frames);
+      runVision(f, frames);
+    })();
   }, [runVision]);
 
   const transcribe = async () => {
@@ -623,7 +649,8 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
       const r = await callSocialAI({
         mode: "studio_subtitles",
         mediaInfo: `${file.name} (${file.type})`,
-        topic: `Vídeo fitness/coaching para Instagram Reels do Coach Diogo Mello (Método MCE). Contexto: ${isVideo ? "vídeo" : "imagem estática"}.`,
+        images: mediaFrames || [],
+        topic: `Vídeo fitness/coaching para Instagram Reels. Contexto: ${isVideo ? "vídeo" : "imagem estática"}. As imagens são frames reais do vídeo — gere legendas coerentes com o que aparece neles (o que a pessoa mostra/faz, o ambiente, a evolução entre os frames), como se fosse a fala natural do vídeo.`,
         ...(ctx || {}),
       });
       if (r?.subtitles?.length) {
@@ -647,6 +674,7 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
         mode: "studio_versions",
         topic: subsText || "vídeo de fitness/coaching",
         overlays: overlays.map((o) => o.text).join(", "),
+        images: mediaFrames || [],
         ...(ctx || {}),
       });
       if (r?.versions?.length) {
