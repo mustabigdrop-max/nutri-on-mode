@@ -281,6 +281,7 @@ serve(async (req) => {
     if (action === "schedule") {
       const mediaUrl = String(body?.media_url ?? "").trim();
       const caption = String(body?.caption ?? "").slice(0, 2200);
+      const selfComment = String(body?.self_comment ?? "").trim().slice(0, 2200);
       const kind: string = body?.kind === "stories" ? "stories" : "reel";
       const mediaType = kind === "stories" ? "STORIES" : (body?.media_type === "IMAGE" ? "IMAGE" : "REELS");
       const calendarId: string | null = body?.calendar_id ?? null;
@@ -307,6 +308,7 @@ serve(async (req) => {
         media_type: mediaType,
         media_url: mediaUrl,
         caption,
+        self_comment: selfComment || null,
         status: "scheduled",
         scheduled_at: scheduledAt.toISOString(),
         next_attempt_at: scheduledAt.toISOString(),
@@ -342,6 +344,7 @@ serve(async (req) => {
       const mediaType: string = body?.media_type === "REELS" ? "REELS"
         : body?.media_type === "STORIES" ? "STORIES" : "IMAGE";
       const calendarId: string | null = body?.calendar_id ?? null;
+      const selfComment = String(body?.self_comment ?? "").trim().slice(0, 2200);
 
       if (!/^https:\/\/.+/i.test(mediaUrl)) {
         return json({ error: "Informe uma URL pública https da imagem ou do vídeo" }, 400);
@@ -395,12 +398,21 @@ serve(async (req) => {
           permalink = info?.permalink ?? null;
         } catch (_) { /* optional */ }
 
+        // Comentário automático (self-comment) — puxa DM/engajamento. Não bloqueia
+        // a publicação se falhar: o post já saiu, o comentário é um bônus.
+        if (selfComment) {
+          try {
+            await graph(`/${published.id}/comments`, { access_token: acc.access_token, message: selfComment }, "POST");
+          } catch (_) { /* opcional */ }
+        }
+
         await admin.from("social_instagram_posts").insert({
           coach_id: coachId,
           calendar_id: calendarId,
           media_type: mediaType,
           media_url: mediaUrl,
           caption,
+          self_comment: selfComment || null,
           ig_media_id: published.id,
           permalink,
           status: "published",

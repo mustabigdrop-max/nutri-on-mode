@@ -27,6 +27,8 @@ export function usePublishToInstagram() {
     /** Força a conversão pra MP4/H.264 mesmo sem detectar extensão problemática
      *  (necessário pra vídeo gravado via MediaRecorder no navegador, ex: webm). */
     forceConvert?: boolean;
+    /** Comentário pra postar sozinho logo após publicar (puxa DM/engajamento). */
+    selfComment?: string | null;
   }): Promise<PublishResult> => {
     setPublishing(true);
     try {
@@ -56,6 +58,7 @@ export function usePublishToInstagram() {
           media_url: mediaUrl,
           caption: opts.caption,
           calendar_id: opts.calendarId ?? null,
+          self_comment: opts.selfComment ?? null,
         },
       });
       if (error) throw new Error(error.message);
@@ -76,6 +79,8 @@ export function usePublishToInstagram() {
     scheduledAt: string | Date;
     calendarId?: string | null;
     forceConvert?: boolean;
+    /** Comentário pra postar sozinho logo após publicar (puxa DM/engajamento). */
+    selfComment?: string | null;
   }): Promise<{ post: { id: string } }> => {
     setPublishing(true);
     try {
@@ -108,6 +113,7 @@ export function usePublishToInstagram() {
           caption: opts.caption,
           calendar_id: opts.calendarId ?? null,
           scheduled_at: scheduledAtIso,
+          self_comment: opts.selfComment ?? null,
         },
       });
       if (error) throw new Error(error.message);

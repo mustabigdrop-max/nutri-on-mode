@@ -190,6 +190,7 @@ export default function SocialOnBatchPanel() {
         caption,
         scheduledAt: new Date(item.scheduledAt),
         forceConvert: false,
+        selfComment: item.version.self_comment,
       });
       setItems((p) => p.map((i) => (i.id === item.id ? { ...i, outcome: "scheduled" } : i)));
       toast.success("Agendado!");
@@ -209,6 +210,7 @@ export default function SocialOnBatchPanel() {
         mediaKind: item.kind === "video" ? "REELS" : "IMAGE",
         caption,
         forceConvert: false,
+        selfComment: item.version.self_comment,
       });
       setItems((p) => p.map((i) => (i.id === item.id ? { ...i, outcome: "published" } : i)));
       toast.success("Publicado!");

@@ -355,14 +355,14 @@ export default function SocialOnQuickPanel() {
       const caption = [v.legenda, "", (v.hashtags ?? []).join(" ")].filter(Boolean).join("\n");
       if (isVideo) {
         const blob = await recordStyledVideo();
-        await publish({ coachId, file: blob, mediaKind: "REELS", caption, forceConvert: true });
+        await publish({ coachId, file: blob, mediaKind: "REELS", caption, forceConvert: true, selfComment: v.self_comment });
       } else {
         const c = canRefs.current[current];
         if (!c) throw new Error("Imagem não está pronta.");
         drawResult(c, mediaEl, v.texto_video || "", STYLES[current % STYLES.length]);
         const blob: Blob = await new Promise((resolve, reject) =>
           c.toBlob((b) => (b ? resolve(b) : reject(new Error("Falha ao gerar a imagem."))), "image/jpeg", 0.92));
-        await publish({ coachId, file: blob, mediaKind: "IMAGE", caption });
+        await publish({ coachId, file: blob, mediaKind: "IMAGE", caption, selfComment: v.self_comment });
       }
       toast.success("Publicado no Instagram!");
     } catch (e) {

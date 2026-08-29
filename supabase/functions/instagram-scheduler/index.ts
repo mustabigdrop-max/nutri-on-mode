@@ -55,7 +55,7 @@ serve(async (req) => {
     // --- bounded batch of due posts ---
     const { data: due } = await admin
       .from("social_instagram_posts")
-      .select("id, coach_id, calendar_id, kind, media_type, media_url, caption, attempts")
+      .select("id, coach_id, calendar_id, kind, media_type, media_url, caption, self_comment, attempts")
       .eq("status", "scheduled")
       .lte("next_attempt_at", nowIso)
       .order("next_attempt_at", { ascending: true })
@@ -120,6 +120,14 @@ serve(async (req) => {
           const info = await graph(`/${pub.id}`, { fields: "permalink", access_token: acc.access_token });
           permalink = info?.permalink ?? null;
         } catch (_) { /* optional */ }
+
+        // Comentário automático (self-comment) — puxa DM/engajamento. Não bloqueia
+        // a publicação se falhar: o post já saiu, o comentário é um bônus.
+        if (post.self_comment) {
+          try {
+            await graph(`/${pub.id}/comments`, { access_token: acc.access_token, message: post.self_comment }, "POST");
+          } catch (_) { /* opcional */ }
+        }
 
         await admin.from("social_instagram_posts").update({
           status: "published", ig_media_id: pub.id, permalink, error: null,
