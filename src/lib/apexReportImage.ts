@@ -404,3 +404,206 @@ export const downloadApexReport = (dataUrl: string, filename: string) => {
   a.remove();
 };
 
+// ═══════════════════════════════════════════════════════════════
+// Card de EVOLUÇÃO — antes/depois em cima de dados reais de histórico.
+// Prova de autoridade mais forte que qualquer card de análise única:
+// mostra progresso medido, não uma opinião do dia.
+// ═══════════════════════════════════════════════════════════════
+
+export interface ApexEvolutionItem {
+  label: string;
+  from: number;
+  to: number;
+  /** Valor máximo da escala (padrão 100 — SRI/Body Score/FCS/Qualidade são 0-100). */
+  max?: number;
+}
+
+export interface ApexEvolutionData {
+  athleteName?: string;
+  categoryLabel?: string;
+  photoUrl?: string | null;
+  /** Ex.: "8 semanas · 4 análises" */
+  periodLabel?: string;
+  /** Métrica de destaque no topo do card (ex.: SRI — Show Readiness). */
+  headlineLabel?: string;
+  headlineFrom?: number;
+  headlineTo?: number;
+  headlineMax?: number;
+  items: ApexEvolutionItem[];
+  title?: string;
+  coachName?: string;
+  coachSubtitle?: string;
+  handle?: string;
+  accent?: string;
+  bg?: string;
+}
+
+const deltaColor = (delta: number) => (delta > 0 ? "#00FF88" : delta < 0 ? "#FF4444" : "#8A8A9A");
+const deltaSign = (delta: number) => (delta > 0 ? "+" : "");
+
+const buildEvolutionHtml = (data: ApexEvolutionData, mode: ApexReportMode, photo: string | null) => {
+  const accent = data.accent || CYAN;
+  const bg = data.bg || BG;
+  const light = isLightBg(bg);
+  const fg = light ? "#0B0B10" : "#FFFFFF";
+  const dim = light ? "rgba(0,0,0,0.5)" : DIM;
+  const line = light ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.1)";
+  const compact = mode === "instagram";
+  const title = data.title || "EVOLUÇÃO APEX";
+  const coachName = data.coachName || "Coach";
+  const coachSubtitle = data.coachSubtitle || "Nutrition & Performance Coach";
+  const handle = data.handle || "nutrion.app.br";
+
+  const photoH = Math.round(DIMENSIONS[mode].h * (mode === "coach" ? 0.3 : mode === "client" ? 0.28 : 0.14));
+  const photoBlock = photo
+    ? `<div style="border-radius:28px;overflow:hidden;border:1px solid ${line};background:${light ? "#E9ECEF" : "#07070c"};
+                  height:${photoH}px;display:flex;align-items:center;justify-content:center">
+         <img src="${photo}" style="max-width:100%;max-height:100%;object-fit:contain" />
+       </div>`
+    : "";
+
+  const hasHeadline = data.headlineFrom != null && data.headlineTo != null;
+  const hMax = data.headlineMax || 100;
+  const hDelta = hasHeadline ? Math.round((data.headlineTo as number) - (data.headlineFrom as number)) : 0;
+  const headline = hasHeadline
+    ? `<div style="border-radius:24px;padding:${compact ? "22px 24px" : "32px 34px"};background:${accent}0D;
+                   border:1px solid ${accent}55;text-align:center">
+         <div style="font-size:${compact ? 16 : 19}px;letter-spacing:4px;color:${dim}">${esc(
+           (data.headlineLabel || "SCORE GERAL").toUpperCase(),
+         )}</div>
+         <div style="margin-top:10px;display:flex;align-items:baseline;justify-content:center;gap:${compact ? 14 : 20}px">
+           <span style="font-size:${compact ? 40 : 54}px;font-weight:900;color:${dim}">${Math.round(data.headlineFrom as number)}</span>
+           <span style="font-size:${compact ? 26 : 34}px;color:${accent}">→</span>
+           <span style="font-size:${compact ? 56 : 76}px;font-weight:900;color:${accent}">${Math.round(data.headlineTo as number)}</span>
+           <span style="font-size:${compact ? 20 : 24}px;color:${dim}">/${hMax}</span>
+         </div>
+         <div style="margin-top:10px;font-size:${compact ? 20 : 24}px;font-weight:800;color:${deltaColor(hDelta)}">
+           ${deltaSign(hDelta)}${hDelta} pontos${data.periodLabel ? ` · ${esc(data.periodLabel)}` : ""}
+         </div>
+       </div>`
+    : "";
+
+  const itemRows = data.items
+    .slice(0, compact ? 4 : 6)
+    .map((it) => {
+      const max = it.max || 100;
+      const fromPct = Math.max(0, Math.min(100, (it.from / max) * 100));
+      const toPct = Math.max(0, Math.min(100, (it.to / max) * 100));
+      const delta = Math.round(it.to - it.from);
+      const col = deltaColor(delta);
+      const label = prettyLabel(it.label);
+      return `
+      <div style="margin-bottom:${compact ? 16 : 22}px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:${fitSize(label, compact ? 21 : 26, compact ? 17 : 19)}px;font-weight:700;letter-spacing:0.5px">${esc(label)}</span>
+          <span style="font-size:${compact ? 18 : 22}px;color:${dim}">
+            ${Math.round(it.from)} → <b style="color:${fg};font-size:${compact ? 22 : 26}px">${Math.round(it.to)}</b>
+            <span style="color:${col};font-weight:800;margin-left:8px">${deltaSign(delta)}${delta}</span>
+          </span>
+        </div>
+        <div style="position:relative;height:${compact ? 11 : 14}px;border-radius:7px;background:${line};overflow:visible">
+          <div style="height:100%;border-radius:7px;background:${col};width:${toPct}%"></div>
+          <div style="position:absolute;top:-4px;bottom:-4px;left:${fromPct}%;width:3px;border-radius:2px;background:${light ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.65)"}"></div>
+        </div>
+      </div>`;
+    })
+    .join("");
+
+  return `
+    <div style="position:relative;display:flex;flex-direction:column;height:100%;overflow:hidden;color:${fg};padding-bottom:${compact ? 120 : 190}px;box-sizing:border-box">
+      <div>
+        <div style="font-size:${compact ? 34 : 40}px;font-weight:900;letter-spacing:5px">${esc(title)}</div>
+        <div style="font-size:24px;color:${accent};letter-spacing:4px;margin-top:6px">
+          ${esc(data.athleteName || "Atleta")}${data.categoryLabel ? ` · ${esc(data.categoryLabel)}` : ""}
+        </div>
+      </div>
+
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-between;min-height:0;overflow:hidden">
+        ${photoBlock ? `<div style="margin-top:28px">${photoBlock}</div>` : ""}
+        <div style="margin-top:${photoBlock ? (compact ? 20 : 28) : 28}px">${headline}</div>
+        <div>${sectionTitle("POR SEGMENTO", accent, compact)}${itemRows}</div>
+      </div>
+
+      <div style="position:absolute;left:0;right:0;bottom:${compact ? 18 : 24}px;padding-top:${compact ? 12 : 36}px;border-top:1px solid ${line}">
+        <div style="font-size:${compact ? 25 : 32}px;font-weight:900;line-height:1.2">${esc(coachName)}</div>
+        <div style="font-size:${compact ? 19 : 24}px;color:${dim};margin-top:4px;line-height:1.2">${esc(coachSubtitle)}</div>
+        <div style="font-size:${compact ? 19 : 24}px;color:${fg};margin-top:2px;line-height:1.2">${esc(handle)}</div>
+        ${compact ? "" : `<div style="font-size:22px;color:${accent};margin-top:10px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>`}
+      </div>
+    </div>`;
+};
+
+export async function generateApexEvolutionReport(data: ApexEvolutionData, mode: ApexReportMode): Promise<string> {
+  const { w, h } = DIMENSIONS[mode];
+  const photo = data.photoUrl ? await toDataUrl(data.photoUrl) : null;
+  const bg = data.bg || BG;
+
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.left = "-99999px";
+  container.style.top = "0";
+  container.style.width = `${w}px`;
+  container.style.height = `${h}px`;
+  container.style.background = bg;
+  container.style.padding = mode === "instagram" ? "48px 48px 80px" : "64px 64px 88px";
+  container.style.boxSizing = "border-box";
+  container.style.fontFamily = "'Rajdhani', 'Space Grotesk', Arial, sans-serif";
+  container.style.color = isLightBg(bg) ? "#0B0B10" : "#FFFFFF";
+  container.innerHTML = buildEvolutionHtml(data, mode, photo);
+
+  document.body.appendChild(container);
+  try {
+    const { default: html2canvas } = await import("html2canvas");
+    const canvas = await html2canvas(container, {
+      width: w,
+      height: h,
+      scale: 1,
+      backgroundColor: bg,
+      useCORS: true,
+      logging: false,
+    });
+    return canvas.toDataURL("image/png", 1.0);
+  } finally {
+    container.remove();
+  }
+}
+
+/** Legenda pronta para o post de evolução, usando os dados reais do histórico. */
+export const buildApexEvolutionCaption = (data: ApexEvolutionData) => {
+  const hasHeadline = data.headlineFrom != null && data.headlineTo != null;
+  const hDelta = hasHeadline ? Math.round((data.headlineTo as number) - (data.headlineFrom as number)) : 0;
+  const headlineLine = hasHeadline
+    ? `${data.headlineLabel || "Score"}: ${Math.round(data.headlineFrom as number)} → ${Math.round(
+        data.headlineTo as number,
+      )} (${deltaSign(hDelta)}${hDelta})`
+    : "";
+  const items = (data.items || [])
+    .slice(0, 4)
+    .map((it) => `📈 ${prettyLabel(it.label)}: ${Math.round(it.from)} → ${Math.round(it.to)}`)
+    .join("\n");
+  return [
+    "Progresso é dado, não achismo. 📊",
+    "",
+    `Evolução medida por APEX Visual Intelligence${data.periodLabel ? ` · ${data.periodLabel}` : ""}.`,
+    headlineLine,
+    items,
+    "",
+    "Cada análise mede o mesmo protocolo, nos mesmos pontos anatômicos — dá pra comparar de verdade, semana a semana.",
+    "",
+    "Comenta APEX que eu te mostro como funciona.",
+    "",
+    [data.coachName || "Coach", data.handle || "nutrion.app.br"].filter(Boolean).join(" · "),
+    "#nutricaoesportiva #coaching #transformacao #apex",
+  ]
+    .filter((l) => l !== undefined)
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n");
+};
+
+/** Pacote de Instagram (evolução): Story 1080x1920 + feed 1080x1080 + legenda pronta. */
+export async function generateApexEvolutionPackage(data: ApexEvolutionData) {
+  const story = await generateApexEvolutionReport({ ...data }, "coach");
+  const feed = await generateApexEvolutionReport({ ...data }, "instagram");
+  return { story, feed, caption: buildApexEvolutionCaption(data) };
+}
+

@@ -1,9 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+import { Download, Instagram, Loader2, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
+import { useInstagramAccount } from "@/hooks/useInstagramAccount";
+import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
+import {
+  generateApexEvolutionPackage,
+  downloadApexReport,
+  type ApexEvolutionData,
+  type ApexEvolutionItem,
+} from "@/lib/apexReportImage";
 
 interface ScoreDataPoint {
   date: string;
@@ -256,10 +267,43 @@ function projectWeeksToElite(history: ScoreDataPoint[]): {
   return { score: "SRI", weeks, trend };
 }
 
-export default function ApexEvolutionTab({ athleteId }: { athleteId: string | null }) {
+interface Props {
+  athleteId: string | null;
+  athleteName?: string;
+  categoryLabel?: string;
+  coachId?: string | null;
+  photoUrl?: string | null;
+}
+
+export default function ApexEvolutionTab({ athleteId, athleteName, categoryLabel, coachId, photoUrl }: Props) {
   const [history, setHistory] = useState<ScoreDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<string[]>(["sri", "bodyScore", "fcs", "qualidade"]);
+  const { user } = useAuth();
+  const { account: ig } = useInstagramAccount();
+  const { publish, publishing } = usePublishToInstagram();
+  const [coachName, setCoachName] = useState("");
+  const [handle, setHandle] = useState("nutrion.app.br");
+  const [busy, setBusy] = useState(false);
+  const [pkg, setPkg] = useState<{ story: string; feed: string; caption: string } | null>(null);
+  const canPublish = !!ig && ig.source !== "screenshot";
+
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data: prof } = await supabase
+        .from("coach_profiles")
+        .select("professional_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const name = (prof as { professional_name?: string | null } | null)?.professional_name;
+      if (name) setCoachName((cur) => cur || name);
+    })();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (ig?.username) setHandle((cur) => (cur === "nutrion.app.br" ? `@${ig.username}` : cur));
+  }, [ig?.username]);
 
   useEffect(() => {
     if (!athleteId) {
@@ -294,6 +338,77 @@ export default function ApexEvolutionTab({ athleteId }: { athleteId: string | nu
   }, [available]);
 
   const projection = useMemo(() => projectWeeksToElite(history), [history]);
+
+  const evolutionData: ApexEvolutionData | null = useMemo(() => {
+    if (history.length < 2) return null;
+    const first = history[0];
+    const last = history[history.length - 1];
+    const metrics: { key: keyof ScoreDataPoint; label: string }[] = [
+      { key: "sri", label: "SRI — Show Readiness" },
+      { key: "bodyScore", label: "Body Score" },
+      { key: "fcs", label: "FCS Fenner" },
+      { key: "qualidade", label: "Qualidade de Detecção" },
+    ];
+    const items: ApexEvolutionItem[] = metrics
+      .filter((m) => first[m.key] != null && last[m.key] != null)
+      .map((m) => ({ label: m.label, from: first[m.key] as number, to: last[m.key] as number, max: 100 }));
+    if (!items.length) return null;
+    const headline = items.find((it) => it.label.startsWith("SRI")) || items[0];
+    const weeks = Math.max(
+      1,
+      Math.round((new Date(last.dateISO).getTime() - new Date(first.dateISO).getTime()) / (7 * 86400000)),
+    );
+    return {
+      athleteName,
+      categoryLabel,
+      photoUrl: photoUrl || null,
+      periodLabel: `${weeks} semana${weeks === 1 ? "" : "s"} · ${history.length} análises`,
+      headlineLabel: headline.label,
+      headlineFrom: headline.from,
+      headlineTo: headline.to,
+      headlineMax: headline.max,
+      items,
+      coachName: coachName.trim() || undefined,
+      handle: handle.trim() || undefined,
+    };
+  }, [history, athleteName, categoryLabel, photoUrl, coachName, handle]);
+
+  const generatePackage = async () => {
+    if (!evolutionData) return;
+    setBusy(true);
+    try {
+      const p = await generateApexEvolutionPackage(evolutionData);
+      setPkg(p);
+      const slug = (athleteName || "atleta").toLowerCase().replace(/\s+/g, "-");
+      downloadApexReport(p.story, `apex-evolucao-story-${slug}.png`);
+      downloadApexReport(p.feed, `apex-evolucao-feed-${slug}.png`);
+      try {
+        await navigator.clipboard.writeText(p.caption);
+      } catch {
+        /* clipboard opcional */
+      }
+      toast.success("Card de evolução pronto — imagens baixadas e legenda copiada.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não consegui gerar o card de evolução");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const publishNow = async () => {
+    if (!user?.id || !pkg) return;
+    if (!canPublish) {
+      toast.message("Conecte o Instagram com token no Social ON pra publicar direto por aqui.");
+      return;
+    }
+    try {
+      const blob = await fetch(pkg.feed).then((r) => r.blob());
+      await publish({ coachId: user.id, file: blob, mediaKind: "IMAGE", caption: pkg.caption, alsoStory: true });
+      toast.success("Card de evolução publicado no Instagram!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao publicar");
+    }
+  };
 
   if (loading) {
     return (
@@ -363,6 +478,65 @@ export default function ApexEvolutionTab({ athleteId }: { athleteId: string | nu
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
               Score estável — manter protocolo atual
             </p>
+          )}
+        </div>
+      )}
+
+      {evolutionData && (
+        <div
+          style={{
+            marginTop: 20,
+            padding: 16,
+            background: "rgba(184,146,42,0.05)",
+            border: "0.5px solid rgba(184,146,42,0.25)",
+            borderRadius: 10,
+          }}
+        >
+          <p style={{ fontSize: 10, color: "rgba(184,146,42,0.85)", letterSpacing: "0.08em", marginBottom: 4 }}>
+            MOSTRE ESSA EVOLUÇÃO
+          </p>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 12, lineHeight: 1.5 }}>
+            Card pronto pra Instagram com o antes/depois medido — a prova de autoridade mais forte que existe.
+          </p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              onClick={generatePackage}
+              disabled={busy}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "8px 14px", borderRadius: 8, cursor: busy ? "default" : "pointer",
+                background: "rgba(184,146,42,0.12)", border: "0.5px solid rgba(184,146,42,0.4)",
+                color: "#B8922A", fontSize: 12, fontWeight: 700, opacity: busy ? 0.6 : 1,
+              }}
+            >
+              {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              Gerar card de evolução
+            </button>
+            {pkg && (
+              <button
+                onClick={publishNow}
+                disabled={publishing}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "8px 14px", borderRadius: 8, cursor: publishing ? "default" : "pointer",
+                  background: canPublish ? "rgba(34,197,94,0.12)" : "transparent",
+                  border: `0.5px solid ${canPublish ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.15)"}`,
+                  color: canPublish ? "#22C55E" : "rgba(255,255,255,0.5)",
+                  fontSize: 12, fontWeight: 700, opacity: publishing ? 0.6 : 1,
+                }}
+              >
+                {publishing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {canPublish ? "Publicar agora no Instagram" : "Conectar Instagram pra publicar"}
+              </button>
+            )}
+          </div>
+          {pkg && (
+            <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "flex-start" }}>
+              <img src={pkg.feed} alt="Prévia do card de evolução" style={{ width: 110, borderRadius: 8, border: "0.5px solid rgba(255,255,255,0.1)" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: "rgba(255,255,255,0.35)" }}>
+                <Instagram className="w-3 h-3" /> Story + Feed baixados, legenda copiada
+              </div>
+            </div>
           )}
         </div>
       )}

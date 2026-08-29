@@ -2303,7 +2303,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             />
           )}
           {activeResultTab === "evolucao" && (
-            <ApexEvolutionTab athleteId={athlete?.id || null} />
+            <ApexEvolutionTab
+              athleteId={athlete?.id || null}
+              athleteName={athlete?.nome}
+              categoryLabel={cat.label}
+              coachId={coachId || null}
+              photoUrl={photoUrls.front || photoUrls.lateral || photoUrls.back || null}
+            />
           )}
         </div>
 

@@ -26,17 +26,18 @@ export function DraggableEducationCard({
   onClose,
 }: Props) {
   const [pos, setPos] = useState({ x: initialX, y: initialY });
-  const [minimized, setMinimized] = useState(false);
+  // Começa recolhido (só a pastilha com cor + título) — com várias
+  // descobertas na mesma foto, abrir tudo expandido de cara polui a tela.
+  // O coach expande só o que quer aprofundar; o resto fica como resumo limpo.
+  const [minimized, setMinimized] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>("o_que_e");
   const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 });
 
-  const cor =
-    achado.sev === "sev" || achado.graus >= 3
-      ? "#EF4444"
-      : achado.sev === "alt" || achado.graus >= 1
-      ? "#FBBF24"
-      : "#34D399";
+  const isSevere = achado.sev === "sev" || achado.graus >= 3;
+  const isModerate = !isSevere && (achado.sev === "alt" || achado.graus >= 1);
+  const cor = isSevere ? "#EF4444" : isModerate ? "#FBBF24" : "#34D399";
+  const sevLabel = isSevere ? "SEVERO" : isModerate ? "MODERADO" : "LEVE";
 
   function startDrag(clientX: number, clientY: number) {
     dragging.current = true;
@@ -128,6 +129,15 @@ export function DraggableEducationCard({
           }}>
             {content.o_que_e.titulo}
           </p>
+          {minimized && (
+            <span style={{
+              fontSize: 8, fontWeight: 700, color: cor,
+              letterSpacing: "0.08em", flexShrink: 0,
+              whiteSpace: "nowrap",
+            }}>
+              {sevLabel}{achado.graus ? ` · ${achado.graus.toFixed(1)}°` : ""}
+            </span>
+          )}
           <div className="edu-card-controls" style={{ display: "flex", gap: 4 }}>
             <button
               onClick={() => setMinimized((v) => !v)}
