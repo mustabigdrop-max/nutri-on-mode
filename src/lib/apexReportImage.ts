@@ -170,8 +170,8 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
   const compact = mode === "instagram";
   const isClient = mode === "client";
   const title = data.title || "APEX INTELLIGENCE SYSTEM";
-  const coachName = data.coachName || "Coach Diogo Mello";
-  const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach · USA";
+  const coachName = data.coachName || "Coach";
+  const coachSubtitle = data.coachSubtitle || "Nutrition & Performance Coach";
   const handle = data.handle || "nutrion.app.br";
 
   // Foto: no máximo 40% da altura do card (menos no quadrado, que tem menos espaço).
@@ -378,7 +378,7 @@ export const buildApexInstagramCaption = (data: ApexReportData) => {
     "",
     "Comenta APEX que eu te mostro como funciona na prática.",
     "",
-    `${data.coachName || "Coach Diogo Mello"} · @diogo.mell0 · ${data.handle || "nutrion.app.br"}`,
+    [data.coachName || "Coach", data.handle || "nutrion.app.br"].filter(Boolean).join(" · "),
     "#nutricaoesportiva #coaching #transformacao #apex",
   ]
     .filter((l) => l !== "" || true)

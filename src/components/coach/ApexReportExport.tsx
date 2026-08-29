@@ -1,6 +1,10 @@
-import { useState } from "react";
-import { Image as ImageIcon, Loader2, Download, Copy, Film, Instagram, Settings2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Image as ImageIcon, Loader2, Download, Copy, Film, Instagram, Settings2, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useInstagramAccount } from "@/hooks/useInstagramAccount";
+import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
 import {
   generateApexReport,
   generateApexInstagramPackage,
@@ -24,17 +28,42 @@ export default function ApexReportExport({
   data: ApexReportData;
   compact?: boolean;
 }) {
+  const { user } = useAuth();
+  const { account: ig } = useInstagramAccount();
+  const { publish, publishing } = usePublishToInstagram();
   const [busy, setBusy] = useState<ApexReportMode | "package" | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [feedBlob, setFeedBlob] = useState<Blob | null>(null);
   const [open, setOpen] = useState(false);
   const [showTemplate, setShowTemplate] = useState(false);
   const [caption, setCaption] = useState<string | null>(null);
 
-  // Template customizável
+  // Template customizável — pré-preenchido com a identidade real do coach
+  // logado (nunca um nome fixo, senão todo coach que usa isso credita a
+  // mesma pessoa no material que está gerando pros próprios clientes).
   const [title, setTitle] = useState("APEX INTELLIGENCE SYSTEM");
-  const [coachName, setCoachName] = useState("Coach Diogo Mello");
+  const [coachName, setCoachName] = useState("");
   const [handle, setHandle] = useState("nutrion.app.br");
   const [paletteKey, setPaletteKey] = useState(APEX_PALETTES[0].key);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data: prof } = await supabase
+        .from("coach_profiles")
+        .select("professional_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const name = (prof as { professional_name?: string | null } | null)?.professional_name;
+      if (name) setCoachName((cur) => cur || name);
+    })();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (ig?.username) setHandle((cur) => (cur === "nutrion.app.br" ? `@${ig.username}` : cur));
+  }, [ig?.username]);
+
+  const canPublish = !!ig && ig.source !== "screenshot";
 
   const palette = APEX_PALETTES.find((p) => p.key === paletteKey) || APEX_PALETTES[0];
 
@@ -69,6 +98,8 @@ export default function ApexReportExport({
       const pkg = await generateApexInstagramPackage(withTemplate());
       setPreview(pkg.story);
       setCaption(pkg.caption);
+      const blob = await fetch(pkg.feed).then((r) => r.blob());
+      setFeedBlob(blob);
       downloadApexReport(pkg.story, `apex-story-${slug}.png`);
       downloadApexReport(pkg.feed, `apex-feed-${slug}.png`);
       try {
@@ -81,6 +112,29 @@ export default function ApexReportExport({
       toast({ title: "Erro no pacote Instagram", description: e?.message, variant: "destructive" });
     } finally {
       setBusy(null);
+    }
+  };
+
+  const publishNow = async () => {
+    if (!user?.id || !feedBlob || !caption) return;
+    if (!canPublish) {
+      toast({
+        title: "Instagram não conectado com token",
+        description: "Conecte na aba Instagram do Social ON pra publicar direto por aqui.",
+      });
+      return;
+    }
+    try {
+      await publish({
+        coachId: user.id,
+        file: feedBlob,
+        mediaKind: "IMAGE",
+        caption,
+        alsoStory: true,
+      });
+      toast({ title: "Publicado no Instagram!", description: "Feed + Stories no ar. Mostra a ferramenta funcionando." });
+    } catch (e: any) {
+      toast({ title: "Falha ao publicar", description: e?.message, variant: "destructive" });
     }
   };
 
@@ -181,6 +235,28 @@ export default function ApexReportExport({
               Story 1080×1920, feed 1080×1080 e legenda gerada a partir desta análise
             </div>
           </button>
+
+          {feedBlob && caption && (
+            <button
+              disabled={publishing}
+              onClick={publishNow}
+              className="w-full rounded-lg border px-3 py-2 text-left disabled:opacity-60"
+              style={{
+                borderColor: canPublish ? "#22C55E80" : "hsl(var(--border))",
+                background: canPublish ? "#22C55E12" : "transparent",
+              }}
+            >
+              <div className="text-xs font-bold flex items-center gap-1.5" style={{ color: canPublish ? "#22C55E" : undefined }}>
+                {publishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                {canPublish ? "Publicar agora no Instagram" : "Conecte o Instagram pra publicar direto daqui"}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                {canPublish
+                  ? "Feed + repost automático nos Stories — mostra a ferramenta funcionando ao vivo."
+                  : "Conexão por print não publica direto — vá em Instagram, no Social ON, e conecte com token."}
+              </div>
+            </button>
+          )}
 
           <button
             onClick={copyReel}
