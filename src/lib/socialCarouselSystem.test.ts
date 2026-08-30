@@ -18,3 +18,20 @@ describe("normalizeCarouselSlides", () => {
     expect(new Set(slides.map((slide) => `${slide.title} ${slide.body || ""}`)).size).toBe(slides.length);
   });
 });
+describe("normalizeCarouselSlides overflow", () => {
+  it("keeps the CTA slide when the model returns a full deck without problem slide", () => {
+    const input = [
+      { type: "hook" as const, title: "Sistema vence motivação" },
+      ...Array.from({ length: 6 }, (_, i) => ({
+        type: "content" as const,
+        title: `Bloco ${i + 1}`,
+        body: `Detalhe prático número ${i + 1} do sistema.`,
+      })),
+      { type: "cta" as const, title: "Salva esse carrossel", body: "Manda pra quem precisa." },
+    ];
+    const slides = normalizeCarouselSlides(input, "Sistema vence motivação", "execucao");
+    expect(slides.length).toBeLessThanOrEqual(8);
+    expect(slides.at(-1)?.type).toBe("cta");
+    expect(slides.some((s) => s.type === "takeaway")).toBe(true);
+  });
+});

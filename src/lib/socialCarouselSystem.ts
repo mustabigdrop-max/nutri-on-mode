@@ -93,6 +93,16 @@ export const normalizeCarouselSlides = (
     const takeawayIndex = ordered.findIndex((slide) => slide.type === "takeaway");
     ordered.splice(takeawayIndex >= 0 ? takeawayIndex : Math.max(2, ordered.length - 1), 0, fallback);
   }
+
+  // Nunca cortar o final do carrossel: se passou de 8, remove slides de
+  // conteúdo do meio, preservando hook, problema, takeaway e CTA.
+  while (ordered.length > 8) {
+    const removable = ordered
+      .map((slide, index) => ({ slide, index }))
+      .filter(({ slide }) => slide.type === "content");
+    if (!removable.length) break;
+    ordered.splice(removable[removable.length - 1].index, 1);
+  }
   return ordered.slice(0, 8);
 };
 
