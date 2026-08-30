@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Copy, Download, Film, Loader2, Rocket, Save, Smartphone, Trash2, Type, Upload, X, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Download, Film, Loader2, Rocket, Save, Smartphone, Trash2, Type, Upload, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
@@ -13,6 +13,10 @@ import {
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
   DEFAULT_CAPTION_STYLE, type CaptionStyle, SOCIAL_BRAND,
 } from "@/lib/socialImageKit";
+import {
+  MCE_ACCENTS, normalizeCarouselSlides, type CarouselPreset, type CoachPhotoMode,
+  type McePillar, type ProprietarySlide,
+} from "@/lib/socialCarouselSystem";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
 
 type StoryPart = { title: string; body: string; sticker?: string; sticker_content?: string };
@@ -24,7 +28,7 @@ type Pkg = {
   best_time?: string;
   reach_forecast?: string;
   self_comment?: string;
-  carousel?: { title: string; body: string }[];
+  carousel?: ProprietarySlide[];
   stories?: StoryPart[];
 };
 
@@ -48,6 +52,10 @@ type SlideDef = {
   /** "none" | "main" | índice numérico da foto extra */
   bg: string;
   accent?: string;
+  type?: ProprietarySlide["type"];
+  pillar?: McePillar;
+  reference?: string;
+  keywords?: string[];
 };
 
 type SavedPackage = {
@@ -104,7 +112,9 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
   const [photos, setPhotos] = useState<string[]>([]);
   const [subject, setSubject] = useState<string>("shape");
   const [goal, setGoal] = useState<string>("viralizar");
-  const [style, setStyle] = useState<string>("photo");
+  const [style, setStyle] = useState<CarouselPreset>("dark_authority");
+  const [pillar, setPillar] = useState<McePillar>("comportamento");
+  const [photoMode, setPhotoMode] = useState<CoachPhotoMode>("cover");
   const [tone, setTone] = useState<string>("direto");
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState("");
@@ -125,6 +135,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
   const [reel, setReel] = useState<ReelScript | null>(null);
   const [capStyle, setCapStyle] = useState<CaptionStyle>({ ...DEFAULT_CAPTION_STYLE });
   const [capOpen, setCapOpen] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
 
 
   const videoRef = useRef<HTMLInputElement>(null);
@@ -189,15 +200,21 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     return src ? await gradeDarkPremium(src) : edits.dark || null;
   };
 
-  const renderSlides = async (defs: SlideDef[], carouselStyle: string) => {
+  const renderSlides = async (defs: SlideDef[], carouselStyle: CarouselPreset) => {
     const out: string[] = [];
     for (const d of defs) {
-      const bgImage = carouselStyle === "dark" ? null : await bgFor(d.bg);
+      const bgImage = photoMode === "none" ? null : await bgFor(d.bg);
       out.push(await renderSlide({
         backgroundImage: bgImage,
         overlay: "rgba(2,2,5,0.80)",
-        gradient: carouselStyle === "gradient" && !bgImage ? SOCIAL_BRAND.gradientGold : undefined,
-        bigTitle: carouselStyle === "gradient",
+        preset: carouselStyle,
+        slideType: d.type,
+        pillar: d.pillar || pillar,
+        reference: d.reference,
+        keywords: d.keywords,
+        coachPhotoMode: photoMode,
+        slideNumber: out.length + 1,
+        slideCount: defs.length,
         eyebrow: d.eyebrow,
         title: d.title,
         body: d.body,
@@ -219,27 +236,14 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     setEdits({ original: main, fitness, dark, crop45: c45, crop916: c916 });
 
     setStep("Montando carrossel…");
-    const defs: SlideDef[] = [
-      {
-        eyebrow: "arrasta →",
-        title: data.hook || data.caption?.split("\n")[0] || "Sistema > motivação",
-        bg: carouselStyle === "dark" ? "none" : "main",
-        accent: SOCIAL_BRAND.gold,
-      },
-      ...(data.carousel || []).slice(0, 3).map((p, i) => ({
-        eyebrow: `0${i + 2}`,
-        title: p.title,
-        body: p.body,
-        bg: carouselStyle === "dark" ? "none" : photos[i + 1] ? String(i + 1) : "main",
-      })),
-      {
-        title: "Salva esse post.",
-        body: "Manda pra quem precisa ler isso hoje.",
-        bg: carouselStyle === "dark" ? "none" : "main",
-        accent: "#00FF88",
-      },
-    ];
+    const normalized = normalizeCarouselSlides(data.carousel, data.hook || data.caption?.split("\n")[0] || "Sistema vence motivação.", pillar);
+    const defs: SlideDef[] = normalized.map((slide, i) => ({
+      ...slide,
+      bg: slide.type === "hook" || slide.type === "cta" ? "main" : photos[i] ? String(i) : "none",
+      accent: MCE_ACCENTS[slide.pillar || pillar],
+    }));
     setSlides(defs);
+    setActiveSlide(0);
     setSlideImages(await renderSlides(defs, carouselStyle));
 
     setStep("Montando Stories…");
@@ -279,7 +283,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     }, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [capStyle.size, capStyle.position, capStyle.color, capStyle.bg]);
+  }, [capStyle.size, capStyle.position, capStyle.color, capStyle.bg, photoMode, pillar]);
 
 
   const addVideo = async (file?: File | null) => {
@@ -386,12 +390,18 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
       const footer = next ? (at ? `${at} · nutrion.app.br` : "nutrion.app.br") : undefined;
       const imgs: string[] = [];
       for (const d of slides) {
-        const bgImage = style === "dark" ? null : await bgFor(d.bg);
+        const bgImage = photoMode === "none" ? null : await bgFor(d.bg);
         imgs.push(await renderSlide({
           backgroundImage: bgImage,
           overlay: "rgba(2,2,5,0.80)",
-          gradient: style === "gradient" && !bgImage ? SOCIAL_BRAND.gradientGold : undefined,
-          bigTitle: style === "gradient",
+          preset: style,
+          slideType: d.type,
+          pillar: d.pillar || pillar,
+          reference: d.reference,
+          keywords: d.keywords,
+          coachPhotoMode: photoMode,
+          slideNumber: imgs.length + 1,
+          slideCount: slides.length,
           eyebrow: d.eyebrow,
           title: d.title,
           body: d.body,
@@ -408,7 +418,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     }
   };
 
-  const changeStyle = async (id: string) => {
+  const changeStyle = async (id: CarouselPreset) => {
     setStyle(id);
     if (!pkg) return;
     setBusy(true);
@@ -483,8 +493,10 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     const content = p.generated_content;
     if (!content?.pkg) return toast.error("Pacote sem conteúdo");
     setPkg(content.pkg);
-    setStyle(p.carousel_style || "dark");
-    if (main) await buildVisuals(content.pkg, p.carousel_style || "dark");
+    const savedStyle = (["dark_authority", "bold_impact", "minimal_clean"] as string[]).includes(p.carousel_style)
+      ? p.carousel_style as CarouselPreset : "dark_authority";
+    setStyle(savedStyle);
+    if (main) await buildVisuals(content.pkg, savedStyle);
     toast.success("Pacote carregado");
   };
 
@@ -565,6 +577,18 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
           </>
         )}
 
+        {main && (
+          <div className="grid gap-2 sm:grid-cols-3">
+            {([[
+              "none", "Sem foto"
+            ], ["cover", "Foto na capa/final"], ["cta_circle", "Recorte no CTA"]] as const).map(([value, label]) => (
+              <Button key={value} type="button" size="sm" variant={photoMode === value ? "default" : "outline"} onClick={() => setPhotoMode(value)}>
+                {label}
+              </Button>
+            ))}
+          </div>
+        )}
+
         <div className="rounded-xl border border-dashed p-4 space-y-3" style={{ borderColor: `${ACCENT2}55` }}>
           <p className="text-xs font-semibold">📹 Vídeo (opcional)</p>
           {video ? (
@@ -631,12 +655,21 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
       <Section title="🎨 Passo 3 — estilo do carrossel">
         <div className="grid grid-cols-3 gap-2">
           {CAROUSEL_STYLES.map((s) => (
-            <button key={s.id} type="button" onClick={() => changeStyle(s.id)}
+            <button key={s.id} type="button" onClick={() => changeStyle(s.id as CarouselPreset)}
               className="p-3 rounded-lg text-left border transition-colors"
               style={{ borderColor: style === s.id ? ACCENT2 : "rgba(255,255,255,0.12)", background: style === s.id ? `${ACCENT2}18` : "transparent" }}>
               <p className="text-xs font-semibold">{s.label}</p>
               <p className="text-[10px] text-muted-foreground">{s.sub}</p>
             </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 pt-2">
+          {([[
+            "mindset", "M · Mindset"
+          ], ["comportamento", "C · Comportamento"], ["execucao", "E · Execução"]] as const).map(([value, label]) => (
+            <Button key={value} type="button" size="sm" variant={pillar === value ? "default" : "outline"} onClick={() => setPillar(value)}>
+              {label}
+            </Button>
           ))}
         </div>
       </Section>
@@ -805,7 +838,15 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         <Section title={`3. Carrossel (${slideImages.length} slides)`} right={
           <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => dlAll(slideImages, "carrossel")}><Download className="w-3 h-3" /> Baixar PNGs</Button>
         }>
-          <p className="text-[11px] text-muted-foreground">Arraste pra reordenar · clique pra editar texto e fundo</p>
+          <div className="mx-auto max-w-sm space-y-3">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-lg border">
+              <img src={slideImages[activeSlide]} alt={`Slide ${activeSlide + 1} do carrossel`} className="h-full w-full object-cover" />
+              <Button type="button" size="icon" variant="secondary" className="absolute left-2 top-1/2 -translate-y-1/2" onClick={() => setActiveSlide((i) => (i - 1 + slideImages.length) % slideImages.length)} aria-label="Slide anterior"><ChevronLeft className="h-4 w-4" /></Button>
+              <Button type="button" size="icon" variant="secondary" className="absolute right-2 top-1/2 -translate-y-1/2" onClick={() => setActiveSlide((i) => (i + 1) % slideImages.length)} aria-label="Próximo slide"><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+            <p className="text-center text-xs text-muted-foreground">{activeSlide + 1} / {slideImages.length} · 1080 × 1350 px</p>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Arraste as miniaturas pra reordenar · clique pra editar texto e fundo</p>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {slideImages.map((s, i) => (
               <div
@@ -815,7 +856,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => { if (dragIndex.current !== null) reorder(dragIndex.current, i); dragIndex.current = null; }}
                 className="shrink-0 space-y-1 cursor-grab"
-                onClick={() => setEditing(i)}
+                onClick={() => { setActiveSlide(i); setEditing(i); }}
               >
                 <img src={s} alt={`Slide ${i + 1} do carrossel`} className="h-44 rounded-lg" />
                 <p className="text-[10px] font-mono text-center text-muted-foreground">slide {i + 1}</p>

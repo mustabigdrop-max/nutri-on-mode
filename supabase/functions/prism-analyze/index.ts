@@ -38,7 +38,7 @@ const SCHEMA = `{
       "cientifico": "...", "pessoal": "...", "humor": "...", "militar": "...", "pai": "...", "direto": "..."
     },
 
-    "carousel_slides": [{ "title": "texto curto do slide", "body": "2 a 3 linhas", "file_index": 0 }, "exatamente 5 itens, o 1º é capa com hook e o 5º é CTA"],
+    "carousel_slides": [{ "type":"hook|problem|content|takeaway|cta", "title":"frase direta", "body":"apoio opcional; total até 20 palavras", "pillar":"mindset|comportamento|execucao", "reference":"Autor, Universidade quando MCE", "keywords":["até 3 termos"], "file_index":0 }, "6 a 8 itens: hook, problema, 3-5 conteúdos, takeaway e CTA"],
     "stories_frames": [{ "text": "texto grande do story", "body": "linha de apoio", "sticker": "quiz|enquete|link|nenhum", "sticker_content": "conteúdo pronto do sticker", "file_index": 0 }, "4 a 5 itens"],
     "reel_script": {
       "hook": "primeiros 2 segundos",
@@ -65,8 +65,8 @@ const SCHEMA = `{
 
 const REWRITE_SCHEMAS: Record<string, string> = {
   caption: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes, o 1º é o da nova legenda"],"caption_variations":["3 legendas completas diferentes, a 1ª é igual ao caption"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."}}`,
-  slides: `{"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens, o 1º é capa com hook e o 5º é CTA"]}`,
-  both: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes"],"caption_variations":["3 legendas completas diferentes"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens"]}`,
+  slides: `{"carousel_slides":[{"type":"hook|problem|content|takeaway|cta","title":"frase direta","body":"apoio opcional; total até 20 palavras","pillar":"mindset|comportamento|execucao","reference":"Autor, Universidade quando MCE","keywords":["até 3 termos"],"file_index":0},"6 a 8 itens: hook, problema, 3-5 conteúdos, takeaway, CTA"]}`,
+  both: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes"],"caption_variations":["3 legendas completas diferentes"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"type":"hook|problem|content|takeaway|cta","title":"frase direta","body":"apoio opcional; total até 20 palavras","pillar":"mindset|comportamento|execucao","reference":"Autor, Universidade quando MCE","keywords":["até 3 termos"],"file_index":0},"6 a 8 itens"]}`,
 };
 
 const REWRITE_PROMPT = (target: string, analysis: unknown, decision: unknown, current: unknown, instruction: string) =>
@@ -87,6 +87,8 @@ REGRAS:
 - Nunca citação acadêmica nem nome de journal. Máximo 3-4 emojis. Zero hashtags dentro da legenda.
 - Mantenha os mesmos file_index dos slides atuais quando existirem.
 - Nunca se apresente como IA.
+- Carrossel: 6 a 8 slides na ordem hook, problema, 3-5 conteúdos, takeaway, CTA. Hook até 8 palavras; cada slide até 20 palavras; nenhum texto repetido.
+- Nunca use "Você sabia que", "Neste post vamos falar sobre", "Fique até o final" ou "Curta e compartilhe".
 - Responda JSON puro, sem markdown, exatamente neste schema:
 ${REWRITE_SCHEMAS[target]}`;
 
@@ -134,7 +136,9 @@ REGRAS:
 - Nunca citação acadêmica (Autor et al., ano) nem nome de journal.
 - Máximo 3-4 emojis na legenda inteira. Hashtags só no campo hashtags.
 - Hashtags: 15 no total (5 grandes + 7 médias + 3 nichadas).
-- Carrossel: exatamente 5 slides. Stories: 4 a 5 frames com stickers.
+- Carrossel: 6 a 8 slides — hook, problema, 3-5 conteúdos, takeaway e CTA. Máximo 20 palavras por slide; hook com até 8.
+- Nunca repetir frase ou conceito entre slides. Nunca usar "Você sabia que", "Neste post vamos falar sobre", "Fique até o final" ou "Curta e compartilhe".
+- Em conteúdo MCE, preencher pillar e reference no formato "Autor, Universidade".
 - Com múltiplas fotos: preencher edit_sequence com timing por frame e file_index real.
 - Com vídeo: preencher video_notes (roteiro reescrito, textos por segundo, cortes, clips de stories).
 - Com 3+ arquivos: preencher weekly_package com 7 dias, cada dia com format, pillar, time (HH:MM realista pro público brasileiro, variando entre os dias) e hook.
