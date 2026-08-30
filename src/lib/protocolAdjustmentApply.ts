@@ -76,24 +76,15 @@ export async function applyAdjustment(params: {
       .eq("id", (plan as any).id);
   }
 
-  // 2) Notificar o atleta
-  await supabase.from("notifications").insert({
-    user_id: athleteId,
-    type: "protocol_adjusted",
-    title: "Seu protocolo foi ajustado",
-    body: `${option.label} — ${customAction || option.detail}`,
-    action_url: "/meu-plano",
-    metadata: { suggestion: suggestionTitle, changes: c as any },
+  // 2 e 3) Notificação do atleta + timeline (função no servidor: o coach não
+  // pode inserir direto nessas tabelas por causa das regras de acesso).
+  const { error: notifyError } = await supabase.rpc("record_protocol_adjustment" as any, {
+    _athlete_id: athleteId,
+    _title: `Ajuste aprovado: ${option.label}`,
+    _description: `${option.label} — ${customAction || option.detail}`,
+    _metadata: { changes: c as any, suggestion: suggestionTitle } as any,
   } as any);
-
-  // 3) Timeline do paciente
-  await supabase.from("patient_timeline").insert({
-    patient_id: athleteId,
-    actor_id: coachId,
-    event_type: "protocol_adjusted",
-    title: `Ajuste aprovado: ${option.label}`,
-    description: customAction || option.detail,
-    data_category: "protocolo",
-    metadata: { changes: c as any, suggestion: suggestionTitle },
-  } as any);
+  if (notifyError) {
+    throw new Error(`Ajuste aplicado, mas não consegui avisar o atleta: ${notifyError.message}`);
+  }
 }

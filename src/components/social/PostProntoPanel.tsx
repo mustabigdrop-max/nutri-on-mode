@@ -397,6 +397,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
           body: d.body,
           footer,
           accent: d.accent,
+          captionStyle: capStyle,
         }));
       }
       setSlideImages(imgs);
