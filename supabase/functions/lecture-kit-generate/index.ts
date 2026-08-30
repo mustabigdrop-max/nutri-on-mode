@@ -126,7 +126,7 @@ serve(async (req: Request) => {
     ].filter(Boolean).join("\n\n");
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 170_000);
+    const timeoutId = setTimeout(() => controller.abort(), 120_000);
     let resp: Response;
     try {
       resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
