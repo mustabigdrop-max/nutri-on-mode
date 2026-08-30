@@ -1,16 +1,15 @@
-// Kit de Palestra — monta um roteiro de slides + fala do palestrante pra
-// uma apresentação ao vivo (ex: palestra de fisiculturismo), cruzando os
-// domínios que o coach escolher (treino, nutrição, farmacologia).
+// Kit de Palestra — monta um roteiro estruturado (slide a slide, com fala do
+// palestrante, tempo estimado e tipo de slide) pra uma apresentação ao vivo,
+// cruzando os domínios que o coach escolher.
 //
 // Importante sobre evidência científica: este motor NUNCA inventa estudo,
 // autor, ano ou estatística. Os achados científicos vêm de fora (a função
 // pubmed-live, que faz busca real na web) e chegam aqui já prontos, em
-// `body.scienceContext` — a IA só organiza e explica esse material real em
-// formato de slide. Isso existe porque um LLM "lembrando" citações de
-// memória erra referência com frequência — inaceitável pra alguém citar
-// ao vivo pra uma plateia.
+// `body.scienceContext` — o motor só organiza e explica esse material real em
+// formato de slide.
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
+import { MCE_DOCTRINE } from "../_shared/mceDoctrine.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,27 +17,34 @@ const corsHeaders = {
 };
 
 const SYSTEM_PROMPT = `
-Você monta roteiros de palestra pra profissionais de nutrição esportiva e
-fisiculturismo apresentarem pessoalmente (slides no PowerPoint + fala ao
-vivo), no nível de quem já é autoridade no assunto — didático, mas sem
-soar básico pra uma audiência que já treina ou atende atletas.
+Você monta roteiros de palestra pra profissionais de nutrição esportiva,
+treino e fisiculturismo apresentarem pessoalmente (slides + fala ao vivo).
 
 REGRAS OBRIGATÓRIAS:
-1. Use SOMENTE os achados científicos fornecidos no contexto abaixo pra
-   qualquer afirmação que soe como dado de pesquisa. NUNCA invente nome de
-   estudo, autor, ano, revista científica ou estatística que não esteja
-   no contexto — se o contexto não cobrir algo, fale em termos de
-   consenso/prática estabelecida, sem fingir que é uma citação específica.
-2. Cada slide é enxuto: máximo 4 bullets curtos (o que vai NA TELA), mais
-   uma "fala_do_palestrante" separada e mais completa (o que a pessoa diz
-   em voz alta — pode ser mais longa, é o roteiro real da fala).
-3. Estrutura por blocos, cobrindo só os domínios pedidos, na ordem:
-   abertura (autoridade + gancho) → domínios pedidos, cada um com
-   contexto científico real → encerramento com CTA de autoridade.
-4. Tom: direto, técnico sem ser hermético, sem clichê motivacional vazio.
-   Nunca se apresente como IA.
-5. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown, sem
-   texto fora do JSON.
+1. Use SOMENTE os achados científicos fornecidos no contexto pra qualquer
+   afirmação que soe como dado de pesquisa. NUNCA invente nome de estudo,
+   autor, ano, revista ou estatística fora do contexto. Sem contexto, fale em
+   termos de consenso estabelecido, sem fingir citação específica.
+2. Cada slide é enxuto: máximo 4 bullets curtos (o que vai NA TELA), mais uma
+   "fala_do_palestrante" separada e mais longa (roteiro real da fala, tom
+   conversacional, primeira pessoa).
+3. Tipos de slide permitidos: ABERTURA, GANCHO, PROBLEMA, CONTEUDO, DADO,
+   HISTORIA, INTERACAO, PROVA, CTA, FECHAMENTO.
+4. Estrutura obrigatória:
+   - slide 1 = ABERTURA (título + palestrante + credenciais)
+   - slide 2 = GANCHO (pergunta provocativa pra plateia)
+   - pelo menos 1 slide INTERACAO a cada 15 minutos de palestra
+   - pelo menos 2 slides DADO (número grande + contexto no primeiro bullet)
+   - pelo menos 1 slide HISTORIA (narrativa; se não houver história real do
+     palestrante no contexto, escreva um roteiro de história genérico marcado
+     com [ADAPTE COM SUA HISTÓRIA REAL])
+   - penúltimo slide = CTA
+   - último slide = FECHAMENTO com frase de impacto
+5. Some os "tempo_min" de todos os slides aproximadamente igual à duração alvo.
+6. Nunca se apresente como sistema automático. Nada de clichê motivacional vazio.
+7. No método MCE os pilares se chamam MENTALIDADE, COMPORTAMENTO e EXECUÇÃO
+   (nunca "Mindset").
+8. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown.
 `.trim();
 
 interface LectureBody {
@@ -49,6 +55,14 @@ interface LectureBody {
   handle?: string;
   niches?: string[];
   differentials?: string[];
+  audience?: string;
+  level?: string;
+  tone?: string;
+  includeMce?: boolean;
+  // Regeneração de um slide isolado
+  mode?: "full" | "slide";
+  slide?: Record<string, unknown>;
+  outline?: string;
 }
 
 function coachIdentity(body: LectureBody): string {
@@ -65,22 +79,25 @@ function coachIdentity(body: LectureBody): string {
   ].filter(Boolean).join("\n");
 }
 
+const SLIDE_SCHEMA = `{
+  "numero": 1,
+  "tipo": "ABERTURA | GANCHO | PROBLEMA | CONTEUDO | DADO | HISTORIA | INTERACAO | PROVA | CTA | FECHAMENTO",
+  "bloco": "domínio tratado (TREINO, NUTRICAO, FARMACOLOGIA, COMPORTAMENTO, MENTALIDADE, MCE, SUPLEMENTACAO, RECUPERACAO, FISIOLOGIA) ou GERAL",
+  "titulo_slide": "título curto que aparece na projeção",
+  "bullets": ["2 a 4 bullets curtos, o que vai NA TELA"],
+  "fala_do_palestrante": "o que dizer em voz alta nesse slide — texto corrido, conversacional",
+  "tempo_min": 3,
+  "referencia": "Autor, ano, estudo — apenas se vier do contexto científico; senão string vazia",
+  "dado_cientifico": "achado real usado nesse slide, ou string vazia"
+}`;
+
 const SCHEMA = `{
-  "titulo": "título de impacto pra abrir a palestra",
+  "titulo": "título de impacto da palestra",
   "subtitulo": "linha de apoio curta",
-  "gancho_abertura": "frase ou pergunta de 1-2 frases pra prender a plateia nos primeiros 30 segundos",
-  "agenda": ["3 a 6 blocos, na ordem em que serão apresentados"],
-  "slides": [
-    {
-      "numero": 1,
-      "bloco": "ABERTURA | TREINO | NUTRICAO | FARMACOLOGIA | ENCERRAMENTO",
-      "titulo_slide": "título curto pra colocar no PowerPoint",
-      "bullets": ["2 a 4 bullets curtos, o que vai NA TELA"],
-      "fala_do_palestrante": "o que dizer em voz alta nesse slide — mais completo que os bullets, texto corrido",
-      "dado_cientifico": "achado real do contexto fornecido usado nesse slide, ou string vazia se este slide não citar dado científico"
-    }
-  ],
-  "citacoes_chave": ["lista das fontes/achados reais citados ao longo da palestra, no formato que vieram do contexto — vazio se não houver contexto científico"],
+  "gancho_abertura": "pergunta provocativa de 1-2 frases pros primeiros 2 minutos",
+  "agenda": ["3 a 6 blocos, na ordem"],
+  "slides": [${SLIDE_SCHEMA}],
+  "citacoes_chave": ["fontes reais citadas, no formato em que vieram do contexto — vazio se não houver contexto"],
   "encerramento_cta": "fechamento que reforça autoridade e convida a plateia pra um próximo passo concreto"
 }`;
 
@@ -113,17 +130,36 @@ serve(async (req: Request) => {
     const domains = Array.isArray(body.domains) && body.domains.length ? body.domains : ["treino", "nutricao"];
     const duration = body.durationMinutes && body.durationMinutes > 0 ? body.durationMinutes : 25;
     const scienceContext = (body.scienceContext || "").trim();
+    const audience = (body.audience || "").trim();
+    const level = (body.level || "").trim();
+    const tone = (body.tone || "").trim();
+    const isSlideMode = body.mode === "slide";
 
-    const userPrompt = [
+    const sharedContext = [
       `TEMA DA PALESTRA: ${topic}`,
       `DOMÍNIOS A COBRIR (nesta ordem): ${domains.join(", ")}`,
-      `DURAÇÃO ALVO: ${duration} minutos — gere entre ${Math.max(6, Math.round(duration * 0.5))} e ${Math.max(10, Math.round(duration * 0.7))} slides no total, incluindo abertura e encerramento.`,
+      audience ? `PÚBLICO-ALVO: ${audience}` : "",
+      level ? `NÍVEL DO PÚBLICO: ${level} — calibre profundidade e jargão para esse nível.` : "",
+      tone ? `TOM DA PALESTRA: ${tone}` : "",
       coachIdentity(body),
+      body.includeMce ? `INTEGRE O MÉTODO MCE (pilares MENTALIDADE, COMPORTAMENTO, EXECUÇÃO) ao roteiro, citando os autores da doutrina abaixo:\n${MCE_DOCTRINE}` : "",
       scienceContext
-        ? `ACHADOS CIENTÍFICOS REAIS (única fonte permitida pra citação — use e distribua entre os slides dos domínios correspondentes):\n${scienceContext}`
+        ? `ACHADOS CIENTÍFICOS REAIS (única fonte permitida pra citação):\n${scienceContext}`
         : "Nenhum achado científico foi fornecido — fale em termos de consenso e prática estabelecida, sem citar estudo específico nenhum.",
-      `Gere no schema JSON:\n${SCHEMA}`,
     ].filter(Boolean).join("\n\n");
+
+    const userPrompt = isSlideMode
+      ? [
+          sharedContext,
+          `ROTEIRO ATUAL (para não repetir conteúdo):\n${(body.outline || "").slice(0, 4000)}`,
+          `SLIDE A REESCREVER (mantenha o mesmo "numero" e o mesmo "tipo", troque o conteúdo por uma versão melhor e diferente):\n${JSON.stringify(body.slide || {})}`,
+          `Responda apenas com o objeto JSON de UM slide no schema:\n${SLIDE_SCHEMA}`,
+        ].join("\n\n")
+      : [
+          sharedContext,
+          `DURAÇÃO ALVO: ${duration} minutos — gere entre ${Math.max(8, Math.round(duration * 0.5))} e ${Math.max(12, Math.round(duration * 0.8))} slides, e a soma dos "tempo_min" deve ficar próxima de ${duration}.`,
+          `Gere no schema JSON:\n${SCHEMA}`,
+        ].join("\n\n");
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120_000);
@@ -162,11 +198,11 @@ serve(async (req: Request) => {
         });
       }
       if (resp.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos da IA esgotados. Adicione créditos em Settings > Workspace > Usage." }), {
+        return new Response(JSON.stringify({ error: "Créditos esgotados. Adicione créditos em Settings > Workspace > Usage." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      return new Response(JSON.stringify({ error: "Falha no gateway de IA." }), {
+      return new Response(JSON.stringify({ error: "Falha ao gerar o kit." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -183,7 +219,7 @@ serve(async (req: Request) => {
       }
     }
     if (!result) {
-      return new Response(JSON.stringify({ error: "IA retornou JSON inválido. Tente novamente." }), {
+      return new Response(JSON.stringify({ error: "Resposta inválida. Tente novamente." }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
