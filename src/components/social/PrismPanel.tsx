@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Section, copyText, VariationBlock } from "./socialUi";
 import {
   cropToRatio, downloadMany, isMobileDevice, saveImage, extractVideoFrames, fileToDataUrl, getVideoDuration,
-  gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
+  gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl, SOCIAL_BRAND,
 } from "@/lib/socialImageKit";
 
 const PRISM = "#A855F7";
@@ -306,11 +306,11 @@ const PrismPanel = ({
       slideOut.push(
         await renderSlide({
           backgroundImage: at(s.file_index) ?? images[i]?.thumb ?? null,
-          eyebrow: i === 0 ? "MÉTODO MCE" : undefined,
+          eyebrow: i === 0 ? "AUTORIDADE" : undefined,
           title: s.title,
           body: s.body,
           footer,
-          accent: PRISM2,
+          accent: i === 0 ? SOCIAL_BRAND.gold : SOCIAL_BRAND.cyan,
         })
       );
     }
@@ -324,7 +324,7 @@ const PrismPanel = ({
           // Sticker/enquete são apenas dicas — não entram na imagem.
           body: s.body,
           footer,
-          accent: PRISM,
+          accent: i === 0 ? SOCIAL_BRAND.gold : SOCIAL_BRAND.cyan,
         })
 
       );

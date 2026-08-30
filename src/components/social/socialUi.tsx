@@ -3,7 +3,11 @@ import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const ACCENT = "#A855F7";
+// Identidade do Social ON — dourado (autoridade/elite, mesmo tom do "ELITE"
+// do Apex Visual) como destaque principal em todo painel, ciano como
+// secundário (dado/precisão). Era roxo antes — sem relação com o resto da
+// marca, deixava a experiência do Social ON parecendo um produto à parte.
+export const ACCENT = "#B8922A";
 export const ACCENT2 = "#00D4FF";
 
 

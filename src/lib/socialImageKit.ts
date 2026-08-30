@@ -4,6 +4,26 @@ export const NUTRION_BG = "#020205";
 export const NUTRION_CYAN = "#00D4FF";
 export const NUTRION_GREEN = "#00FF88";
 
+// ─── Identidade visual do Social ON ──────────────────────────────
+// Uma paleta só, usada em todo carrossel/card gerado (independente de qual
+// painel gerou), pra quem vê reconhecer o post como "essa é a marca dele"
+// antes de ler uma palavra. Dourado = autoridade/elite (o mesmo tom que já
+// aparece nos badges "ELITE" do Apex Visual e no "MÉTODO MCE") — combina
+// direto com o nicho de fisiculturismo/coaching de alta performance. Ciano
+// é o secundário: já é a cor de "dado/IA/precisão" usada no resto do
+// sistema (APEX Intelligence, scores, gráficos). Dourado pra capa/CTA
+// (autoridade), ciano pra conteúdo/prova (tecnologia) — mantém contraste
+// claro entre "isso é institucional" e "isso é informação" no carrossel.
+export const SOCIAL_BRAND = {
+  gold: "#B8922A",
+  goldDark: "#8a6c1f",
+  cyan: NUTRION_CYAN,
+  bg: NUTRION_BG,
+  /** Gradientes prontos pros dois papéis de slide num carrossel. */
+  gradientGold: ["#0d0904", "#1c1006"] as [string, string],
+  gradientCyan: ["#020510", "#03141c"] as [string, string],
+} as const;
+
 export const loadImage = (src: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const img = new Image();
@@ -294,6 +314,7 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
     ctx.fillRect(0, 0, w, h);
   }
 
+  const cs = { ...DEFAULT_CAPTION_STYLE, ...(spec.captionStyle || {}) };
 
   if (spec.backgroundImage) {
     const img = await loadImage(spec.backgroundImage);
@@ -301,7 +322,30 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
     const dw = img.width * scale;
     const dh = img.height * scale;
     ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-    ctx.fillStyle = spec.overlay || "rgba(2,2,5,0.65)";
+
+    // Véu em gradiente (não um véu uniforme) — a foto fica vívida na área
+    // sem texto e só escurece de verdade onde a legenda vai ficar. Um véu
+    // parelho em cima da foto inteira apagava a foto toda e ainda deixava
+    // um vazio grande acima do texto quando a legenda era curta (o texto
+    // sempre cola no rodapé, então a metade de cima ficava "sobrando").
+    const dark = spec.overlay || "rgba(2,2,5,0.86)";
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    if (cs.position === "top") {
+      grad.addColorStop(0, dark);
+      grad.addColorStop(0.42, dark);
+      grad.addColorStop(0.62, "rgba(2,2,5,0.12)");
+      grad.addColorStop(1, "rgba(2,2,5,0.04)");
+    } else if (cs.position === "center") {
+      grad.addColorStop(0, "rgba(2,2,5,0.3)");
+      grad.addColorStop(0.5, dark);
+      grad.addColorStop(1, "rgba(2,2,5,0.3)");
+    } else {
+      grad.addColorStop(0, "rgba(2,2,5,0.04)");
+      grad.addColorStop(0.38, "rgba(2,2,5,0.12)");
+      grad.addColorStop(0.58, dark);
+      grad.addColorStop(1, dark);
+    }
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
   }
 
@@ -314,8 +358,6 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
     ctx.fillStyle = accent;
     ctx.fillRect(pad, pad, 72, 6);
   }
-
-  const cs = { ...DEFAULT_CAPTION_STYLE, ...(spec.captionStyle || {}) };
   // 390px é a largura de referência do preview mobile.
   const k = w / 390;
 

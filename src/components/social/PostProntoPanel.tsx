@@ -11,7 +11,7 @@ import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/d
 import {
   cropToRatio, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration, isMobileDevice, saveImage,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
-  DEFAULT_CAPTION_STYLE, type CaptionStyle,
+  DEFAULT_CAPTION_STYLE, type CaptionStyle, SOCIAL_BRAND,
 } from "@/lib/socialImageKit";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
 
@@ -196,7 +196,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
       out.push(await renderSlide({
         backgroundImage: bgImage,
         overlay: "rgba(2,2,5,0.80)",
-        gradient: carouselStyle === "gradient" && !bgImage ? ["#062733", "#020205"] : undefined,
+        gradient: carouselStyle === "gradient" && !bgImage ? SOCIAL_BRAND.gradientGold : undefined,
         bigTitle: carouselStyle === "gradient",
         eyebrow: d.eyebrow,
         title: d.title,
@@ -224,6 +224,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         eyebrow: "arrasta →",
         title: data.hook || data.caption?.split("\n")[0] || "Sistema > motivação",
         bg: carouselStyle === "dark" ? "none" : "main",
+        accent: SOCIAL_BRAND.gold,
       },
       ...(data.carousel || []).slice(0, 3).map((p, i) => ({
         eyebrow: `0${i + 2}`,
@@ -389,7 +390,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         imgs.push(await renderSlide({
           backgroundImage: bgImage,
           overlay: "rgba(2,2,5,0.80)",
-          gradient: style === "gradient" && !bgImage ? ["#062733", "#020205"] : undefined,
+          gradient: style === "gradient" && !bgImage ? SOCIAL_BRAND.gradientGold : undefined,
           bigTitle: style === "gradient",
           eyebrow: d.eyebrow,
           title: d.title,

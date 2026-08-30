@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
-import { renderSlide, downloadMany } from "@/lib/socialImageKit";
+import { renderSlide, downloadMany, SOCIAL_BRAND } from "@/lib/socialImageKit";
 import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 
 const C = {
@@ -80,6 +80,10 @@ function DailyCoach({
       const slides: CarouselSlideSpec[] = (r?.carousel || []).slice(0, 6);
       const cleanHandle = (identity.handle || "").replace("@", "").trim();
       const footer = cleanHandle ? `@${cleanHandle} · nutrion.app.br` : "nutrion.app.br";
+      // Eyebrow da capa: nicho do próprio coach quando ele preencheu o perfil
+      // (multi-tenant — cada coach vê a própria identidade, nunca um método
+      // fixo de outra pessoa), com um fallback genérico.
+      const coverEyebrow = (identity.niches?.[0] || "AUTORIDADE").toUpperCase();
       const slideImages = await Promise.all(
         slides.map((s, idx) => {
           const isCover = idx === 0;
@@ -87,11 +91,11 @@ function DailyCoach({
           return renderSlide({
             title: s.title || "",
             body: s.body,
-            eyebrow: isCover ? "MÉTODO MCE" : `0${idx + 1}`,
-            accent: isCover ? C.gold : C.cyan,
-            gradient: isCover ? ["#0d0904", "#1c1006"] : ["#020510", "#03141c"],
+            eyebrow: isCover ? coverEyebrow : `0${idx + 1}`,
+            accent: isCover ? SOCIAL_BRAND.gold : SOCIAL_BRAND.cyan,
+            gradient: isCover ? SOCIAL_BRAND.gradientGold : SOCIAL_BRAND.gradientCyan,
             backgroundImage: hasCoverPhoto ? coverImage : null,
-            overlay: hasCoverPhoto ? "rgba(10,6,2,0.62)" : undefined,
+            overlay: hasCoverPhoto ? "rgba(8,5,2,0.82)" : undefined,
             footer,
           });
         }),
