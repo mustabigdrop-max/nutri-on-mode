@@ -55,6 +55,7 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
   const [domains, setDomains] = useState<Domain[]>(["treino", "nutricao", "farmacologia"]);
   const [duration, setDuration] = useState(25);
   const [stage, setStage] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const [kit, setKit] = useState<LectureKit | null>(null);
 
   const toggleDomain = (d: Domain) =>
