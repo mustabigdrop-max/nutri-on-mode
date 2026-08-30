@@ -64,6 +64,7 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 import React from "react";
 import ApexMarkdown from "@/components/apex/ApexMarkdown";
 import PalcoNPCTab from "@/components/coach/PalcoNPCTab";
+import { Button } from "@/components/ui/button";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -1263,7 +1264,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [suporte, setSuporte] = useState("");
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState("");
-  const [activeResultTab, setActiveResultTab] = useState("scores");
+  const [activeResultTab, setActiveResultTab] = useState("visual");
   const [activeVertexTab, setActiveVertexTab] = useState<"auditoria"|"sinergia"|"contencao"|"periodizacao"|"veredicto">("auditoria");
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
@@ -1845,52 +1846,54 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     const farmacologiaSection = parseSection(analysisResult, "FARMACOLOGIA_SHAPE", "GANHA_PONTOS");
     const hasFarmacologia = !!farmacologiaSection && !/nenhum protocolo informado/i.test(farmacologiaSection);
     const segments = parseSegments(analysisResult);
-    const tabs = [
-      { key: "scores", label: "Scores" },
-      { key: "visual", label: "📐 Análise Visual" },
-      { key: "postura", label: "Postura" },
-      { key: "correcoes", label: "Correções" },
-      { key: "plano-mestre", label: "Plano Mestre" },
-      { key: "protocolo", label: "Protocolo" },
-      ...(hasFarmacologia ? [{ key: "farmacologia", label: "💉 Farmacologia" }] : []),
-      { key: "palco", label: "Palco" },
-      { key: "plano", label: "Plano" },
-      { key: "timeline", label: "📅 Timeline" },
-      { key: "evolucao", label: "📈 Evolução" },
+    const tabGroups = [
+      { key: "analise", label: "ANÁLISE", tabs: [{ key: "visual", label: "Visual" }, { key: "postura", label: "Postura" }, { key: "scores", label: "Scores" }] },
+      { key: "correcoes", label: "CORREÇÕES", tabs: [{ key: "correcoes", label: "Achados" }, { key: "plano-mestre", label: "Plano" }, { key: "protocolo", label: "Protocolo" }] },
+      { key: "competicao", label: "COMPETIÇÃO", tabs: [...(hasFarmacologia ? [{ key: "farmacologia", label: "Farmacologia" }] : []), { key: "palco", label: "Palco" }, { key: "plano", label: "Prep" }] },
+      { key: "evolucao", label: "EVOLUÇÃO", tabs: [{ key: "timeline", label: "Timeline" }, { key: "evolucao", label: "Comparativo" }] },
     ];
+    const activeGroup = tabGroups.find((group) => group.tabs.some((tab) => tab.key === activeResultTab)) || tabGroups[0];
 
     return (
-      <div className="space-y-5">
+      <div className="apex-workspace space-y-6 rounded-xl bg-background p-3 md:p-5">
         {/* Header */}
-        <div
-          className="rounded-xl p-4 flex items-center gap-3"
-          style={{ background: `linear-gradient(135deg, ${cat.color}22, transparent)`, border: `1px solid ${cat.color}55` }}
-        >
-          <div className="text-3xl">{cat.icon}</div>
-          <div className="flex-1">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-foreground">{cat.label}</span>
-              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded tracking-widest" style={{ background: "linear-gradient(135deg,#FFB800,#E0A000)", color: "#1A1100" }}>ELITE</span>
+              <ApexSymbol size={22} color={cat.color} animated />
+              <span className="font-heading text-xl font-bold text-foreground">APEX VISUAL</span>
+              <span className="rounded bg-primary/10 px-2 py-0.5 font-tech text-[9px] text-primary">{cat.label}</span>
             </div>
-            <div className="text-xs text-muted-foreground">{athlete?.nome || "Atleta"} · Análise APEX Visual Intelligence</div>
+            <div className="mt-1 text-sm text-muted-foreground">{athlete?.nome || "Atleta"} · avaliação biomecânica</div>
           </div>
-          <button
-            onClick={reset}
-            className="text-xs px-3 py-2 rounded-lg border hover:bg-muted flex items-center gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" /> Nova análise
-          </button>
+          {(meta.bfEst || meta.bfMeta || meta.semEst) && (
+            <div className="min-w-[260px] rounded-md bg-card/70 px-4 py-3">
+              <div className="flex items-baseline justify-between gap-4 font-tech">
+                <span className="text-xs text-muted-foreground">BF</span>
+                <span className="text-lg font-bold text-foreground">{meta.bfEst || "—"}% <span className="text-primary">→</span> {meta.bfMeta || "—"}%</span>
+                <span className="text-xs text-muted-foreground">{meta.semEst || "—"} semanas</span>
+              </div>
+              <div className="mt-2 h-0.5 overflow-hidden bg-muted"><div className="h-full w-1/2 bg-primary" /></div>
+            </div>
+          )}
+          <div className="flex items-start gap-2">
+            <ApexReportExport compact data={{
+              athleteName: athlete?.nome || "Atleta", categoryLabel: cat.label,
+              photoUrl: photoUrls.front || photoUrls.lateral || photoUrls.back || null, accent: cat.color,
+              deviations: parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS").split("\n").map((l) => l.replace(/^[\s\-*•]+/, "").trim()).filter((l) => l.length > 3 && !l.startsWith("#")).slice(0, 6).map((l) => { const [name, ...rest] = l.split(/[:—-]/); return { name: name.trim().slice(0, 70), severity_label: rest.join(" ").trim().slice(0, 46) }; }),
+              scores: segments.map((s) => ({ label: s.label, value: s.score })), bfEstimated: meta.bfEst, bfTarget: meta.bfMeta, weeks: meta.semEst, priority: meta.p1,
+              clientSummary: meta.p1 ? `Seu foco das próximas semanas: ${meta.p1}. Um passo de cada vez — transformação é sistema.` : undefined,
+              strengths: [...segments].sort((a, b) => b.score - a.score).slice(0, 3).map((s) => `${s.label} em boa evolução`),
+              attentions: [...segments].sort((a, b) => a.score - b.score).slice(0, 2).map((s) => `${s.label} precisa de atenção`),
+            }} />
+            <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground" title="Nova análise">
+              <RotateCcw className="h-4 w-4" /><span className="sr-only">Nova análise</span>
+            </Button>
+          </div>
         </div>
 
-        {/* Meta pills */}
-        <div className="flex flex-wrap gap-2">
-          {meta.bfEst && <Pill label="BF estimado" value={`${meta.bfEst}%`} color="#E07030" />}
-          {meta.bfMeta && <Pill label="BF meta" value={`${meta.bfMeta}%`} color="#1DB87A" />}
-          {meta.semEst && <Pill label="Semanas" value={meta.semEst} color={cat.color} />}
-        </div>
-
-        {/* Modo Apresentação */}
-        <ApexReportExport
+        {/* Modo Apresentação data kept in compact header */}
+        {false && <ApexReportExport
           data={{
             athleteName: athlete?.nome || "Atleta",
             categoryLabel: cat.label,
@@ -1916,23 +1919,21 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             strengths: [...segments].sort((a, b) => b.score - a.score).slice(0, 3).map((s) => `${s.label} em boa evolução`),
             attentions: [...segments].sort((a, b) => a.score - b.score).slice(0, 2).map((s) => `${s.label} precisa de atenção`),
           }}
-        />
+        />}
 
 
         {/* Tabs */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 border-b border-border">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setActiveResultTab(t.key)}
-              className="px-3 py-2 text-xs font-semibold whitespace-nowrap rounded-t-lg transition-all"
-              style={{
-                color: activeResultTab === t.key ? cat.color : "hsl(var(--muted-foreground))",
-                borderBottom: `2px solid ${activeResultTab === t.key ? cat.color : "transparent"}`,
-              }}
-            >
-              {t.label}
-            </button>
+        <div className="flex gap-2 overflow-x-auto border-b border-border/30">
+          {tabGroups.map((group) => (
+            <Button key={group.key} variant="ghost" onClick={() => setActiveResultTab(group.tabs[0].key)} className={`h-12 rounded-none px-4 font-heading text-sm ${activeGroup.key === group.key ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>
+              {group.label}
+            </Button>
+          ))}
+        </div>
+
+        <div className="flex gap-1 rounded-md bg-card/50 p-1 w-fit max-w-full overflow-x-auto">
+          {activeGroup.tabs.map((tab) => (
+            <Button key={tab.key} size="sm" variant={activeResultTab === tab.key ? "secondary" : "ghost"} onClick={() => setActiveResultTab(tab.key)} className={activeResultTab === tab.key ? "text-primary" : "text-muted-foreground"}>{tab.label}</Button>
           ))}
         </div>
 
