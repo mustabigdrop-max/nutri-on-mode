@@ -348,9 +348,9 @@ const renderProprietarySlide = async (spec: SlideSpec, w: number, h: number) => 
     ctx.fillRect(0, 0, w, h);
   }
 
-  if (type === "cta" && preset === "bold_impact") {
+  if (type === "cta" && !useFullPhoto) {
     ctx.fillStyle = accent;
-    ctx.globalAlpha = 0.9;
+    ctx.globalAlpha = preset === "minimal_clean" ? 0.16 : 0.9;
     ctx.fillRect(0, 0, w, h);
     ctx.globalAlpha = 1;
     ctx.fillStyle = "rgba(5,5,10,0.9)";
@@ -422,10 +422,12 @@ const renderProprietarySlide = async (spec: SlideSpec, w: number, h: number) => 
     ctx.fillStyle = "rgba(247,247,250,0.52)";
     ctx.fillText(type === "cta" ? "@diogo.mell0  ·  MCE  ·  nutriON" : (spec.footer || "@diogo.mell0  ·  nutriON"), pad, h - 92);
   }
-  ctx.textAlign = "right";
-  ctx.fillStyle = "rgba(247,247,250,0.35)";
-  ctx.fillText(`${String(spec.slideNumber || 1).padStart(2, "0")} / ${String(spec.slideCount || 1).padStart(2, "0")}`, w - pad, h - 92);
-  ctx.textAlign = "left";
+  if (type !== "hook") {
+    ctx.textAlign = "right";
+    ctx.fillStyle = "rgba(247,247,250,0.35)";
+    ctx.fillText(`${String(spec.slideNumber || 1).padStart(2, "0")} / ${String(spec.slideCount || 1).padStart(2, "0")}`, w - pad, h - 92);
+    ctx.textAlign = "left";
+  }
   return canvas.toDataURL("image/png");
 };
 

@@ -26,7 +26,7 @@ const FORBIDDEN = [
   "curta e compartilhe",
 ];
 
-const words = (value = "") => value.trim().split(/\s+/).filter(Boolean);
+const words = (value?: string) => (value || "").trim().split(/\s+/).filter(Boolean);
 const clampWords = (value: string, limit: number) => words(value).slice(0, limit).join(" ");
 const clean = (value = "") => {
   let output = value.replace(/\s+/g, " ").trim();

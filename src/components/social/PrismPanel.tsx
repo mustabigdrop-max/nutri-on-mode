@@ -355,6 +355,14 @@ const PrismPanel = ({
     setStoryImages(storyOut);
   };
 
+  useEffect(() => {
+    if (!result?.content?.carousel_slides?.length) return;
+    const timer = window.setTimeout(() => { void renderAll(result); }, 100);
+    return () => window.clearTimeout(timer);
+    // renderAll consumes the selected visual controls and uploaded media.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carouselPreset, carouselPillar, coachPhotoMode]);
+
   const buildEdits = async () => {
     const base = images[0]?.dataUrl;
     if (!base) return toast.error("Sem foto para editar");
@@ -840,7 +848,7 @@ const PrismPanel = ({
             <Section title={`3 · Carrossel (${slideImages.length} slides)`}>
               <div className="grid gap-2 md:grid-cols-3">
                 {CAROUSEL_STYLES.map((item) => (
-                  <Button key={item.id} type="button" size="sm" variant={carouselPreset === item.id ? "default" : "outline"} onClick={async () => { setCarouselPreset(item.id as CarouselPreset); await renderAll(result); }}>
+                  <Button key={item.id} type="button" size="sm" variant={carouselPreset === item.id ? "default" : "outline"} onClick={() => setCarouselPreset(item.id as CarouselPreset)}>
                     {item.label}
                   </Button>
                 ))}
