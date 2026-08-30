@@ -5,7 +5,15 @@
 
 export type SlideType =
   | "ABERTURA" | "GANCHO" | "PROBLEMA" | "CONTEUDO" | "DADO"
-  | "HISTORIA" | "INTERACAO" | "PROVA" | "CTA" | "FECHAMENTO" | "QRCODE";
+  | "HISTORIA" | "INTERACAO" | "PROVA" | "CTA" | "FECHAMENTO" | "QRCODE" | "DEMO";
+
+/** Instruções operacionais de um momento de demonstração ao vivo. */
+export interface LectureDemo {
+  abrir: string;
+  mostrar: string;
+  falar: string;
+  backup: string;
+}
 
 export interface LectureSlide {
   id: string;
@@ -16,6 +24,7 @@ export interface LectureSlide {
   fala: string;
   tempoMin: number;
   referencia: string;
+  demo?: LectureDemo;
 }
 
 export interface LectureKit {
@@ -30,7 +39,7 @@ export interface LectureKit {
 
 export const SLIDE_TYPES: SlideType[] = [
   "ABERTURA", "GANCHO", "PROBLEMA", "CONTEUDO", "DADO",
-  "HISTORIA", "INTERACAO", "PROVA", "CTA", "QRCODE", "FECHAMENTO",
+  "HISTORIA", "INTERACAO", "PROVA", "DEMO", "CTA", "QRCODE", "FECHAMENTO",
 ];
 
 export const TYPE_COLOR: Record<SlideType, string> = {
@@ -45,6 +54,7 @@ export const TYPE_COLOR: Record<SlideType, string> = {
   CTA: "#22C55E",
   QRCODE: "#94A3B8",
   FECHAMENTO: "#B8922A",
+  DEMO: "#c9a84c",
 };
 
 export const TYPE_LABEL: Record<SlideType, string> = {
@@ -59,6 +69,7 @@ export const TYPE_LABEL: Record<SlideType, string> = {
   CTA: "CTA",
   QRCODE: "QR Code",
   FECHAMENTO: "Fechamento",
+  DEMO: "Ao vivo",
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -71,7 +82,8 @@ const normType = (raw: unknown, index: number, total: number): SlideType => {
   const map: Record<string, SlideType> = {
     ABERTURA: "ABERTURA", GANCHO: "GANCHO", PROBLEMA: "PROBLEMA", CONTEUDO: "CONTEUDO",
     DADO: "DADO", DADOS: "DADO", HISTORIA: "HISTORIA", INTERACAO: "INTERACAO",
-    PROVA: "PROVA", CTA: "CTA", QRCODE: "QRCODE", FECHAMENTO: "FECHAMENTO",
+    PROVA: "PROVA", CTA: "CTA", QRCODE: "QRCODE", FECHAMENTO: "FECHAMENTO", DEMO: "DEMO",
+    DEMONSTRACAO: "DEMO", AOVIVO: "DEMO",
     ENCERRAMENTO: "FECHAMENTO",
   };
   if (map[t]) return map[t];
@@ -109,6 +121,16 @@ export function normalizeSlide(s: any, i: number, total: number): LectureSlide {
     fala: String(s?.fala_do_palestrante || s?.fala || ""),
     tempoMin: Math.max(1, Math.round(Number(s?.tempo_min) || 2)),
     referencia: String(s?.referencia || s?.dado_cientifico || ""),
+    ...(s?.demo
+      ? {
+          demo: {
+            abrir: String(s.demo.abrir || ""),
+            mostrar: String(s.demo.mostrar || ""),
+            falar: String(s.demo.falar || ""),
+            backup: String(s.demo.backup || ""),
+          },
+        }
+      : {}),
   };
 }
 
