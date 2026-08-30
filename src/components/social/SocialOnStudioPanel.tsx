@@ -826,7 +826,7 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
               )}
 
               {tab === "analise" && (
-                <VisionPanel analysis={vision} loading={visionLoading} onRun={() => file && runVision(file)} />
+                <VisionPanel analysis={vision} loading={visionLoading} onRun={() => { if (file) runVision(file, mediaFrames ?? []); }} />
               )}
 
               {tab === "versoes" && (
