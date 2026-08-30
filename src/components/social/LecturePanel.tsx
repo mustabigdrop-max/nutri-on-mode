@@ -85,27 +85,46 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
           return `--- ${DOMAIN_LABELS[d]} ---\n${d2.rawStudies || ""}\n${d2.analysis || ""}`;
         }),
       );
-      const scienceContext = scienceParts.filter(Boolean).join("\n\n");
+      // Corta o contexto científico pra não estourar o payload/limite de tokens
+      // da geração (cada domínio contribui no máximo ~6k caracteres).
+      const scienceContext = scienceParts
+        .filter(Boolean)
+        .map((p) => p.slice(0, 6000))
+        .join("\n\n");
       if (!scienceContext) {
         toast.warning("Não consegui trazer achados científicos agora — a palestra vai sair em cima de consenso estabelecido, sem citação específica.");
       }
 
-      setStage("Montando o roteiro de slides…");
-      const { data, error } = await supabase.functions.invoke("lecture-kit-generate", {
-        body: {
-          topic,
-          domains,
-          durationMinutes: duration,
-          scienceContext,
-          ...ctx,
-        },
-      });
-      if (error) throw new Error(error.message);
-      if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error);
+      setStage("Gerando kit de palestra… Isso pode levar até 1 minuto.");
+      const body = { topic, domains, durationMinutes: duration, scienceContext, ...ctx };
+
+      let data: unknown = null;
+      let lastErr: string | null = null;
+      // Uma tentativa extra com backoff curto cobre falha de rede / rate limit.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const res = await supabase.functions.invoke("lecture-kit-generate", { body });
+        const payloadErr = (res.data as { error?: string } | null)?.error;
+        if (!res.error && !payloadErr) {
+          data = res.data;
+          lastErr = null;
+          break;
+        }
+        lastErr = payloadErr || res.error?.message || "falha desconhecida";
+        if (attempt === 0) {
+          setStage("Tentando de novo…");
+          await new Promise((r) => setTimeout(r, 2500));
+          setStage("Gerando kit de palestra… Isso pode levar até 1 minuto.");
+        }
+      }
+      if (lastErr || !data) throw new Error(lastErr || "sem resposta");
+
       setKit((data as { result: LectureKit }).result);
       toast.success("Kit de palestra pronto!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Não consegui montar o kit de palestra");
+      console.error("[LecturePanel] gerar", e);
+      const msg = "Não foi possível gerar o kit. Tente novamente em alguns segundos.";
+      setErro(msg);
+      toast.error(msg);
     } finally {
       setStage(null);
     }
