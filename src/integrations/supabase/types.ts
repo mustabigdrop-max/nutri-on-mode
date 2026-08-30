@@ -10364,6 +10364,7 @@ export type Database = {
           next_attempt_at: string | null
           permalink: string | null
           scheduled_at: string | null
+          self_comment: string | null
           status: string
           updated_at: string
         }
@@ -10382,6 +10383,7 @@ export type Database = {
           next_attempt_at?: string | null
           permalink?: string | null
           scheduled_at?: string | null
+          self_comment?: string | null
           status?: string
           updated_at?: string
         }
@@ -10400,6 +10402,7 @@ export type Database = {
           next_attempt_at?: string | null
           permalink?: string | null
           scheduled_at?: string | null
+          self_comment?: string | null
           status?: string
           updated_at?: string
         }
@@ -10530,6 +10533,7 @@ export type Database = {
           id: string
           instagram_handle: string | null
           ladder_metrics: Json | null
+          media_kit_token: string | null
           niches: Json | null
           products: Json | null
           updated_at: string
@@ -10548,6 +10552,7 @@ export type Database = {
           id?: string
           instagram_handle?: string | null
           ladder_metrics?: Json | null
+          media_kit_token?: string | null
           niches?: Json | null
           products?: Json | null
           updated_at?: string
@@ -10566,6 +10571,7 @@ export type Database = {
           id?: string
           instagram_handle?: string | null
           ladder_metrics?: Json | null
+          media_kit_token?: string | null
           niches?: Json | null
           products?: Json | null
           updated_at?: string
@@ -13146,6 +13152,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_media_kit_by_token: { Args: { _token: string }; Returns: Json }
       get_professional_invite_by_code: {
         Args: { _invite_code: string }
         Returns: {
