@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  CalendarPlus, Copy, Download, Film, Image as ImageIcon, Loader2, RefreshCw, Save, Settings2,
+  CalendarPlus, ChevronLeft, ChevronRight, Copy, Download, Film, Image as ImageIcon, Loader2, RefreshCw, Save, Settings2,
   Sparkles, Trash2, Upload, X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,11 @@ import {
   cropToRatio, downloadMany, isMobileDevice, saveImage, extractVideoFrames, fileToDataUrl, getVideoDuration,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl, SOCIAL_BRAND,
 } from "@/lib/socialImageKit";
+import { CAROUSEL_STYLES } from "@/data/socialOnSurreal";
+import {
+  MCE_ACCENTS, normalizeCarouselSlides, type CarouselPreset, type CoachPhotoMode,
+  type McePillar, type ProprietarySlide,
+} from "@/lib/socialCarouselSystem";
 
 const PRISM = "#A855F7";
 const PRISM2 = "#00D4FF";
@@ -61,7 +66,7 @@ type PrismResult = {
     caption_alternatives?: Record<string, string>;
     hook_variations?: string[];
     caption_variations?: string[];
-    carousel_slides?: { title: string; body?: string; file_index?: number }[];
+    carousel_slides?: ProprietarySlide[];
     stories_frames?: { text: string; body?: string; sticker?: string; sticker_content?: string; file_index?: number }[];
     reel_script?: {
       hook?: string; development?: string; cta?: string;
@@ -214,6 +219,10 @@ const PrismPanel = ({
   const [schedule, setSchedule] = useState<ScheduleRow[]>([]);
   const [scheduling, setScheduling] = useState(false);
   const [scheduled, setScheduled] = useState(0);
+  const [carouselPreset, setCarouselPreset] = useState<CarouselPreset>("dark_authority");
+  const [carouselPillar, setCarouselPillar] = useState<McePillar>("comportamento");
+  const [coachPhotoMode, setCoachPhotoMode] = useState<CoachPhotoMode>("cover");
+  const [activeSlide, setActiveSlide] = useState(0);
 
   const images = useMemo(() => files.filter((f) => f.kind === "image"), [files]);
   const videos = useMemo(() => files.filter((f) => f.kind === "video"), [files]);
@@ -297,20 +306,32 @@ const PrismPanel = ({
   const renderAll = async (res: PrismResult) => {
     const cleanHandle = (handle || "").replace("@", "").trim();
     const footer = watermark ? (cleanHandle ? `@${cleanHandle} · nutrion.app.br` : "nutrion.app.br") : undefined;
-    const slides = res.content?.carousel_slides || [];
+    const slides = normalizeCarouselSlides(
+      res.content?.carousel_slides,
+      res.content?.carousel_slides?.[0]?.title || res.content?.hook_variations?.[0] || "O comportamento vem antes do protocolo.",
+      carouselPillar,
+    );
     const stories = res.content?.stories_frames || [];
 
     const slideOut: string[] = [];
     for (let i = 0; i < slides.length; i++) {
       const s = slides[i];
+      const photo = coachPhotoMode === "none" ? null : at(s.file_index) ?? images[0]?.thumb ?? null;
       slideOut.push(
         await renderSlide({
-          backgroundImage: at(s.file_index) ?? images[i]?.thumb ?? null,
-          eyebrow: i === 0 ? "AUTORIDADE" : undefined,
+          backgroundImage: photo,
           title: s.title,
           body: s.body,
           footer,
-          accent: i === 0 ? SOCIAL_BRAND.gold : SOCIAL_BRAND.cyan,
+          accent: MCE_ACCENTS[s.pillar || carouselPillar],
+          preset: carouselPreset,
+          slideType: s.type,
+          pillar: s.pillar || carouselPillar,
+          reference: s.reference,
+          keywords: s.keywords,
+          coachPhotoMode,
+          slideNumber: i + 1,
+          slideCount: slides.length,
         })
       );
     }
@@ -330,8 +351,17 @@ const PrismPanel = ({
       );
     }
     setSlideImages(slideOut);
+    setActiveSlide(0);
     setStoryImages(storyOut);
   };
+
+  useEffect(() => {
+    if (!result?.content?.carousel_slides?.length) return;
+    const timer = window.setTimeout(() => { void renderAll(result); }, 100);
+    return () => window.clearTimeout(timer);
+    // renderAll consumes the selected visual controls and uploaded media.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [carouselPreset, carouselPillar, coachPhotoMode]);
 
   const buildEdits = async () => {
     const base = images[0]?.dataUrl;
@@ -816,12 +846,39 @@ const PrismPanel = ({
           {/* 3 — CARROSSEL */}
           {!!slideImages.length && (
             <Section title={`3 · Carrossel (${slideImages.length} slides)`}>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              <div className="grid gap-2 md:grid-cols-3">
+                {CAROUSEL_STYLES.map((item) => (
+                  <Button key={item.id} type="button" size="sm" variant={carouselPreset === item.id ? "default" : "outline"} onClick={() => setCarouselPreset(item.id as CarouselPreset)}>
+                    {item.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {([[
+                  "mindset", "M · Mindset"
+                ], ["comportamento", "C · Comportamento"], ["execucao", "E · Execução"]] as const).map(([value, label]) => (
+                  <Button key={value} type="button" size="sm" variant={carouselPillar === value ? "default" : "outline"} onClick={() => setCarouselPillar(value)}>{label}</Button>
+                ))}
+                {([[
+                  "none", "Sem foto"
+                ], ["cover", "Foto na capa/final"], ["cta_circle", "Recorte no CTA"]] as const).map(([value, label]) => (
+                  <Button key={value} type="button" size="sm" variant={coachPhotoMode === value ? "default" : "outline"} onClick={() => setCoachPhotoMode(value)}>{label}</Button>
+                ))}
+              </div>
+              <div className="mx-auto max-w-sm space-y-2">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-lg border">
+                  <img src={slideImages[activeSlide]} alt={`Slide ${activeSlide + 1}`} className="h-full w-full object-cover" />
+                  <Button type="button" size="icon" variant="secondary" className="absolute left-2 top-1/2 -translate-y-1/2" onClick={() => setActiveSlide((i) => (i - 1 + slideImages.length) % slideImages.length)} aria-label="Slide anterior"><ChevronLeft className="h-4 w-4" /></Button>
+                  <Button type="button" size="icon" variant="secondary" className="absolute right-2 top-1/2 -translate-y-1/2" onClick={() => setActiveSlide((i) => (i + 1) % slideImages.length)} aria-label="Próximo slide"><ChevronRight className="h-4 w-4" /></Button>
+                </div>
+                <p className="text-center text-xs text-muted-foreground">{activeSlide + 1} / {slideImages.length} · 1080 × 1350 px</p>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
                 {slideImages.map((s, i) => (
-                  <div key={i} className="space-y-1">
-                    <img src={s} alt={`slide ${i + 1}`} className="w-full rounded-lg border" style={{ borderColor: "rgba(255,255,255,0.12)" }} />
+                  <button key={i} type="button" onClick={() => setActiveSlide(i)} className="w-24 shrink-0 space-y-1">
+                    <img src={s} alt={`slide ${i + 1}`} className="w-full rounded-lg border" style={{ borderColor: activeSlide === i ? PRISM2 : "rgba(255,255,255,0.12)" }} />
                     <p className="text-[10px] text-center text-muted-foreground">Slide {i + 1}</p>
-                  </div>
+                  </button>
                 ))}
               </div>
               <Button size="sm" variant="outline" className="gap-2"
