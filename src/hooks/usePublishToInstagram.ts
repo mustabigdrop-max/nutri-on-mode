@@ -117,10 +117,14 @@ export function usePublishToInstagram() {
       }
 
       setStage("Enviando mídia...");
-      const mediaUrl = await uploadSocialMedia(toUpload, { coachId: opts.coachId, kind: isVideo ? "video" : "image" });
+      const scheduledAtIso = opts.scheduledAt instanceof Date ? opts.scheduledAt.toISOString() : opts.scheduledAt;
+      const mediaUrl = await uploadSocialMedia(toUpload, {
+        coachId: opts.coachId,
+        kind: isVideo ? "video" : "image",
+        validUntil: scheduledAtIso,
+      });
 
       setStage("Agendando...");
-      const scheduledAtIso = opts.scheduledAt instanceof Date ? opts.scheduledAt.toISOString() : opts.scheduledAt;
       const { data, error } = await supabase.functions.invoke("instagram-publish", {
         body: {
           action: "schedule",
