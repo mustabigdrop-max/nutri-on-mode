@@ -283,7 +283,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     }, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [capStyle.size, capStyle.position, capStyle.color, capStyle.bg]);
+  }, [capStyle.size, capStyle.position, capStyle.color, capStyle.bg, photoMode, pillar]);
 
 
   const addVideo = async (file?: File | null) => {
@@ -390,12 +390,18 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
       const footer = next ? (at ? `${at} · nutrion.app.br` : "nutrion.app.br") : undefined;
       const imgs: string[] = [];
       for (const d of slides) {
-        const bgImage = style === "dark" ? null : await bgFor(d.bg);
+        const bgImage = photoMode === "none" ? null : await bgFor(d.bg);
         imgs.push(await renderSlide({
           backgroundImage: bgImage,
           overlay: "rgba(2,2,5,0.80)",
-          gradient: style === "gradient" && !bgImage ? SOCIAL_BRAND.gradientGold : undefined,
-          bigTitle: style === "gradient",
+          preset: style,
+          slideType: d.type,
+          pillar: d.pillar || pillar,
+          reference: d.reference,
+          keywords: d.keywords,
+          coachPhotoMode: photoMode,
+          slideNumber: imgs.length + 1,
+          slideCount: slides.length,
           eyebrow: d.eyebrow,
           title: d.title,
           body: d.body,
