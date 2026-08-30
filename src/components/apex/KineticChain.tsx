@@ -181,7 +181,7 @@ export default function KineticChain({
 
       <div className="space-y-3">
         {chains.map((c) => {
-          const isOpen = expanded[c.id] ?? true;
+          const isOpen = expanded[c.id] ?? false;
           const tipoColor = TIPO_COLOR[c.tipo] || "#EF9F27";
           const total = c.elos?.length || 0;
           return (

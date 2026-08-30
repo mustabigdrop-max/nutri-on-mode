@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
-import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair } from "lucide-react";
+import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair, Settings2, Share2, FileDown, ImageDown, Presentation } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
 import { getEducationContent } from "@/utils/apexEducation";
 import { DraggableEducationCard } from "@/components/coach/ApexDraggableEducationCard";
@@ -696,168 +698,27 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
         .apex-landmark-pulse { animation: landmarkPulse 1.5s ease-in-out infinite; transform-origin: center; }
       `}</style>
 
-      {/* Header / toggles */}
-      <div className="flex flex-wrap items-center justify-between gap-2" style={{ display: modoMarketing ? "none" : undefined }}>
-        <div className="flex gap-1.5">
-          {(["front", "lateral", "back"] as const).map((v) => {
-            const enabled = availableViews.includes(v);
-            const labelMap = { front: "Frente", lateral: "Lateral", back: "Costas" };
-            return (
-              <button
-                key={v}
-                disabled={!enabled}
-                onClick={() => { setView(v); setSelected(null); }}
-                className="px-3 py-1.5 text-xs font-bold rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                style={{
-                  background: view === v ? `${C.gold}22` : "transparent",
-                  borderColor: view === v ? C.gold : "hsl(var(--border))",
-                  color: view === v ? C.gold : "hsl(var(--muted-foreground))",
-                }}
-              >
-                {labelMap[v]}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <button
-            onClick={() => setEduMode((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-            style={{
-              borderColor: eduMode ? C.cyan : "hsl(var(--border))",
-              color: eduMode ? C.cyan : "hsl(var(--muted-foreground))",
-              background: eduMode ? `${C.cyan}1A` : "transparent",
-            }}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            Modo Educação
-          </button>
-
-          {/* Ajustes técnicos — recolhidos por padrão. A detecção já é automática;
-              isso aqui é só pra quem quer conferir/ajustar manualmente, não é
-              um passo obrigatório do fluxo. */}
-          <details className="relative">
-            <summary
-              className="list-none inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border cursor-pointer select-none"
-              style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
-            >
-              ⚙ Ajustes técnicos (opcional)
-            </summary>
-            <div
-              className="absolute z-20 mt-1.5 p-2 rounded-lg border flex flex-wrap gap-1.5"
-              style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", width: 380, maxWidth: "80vw" }}
-            >
-              <button
-                onClick={() => setChainMode((v) => !v)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-                style={{
-                  borderColor: chainMode ? C.red : "hsl(var(--border))",
-                  color: chainMode ? C.red : "hsl(var(--muted-foreground))",
-                  background: chainMode ? `${C.red}1A` : "transparent",
-                }}
-              >
-                <Link2 className="w-3.5 h-3.5" />
-                Cadeia Cinética
-              </button>
-              <button
-                onClick={() => setGridMode((v) => !v)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-                style={{
-                  borderColor: gridMode ? C.gold : "hsl(var(--border))",
-                  color: gridMode ? C.gold : "hsl(var(--muted-foreground))",
-                  background: gridMode ? `${C.gold}1A` : "transparent",
-                }}
-                title="Exibe arcos goniométricos sobre cada linha de análise"
-              >
-                📐 Grade simetrográfica
-              </button>
-              <button
-                onClick={() => setModoTecnico((v) => !v)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-                style={{
-                  borderColor: modoTecnico ? "rgba(255,255,255,0.3)" : "hsl(var(--border))",
-                  color: modoTecnico ? "rgba(255,255,255,0.8)" : "hsl(var(--muted-foreground))",
-                  background: modoTecnico ? "rgba(255,255,255,0.12)" : "transparent",
-                }}
-                title={modoTecnico ? "Ocultar landmarks" : "Mostrar landmarks"}
-              >
-                {modoTecnico ? "◎ Landmarks ON" : "◎ Landmarks OFF"}
-              </button>
-              <button
-                onClick={activateManualMode}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-                style={{
-                  borderColor: manualMode ? C.gold : "hsl(var(--border))",
-                  color: manualMode ? C.gold : "hsl(var(--muted-foreground))",
-                  background: manualMode ? `${C.gold}1A` : "transparent",
-                }}
-                title="Ajustar manualmente a Linha de Prumo — só precisa se a detecção automática errar"
-              >
-                <Crosshair className="w-3.5 h-3.5" />
-                ⊕ Ajustar Prumo
-              </button>
-              <button
-                onClick={() => setShowAnatomyGuide((v) => !v)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-                style={{
-                  borderColor: showAnatomyGuide ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
-                  color: showAnatomyGuide ? C.gold : "hsl(var(--muted-foreground))",
-                  background: showAnatomyGuide ? "rgba(184,146,42,0.2)" : "transparent",
-                }}
-                title="Mostrar guia anatômico — onde ficam C7 e L5"
-              >
-                🦴 Guia
-              </button>
-              <p className="w-full text-[10px] text-muted-foreground leading-snug pt-1">
-                A análise já roda sozinha (IA detecta o corpo automaticamente). Só mexa aqui se quiser
-                conferir os pontos ou corrigir manualmente um caso específico.
-              </p>
-            </div>
-          </details>
-
-          <button
-            onClick={() => setModoMarketing((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
-            style={{
-              borderColor: modoMarketing ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
-              color: modoMarketing ? C.gold : "hsl(var(--muted-foreground))",
-              background: modoMarketing ? "rgba(184,146,42,0.2)" : "transparent",
-            }}
-            title="Modo Marketing — oculta UI, expande foto e mantém cards educativos arrastáveis"
-          >
-            📸 Marketing
-          </button>
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
-            style={{ borderColor: C.gold, color: C.gold }}
-          >
-            <Download className="w-3.5 h-3.5" />
-            {exporting ? "Exportando..." : "Exportar"}
-          </button>
-          <button
-            onClick={generateApexPDF}
-            disabled={exportingPDF}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
-            style={{
-              borderColor: C.gold,
-              color: C.gold,
-              background: exportingPDF ? `${C.gold}26` : `${C.gold}1A`,
-            }}
-            title="Gerar relatório PDF completo (foto anotada + achados + prescrição)"
-          >
-            {exportingPDF ? (
-              <>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, display: "inline-block", animation: "apex-chain-dash 1s infinite" }} />
-                Gerando PDF...
-              </>
-            ) : (
-              <>↓ Exportar PDF</>
-            )}
-          </button>
-        </div>
-      </div>
+      {/* Secondary actions: intentionally reduced to two compact menus */}
+      {!modoMarketing && <div className="flex justify-end gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Ajustes técnicos"><Settings2 /></Button></DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuCheckboxItem checked={eduMode} onCheckedChange={() => setEduMode((v) => !v)}><BookOpen className="mr-2 h-4 w-4" />Modo Educação</DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={modoTecnico} onCheckedChange={() => setModoTecnico((v) => !v)}><Eye className="mr-2 h-4 w-4" />Ajustar landmarks</DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={chainMode} onCheckedChange={() => setChainMode((v) => !v)}><Link2 className="mr-2 h-4 w-4" />Cadeia cinética</DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={gridMode} onCheckedChange={() => setGridMode((v) => !v)}><Presentation className="mr-2 h-4 w-4" />Grade simetrográfica</DropdownMenuCheckboxItem>
+            <DropdownMenuItem onSelect={activateManualMode}><Crosshair className="mr-2 h-4 w-4" />Ajustar prumo</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Compartilhar e exportar"><Share2 /></Button></DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem onSelect={handleExport} disabled={exporting}><ImageDown className="mr-2 h-4 w-4" />Exportar imagem</DropdownMenuItem>
+            <DropdownMenuItem onSelect={generateApexPDF} disabled={exportingPDF}><FileDown className="mr-2 h-4 w-4" />Exportar PDF</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setModoMarketing(true)}><Presentation className="mr-2 h-4 w-4" />Marketing</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>}
 
       {/* Counter strip */}
       <div className="flex items-center gap-3 text-[11px] font-mono flex-wrap">
@@ -877,7 +738,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       </div>
 
       {/* Main grid */}
-      <div ref={exportRef} className={`grid ${modoMarketing ? "grid-cols-1" : "lg:grid-cols-[1fr_340px]"} gap-4 bg-card rounded-xl p-3 border relative`}>
+      <div ref={exportRef} className={`grid ${modoMarketing ? "grid-cols-1" : "lg:grid-cols-[minmax(0,1.85fr)_minmax(300px,1fr)]"} gap-5 bg-card/40 rounded-lg p-2 relative`}>
         {/* Watermark / footer for export */}
         <div className="absolute top-2 right-3 text-[10px] font-bold tracking-widest opacity-60" style={{ color: C.gold }}>
           nutriON · APEX
@@ -914,6 +775,13 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             minHeight: 360,
           }}
         >
+          {!modoMarketing && <div className="absolute left-3 top-3 z-30 flex gap-1 rounded-full bg-background/75 p-1 backdrop-blur-md">
+            {(["front", "lateral", "back"] as const).map((v) => {
+              const enabled = availableViews.includes(v);
+              const labelMap = { front: "Frente", lateral: "Lateral", back: "Costas" };
+              return <Button key={v} disabled={!enabled} onClick={() => { setView(v); setSelected(null); }} size="sm" variant={view === v ? "secondary" : "ghost"} className={`h-7 rounded-full px-3 text-[10px] ${view === v ? "text-primary" : "text-muted-foreground"}`}>{labelMap[v]}</Button>;
+            })}
+          </div>}
           {photoUrl ? (
             <div
               ref={photoWrapperRef}
@@ -1040,7 +908,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               {/* MELHORIA 2 — Quality badge */}
               {data && (
                 <div
-                  className="absolute top-2 left-2 text-[10px] font-mono font-bold rounded px-2 py-1 z-10"
+                  className="absolute bottom-6 right-3 text-[10px] font-mono font-bold rounded px-2 py-1 z-10"
                   style={{
                     background: "rgba(0,0,0,0.75)",
                     border: `1px solid ${quality.ratio >= 0.8 ? C.green : quality.ratio >= 0.5 ? C.yellow : C.red}`,
@@ -1049,7 +917,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                 >
                   {quality.ratio >= 0.8 ? "🟢" : quality.ratio >= 0.5 ? "🟡" : "🔴"}{" "}
                   {quality.ratio >= 0.8
-                    ? `Análise completa — ${quality.valid} landmarks`
+                      ? `Análise completa · ${quality.valid} landmarks`
                     : quality.ratio >= 0.5
                     ? `Análise parcial — ${quality.valid}/${quality.total}`
                     : `Reprocessar — ${quality.valid}/${quality.total}`}
@@ -1180,7 +1048,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             </details>
           )}
 
-          <EducationSummary findings={findings} eduMode={eduMode} />
+          <EducationSummary findings={findings} atletaNome={athleteName} eduMode={eduMode} />
 
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 pt-1">
             Achados clínicos ({findings.length})
@@ -1219,7 +1087,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             l5Ajustado={!!manualSpinePositions[view]?.l5}
           />
           {/* Card permanente — status de todos os 8 landmarks arrastáveis */}
-          {(() => {
+          {modoTecnico && (() => {
             const c7Ajustado = !!manualSpinePositions[view]?.c7;
             const l5Ajustado = !!manualSpinePositions[view]?.l5;
             const ml = manualLandmarksPositions[view] || {};
@@ -3124,7 +2992,6 @@ function EducationSummary({
   atletaNome?: string;
   eduMode: boolean;
 }) {
-  if (!eduMode) return null;
   const criticos  = findings.filter((f) => f.sev === "sev").length;
   const moderados = findings.filter((f) => f.sev === "alt").length;
   const normais   = findings.filter((f) => f.sev === "ok").length;
@@ -3160,10 +3027,10 @@ function EducationSummary({
         margin: "0 0 8px",
       }}>RESUMO DA AVALIAÇÃO</p>
       <p style={{
-        fontSize: 12, color: "rgba(255,255,255,0.75)",
-        margin: "0 0 10px", lineHeight: 1.6,
+        fontSize: 16, fontWeight: 600, color: "rgba(255,255,255,0.9)",
+        margin: "0 0 16px", lineHeight: 1.45,
       }}>{mensagem}</p>
-      <div style={{ display: "flex", gap: 6 }}>
+      <div style={{ display: "flex", gap: 12 }}>
         {barras.map((item, i) => (
           <div key={i} style={{
             flex: 1, textAlign: "center",
