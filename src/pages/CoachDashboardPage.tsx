@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Users, AlertTriangle, AlertCircle, FileText, Search, Settings, ArrowLeft, Library,
   UtensilsCrossed, Dumbbell, FlaskConical, Camera, Sparkles, Bone, Flame, Activity,
-  CalendarDays, ChevronRight, Building2, Instagram,
+  CalendarDays, ChevronRight, Building2, Instagram, Mic2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
@@ -36,6 +36,7 @@ const ADVANCED_MODULES = [
   { label: "Biomecânica", icon: Bone, route: "/biomechanics", color: "#f472b6" },
   { label: "SOCIAL ON", icon: Instagram, route: "/coach/social", color: "#00D4FF" },
   { label: "SOCIAL ON+", icon: Instagram, route: "/coach/social-on", color: "#A855F7" },
+  { label: "Kit de Palestra", icon: Mic2, route: "/coach/palestra", color: "#B8922A" },
 ];
 
 type StatusFilter = "all" | "ok" | "attention" | "risk";
