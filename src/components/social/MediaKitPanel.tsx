@@ -41,7 +41,16 @@ export default function MediaKitPanel({ coachId }: { coachId?: string }) {
       setToken(newToken);
       toast.success("Link do Kit de Mídia gerado!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao gerar o link");
+      // Erro do Supabase (PostgrestError) não é instanceof Error — sem isso,
+      // a causa real (ex: coluna/migration pendente) ficava escondida atrás
+      // de uma mensagem genérica, impossível de diagnosticar pelo print.
+      const msg = e instanceof Error ? e.message : (e as { message?: string })?.message;
+      const looksLikeMissingColumn = !!msg && /column|schema cache|media_kit_token/i.test(msg);
+      toast.error(
+        looksLikeMissingColumn
+          ? "O banco ainda não tem essa coluna — rode as migrations pendentes no Lovable (peça 'rode as migrations pendentes deste projeto no Supabase') e tenta de novo."
+          : msg || "Falha ao gerar o link",
+      );
     } finally {
       setGenerating(false);
     }
