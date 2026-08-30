@@ -217,6 +217,24 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
           {stage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           {stage || "Gerar kit de palestra"}
         </button>
+        {stage && (
+          <p className="text-xs text-muted-foreground text-center">
+            Gerando kit de palestra… Isso pode levar até 1 minuto.
+          </p>
+        )}
+        {erro && !stage && (
+          <div className="rounded-lg p-3 text-sm space-y-2 border" style={{ borderColor: "#EF444455", background: "#EF444412" }}>
+            <p>{erro}</p>
+            <button
+              type="button"
+              onClick={gerar}
+              className="px-3 py-1.5 rounded-md text-xs font-semibold"
+              style={{ background: ACCENT, color: "#020205" }}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
       </Section>
 
       {kit && (
