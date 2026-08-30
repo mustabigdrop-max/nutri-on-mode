@@ -283,6 +283,10 @@ const PrismPanel = ({
           videos: videos.map((v) => ({ name: v.name, duration: v.duration, frames: v.frames })),
           context,
           ig_profile: ctx?.ig_profile ?? null,
+          handle: handle ?? ctx?.handle,
+          niches: ctx?.niches,
+          products: ctx?.products,
+          differentials: ctx?.differentials,
         },
       });
       if (error) throw new Error(error.message);
@@ -412,6 +416,10 @@ const PrismPanel = ({
           analysis: result.analysis,
           decision: result.decision,
           current,
+          handle: handle ?? ctx?.handle,
+          niches: ctx?.niches,
+          products: ctx?.products,
+          differentials: ctx?.differentials,
         },
       });
       if (error) throw new Error(error.message);

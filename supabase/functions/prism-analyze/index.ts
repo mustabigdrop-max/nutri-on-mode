@@ -6,6 +6,57 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Identidade de quem está gerando o conteúdo NESTA chamada — construída a
+// partir do que o próprio coach preencheu no perfil (handle, nichos,
+// produtos, diferenciais). Nunca assume nome, credencial, biografia ou
+// traço pessoal/demográfico de quem não informou isso: cada coach da
+// plataforma tem a própria identidade, nunca a de outro coach.
+function coachIdentity(body: Record<string, unknown>): string {
+  const handle = typeof body?.handle === "string" ? body.handle.replace("@", "").trim() : "";
+  const niches = Array.isArray(body?.niches) ? (body.niches as string[]).filter(Boolean) : [];
+  const products = Array.isArray(body?.products) ? (body.products as string[]).filter(Boolean) : [];
+  const differentials = Array.isArray(body?.differentials) ? (body.differentials as string[]).filter(Boolean) : [];
+  if (!handle && !niches.length && !products.length && !differentials.length) {
+    return "PERFIL DO COACH: ainda não preenchido nesta plataforma — escreva de forma profissional e genérica pro nicho fitness/nutrição, SEM inventar nome, credenciais, biografia, produtos ou traço pessoal/demográfico.";
+  }
+  return [
+    handle ? `COACH: @${handle}` : "COACH: (sem @ informado)",
+    niches.length ? `Nicho: ${niches.join(", ")}` : "",
+    products.length ? `Produtos/serviços: ${products.join(", ")}` : "",
+    differentials.length ? `Diferenciais (use pra personalizar a voz, sem inventar além disso): ${differentials.join(", ")}` : "",
+    "Escreva na voz desse coach específico — nunca assuma nome, credencial, biografia ou traço pessoal/demográfico que não foi informado aqui.",
+  ].filter(Boolean).join("\n");
+}
+
+/** @handle pronto pra usar em texto de exemplo/schema — nunca um @ fixo de outra pessoa. */
+function handleTag(body: Record<string, unknown>): string {
+  const handle = typeof body?.handle === "string" ? body.handle.replace("@", "").trim() : "";
+  return handle ? `@${handle}` : "o @ do coach";
+}
+
+// Regras de plataforma + identidade do request — substitui o antigo
+// COACH_CONTEXT fixo (que cravava nome, biografia, produtos e até traços
+// demográficos de uma pessoa específica pra QUALQUER coach da plataforma).
+function coachContext(body: Record<string, unknown>): string {
+  return `CONTEXTO DO COACH:
+${coachIdentity(body)}
+
+REGRA DE PRODUCT PLACEMENT:
+- Máximo 20% do conteúdo menciona produto. Product placement > venda direta.
+- Quando mencionar produto, fazer de forma NATURAL. Nunca forçar venda em conteúdo TOFU.
+
+REGRA DE VIRAL:
+- Edits curtos (8-15s) viralizam mais que longos. Fisheye + letras bold = formato em alta.
+- POV sempre começa com "POV:" na tela. Cada texto na tela sincronizado com a batida.
+- Hook nos primeiros 2 segundos ou perde. Trends musicais > música aleatória.
+- Humor inteligente > humor tosco.
+
+REGRAS DE ESCRITA:
+- Frases curtas (máx 15 palavras), tom de conversa com autoridade, hook isolado na 1ª linha.
+- Máximo 3-4 emojis por legenda. Hashtags só no campo hashtags. Nunca citação acadêmica.
+- Nunca se apresente como IA.`;
+}
+
 const SCHEMA = `{
   "analysis": {
     "content_detected": ["shape","treino","comida","familia","lifestyle"],
@@ -13,7 +64,7 @@ const SCHEMA = `{
     "time_of_day": "manhã|tarde|noite",
     "energy": "alta|média|baixa",
     "quality": "alta|média|baixa",
-    "products_visible": ["VEMP","MindForce","nutriON"],
+    "products_visible": ["produto/serviço 1","produto/serviço 2"],
     "people": "sozinho|com_filha|com_cliente|grupo",
     "summary": "2 a 3 frases descrevendo o material como um todo",
     "per_file": [{ "index": 0, "kind": "foto|video", "describe": "o que tem nesse arquivo", "best_use": "capa|slide|story|frame de edit|thumbnail" }]
@@ -44,7 +95,7 @@ const SCHEMA = `{
       "hook": "primeiros 2 segundos",
       "development": "corpo do reel, pronto pra falar",
       "cta": "chamada final",
-      "texts_on_screen": ["TEXTO 1","TEXTO 2","TEXTO 3","@diogo.mell0"],
+      "texts_on_screen": ["TEXTO 1","TEXTO 2","TEXTO 3","@ do coach"],
       "duration_suggested": 30,
       "music_suggestion": "tipo de trend/áudio em alta"
     },
@@ -69,8 +120,10 @@ const REWRITE_SCHEMAS: Record<string, string> = {
   both: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes"],"caption_variations":["3 legendas completas diferentes"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"type":"hook|problem|content|takeaway|cta","title":"frase direta","body":"apoio opcional; total até 20 palavras","pillar":"mindset|comportamento|execucao","reference":"Autor, Universidade quando MCE","keywords":["até 3 termos"],"file_index":0},"6 a 8 itens"]}`,
 };
 
-const REWRITE_PROMPT = (target: string, analysis: unknown, decision: unknown, current: unknown, instruction: string) =>
-`Você é o PRISM Content Intelligence do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0), criador do Método MCE, fundador do nutriON. Tagline: "Transformação é sistema."
+const REWRITE_PROMPT = (target: string, analysis: unknown, decision: unknown, current: unknown, instruction: string, identity: string) =>
+`Você é o PRISM Content Intelligence do nutriON. Tagline: "Transformação é sistema."
+
+${identity}
 
 A ANÁLISE VISUAL JÁ FOI FEITA E NÃO MUDA. Mantenha exatamente a mesma leitura do material, o mesmo formato, tom, objetivo, funil e produto decididos:
 ANÁLISE: ${JSON.stringify(analysis).slice(0, 3000)}
@@ -110,24 +163,17 @@ const callGateway = async (apiKey: string, model: string, messages: unknown[]) =
   }
 };
 
-const PROMPT = (ctx: string, filesCount: number, imgCount: number, videoInfo: string, extra: string) =>
-`Você é o PRISM Content Intelligence do nutriON.
+const PROMPT = (ctx: string, filesCount: number, imgCount: number, videoInfo: string, extra: string, identity: string, platformContext: string) =>
+`Você é o PRISM Content Intelligence do nutriON. Tagline: "Transformação é sistema."
 
-PERFIL DO COACH:
-- Nome: Diogo Mello (@diogo.mell0)
-- Nutrition & Business Coach — certificação americana
-- Automação & IA no Fitness
-- Criador do Método MCE (Mindset, Comportamento, Execução) · Fundador nutriON (nutrion.app.br)
-- Pai de menina · 16 anos de Marinha do Brasil
-- Produtos: nutriON (plataforma), VEMP (roupa), MindForce (creatina)
-- Tagline: "Transformação é sistema."
+${identity}
 
 CONTEXTO DADO PELO COACH: ${ctx || "nenhum"}
 ARQUIVOS: ${filesCount} no total (${imgCount} imagens analisadas visualmente)${videoInfo}
 DIA/HORA ATUAL (Brasil): ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
 ${extra}
 
-${COACH_CONTEXT}
+${platformContext}
 
 ANALISE as imagens enviadas e decida sozinho o melhor formato, tom, objetivo, produto e horário. Depois gere TODO o conteúdo.
 
@@ -145,43 +191,11 @@ REGRAS:
 - Nunca forçar venda. Mencionar produto só quando natural.
 - Sempre terminar a legenda com CTA (salva / manda / comenta / segue).
 - SEMPRE preencher hook_variations e caption_variations com exatamente 3 itens cada, mantendo o MESMO formato, objetivo e produto — muda só o ângulo, o hook e a estrutura das frases. A 1ª variação é a versão principal (caption).
-- Nunca se apresente como IA. A voz é a do próprio Diogo Mello.
+- Nunca se apresente como IA.
 - Responda JSON puro, sem markdown, exatamente neste schema:
 ${SCHEMA}`;
 
 // ───────────────── STUDIO (modos do hub PRISM) ─────────────────
-
-const COACH_CONTEXT = `CONTEXTO DO COACH:
-- Diogo Mello, @diogo.mell0
-- Negro brasileiro — conteúdo de representatividade é autêntico e importante pra sua audiência
-- Pai de menina — conteúdo familiar viraliza muito
-- 16 anos de Marinha do Brasil — disciplina militar é storytelling forte
-- Nutrition & Business Coach (certificação americana) · Criador do Método MCE (Mindset, Comportamento, Execução)
-- Produtos: nutriON (plataforma, nutrion.app.br), VEMP (roupa), MindForce (creatina)
-- Consultoria: R$ 247/mês
-- Tagline: "Transformação é sistema."
-
-REGRA DE PRODUCT PLACEMENT:
-- Máximo 20% do conteúdo menciona produto. Product placement > venda direta.
-- Quando mencionar produto, fazer de forma NATURAL. Nunca forçar venda em conteúdo TOFU.
-- MindForce: sempre na rotina, nunca como anúncio. VEMP: vestir nos vídeos, nunca falar "compre".
-- nutriON: mostrar a tela como parte da rotina. Consultoria: só em BOFU com CTA claro.
-
-REGRA DE REPRESENTATIVIDADE:
-- Tratar com orgulho e autenticidade. Nunca vitimizar — sempre empoderar.
-- Conectar identidade com disciplina e evolução. Pai negro presente é conteúdo poderoso.
-- Shape negro + confiança = viral garantido.
-
-REGRA DE VIRAL:
-- Edits curtos (8-15s) viralizam mais que longos. Fisheye + letras bold = formato em alta.
-- POV sempre começa com "POV:" na tela. Cada texto na tela sincronizado com a batida.
-- Hook nos primeiros 2 segundos ou perde. Trends musicais > música aleatória.
-- Humor inteligente > humor tosco.
-
-REGRAS DE ESCRITA:
-- Frases curtas (máx 15 palavras), tom de conversa com autoridade, hook isolado na 1ª linha.
-- Máximo 3-4 emojis por legenda. Hashtags só no campo hashtags. Nunca citação acadêmica.
-- Nunca se apresente como IA. A voz é a do próprio Diogo Mello.`;
 
 const STUDIO_SCHEMA = `{
   "headline": "título curto do que foi gerado",
@@ -252,11 +266,11 @@ Tudo alinhado ao pilar e ao produto do dia. Os 3 stories devem conversar com o R
 
 const STUDIO_PROMPT = (o: {
   mode: string; subtype: string; saleLevel: string; tone: string; objective: string;
-  theme: string; filesInfo: string; mix: string; products: string; extra: string;
+  theme: string; filesInfo: string; mix: string; products: string; extra: string; context: string;
 }) =>
-`Você é o PRISM Content Intelligence do nutriON, escrevendo na voz do Coach Diogo Mello.
+`Você é o PRISM Content Intelligence do nutriON.
 
-${COACH_CONTEXT}
+${o.context}
 
 ${MODE_BRIEF[o.mode] || MODE_BRIEF.post_pronto}
 
@@ -315,7 +329,7 @@ serve(async (req) => {
       try {
         const parsedRw = await callGateway(apiKeyEnv, "google/gemini-2.5-flash", [
           { role: "system", content: "Você é o PRISM Content Intelligence. Responda SEMPRE apenas JSON válido, sem markdown." },
-          { role: "user", content: REWRITE_PROMPT(target, body.analysis, body.decision, body?.current ?? {}, instruction) },
+          { role: "user", content: REWRITE_PROMPT(target, body.analysis, body.decision, body?.current ?? {}, instruction, coachIdentity(body)) },
         ]);
         return new Response(JSON.stringify({ result: parsedRw }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -335,14 +349,11 @@ serve(async (req) => {
       const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
       const isVideo = !!body?.from_video;
 
-      const sys = `Você é o PRISM Content Intelligence do nutriON, sistema do coach Diogo Mello (@diogo.mell0).
+      const sys = `Você é o PRISM Content Intelligence do nutriON. Tagline: "Transformação é sistema."
 
-IDENTIDADE:
-- Nutrition Coach e Business Coach com certificação americana
-- Criador do Método MCE (Mindset, Comportamento, Execução) · Fundador do nutriON
-- 16 anos de Marinha do Brasil · pai de menina · bodybuilder · Nilópolis/RJ
-- Tagline: "Transformação é sistema."
-- Tom: direto, sem enrolação, técnico mas acessível, nunca guru, nunca se apresenta como IA.
+${coachIdentity(body)}
+
+Tom: direto, sem enrolação, técnico mas acessível, nunca guru, nunca se apresenta como IA.
 
 TEMPLATE ESCOLHIDO: ${tplName} — ${tplDesc}
 
@@ -378,7 +389,7 @@ Responda SOMENTE JSON válido neste schema:
  "self_comment": "...",
  "melhor_horario": "dia e horário",
  "stories": ["Story 1: ...", "Story 2: ...", "Story 3: ... com CTA"],
- "produto_sugerido": "nutriON | MCE | Business Coaching | MindForce Creatine",
+ "produto_sugerido": "nome do produto/serviço do coach, se houver, ou vazio",
  "nivel_funil": "TOFU | MOFU | BOFU"
 }`;
 
@@ -433,14 +444,13 @@ Gere o JSON completo.`;
         : (typeof body?.image === "string" && body.image ? [body.image] : (images[0] ? [images[0]] : []));
       const frame = storyboard[0] ?? null;
 
-      const sysV = `Você é o sistema de conteúdo do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0).
+      const sysV = `Você é o sistema de conteúdo do nutriON.
 
-${COACH_CONTEXT}
+${coachContext(body)}
 
 REGRAS:
 - 100% português brasileiro, direto, sem enrolação. "Transformação é sistema."
 - NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
-- Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
 - Cada "texto_video" é curto (máx 6 palavras) e bate forte na tela.
 ${isVideo && storyboard.length > 1 ? `- As imagens enviadas são ${storyboard.length} frames tirados EM ORDEM ao longo do vídeo inteiro (abertura → desenvolvimento → fechamento), não fotos soltas. Entenda a cena como uma sequência: o que muda do primeiro pro último frame (movimento, expressão, ambiente, texto na tela do próprio vídeo se houver) e use isso pra escrever com muito mais precisão — cite o que realmente acontece no vídeo, não só o que aparece parado numa foto.` : ""}
 
@@ -448,7 +458,7 @@ Analise a mídia e gere 4 VERSÕES DIFERENTES de conteúdo pro Instagram, cada u
 
 Responda SOMENTE JSON válido neste schema:
 {"versoes":[
-{"nome":"REEL IMPACTO","texto_video":"máx 6 palavras de impacto","legenda":"legenda completa com CTA e @diogo.mell0","hashtags":["até 20 hashtags"],"self_comment":"comentário pra gerar DMs","musica":"áudio trending","horario":"melhor horário"},
+{"nome":"REEL IMPACTO","texto_video":"máx 6 palavras de impacto","legenda":"legenda completa com CTA e ${handleTag(body)}","hashtags":["até 20 hashtags"],"self_comment":"comentário pra gerar DMs","musica":"áudio trending","horario":"melhor horário"},
 {"nome":"STORY FRASE","texto_video":"frase curta emocional ou MCE","legenda":"legenda curta pra story","hashtags":["até 10 hashtags"],"self_comment":"","musica":"","horario":""},
 {"nome":"FEED EDUCATIVO","texto_video":"título educativo curto","legenda":"legenda longa educativa com referência do método MCE e CTA","hashtags":["até 20 hashtags"],"self_comment":"comentário técnico","musica":"","horario":"melhor horário"},
 {"nome":"PROVOCAÇÃO","texto_video":"frase provocativa de 4-6 palavras","legenda":"legenda direta provocativa com CTA forte","hashtags":["até 15 hashtags"],"self_comment":"comentário que gera debate","musica":"","horario":""}
@@ -497,9 +507,9 @@ Responda JSON puro.`,
     if (body?.mode === "social_estrategista") {
       const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
 
-      const sysE = `Você é o ESTRATEGISTA do SOCIAL ON — o sistema de conteúdo do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0).
+      const sysE = `Você é o ESTRATEGISTA do SOCIAL ON — o sistema de conteúdo do nutriON.
 
-${COACH_CONTEXT}
+${coachContext(body)}
 
 SEU PAPEL: estrategista de conteúdo digital especialista em fitness, wellness, esporte e saúde. Você analisa a mídia e entrega conteúdo pronto pra postar + direção estratégica do que criar depois.
 
@@ -516,7 +526,6 @@ O tom se adapta, mas NUNCA fica genérico nem guru motivacional. Diga no campo "
 REGRAS:
 - 100% português brasileiro, direto, sem enrolação. "Transformação é sistema."
 - NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
-- Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
 - "estilo" é um número 0-9 (0=IMPACTO, 1=GOLD, 2=NEON, 3=LEGENDA, 4=CINEMA, 5=EMOCIONAL, 6=FISHEYE, 7=STREET, 8=TELA PRETA, 9=MINIMAL).
 - Cada versão tem propósito DIFERENTE no funil (TOFU/MOFU/BOFU) e legendas DISTINTAS entre si.
 - "texto_video" tem no máximo 6 palavras.
@@ -526,7 +535,7 @@ Responda SOMENTE JSON válido neste schema:
  "analise": "o que você vê na mídia em 2 frases",
  "estrategia": "por que esse conteúdo importa agora, onde encaixa no funil e qual resultado esperar",
  "versoes": [
-  {"formato":"REEL VIRAL","texto_video":"máx 6 palavras","estilo":0,"legenda":"legenda completa com CTA e @diogo.mell0","hashtags":["até 20 hashtags"],"self_comment":"comentário estratégico","musica":"áudio sugerido","horario":"melhor horário","funil":"TOFU"},
+  {"formato":"REEL VIRAL","texto_video":"máx 6 palavras","estilo":0,"legenda":"legenda completa com CTA e ${handleTag(body)}","hashtags":["até 20 hashtags"],"self_comment":"comentário estratégico","musica":"áudio sugerido","horario":"melhor horário","funil":"TOFU"},
   {"formato":"STORY","texto_video":"frase pra story","estilo":5,"legenda":"texto curto do story","hashtags":[],"self_comment":"","musica":"","horario":"","funil":"TOFU"},
   {"formato":"FEED EDUCATIVO","texto_video":"título educativo","estilo":1,"legenda":"legenda longa educativa com referência do método MCE","hashtags":["até 20 hashtags"],"self_comment":"comentário técnico","musica":"","horario":"melhor horário","funil":"MOFU"},
   {"formato":"CONVERSÃO","texto_video":"frase de venda sutil","estilo":3,"legenda":"legenda com CTA forte pra DM ou link","hashtags":["até 15 hashtags"],"self_comment":"comentário que gera DMs","musica":"","horario":"","funil":"BOFU"}
@@ -580,16 +589,15 @@ Responda JSON puro.`,
       const vibeName = typeof body?.vibe === "string" ? body.vibe.slice(0, 40) : "POV";
       const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
 
-      const sysPro = `Você é o PRISM Content Intelligence do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0).
+      const sysPro = `Você é o PRISM Content Intelligence do nutriON.
 
-${COACH_CONTEXT}
+${coachContext(body)}
 
 VIBE VISUAL ESCOLHIDA: ${vibeName}
 
 REGRAS:
 - 100% português brasileiro, direto, sem enrolação. "Transformação é sistema."
 - NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
-- Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
 - O texto do vídeo tem no máximo 8 palavras e precisa bater forte na tela.
 
 Responda SOMENTE JSON válido neste schema:
@@ -676,6 +684,7 @@ Responda JSON puro.`,
                 filesInfo,
                 mix: s(body?.mix, 120),
                 products: Array.isArray(body?.products) ? body.products.map((p: unknown) => s(p, 30)).join(", ") : "",
+                context: coachContext(body),
                  extra: [
                    s(body?.daily_brief, 2500) ? `BRIEFING DO DIA (obrigatório seguir):\n${s(body?.daily_brief, 2500)}` : "",
                    history ? `HISTÓRICO RECENTE (não repita temas):\n${history}` : "",
@@ -762,7 +771,7 @@ Responda JSON puro.`,
             role: "user",
             content: [
               ...allImages.map((url) => ({ type: "image_url", image_url: { url } })),
-              { type: "text", text: PROMPT(context, images.length + videos.length, allImages.length, videoInfo, extra) },
+              { type: "text", text: PROMPT(context, images.length + videos.length, allImages.length, videoInfo, extra, coachIdentity(body), coachContext(body)) },
             ],
           },
         ],
