@@ -316,6 +316,29 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
 
   const cs = { ...DEFAULT_CAPTION_STYLE, ...(spec.captionStyle || {}) };
 
+  // Card sem foto de fundo — a legenda cola no rodapé (ver mais abaixo), o
+  // que sobra é um bloco de cor lisa gigante e vazio por cima, sem nenhum
+  // elemento — lê como "esqueceram de terminar o design". Preenche essa
+  // área com camadas discretas (glow + numeral gigante fantasma do próprio
+  // eyebrow, se for curto) pra parecer intencional, não vago.
+  if (spec.gradient && !spec.backgroundImage) {
+    const accentGlow = spec.accent || NUTRION_CYAN;
+    const glow = ctx.createRadialGradient(w * 0.82, h * 0.18, 0, w * 0.82, h * 0.18, w * 0.65);
+    glow.addColorStop(0, `${accentGlow}26`);
+    glow.addColorStop(1, `${accentGlow}00`);
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, w, h);
+
+    if (spec.eyebrow && spec.eyebrow.trim().length <= 3) {
+      ctx.save();
+      ctx.font = `900 ${Math.round(w * 0.62)}px 'Space Grotesk', system-ui, sans-serif`;
+      ctx.fillStyle = `${accentGlow}14`;
+      ctx.textBaseline = "top";
+      ctx.fillText(spec.eyebrow.trim(), w * 0.42, -h * 0.03);
+      ctx.restore();
+    }
+  }
+
   if (spec.backgroundImage) {
     const img = await loadImage(spec.backgroundImage);
     const scale = Math.max(w / img.width, h / img.height);
