@@ -172,9 +172,9 @@ export const CAPTION_TONES = [
 ] as const;
 
 export const CAROUSEL_STYLES = [
-  { id: "dark", label: "Dark", sub: "Fundo preto puro + texto" },
-  { id: "photo", label: "Photo Blend", sub: "Sua foto escurecida em todos os slides" },
-  { id: "gradient", label: "Gradient Bold", sub: "Gradiente cyan→dark, texto grande" },
+  { id: "dark_authority", label: "DARK AUTHORITY", sub: "Científico · linhas finas · autoridade" },
+  { id: "bold_impact", label: "BOLD IMPACT", sub: "Palavras em caixas · alto contraste" },
+  { id: "minimal_clean", label: "MINIMAL CLEAN", sub: "Espaço vazio · sofisticado · premium" },
 ] as const;
 
 export type CarouselStyleId = (typeof CAROUSEL_STYLES)[number]["id"];
