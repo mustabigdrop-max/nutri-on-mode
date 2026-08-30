@@ -67,6 +67,7 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
       return;
     }
     setKit(null);
+    setErro(null);
     try {
       setStage("Buscando evidência científica real por domínio…");
       const scienceParts = await Promise.all(
