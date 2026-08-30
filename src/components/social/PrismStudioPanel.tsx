@@ -170,7 +170,11 @@ export default function PrismStudioPanel({
           objective: objective || undefined,
           theme: [theme, typeof ctx === "string" ? ctx : ctx?.theme || ctx?.context || ""].filter(Boolean).join(" | "),
           mix: mode.id === "pack_semanal" ? mixLabel : undefined,
-          products: mode.id === "pack_semanal" ? products : (Array.isArray(ctx?.products) ? ctx.products : undefined),
+          products: mode.id === "pack_semanal"
+            ? products
+            : (typeof ctx === "object" && ctx && Array.isArray((ctx as Record<string, any>).products)
+              ? (ctx as Record<string, any>).products
+              : undefined),
           handle: typeof ctx === "object" ? ctx?.handle : undefined,
           niches: typeof ctx === "object" ? ctx?.niches : undefined,
           differentials: typeof ctx === "object" ? ctx?.differentials : undefined,
