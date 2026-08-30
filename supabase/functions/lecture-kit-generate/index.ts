@@ -84,12 +84,14 @@ interface LectureBody {
 
 function coachIdentity(body: LectureBody): string {
   const handle = (body.handle || "").replace("@", "").trim();
+  const nome = String((body as { ig_profile?: { name?: string } }).ig_profile?.name || "").trim();
   const niches = Array.isArray(body.niches) ? body.niches.filter(Boolean) : [];
   const differentials = Array.isArray(body.differentials) ? body.differentials.filter(Boolean) : [];
-  if (!handle && !niches.length && !differentials.length) {
+  if (!handle && !nome && !niches.length && !differentials.length) {
     return "PALESTRANTE: perfil ainda não preenchido — escreva de forma profissional e genérica, sem inventar nome, credencial ou história pessoal.";
   }
   return [
+    nome ? `NOME REAL DO PALESTRANTE (use na abertura): ${nome}` : "",
     handle ? `PALESTRANTE: @${handle}` : "",
     niches.length ? `Nicho: ${niches.join(", ")}` : "",
     differentials.length ? `Diferenciais (use pra personalizar o tom, sem inventar além disso): ${differentials.join(", ")}` : "",
