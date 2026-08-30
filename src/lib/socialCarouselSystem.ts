@@ -86,6 +86,13 @@ export const normalizeCarouselSlides = (
   if (!ordered.some((slide) => slide.type === "problem")) ordered.splice(1, 0, defaults[1]);
   if (!ordered.some((slide) => slide.type === "takeaway")) ordered.splice(-1, 0, defaults[5]);
   if (ordered[ordered.length - 1]?.type !== "cta") ordered.push(defaults[6]);
+  for (const fallback of defaults.filter((slide) => slide.type === "content")) {
+    if (ordered.length >= 7) break;
+    const key = signature(fallback);
+    if (ordered.some((slide) => signature(slide) === key)) continue;
+    const takeawayIndex = ordered.findIndex((slide) => slide.type === "takeaway");
+    ordered.splice(takeawayIndex >= 0 ? takeawayIndex : Math.max(2, ordered.length - 1), 0, fallback);
+  }
   return ordered.slice(0, 8);
 };
 
