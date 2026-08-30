@@ -24,13 +24,13 @@ type Stats = {
 
 const SocialProofPanel = ({
   coachProfileId,
-  handle,
-  coachName,
   coachAvatar,
   ctx,
 }: {
   coachProfileId?: string | null;
-  handle: string;
+  // Não usados na renderização do card: nem @handle nem nome do coach
+  // aparecem na imagem exportada (só o resultado do cliente).
+  handle?: string;
   coachName?: string | null;
   coachAvatar?: string | null;
   ctx: Record<string, any>;
@@ -137,8 +137,8 @@ const SocialProofPanel = ({
             <div ref={cardRef} className="w-[340px] h-[340px] p-6 flex flex-col justify-between"
               style={{ background: "#020205", border: `1px solid ${ACCENT}55` }}>
               <div>
-                <p className="text-[11px] tracking-[0.35em] font-mono" style={{ color: ACCENT2 }}>N U T R I O N</p>
-                <p className="text-lg font-bold mt-3 text-white">RESULTADO REAL 📊</p>
+                <div className="w-9 h-1.5 rounded-full mb-3" style={{ background: ACCENT }} />
+                <p className="text-lg font-bold text-white">RESULTADO REAL 📊</p>
                 <p className="text-xs text-white/60 mt-1">
                   {stats.name.split(" ")[0]} {stats.name.split(" ")[1]?.[0] ? `${stats.name.split(" ")[1][0]}.` : ""} · {stats.weeks} semanas
                 </p>
@@ -152,22 +152,17 @@ const SocialProofPanel = ({
                 <p>Treinos: {stats.workouts} concluídos</p>
                 <p>Streak: {stats.streak} dias 🔥</p>
               </div>
-              <div className="flex items-center gap-2">
-                {coachAvatar && (
+              {coachAvatar && (
+                <div className="flex items-center gap-2">
                   <img
                     src={coachAvatar}
-                    alt={`Foto de perfil de @${(handle || "").replace("@", "")}`}
+                    alt="Foto de perfil do coach"
                     crossOrigin="anonymous"
                     className="w-8 h-8 rounded-full object-cover"
                     style={{ border: `1px solid ${ACCENT}77` }}
                   />
-                )}
-                <div>
-                  {coachName && <p className="text-xs text-white/80">{coachName}</p>}
-                  {handle && <p className="text-xs text-white/50">@{handle.replace("@", "")}</p>}
-                  <p className="text-xs" style={{ color: ACCENT }}>nutrion.app.br</p>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

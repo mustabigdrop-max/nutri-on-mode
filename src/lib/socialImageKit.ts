@@ -477,9 +477,7 @@ export const renderBrandScoreStory = async (data: BrandScoreStory) => {
   if (data.followers) y = drawBlock(ctx, data.followers, pad, y, w - pad * 2, 38, "700", "#ffffff") + 12;
   if (data.streak) y = drawBlock(ctx, data.streak, pad, y, w - pad * 2, 38, "700", NUTRION_CYAN) + 12;
 
-  ctx.font = `700 34px 'Space Grotesk', system-ui, sans-serif`;
-  ctx.fillStyle = "rgba(255,255,255,0.65)";
-  ctx.fillText(`${data.handle} · nutrion.app.br`, pad, h - 160);
+  // Sem marca d'água — nem @handle nem nutrion.app.br estampados na imagem.
 
   return canvas.toDataURL("image/png");
 };
