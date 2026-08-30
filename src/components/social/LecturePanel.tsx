@@ -3,13 +3,20 @@
 // com barra de tempo, modo ensaio e exportação PPTX/PDF.
 import { useCallback, useMemo, useState } from "react";
 import {
-  ArrowDown, ArrowUp, Copy, Copy as CopyIcon, Download, FileText, Loader2, Mic2,
-  Pencil, Play, Plus, RefreshCw, Sparkles, Trash2,
+  ArrowDown, ArrowUp, Copy, Copy as CopyIcon, Download, FileText, Laptop, Loader2, Mic2,
+  Package, Pencil, Play, Plus, RefreshCw, Sparkles, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, ACCENT2, Section, copyText } from "./socialUi";
 import LectureRehearsal from "./LectureRehearsal";
+import LectureNetworkingPanel from "./LectureNetworkingPanel";
+import {
+  LectureChecklistSection, LectureContentSection, LectureConversionSection,
+} from "./LectureConversionPanel";
+import {
+  buildContentKit, buildStrategy, exportKitZip, withDemoSlides,
+} from "@/lib/lectureConversion";
 import {
   LectureKit, LectureSlide, SLIDE_TYPES, SlideType, TYPE_COLOR, TYPE_LABEL,
   exportPdf, exportPptx, fullText, normalizeKit, normalizeSlide, slidesText,
@@ -63,6 +70,9 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
   const [tone, setTone] = useState(TONES[0]);
   const [duration, setDuration] = useState(25);
   const [includeMce, setIncludeMce] = useState(true);
+  const [includeDemos, setIncludeDemos] = useState(true);
+  const [includeMetaDemo, setIncludeMetaDemo] = useState(false);
+  const [evento, setEvento] = useState("");
 
   const [stage, setStage] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -127,7 +137,8 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
       }
       if (lastErr || !data) throw new Error(lastErr || "sem resposta");
 
-      setKit(normalizeKit((data as { result: unknown }).result, { handle }));
+      const base = normalizeKit((data as { result: unknown }).result, { handle });
+      setKit(includeDemos ? withDemoSlides(base, { includeMeta: includeMetaDemo }) : base);
       toast.success("Kit de palestra pronto!");
     } catch (e) {
       console.error("[LecturePanel] gerar", e);
@@ -216,6 +227,15 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
   const diff = total - duration;
   const dist = useMemo(() => (kit ? timeByType(kit.slides) : []), [kit]);
 
+  const strategy = useMemo(
+    () => buildStrategy({ topic, audience: audienceFinal, handle }),
+    [topic, audienceFinal, handle],
+  );
+  const content = useMemo(
+    () => (kit ? buildContentKit({ kit, topic, handle, gatilho: strategy.gatilho, evento: evento.trim() || undefined }) : null),
+    [kit, topic, handle, strategy.gatilho, evento],
+  );
+
   const exportar = async (kind: "pptx" | "pdf") => {
     if (!kit) return;
     try {
@@ -226,6 +246,21 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
     } catch (e) {
       console.error("[LecturePanel] export", e);
       toast.error("Não foi possível gerar o arquivo. Tente novamente.");
+    } finally {
+      setStage(null);
+    }
+  };
+
+  const baixarZip = async () => {
+    if (!kit || !content) return;
+    try {
+      setStage("Montando kit completo…");
+      const pptx = (await exportPptx(kit, handle, { asBlob: true })) as Blob | null;
+      await exportKitZip({ kit, strategy, content, handle, pptx });
+      toast.success("Kit completo baixado.");
+    } catch (e) {
+      console.error("[LecturePanel] zip", e);
+      toast.error("Não foi possível montar o kit completo. Tente novamente.");
     } finally {
       setStage(null);
     }
@@ -318,6 +353,32 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
 
         <button
           type="button"
+          onClick={() => setIncludeDemos((v) => !v)}
+          className="w-full flex items-center justify-between rounded-lg px-3 py-2 border text-sm"
+          style={{ borderColor: includeDemos ? "#c9a84c" : "rgba(255,255,255,0.12)", background: includeDemos ? "#c9a84c1F" : "transparent" }}
+        >
+          <span className="flex items-center gap-2"><Laptop className="w-4 h-4" /> Incluir demos ao vivo do nutriON</span>
+          <span className="w-10 h-5 rounded-full relative transition-colors" style={{ background: includeDemos ? "#c9a84c" : "rgba(255,255,255,0.15)" }}>
+            <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all" style={{ left: includeDemos ? 22 : 2 }} />
+          </span>
+        </button>
+        {includeDemos && (
+          <label className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+            <input type="checkbox" checked={includeMetaDemo} onChange={(e) => setIncludeMetaDemo(e.target.checked)} />
+            Incluir também a demo do próprio Kit de Palestra (meta-momento)
+          </label>
+        )}
+
+        <input
+          value={evento}
+          onChange={(e) => setEvento(e.target.value)}
+          placeholder="Nome do evento / instituição (usado no conteúdo pós-palestra)"
+          className="w-full rounded-md p-2 text-sm bg-transparent border"
+          style={{ borderColor: `${ACCENT}44` }}
+        />
+
+        <button
+          type="button"
           onClick={gerar}
           disabled={!!stage}
           className="w-full py-2.5 rounded-md text-sm font-semibold flex items-center justify-center gap-2"
@@ -404,6 +465,9 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
                 <CopyIcon className="w-3 h-3" /> Copiar slides
               </button>
             </div>
+            <button type="button" onClick={baixarZip} className="w-full py-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1 border" style={{ borderColor: "#c9a84c66", color: "#c9a84c" }}>
+              <Package className="w-3 h-3" /> Baixar kit completo (ZIP)
+            </button>
             <button type="button" onClick={() => copyText(fullText(kit))} className="text-[11px] text-muted-foreground hover:text-foreground">
               Copiar roteiro completo
             </button>
@@ -452,6 +516,17 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
                       {!!s.bullets.length && (
                         <ul className="text-sm space-y-0.5 list-disc pl-4">{s.bullets.map((b, bi) => <li key={bi}>{b}</li>)}</ul>
                       )}
+                      {s.demo && (
+                        <div className="rounded-lg p-3 space-y-1 text-xs" style={{ background: "#c9a84c14", border: "1px solid #c9a84c33" }}>
+                          <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest" style={{ color: "#c9a84c" }}>
+                            <Laptop className="w-3 h-3" /> Ao vivo
+                          </p>
+                          <p><span style={{ color: "#c9a84c" }}>ABRIR:</span> {s.demo.abrir}</p>
+                          <p><span style={{ color: "#c9a84c" }}>MOSTRAR:</span> {s.demo.mostrar}</p>
+                          <p><span style={{ color: "#c9a84c" }}>FALAR:</span> {s.demo.falar}</p>
+                          <p className="text-muted-foreground"><span style={{ color: "#c9a84c" }}>BACKUP:</span> {s.demo.backup}</p>
+                        </div>
+                      )}
                       {s.referencia && <p className="text-xs" style={{ color: ACCENT2 }}>🔬 {s.referencia}</p>}
                     </>
                   )}
@@ -481,6 +556,11 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
           <button type="button" onClick={addSlide} className="w-full py-2 rounded-lg text-xs flex items-center justify-center gap-1 border border-dashed text-muted-foreground hover:text-foreground" style={{ borderColor: `${ACCENT}44` }}>
             <Plus className="w-3 h-3" /> Adicionar slide
           </button>
+
+          <LectureConversionSection strategy={strategy} />
+          {content && <LectureContentSection content={content} />}
+          <LectureChecklistSection />
+          <LectureNetworkingPanel tema={topic} />
 
           {!!kit.citacoes.length && (
             <Section title="🔬 Fontes citadas">

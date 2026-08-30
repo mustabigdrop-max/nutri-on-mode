@@ -5,7 +5,15 @@
 
 export type SlideType =
   | "ABERTURA" | "GANCHO" | "PROBLEMA" | "CONTEUDO" | "DADO"
-  | "HISTORIA" | "INTERACAO" | "PROVA" | "CTA" | "FECHAMENTO" | "QRCODE";
+  | "HISTORIA" | "INTERACAO" | "PROVA" | "CTA" | "FECHAMENTO" | "QRCODE" | "DEMO";
+
+/** Instruções operacionais de um momento de demonstração ao vivo. */
+export interface LectureDemo {
+  abrir: string;
+  mostrar: string;
+  falar: string;
+  backup: string;
+}
 
 export interface LectureSlide {
   id: string;
@@ -16,6 +24,7 @@ export interface LectureSlide {
   fala: string;
   tempoMin: number;
   referencia: string;
+  demo?: LectureDemo;
 }
 
 export interface LectureKit {
@@ -30,7 +39,7 @@ export interface LectureKit {
 
 export const SLIDE_TYPES: SlideType[] = [
   "ABERTURA", "GANCHO", "PROBLEMA", "CONTEUDO", "DADO",
-  "HISTORIA", "INTERACAO", "PROVA", "CTA", "QRCODE", "FECHAMENTO",
+  "HISTORIA", "INTERACAO", "PROVA", "DEMO", "CTA", "QRCODE", "FECHAMENTO",
 ];
 
 export const TYPE_COLOR: Record<SlideType, string> = {
@@ -45,6 +54,7 @@ export const TYPE_COLOR: Record<SlideType, string> = {
   CTA: "#22C55E",
   QRCODE: "#94A3B8",
   FECHAMENTO: "#B8922A",
+  DEMO: "#c9a84c",
 };
 
 export const TYPE_LABEL: Record<SlideType, string> = {
@@ -59,6 +69,7 @@ export const TYPE_LABEL: Record<SlideType, string> = {
   CTA: "CTA",
   QRCODE: "QR Code",
   FECHAMENTO: "Fechamento",
+  DEMO: "Ao vivo",
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -71,7 +82,8 @@ const normType = (raw: unknown, index: number, total: number): SlideType => {
   const map: Record<string, SlideType> = {
     ABERTURA: "ABERTURA", GANCHO: "GANCHO", PROBLEMA: "PROBLEMA", CONTEUDO: "CONTEUDO",
     DADO: "DADO", DADOS: "DADO", HISTORIA: "HISTORIA", INTERACAO: "INTERACAO",
-    PROVA: "PROVA", CTA: "CTA", QRCODE: "QRCODE", FECHAMENTO: "FECHAMENTO",
+    PROVA: "PROVA", CTA: "CTA", QRCODE: "QRCODE", FECHAMENTO: "FECHAMENTO", DEMO: "DEMO",
+    DEMONSTRACAO: "DEMO", AOVIVO: "DEMO",
     ENCERRAMENTO: "FECHAMENTO",
   };
   if (map[t]) return map[t];
@@ -109,6 +121,16 @@ export function normalizeSlide(s: any, i: number, total: number): LectureSlide {
     fala: String(s?.fala_do_palestrante || s?.fala || ""),
     tempoMin: Math.max(1, Math.round(Number(s?.tempo_min) || 2)),
     referencia: String(s?.referencia || s?.dado_cientifico || ""),
+    ...(s?.demo
+      ? {
+          demo: {
+            abrir: String(s.demo.abrir || ""),
+            mostrar: String(s.demo.mostrar || ""),
+            falar: String(s.demo.falar || ""),
+            backup: String(s.demo.backup || ""),
+          },
+        }
+      : {}),
   };
 }
 
@@ -177,6 +199,7 @@ export const fullText = (kit: LectureKit) => {
     lines.push(`--- SLIDE ${String(i + 1).padStart(2, "0")} · ${TYPE_LABEL[s.tipo]} · ${s.tempoMin} min ---`);
     lines.push(s.titulo);
     s.bullets.forEach((b) => lines.push(`• ${b}`));
+    if (s.demo) lines.push(`ABRIR: ${s.demo.abrir}`, `MOSTRAR: ${s.demo.mostrar}`, `FALAR: ${s.demo.falar}`, `BACKUP: ${s.demo.backup}`);
     if (s.fala) lines.push("", `Fala: ${s.fala}`);
     if (s.referencia) lines.push(`Referência: ${s.referencia}`);
     lines.push("");
@@ -188,7 +211,7 @@ export const fullText = (kit: LectureKit) => {
 const slug = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").slice(0, 40) || "palestra";
 
 /** PowerPoint 16:9 com fundo escuro e identidade do palestrante. */
-export async function exportPptx(kit: LectureKit, handle: string) {
+export async function exportPptx(kit: LectureKit, handle: string, opts: { asBlob?: boolean } = {}) {
   const [{ default: PptxGenJS }, QR] = await Promise.all([
     import("pptxgenjs"),
     import("qrcode"),
@@ -221,6 +244,12 @@ export async function exportPptx(kit: LectureKit, handle: string) {
           x: 0.9, y: 1.9, w: 8.4, h: 2.6, fontSize: 22, color: "E5E7EB", lineSpacingMultiple: 1.3, fontFace: "Arial",
         });
       }
+      if (s.demo) {
+        slide.addText(
+          [`ABRIR: ${s.demo.abrir}`, `MOSTRAR: ${s.demo.mostrar}`].join("\n"),
+          { x: 0.9, y: 3.9, w: 8.4, h: 0.8, fontSize: 12, color: GOLD, fontFace: "Arial" },
+        );
+      }
       if (s.referencia) {
         slide.addText(s.referencia, { x: 0.9, y: 4.5, w: 6.5, h: 0.4, fontSize: 12, italic: true, color: "9CA3AF", fontFace: "Arial" });
       }
@@ -233,7 +262,9 @@ export async function exportPptx(kit: LectureKit, handle: string) {
     if (s.fala) slide.addNotes(s.fala);
   }
 
+  if (opts.asBlob) return (await pptx.write({ outputType: "blob" })) as Blob;
   await pptx.writeFile({ fileName: `palestra-${slug(kit.titulo)}.pptx` });
+  return null;
 }
 
 /** PDF do roteiro completo com a fala do palestrante — pra imprimir. */
@@ -267,6 +298,12 @@ export async function exportPdf(kit: LectureKit, handle: string) {
     write(`SLIDE ${String(i + 1).padStart(2, "0")} · ${TYPE_LABEL[s.tipo].toUpperCase()} · ${s.tempoMin} min`, 9, "bold", [150, 120, 30]);
     write(s.titulo, 15, "bold", [17, 17, 17]);
     s.bullets.forEach((b) => write(`•  ${b}`, 11, "normal", [50, 50, 50]));
+    if (s.demo) {
+      write(`ABRIR: ${s.demo.abrir}`, 10, "bold", [150, 120, 30]);
+      write(`MOSTRAR: ${s.demo.mostrar}`, 10, "normal", [60, 60, 60]);
+      write(`FALAR: ${s.demo.falar}`, 10, "italic", [60, 60, 60]);
+      write(`BACKUP: ${s.demo.backup}`, 9, "normal", [130, 130, 130]);
+    }
     if (s.fala) { y += 4; write(s.fala, 11, "italic", [70, 70, 70]); }
     if (s.referencia) write(s.referencia, 9, "normal", [130, 130, 130]);
   });

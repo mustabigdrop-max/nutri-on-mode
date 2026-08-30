@@ -31,8 +31,10 @@ REGRAS OBRIGATÓRIAS:
 3. Tipos de slide permitidos: ABERTURA, GANCHO, PROBLEMA, CONTEUDO, DADO,
    HISTORIA, INTERACAO, PROVA, CTA, FECHAMENTO.
 4. Estrutura obrigatória:
-   - slide 1 = ABERTURA (título + palestrante + credenciais)
-   - slide 2 = GANCHO (pergunta provocativa pra plateia)
+   - slide 1 = GANCHO (pergunta provocativa ou dado impactante). NUNCA comece
+     com apresentação pessoal.
+   - slide 2 = ABERTURA: apresentação do palestrante em no máximo 20 segundos
+     de fala (2 a 3 frases, credencial concreta, nada de "é uma honra")
    - pelo menos 1 slide INTERACAO a cada 15 minutos de palestra
    - pelo menos 2 slides DADO (número grande + contexto no primeiro bullet)
    - pelo menos 1 slide HISTORIA (narrativa; se não houver história real do
@@ -42,8 +44,22 @@ REGRAS OBRIGATÓRIAS:
    - último slide = FECHAMENTO com frase de impacto
 5. Some os "tempo_min" de todos os slides aproximadamente igual à duração alvo.
 6. Nunca se apresente como sistema automático. Nada de clichê motivacional vazio.
+6.1 TOM DA FALA: direto, de quem vive aquilo. Frases curtas. Experiência real.
+    PROIBIDO: "É uma honra estar aqui", "Vamos discutir", "Como futuros colegas",
+    "Você sabia que", "Fique até o final". USE: "Eu vivo isso todo dia",
+    "Na minha última preparação...", "Meus clientes passam por isso".
+6.2 A cada 15 minutos de palestra insira 1 slide INTERACAO (pergunta pra plateia,
+    enquete de mão levantada ou exercício rápido). Palestra de 60+ min = mínimo 3.
+6.3 Inclua pelo menos 2 slides HISTORIA: 1 história pessoal do palestrante e 1 de
+    cliente/caso real, ambas marcadas com [ADAPTE COM SUA HISTÓRIA REAL].
+6.4 NUNCA repita a mesma estrutura de fala em dois slides seguidos. Alterne entre:
+    afirmação direta, pergunta retórica, história, dado estatístico e demonstração.
 7. No método MCE os pilares se chamam MENTALIDADE, COMPORTAMENTO e EXECUÇÃO
-   (nunca "Mindset").
+   (nunca "Mindset"). Quando o MCE estiver ativo, plante sementes do método a
+   partir do slide 3 — não deixe pra segunda metade. Ex.: "isso é o E do MCE,
+   Execução. Mas fica comigo que vêm as outras duas camadas." Distribua ao longo
+   do roteiro os seis autores base: Dweck (Stanford), Kahneman (Princeton),
+   Bandura (Stanford), Frankl (Viena), Rotter (Connecticut) e Merzenich (UCSF).
 8. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown.
 `.trim();
 
@@ -59,6 +75,7 @@ interface LectureBody {
   level?: string;
   tone?: string;
   includeMce?: boolean;
+  includeDemos?: boolean;
   // Regeneração de um slide isolado
   mode?: "full" | "slide";
   slide?: Record<string, unknown>;
@@ -67,12 +84,14 @@ interface LectureBody {
 
 function coachIdentity(body: LectureBody): string {
   const handle = (body.handle || "").replace("@", "").trim();
+  const nome = String((body as { ig_profile?: { name?: string } }).ig_profile?.name || "").trim();
   const niches = Array.isArray(body.niches) ? body.niches.filter(Boolean) : [];
   const differentials = Array.isArray(body.differentials) ? body.differentials.filter(Boolean) : [];
-  if (!handle && !niches.length && !differentials.length) {
+  if (!handle && !nome && !niches.length && !differentials.length) {
     return "PALESTRANTE: perfil ainda não preenchido — escreva de forma profissional e genérica, sem inventar nome, credencial ou história pessoal.";
   }
   return [
+    nome ? `NOME REAL DO PALESTRANTE (use na abertura): ${nome}` : "",
     handle ? `PALESTRANTE: @${handle}` : "",
     niches.length ? `Nicho: ${niches.join(", ")}` : "",
     differentials.length ? `Diferenciais (use pra personalizar o tom, sem inventar além disso): ${differentials.join(", ")}` : "",
@@ -142,6 +161,7 @@ serve(async (req: Request) => {
       level ? `NÍVEL DO PÚBLICO: ${level} — calibre profundidade e jargão para esse nível.` : "",
       tone ? `TOM DA PALESTRA: ${tone}` : "",
       coachIdentity(body),
+      body.includeDemos === false ? "" : "O palestrante fará demonstrações ao vivo da plataforma nutriON durante a palestra (slides de demo são inseridos automaticamente depois) — deixe espaço de respiro no roteiro e cite a plataforma naturalmente na fala, sem inventar telas.",
       body.includeMce ? `INTEGRE O MÉTODO MCE (pilares MENTALIDADE, COMPORTAMENTO, EXECUÇÃO) ao roteiro, citando os autores da doutrina abaixo:\n${MCE_DOCTRINE}` : "",
       scienceContext
         ? `ACHADOS CIENTÍFICOS REAIS (única fonte permitida pra citação):\n${scienceContext}`
