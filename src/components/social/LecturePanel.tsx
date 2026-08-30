@@ -55,6 +55,7 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
   const [domains, setDomains] = useState<Domain[]>(["treino", "nutricao", "farmacologia"]);
   const [duration, setDuration] = useState(25);
   const [stage, setStage] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const [kit, setKit] = useState<LectureKit | null>(null);
 
   const toggleDomain = (d: Domain) =>
@@ -66,6 +67,7 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
       return;
     }
     setKit(null);
+    setErro(null);
     try {
       setStage("Buscando evidência científica real por domínio…");
       const scienceParts = await Promise.all(
@@ -83,27 +85,46 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
           return `--- ${DOMAIN_LABELS[d]} ---\n${d2.rawStudies || ""}\n${d2.analysis || ""}`;
         }),
       );
-      const scienceContext = scienceParts.filter(Boolean).join("\n\n");
+      // Corta o contexto científico pra não estourar o payload/limite de tokens
+      // da geração (cada domínio contribui no máximo ~6k caracteres).
+      const scienceContext = scienceParts
+        .filter(Boolean)
+        .map((p) => p.slice(0, 6000))
+        .join("\n\n");
       if (!scienceContext) {
         toast.warning("Não consegui trazer achados científicos agora — a palestra vai sair em cima de consenso estabelecido, sem citação específica.");
       }
 
-      setStage("Montando o roteiro de slides…");
-      const { data, error } = await supabase.functions.invoke("lecture-kit-generate", {
-        body: {
-          topic,
-          domains,
-          durationMinutes: duration,
-          scienceContext,
-          ...ctx,
-        },
-      });
-      if (error) throw new Error(error.message);
-      if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error);
+      setStage("Gerando kit de palestra… Isso pode levar até 1 minuto.");
+      const body = { topic, domains, durationMinutes: duration, scienceContext, ...ctx };
+
+      let data: unknown = null;
+      let lastErr: string | null = null;
+      // Uma tentativa extra com backoff curto cobre falha de rede / rate limit.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const res = await supabase.functions.invoke("lecture-kit-generate", { body });
+        const payloadErr = (res.data as { error?: string } | null)?.error;
+        if (!res.error && !payloadErr) {
+          data = res.data;
+          lastErr = null;
+          break;
+        }
+        lastErr = payloadErr || res.error?.message || "falha desconhecida";
+        if (attempt === 0) {
+          setStage("Tentando de novo…");
+          await new Promise((r) => setTimeout(r, 2500));
+          setStage("Gerando kit de palestra… Isso pode levar até 1 minuto.");
+        }
+      }
+      if (lastErr || !data) throw new Error(lastErr || "sem resposta");
+
       setKit((data as { result: LectureKit }).result);
       toast.success("Kit de palestra pronto!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Não consegui montar o kit de palestra");
+      console.error("[LecturePanel] gerar", e);
+      const msg = "Não foi possível gerar o kit. Tente novamente em alguns segundos.";
+      setErro(msg);
+      toast.error(msg);
     } finally {
       setStage(null);
     }
@@ -196,6 +217,24 @@ const LecturePanel = ({ ctx }: { ctx: Record<string, any> }) => {
           {stage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           {stage || "Gerar kit de palestra"}
         </button>
+        {stage && (
+          <p className="text-xs text-muted-foreground text-center">
+            Gerando kit de palestra… Isso pode levar até 1 minuto.
+          </p>
+        )}
+        {erro && !stage && (
+          <div className="rounded-lg p-3 text-sm space-y-2 border" style={{ borderColor: "#EF444455", background: "#EF444412" }}>
+            <p>{erro}</p>
+            <button
+              type="button"
+              onClick={gerar}
+              className="px-3 py-1.5 rounded-md text-xs font-semibold"
+              style={{ background: ACCENT, color: "#020205" }}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
       </Section>
 
       {kit && (

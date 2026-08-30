@@ -147,7 +147,8 @@ export default function PrismStudioPanel({
   // o próprio coach cadastrou no perfil, nunca um catálogo fixo de outro
   // coach (VEMP/MindForce não fazem sentido pra quem não vende isso).
   const packProducts = useMemo(() => {
-    const own = Array.isArray(ctx?.products) ? (ctx.products as string[]).filter(Boolean) : [];
+    const ctxProducts = typeof ctx === "object" && ctx ? (ctx as Record<string, any>).products : undefined;
+    const own = Array.isArray(ctxProducts) ? (ctxProducts as string[]).filter(Boolean) : [];
     const rest = own.length
       ? own.slice(0, 5).map((p, i) => ({ id: `own-${i}`, label: p }))
       : [{ id: "consultoria", label: "Consultoria" }];
@@ -169,7 +170,11 @@ export default function PrismStudioPanel({
           objective: objective || undefined,
           theme: [theme, typeof ctx === "string" ? ctx : ctx?.theme || ctx?.context || ""].filter(Boolean).join(" | "),
           mix: mode.id === "pack_semanal" ? mixLabel : undefined,
-          products: mode.id === "pack_semanal" ? products : (Array.isArray(ctx?.products) ? ctx.products : undefined),
+          products: mode.id === "pack_semanal"
+            ? products
+            : (typeof ctx === "object" && ctx && Array.isArray((ctx as Record<string, any>).products)
+              ? (ctx as Record<string, any>).products
+              : undefined),
           handle: typeof ctx === "object" ? ctx?.handle : undefined,
           niches: typeof ctx === "object" ? ctx?.niches : undefined,
           differentials: typeof ctx === "object" ? ctx?.differentials : undefined,
