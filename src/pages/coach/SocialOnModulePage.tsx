@@ -15,7 +15,7 @@ import {
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
   ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles, Zap,
-  Package, Clapperboard, Brain,
+  Package, Clapperboard, Brain, Mic2,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
 import DmObjectionsPanel from "@/components/social/DmObjectionsPanel";
@@ -34,6 +34,7 @@ import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
 import ScienceBankPanel from "@/components/social/ScienceBankPanel";
+import LecturePanel from "@/components/social/LecturePanel";
 import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
 import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
@@ -481,6 +482,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="playbook" className="text-xs gap-1"><BookOpen className="w-3 h-3" />Playbook</TabsTrigger>
             <TabsTrigger value="autoridade" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Autoridade</TabsTrigger>
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
+            <TabsTrigger value="palestra" className="text-xs gap-1"><Mic2 className="w-3 h-3" />Palestra</TabsTrigger>
           </TabsList>
 
           {/* ─────────── PRISM (com Reels e Pack integrados) ─────────── */}
@@ -1055,6 +1057,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="ciencia" className="mt-4">
             <ScienceBankPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="palestra" className="mt-4">
+            <LecturePanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="editor" className="mt-4">
             <VideoTextEditorPanel />
