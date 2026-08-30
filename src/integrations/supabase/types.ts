@@ -13189,6 +13189,15 @@ export type Database = {
         Returns: boolean
       }
       my_challenge_ids: { Args: { _user_id: string }; Returns: string[] }
+      record_protocol_adjustment: {
+        Args: {
+          _athlete_id: string
+          _description: string
+          _metadata?: Json
+          _title: string
+        }
+        Returns: undefined
+      }
       save_anamnesis_by_token: {
         Args: {
           _alerts: Json
