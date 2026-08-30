@@ -78,8 +78,6 @@ function DailyCoach({
         ...identity,
       });
       const slides: CarouselSlideSpec[] = (r?.carousel || []).slice(0, 6);
-      const cleanHandle = (identity.handle || "").replace("@", "").trim();
-      const footer = cleanHandle ? `@${cleanHandle} · nutrion.app.br` : "nutrion.app.br";
       // Eyebrow da capa: nicho do próprio coach quando ele preencheu o perfil
       // (multi-tenant — cada coach vê a própria identidade, nunca um método
       // fixo de outra pessoa), com um fallback genérico.
@@ -96,7 +94,8 @@ function DailyCoach({
             gradient: isCover ? SOCIAL_BRAND.gradientGold : SOCIAL_BRAND.gradientCyan,
             backgroundImage: hasCoverPhoto ? coverImage : null,
             overlay: hasCoverPhoto ? "rgba(8,5,2,0.82)" : undefined,
-            footer,
+            // Sem marca d'água — o coach pediu pra não estampar nem
+            // "nutrion.app.br" nem o @handle na imagem gerada.
           });
         }),
       );
