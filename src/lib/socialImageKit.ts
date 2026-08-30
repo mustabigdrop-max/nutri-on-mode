@@ -1,4 +1,6 @@
 // SOCIAL ON — geração de imagens no canvas (edição de foto, carrossel, stories, brand score)
+import type { CarouselPreset, CarouselSlideType, CoachPhotoMode, McePillar } from "./socialCarouselSystem";
+import { MCE_ACCENTS } from "./socialCarouselSystem";
 
 export const NUTRION_BG = "#020205";
 export const NUTRION_CYAN = "#00D4FF";
@@ -296,12 +298,139 @@ export type SlideSpec = {
   bigTitle?: boolean;
   /** Controles do usuário para a legenda desenhada sobre a foto. */
   captionStyle?: CaptionStyle;
+  preset?: CarouselPreset;
+  slideType?: CarouselSlideType;
+  pillar?: McePillar;
+  reference?: string;
+  keywords?: string[];
+  coachPhotoMode?: CoachPhotoMode;
+  slideNumber?: number;
+  slideCount?: number;
 };
 
 /** Fração máxima da área da imagem que o bloco de legenda pode ocupar. */
 const MAX_CAPTION_AREA = 0.3;
 
+const renderProprietarySlide = async (spec: SlideSpec, w: number, h: number) => {
+  const { canvas, ctx } = ctxOf(w, h);
+  const preset = spec.preset || "dark_authority";
+  const type = spec.slideType || "content";
+  const accent = MCE_ACCENTS[spec.pillar || "comportamento"];
+  const pad = 86;
+  const maxW = w - pad * 2;
+  const bg = ctx.createLinearGradient(0, 0, w, h);
+  if (preset === "bold_impact") {
+    bg.addColorStop(0, "#07070c");
+    bg.addColorStop(1, "#171721");
+  } else if (preset === "minimal_clean") {
+    bg.addColorStop(0, "#09090d");
+    bg.addColorStop(1, "#0d0d14");
+  } else {
+    bg.addColorStop(0, "#0a0a0f");
+    bg.addColorStop(1, "#12121f");
+  }
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  const useFullPhoto = !!spec.backgroundImage && spec.coachPhotoMode === "cover" && (type === "hook" || type === "cta");
+  if (useFullPhoto && spec.backgroundImage) {
+    const image = await loadImage(spec.backgroundImage);
+    const scale = Math.max(w / image.width, h / image.height);
+    const dw = image.width * scale;
+    const dh = image.height * scale;
+    ctx.globalAlpha = 0.38;
+    ctx.drawImage(image, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    ctx.globalAlpha = 1;
+    const veil = ctx.createLinearGradient(0, 0, 0, h);
+    veil.addColorStop(0, "rgba(5,5,10,0.72)");
+    veil.addColorStop(1, "rgba(5,5,10,0.88)");
+    ctx.fillStyle = veil;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  if (type === "cta" && preset === "bold_impact") {
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = 0.9;
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "rgba(5,5,10,0.9)";
+    ctx.fillRect(34, 34, w - 68, h - 68);
+  }
+
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, w, type === "hook" ? 12 : 7);
+  if (preset === "dark_authority") ctx.fillRect(pad, 132, 58, 4);
+  if (preset === "minimal_clean") ctx.fillRect(pad, h - 132, 96, 3);
+
+  const label = type === "hook" ? "MCE / MANIFESTO" : type === "problem" ? "O PROBLEMA" : type === "takeaway" ? "TAKEAWAY" : type === "cta" ? "PRÓXIMO MOVIMENTO" : (spec.pillar || "comportamento").toUpperCase();
+  ctx.font = `700 27px 'Space Grotesk', system-ui, sans-serif`;
+  ctx.fillStyle = accent;
+  ctx.textBaseline = "top";
+  if (type !== "hook") ctx.fillText(label, pad, 156);
+
+  let y = type === "hook" ? 330 : type === "cta" ? 328 : 310;
+  const titleSize = type === "hook" ? 88 : type === "takeaway" ? 76 : 66;
+  const titleColor = "#F7F7FA";
+  y = drawBlock(ctx, spec.title, pad, y, maxW, titleSize, "900", titleColor, 1.04);
+
+  if (preset === "bold_impact" && spec.keywords?.length) {
+    let chipX = pad;
+    const chipY = y + 42;
+    ctx.font = `800 28px 'Space Grotesk', system-ui, sans-serif`;
+    for (const keyword of spec.keywords.slice(0, 3)) {
+      const chipW = ctx.measureText(keyword.toUpperCase()).width + 34;
+      if (chipX + chipW > w - pad) break;
+      ctx.fillStyle = accent;
+      ctx.fillRect(chipX, chipY, chipW, 50);
+      ctx.fillStyle = "#07070c";
+      ctx.fillText(keyword.toUpperCase(), chipX + 17, chipY + 10);
+      chipX += chipW + 12;
+    }
+    y = chipY + 86;
+  } else {
+    y += 42;
+  }
+
+  if (spec.body) y = drawBlock(ctx, spec.body, pad, y, preset === "minimal_clean" ? maxW * 0.78 : maxW, 38, "500", "rgba(247,247,250,0.76)", 1.35);
+  if (spec.reference) {
+    ctx.fillStyle = accent;
+    ctx.fillRect(pad, y + 40, 32, 3);
+    drawBlock(ctx, spec.reference, pad + 48, y + 25, maxW - 48, 25, "700", accent, 1.2);
+  }
+
+  if (type === "cta" && spec.backgroundImage && spec.coachPhotoMode === "cta_circle") {
+    const image = await loadImage(spec.backgroundImage);
+    const r = 102;
+    const cx = w - pad - r;
+    const cy = h - 252;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+    const scale = Math.max((r * 2) / image.width, (r * 2) / image.height);
+    ctx.drawImage(image, cx - image.width * scale / 2, cy - image.height * scale / 2, image.width * scale, image.height * scale);
+    ctx.restore();
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  if (type !== "hook") {
+    ctx.font = `700 24px 'Space Grotesk', system-ui, sans-serif`;
+    ctx.fillStyle = "rgba(247,247,250,0.52)";
+    ctx.fillText(type === "cta" ? "@diogo.mell0  ·  MCE  ·  nutriON" : (spec.footer || "@diogo.mell0  ·  nutriON"), pad, h - 92);
+  }
+  ctx.textAlign = "right";
+  ctx.fillStyle = "rgba(247,247,250,0.35)";
+  ctx.fillText(`${String(spec.slideNumber || 1).padStart(2, "0")} / ${String(spec.slideCount || 1).padStart(2, "0")}`, w - pad, h - 92);
+  ctx.textAlign = "left";
+  return canvas.toDataURL("image/png");
+};
+
 export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
+  if (spec.preset || spec.slideType) return renderProprietarySlide(spec, w, h);
   const { canvas, ctx } = ctxOf(w, h);
   ctx.fillStyle = NUTRION_BG;
   ctx.fillRect(0, 0, w, h);
