@@ -147,7 +147,8 @@ export default function PrismStudioPanel({
   // o próprio coach cadastrou no perfil, nunca um catálogo fixo de outro
   // coach (VEMP/MindForce não fazem sentido pra quem não vende isso).
   const packProducts = useMemo(() => {
-    const own = Array.isArray(ctx?.products) ? (ctx.products as string[]).filter(Boolean) : [];
+    const ctxProducts = typeof ctx === "object" && ctx ? (ctx as Record<string, any>).products : undefined;
+    const own = Array.isArray(ctxProducts) ? (ctxProducts as string[]).filter(Boolean) : [];
     const rest = own.length
       ? own.slice(0, 5).map((p, i) => ({ id: `own-${i}`, label: p }))
       : [{ id: "consultoria", label: "Consultoria" }];
