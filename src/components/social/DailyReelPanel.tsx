@@ -14,8 +14,8 @@ import {
 } from "@/data/dailyContentSystem";
 
 export default function DailyReelPanel({
-  packMode = false, onBack,
-}: { packMode?: boolean; onBack: () => void }) {
+  packMode = false, onBack, ctx, handle,
+}: { packMode?: boolean; onBack: () => void; ctx?: Record<string, any>; handle?: string | null }) {
   const today = pillarForToday();
   const [pillar, setPillar] = useState<DailyPillarId>(today.id);
   const [formula, setFormula] = useState<string>(DEFAULT_FORMULA_BY_PILLAR[today.id]);
@@ -71,6 +71,10 @@ export default function DailyReelPanel({
           objective: p.funnel === "BOFU" ? "vender" : p.funnel === "MOFU" ? "engajar" : "seguidores",
           theme: theme || p.example,
           daily_brief: brief(),
+          handle: handle ?? ctx?.handle,
+          niches: ctx?.niches,
+          products: ctx?.products,
+          differentials: ctx?.differentials,
         },
       });
       if (error) throw new Error(error.message);

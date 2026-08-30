@@ -134,7 +134,7 @@ const CopyBig = ({ text, label }: { text: string; label: string }) => {
   );
 };
 
-export default function SocialOnQuickPanel() {
+export default function SocialOnQuickPanel({ ctx }: { ctx?: Record<string, any> } = {}) {
   const [phase, setPhase] = useState<"upload" | "loading" | "done">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
@@ -224,10 +224,16 @@ export default function SocialOnQuickPanel() {
         image = await compressImageFile(f);
         if (!image) throw new Error("Erro ao processar a imagem.");
       }
+      const identity = {
+        handle: ctx?.handle,
+        niches: ctx?.niches,
+        products: ctx?.products,
+        differentials: ctx?.differentials,
+      };
       const { data: res, error: fnErr } = await supabase.functions.invoke("prism-analyze", {
         body: frames
-          ? { mode: "social_versoes", images: frames, from_video: true }
-          : { mode: "social_versoes", image, from_video: false },
+          ? { mode: "social_versoes", images: frames, from_video: true, ...identity }
+          : { mode: "social_versoes", image, from_video: false, ...identity },
       });
       if (fnErr) throw new Error(fnErr.message);
       if ((res as { error?: string })?.error) throw new Error((res as { error?: string }).error as string);

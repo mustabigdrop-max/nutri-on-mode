@@ -66,7 +66,7 @@ const defaultSlotFor = (index: number, version?: Version): string => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
-export default function SocialOnBatchPanel() {
+export default function SocialOnBatchPanel({ ctx }: { ctx?: Record<string, any> } = {}) {
   const [items, setItems] = useState<Item[]>([]);
   const [processingAll, setProcessingAll] = useState(false);
   const [schedulingAll, setSchedulingAll] = useState(false);
@@ -146,8 +146,8 @@ export default function SocialOnBatchPanel() {
 
       const { data: res, error: fnErr } = await supabase.functions.invoke("prism-analyze", {
         body: frames
-          ? { mode: "social_versoes", images: frames, from_video: true }
-          : { mode: "social_versoes", image, from_video: false },
+          ? { mode: "social_versoes", images: frames, from_video: true, handle: ctx?.handle, niches: ctx?.niches, products: ctx?.products, differentials: ctx?.differentials }
+          : { mode: "social_versoes", image, from_video: false, handle: ctx?.handle, niches: ctx?.niches, products: ctx?.products, differentials: ctx?.differentials },
       });
       if (fnErr) throw new Error(fnErr.message);
       if ((res as { error?: string })?.error) throw new Error((res as { error?: string }).error as string);

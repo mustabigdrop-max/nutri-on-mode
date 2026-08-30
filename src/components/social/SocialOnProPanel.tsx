@@ -166,7 +166,7 @@ function drawCanvas(
   });
 }
 
-export default function SocialOnProPanel() {
+export default function SocialOnProPanel({ ctx }: { ctx?: Record<string, any> } = {}) {
   const [step, setStep] = useState<"upload" | "generating" | "result">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
@@ -267,7 +267,17 @@ export default function SocialOnProPanel() {
       }
 
       const { data: res, error: fnErr } = await supabase.functions.invoke("prism-analyze", {
-        body: { mode: "social_pro", image, from_video: isVideo, vibe: vibe.name, context },
+        body: {
+          mode: "social_pro",
+          image,
+          from_video: isVideo,
+          vibe: vibe.name,
+          context,
+          handle: ctx?.handle,
+          niches: ctx?.niches,
+          products: ctx?.products,
+          differentials: ctx?.differentials,
+        },
       });
       if (fnErr) throw new Error(fnErr.message);
       if ((res as { error?: string })?.error) throw new Error((res as { error?: string }).error as string);

@@ -1065,16 +1065,16 @@ const SocialOnModulePage = () => {
             <VideoTextEditorPanel />
           </TabsContent>
           <TabsContent value="pro" className="mt-4">
-            <SocialOnProPanel />
+            <SocialOnProPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="um_toque" className="mt-4">
-            <SocialOnQuickPanel />
+            <SocialOnQuickPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="lote" className="mt-4">
-            <SocialOnBatchPanel />
+            <SocialOnBatchPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="estrategista" className="mt-4">
-            <SocialOnStrategistPanel />
+            <SocialOnStrategistPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="intelligence" className="mt-0">
             <SocialOnCriticalPanel />

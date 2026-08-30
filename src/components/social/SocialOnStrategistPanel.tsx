@@ -276,7 +276,7 @@ const CopyBig = ({ text, label }: { text: string; label: string }) => {
   );
 };
 
-export default function SocialOnStrategistPanel() {
+export default function SocialOnStrategistPanel({ ctx }: { ctx?: Record<string, any> } = {}) {
   const [phase, setPhase] = useState<"upload" | "edit">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
@@ -354,7 +354,15 @@ export default function SocialOnStrategistPanel() {
         if (!image) throw new Error("Erro ao processar a imagem.");
       }
       const { data: res, error: fnErr } = await supabase.functions.invoke("prism-analyze", {
-        body: { mode: "social_estrategista", image, from_video: isVideo },
+        body: {
+          mode: "social_estrategista",
+          image,
+          from_video: isVideo,
+          handle: ctx?.handle,
+          niches: ctx?.niches,
+          products: ctx?.products,
+          differentials: ctx?.differentials,
+        },
       });
       if (fnErr) throw new Error(fnErr.message);
       if ((res as { error?: string })?.error) throw new Error((res as { error?: string }).error as string);

@@ -50,10 +50,10 @@ export default function PrismHub({
     );
   }
 
-  if (mode === "reels_studio") return <ReelsStudioPanel onBack={() => setMode(null)} />;
+  if (mode === "reels_studio") return <ReelsStudioPanel onBack={() => setMode(null)} aiCtx={ctx} handle={handle} />;
 
   if (mode === "reel_diario" || mode === "pack_dia") {
-    return <DailyReelPanel packMode={mode === "pack_dia"} onBack={() => setMode(null)} />;
+    return <DailyReelPanel packMode={mode === "pack_dia"} onBack={() => setMode(null)} ctx={ctx} handle={handle} />;
   }
 
   if (mode === "hooks") return <HookBankPanel onBack={() => setMode(null)} />;

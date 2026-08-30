@@ -14,7 +14,7 @@ import {
   fileToDataUrl, getVideoDuration, videoObjectUrl,
 } from "@/lib/socialImageKit";
 import {
-  PRISM_MODES, PRISM_OBJECTIVES, PRISM_TONES, SALE_LEVELS, PACK_PRODUCTS,
+  PRISM_MODES, PRISM_OBJECTIVES, PRISM_TONES, SALE_LEVELS,
   type PrismModeDef,
 } from "@/data/prismModes";
 
@@ -67,7 +67,7 @@ export default function PrismStudioPanel({
   const [saleLevel, setSaleLevel] = useState<string>("suave");
   const [tone, setTone] = useState<string>("");
   const [objective, setObjective] = useState<string>("");
-  const [products, setProducts] = useState<string[]>(["nutrion", "mindforce"]);
+  const [products, setProducts] = useState<string[]>(["nutrion"]);
   const [theme, setTheme] = useState("");
   const [files, setFiles] = useState<StudioFile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -142,6 +142,18 @@ export default function PrismStudioPanel({
 
   const mixLabel = useMemo(() => "60% TOFU (viral/seguidores) · 30% MOFU (autoridade/valor) · 10% BOFU (venda)", []);
 
+  // Opções de "produto permitido" pro pack semanal — nutriON é a plataforma
+  // (vale pra qualquer coach); o resto vem dos produtos/serviços reais que
+  // o próprio coach cadastrou no perfil, nunca um catálogo fixo de outro
+  // coach (VEMP/MindForce não fazem sentido pra quem não vende isso).
+  const packProducts = useMemo(() => {
+    const own = Array.isArray(ctx?.products) ? (ctx.products as string[]).filter(Boolean) : [];
+    const rest = own.length
+      ? own.slice(0, 5).map((p, i) => ({ id: `own-${i}`, label: p }))
+      : [{ id: "consultoria", label: "Consultoria" }];
+    return [{ id: "nutrion", label: "nutriON" }, ...rest];
+  }, [ctx]);
+
   const generate = async () => {
     if (mode.needsFiles && !files.length) return toast.error("Envie pelo menos uma foto ou vídeo");
     setLoading(true);
@@ -157,7 +169,10 @@ export default function PrismStudioPanel({
           objective: objective || undefined,
           theme: [theme, typeof ctx === "string" ? ctx : ctx?.theme || ctx?.context || ""].filter(Boolean).join(" | "),
           mix: mode.id === "pack_semanal" ? mixLabel : undefined,
-          products: mode.id === "pack_semanal" ? products : undefined,
+          products: mode.id === "pack_semanal" ? products : (Array.isArray(ctx?.products) ? ctx.products : undefined),
+          handle: typeof ctx === "object" ? ctx?.handle : undefined,
+          niches: typeof ctx === "object" ? ctx?.niches : undefined,
+          differentials: typeof ctx === "object" ? ctx?.differentials : undefined,
           images: files.filter((f) => f.kind === "image").map((f) => f.dataUrl).filter(Boolean),
           videos: files.filter((f) => f.kind === "video").map((f) => ({
             name: f.name,
@@ -269,7 +284,7 @@ export default function PrismStudioPanel({
             <div className="space-y-1.5">
               <p className="text-[11px] text-muted-foreground">Produtos permitidos na semana</p>
               <div className="flex flex-wrap gap-1.5">
-                {PACK_PRODUCTS.map((p) => (
+                {packProducts.map((p) => (
                   <Pill
                     key={p.id}
                     label={p.label}

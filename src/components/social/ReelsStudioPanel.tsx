@@ -150,7 +150,9 @@ const LOADING_MSGS = [
   "Montando roteiro completo...", "Finalizando pacote...",
 ];
 
-export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?: () => void; context?: string }) {
+export default function ReelsStudioPanel({
+  onBack, context: ctxSeed, aiCtx, handle,
+}: { onBack?: () => void; context?: string; aiCtx?: Record<string, any>; handle?: string | null }) {
   const [template, setTemplate] = useState<Template | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [fileKind, setFileKind] = useState<"image" | "video" | null>(null);
@@ -242,7 +244,13 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
         : context;
 
       const { data, error: fnError } = await supabase.functions.invoke("prism-analyze", {
-        body: { mode: "reels_studio", image, from_video: isVideo, template_name: template.name, template_desc: template.desc, context: trimContext },
+        body: {
+          mode: "reels_studio", image, from_video: isVideo, template_name: template.name, template_desc: template.desc, context: trimContext,
+          handle: handle ?? aiCtx?.handle,
+          niches: aiCtx?.niches,
+          products: aiCtx?.products,
+          differentials: aiCtx?.differentials,
+        },
       });
 
       if (fnError) throw new Error(fnError.message);
