@@ -36,7 +36,13 @@ function extFor(kind: "image" | "video", source: UploadableMedia): string {
  */
 export async function uploadSocialMedia(
   file: UploadableMedia,
-  opts: { coachId: string; kind: "image" | "video" },
+  opts: {
+    coachId: string;
+    kind: "image" | "video";
+    /** Data/hora em que a mídia ainda precisa estar acessível (post agendado).
+     *  A URL assinada é gerada com folga de 3 dias além dessa data. */
+    validUntil?: string | Date | null;
+  },
 ): Promise<string> {
   const ext = extFor(opts.kind, file);
   const path = `${opts.coachId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
@@ -49,9 +55,18 @@ export async function uploadSocialMedia(
   });
   if (error) throw new Error(`Falha ao subir o arquivo: ${error.message}`);
 
+  let ttl = SIGNED_URL_TTL_SECONDS;
+  if (opts.validUntil) {
+    const until = opts.validUntil instanceof Date ? opts.validUntil : new Date(opts.validUntil);
+    if (!Number.isNaN(until.getTime())) {
+      const needed = Math.ceil((until.getTime() - Date.now()) / 1000) + 3 * 24 * 60 * 60;
+      ttl = Math.max(ttl, needed);
+    }
+  }
+
   const { data, error: signError } = await supabase.storage
     .from(BUCKET)
-    .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+    .createSignedUrl(path, ttl);
   if (signError || !data?.signedUrl) {
     throw new Error(`Não consegui gerar o link temporário do arquivo: ${signError?.message ?? "erro desconhecido"}`);
   }
