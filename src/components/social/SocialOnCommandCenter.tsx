@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
-import { renderSlide, downloadMany, SOCIAL_BRAND } from "@/lib/socialImageKit";
+import { renderSlide, downloadMany, SOCIAL_BRAND, monogramFromHandle } from "@/lib/socialImageKit";
 import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 
 const C = {
@@ -82,6 +82,10 @@ function DailyCoach({
       // (multi-tenant — cada coach vê a própria identidade, nunca um método
       // fixo de outra pessoa), com um fallback genérico.
       const coverEyebrow = (identity.niches?.[0] || "AUTORIDADE").toUpperCase();
+      // Marca gigante de fundo = iniciais do próprio coach, não um número de
+      // slide genérico — é isso que dá "cara dele" ao card, não "cara de
+      // template". Mesma lógica multi-tenant: vem do handle de quem gerou.
+      const ghostMark = monogramFromHandle(identity.handle);
       const slideImages = await Promise.all(
         slides.map((s, idx) => {
           const isCover = idx === 0;
@@ -94,6 +98,7 @@ function DailyCoach({
             gradient: isCover ? SOCIAL_BRAND.gradientGold : SOCIAL_BRAND.gradientCyan,
             backgroundImage: hasCoverPhoto ? coverImage : null,
             overlay: hasCoverPhoto ? "rgba(8,5,2,0.82)" : undefined,
+            ghostMark,
             // Sem marca d'água — o coach pediu pra não estampar nem
             // "nutrion.app.br" nem o @handle na imagem gerada.
           });

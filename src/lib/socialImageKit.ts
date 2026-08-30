@@ -24,6 +24,20 @@ export const SOCIAL_BRAND = {
   gradientCyan: ["#020510", "#03141c"] as [string, string],
 } as const;
 
+/**
+ * Iniciais do @handle do próprio coach (ex.: "diogo.mell0" → "DM") pra usar
+ * como marca gigante de fundo nos cards — identidade real de quem gerou o
+ * post, nunca de outro coach da plataforma. Sem handle, cai num "N" neutro
+ * (nutriON) em vez de inventar iniciais de alguém.
+ */
+export const monogramFromHandle = (handle?: string | null): string => {
+  const clean = String(handle || "").replace("@", "").trim();
+  if (!clean) return "N";
+  const parts = clean.split(/[._\-\s]+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return clean.slice(0, 2).toUpperCase();
+};
+
 export const loadImage = (src: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const img = new Image();
@@ -296,6 +310,12 @@ export type SlideSpec = {
   bigTitle?: boolean;
   /** Controles do usuário para a legenda desenhada sobre a foto. */
   captionStyle?: CaptionStyle;
+  /**
+   * Marca gigante e bem discreta no fundo dos cards sem foto — pensada pra
+   * ser a identidade do próprio coach (ex.: suas iniciais), não um número
+   * de slide genérico. Curta (1-2 caracteres) fica melhor.
+   */
+  ghostMark?: string;
 };
 
 /** Fração máxima da área da imagem que o bloco de legenda pode ocupar. */
@@ -319,8 +339,10 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
   // Card sem foto de fundo — a legenda cola no rodapé (ver mais abaixo), o
   // que sobra é um bloco de cor lisa gigante e vazio por cima, sem nenhum
   // elemento — lê como "esqueceram de terminar o design". Preenche essa
-  // área com camadas discretas (glow + numeral gigante fantasma do próprio
-  // eyebrow, se for curto) pra parecer intencional, não vago.
+  // área com camadas discretas: glow + uma marca gigante e bem apagada no
+  // fundo. Essa marca é a IDENTIDADE do coach (ghostMark — normalmente as
+  // iniciais dele), não um número de slide genérico — um "02" gigante não
+  // é ninguém; "DM" gigante é dele.
   if (spec.gradient && !spec.backgroundImage) {
     const accentGlow = spec.accent || NUTRION_CYAN;
     const glow = ctx.createRadialGradient(w * 0.82, h * 0.18, 0, w * 0.82, h * 0.18, w * 0.65);
@@ -329,12 +351,12 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, w, h);
 
-    if (spec.eyebrow && spec.eyebrow.trim().length <= 3) {
+    if (spec.ghostMark && spec.ghostMark.trim().length <= 3) {
       ctx.save();
       ctx.font = `900 ${Math.round(w * 0.62)}px 'Space Grotesk', system-ui, sans-serif`;
       ctx.fillStyle = `${accentGlow}14`;
       ctx.textBaseline = "top";
-      ctx.fillText(spec.eyebrow.trim(), w * 0.42, -h * 0.03);
+      ctx.fillText(spec.ghostMark.trim(), w * 0.42, -h * 0.03);
       ctx.restore();
     }
   }

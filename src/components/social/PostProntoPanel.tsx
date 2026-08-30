@@ -11,7 +11,7 @@ import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/d
 import {
   cropToRatio, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration, isMobileDevice, saveImage,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
-  DEFAULT_CAPTION_STYLE, type CaptionStyle, SOCIAL_BRAND,
+  DEFAULT_CAPTION_STYLE, type CaptionStyle, SOCIAL_BRAND, monogramFromHandle,
 } from "@/lib/socialImageKit";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
 
@@ -198,6 +198,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
         overlay: "rgba(2,2,5,0.80)",
         gradient: carouselStyle === "gradient" && !bgImage ? SOCIAL_BRAND.gradientGold : undefined,
         bigTitle: carouselStyle === "gradient",
+        ghostMark: monogramFromHandle(handle),
         eyebrow: d.eyebrow,
         title: d.title,
         body: d.body,
@@ -392,6 +393,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
           overlay: "rgba(2,2,5,0.80)",
           gradient: style === "gradient" && !bgImage ? SOCIAL_BRAND.gradientGold : undefined,
           bigTitle: style === "gradient",
+          ghostMark: monogramFromHandle(handle),
           eyebrow: d.eyebrow,
           title: d.title,
           body: d.body,
