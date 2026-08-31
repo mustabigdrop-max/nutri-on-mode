@@ -271,6 +271,8 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [days, setDays] = useState("5");
   const [clientName, setClientName] = useState("");
   const [trainingSystem, setTrainingSystem] = useState<string>("");
+  const [clientSex, setClientSex] = useState<"F" | "M" | null>(null);
+  const [showMethod, setShowMethod] = useState(false);
   // Results
   const [protocol, setProtocol] = useState<any>(null);
   const [textResults, setTextResults] = useState<Record<string, string>>({});
@@ -341,6 +343,15 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     trainingSystemName: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || "",
     systemPrescription: trainingSystem ? buildSystemPrescription(trainingSystem, phase) : "",
   }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, trainingSystem]);
+
+  // ── STRATUM: motor invisível — roda automaticamente a partir do contexto da prescrição ──
+  const stratum = useMemo(() => runStratum({
+    phase, level, days, weeks, muscles,
+    weakPoints, specificGoal,
+    correctiveText: correctivePrompt,
+    sex: clientSex,
+    systemName: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome,
+  }), [phase, level, days, weeks, muscles, weakPoints, specificGoal, correctivePrompt, clientSex, trainingSystem]);
 
   // Carrega perfil de fibras + último STRATUM Ready check-in
   useEffect(() => {
@@ -444,6 +455,8 @@ Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance
 - Aumentar RIR (mais conservador) durante a semana de descarga
 - Após a semana de De-Output, reiniciar mesociclo com +1 série no exercício principal
 ━━━ FIM DETECÇÃO DE PLATÔ ━━━
+
+${buildStratumInstruction(stratum)}
 
 ${buildDarksideFinalInstruction()}
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
@@ -669,11 +682,11 @@ Português. Específico. Científico. Zero genérico.`;
       .then(async ({ data }) => {
         if (!data?.length) return;
         const ids = data.map(p => p.patient_user_id);
-        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
-        setPatients(data.map(cp => ({
-          ...cp,
-          name: profiles?.find(pr => pr.user_id === cp.patient_user_id)?.full_name || "Sem nome",
-        })));
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, sex").in("user_id", ids);
+        setPatients(data.map(cp => {
+          const pr = profiles?.find(x => x.user_id === cp.patient_user_id);
+          return { ...cp, name: pr?.full_name || "Sem nome", sex: pr?.sex || null };
+        }));
       });
   }, [userId]);
 
