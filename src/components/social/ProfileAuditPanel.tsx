@@ -12,7 +12,7 @@ const BIO_LIMIT = 150;
 const NAME_LIMIT = 30;
 
 type ScoreItem = { key: string; label: string; score: number; verdict?: string; findings?: string[]; fix?: string };
-type BioVersion = { id?: string; style?: string; bio: string; why?: string };
+type BioVersion = { id?: string; style?: string; bio: string; why?: string; recommended?: boolean };
 
 type AuditResult = {
   overall_score?: number;
@@ -117,10 +117,23 @@ const BioCard = ({ version, index }: { version: BioVersion; index: number }) => 
   useEffect(() => setText(version.bio || ""), [version.bio]);
 
   return (
-    <div className="rounded-lg border p-3 space-y-2" style={{ borderColor: `${ACCENT}22` }}>
+    <div
+      className="rounded-lg border p-3 space-y-2"
+      style={version.recommended
+        ? { borderColor: ACCENT, background: `${ACCENT}14` }
+        : { borderColor: `${ACCENT}22` }}
+    >
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] uppercase tracking-[0.16em] font-mono text-muted-foreground">
+        <p className="text-[10px] uppercase tracking-[0.16em] font-mono text-muted-foreground flex items-center gap-1.5">
           Versão {version.id || index + 1} · {version.style || "Bio"}
+          {version.recommended && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold tracking-normal normal-case"
+              style={{ background: ACCENT, color: "#0a0a0f" }}
+            >
+              <Star className="w-2.5 h-2.5 fill-current" /> Melhor escolha
+            </span>
+          )}
         </p>
         <CharCounter value={text.length} limit={BIO_LIMIT} />
       </div>
@@ -331,7 +344,9 @@ const ProfileAuditPanel = ({ handle, bio, profileName, ctx, onScore }: Props) =>
 
           <Collapsible title="Bio — 3 versões prontas" icon={<Sparkles className="w-4 h-4" style={{ color: ACCENT }} />} defaultOpen>
             <p className="text-[11px] text-muted-foreground">Limite do Instagram: 150 caracteres. Edite à vontade — o contador atualiza ao vivo.</p>
-            {(result.bio_versions || []).map((v, i) => <BioCard key={v.id || i} version={v} index={i} />)}
+            {[...(result.bio_versions || [])]
+              .sort((a, b) => (b.recommended ? 1 : 0) - (a.recommended ? 1 : 0))
+              .map((v, i) => <BioCard key={v.id || i} version={v} index={i} />)}
           </Collapsible>
 
           {result.name_analysis && (

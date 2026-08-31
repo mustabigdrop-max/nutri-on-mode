@@ -16,9 +16,30 @@ export const copyText = (t: string) => {
   toast.success("Copiado");
 };
 
+/**
+ * O client do Supabase colapsa QUALQUER erro do backend (429 de limite, 402
+ * de créditos, 500 com motivo específico) na mesma mensagem genérica "Edge
+ * Function returned a non-2xx status code" — o toast nunca mostrava o
+ * motivo real. O erro de verdade que a função devolveu ("Limite de uso
+ * atingido...", "Créditos esgotados...", etc.) vem no corpo da resposta,
+ * acessível via error.context (a Response crua) quando o erro é HTTP.
+ */
+const socialAIErrorMessage = async (error: unknown) => {
+  const ctx = (error as { context?: unknown })?.context;
+  if (ctx instanceof Response) {
+    try {
+      const body = await ctx.clone().json();
+      if (body?.error) return String(body.error);
+    } catch {
+      /* corpo não era JSON — cai pra mensagem genérica abaixo */
+    }
+  }
+  return error instanceof Error ? error.message : "Falha ao gerar conteúdo";
+};
+
 export const callSocialAI = async (body: Record<string, any>) => {
   const { data, error } = await supabase.functions.invoke("social-on-generate", { body });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(await socialAIErrorMessage(error));
   if ((data as any)?.error) throw new Error((data as any).error);
   return (data as any).result;
 };
