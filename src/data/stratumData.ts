@@ -175,7 +175,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── CHEST
   {
     id: "chest",
-    name: "Chest",
+    name: "Peitoral",
     tagline: "O peitoral não é um músculo. É um sistema de alavancas.",
     emoji: "🔥",
     scientificBase: "Porções clavicular (30-45° inclinação), esternocostal (neutro), abdominal (declinado/dips). EMG: Barnett 1995 → 30° supera 45° em ativação clavicular mantendo ativação esternal similar.",
@@ -272,7 +272,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── ARMS
   {
     id: "arms",
-    name: "Arms",
+    name: "Braços",
     tagline: "Bíceps é pico e separação. Tríceps é tamanho absoluto.",
     emoji: "💪",
     scientificBase: "Bíceps: cabeça longa (rosca inclinada), cabeça curta (Scott). Tríceps: cabeça longa (overhead, 2/3 do volume) > lateral > medial. Quem só faz pushdown desenvolve 1/3 do potencial.",
@@ -354,7 +354,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── BACK
   {
     id: "back",
-    name: "Back",
+    name: "Costas / Dorsal",
     tagline: "Espessura vem de remada. Largura vem de puxada. Saúde vem das duas.",
     emoji: "🦅",
     scientificBase: "Pegada larga pronada = grande dorsal (largura). Remada pronada = trapézio médio + romboides (espessura). RETRAÇÃO ESCAPULAR é OBRIGATÓRIA antes de puxar — sem ela, bíceps + trapézio superior compensam (Cools 2007).",
@@ -431,7 +431,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── SHOULDERS
   {
     id: "shoulders",
-    name: "Shoulders",
+    name: "Ombros",
     tagline: "Três deltoides. Três vetores. Um atleta completo.",
     emoji: "🎯",
     scientificBase: "Lateral: cabo > haltere (Campos 2020) — tensão no início do ROM. Posterior: o mais negligenciado, requer 12-16 sets/semana. Anterior: já recebe volume indireto via supino — 6-8 sets bastam.",
@@ -509,7 +509,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── LEGS
   {
     id: "legs",
-    name: "Legs",
+    name: "Pernas",
     tagline: "Perna não é treino. É fundação.",
     emoji: "🦵",
     scientificBase: "Agachamento profundo (<paralelo) = maior ativação glúteo + quadríceps sem maior estresse patelofemoral (Schoenfeld 2010). Hip Thrust = 95% MVC glúteo (Contreras 2015). Sóleo (sentado) ≠ Gastrocnêmio (em pé).",
@@ -583,7 +583,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── UPPER
   {
     id: "upper",
-    name: "Upper",
+    name: "Superiores",
     tagline: "O torso que domina é o que equilibra todos os planos.",
     emoji: "⚡",
     scientificBase: "Upper/Lower 4 dias > Full Body 3x/semana em treinados (Colquhoun 2018). Ratio empurrar:puxar = 1:1.5 obrigatório para ombro saudável (Kolber 2009).",
@@ -640,7 +640,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── LOWER
   {
     id: "lower",
-    name: "Lower",
+    name: "Inferiores",
     tagline: "A força que sustenta tudo começa aqui.",
     emoji: "⛰️",
     scientificBase: "Periodização ondulatória > linear em intermediários/avançados para força inferior (Stone 1999).",
@@ -841,7 +841,7 @@ export const STRATUM_MODULES: StratumModule[] = [
   // ───────────────────────────────────────────── ATHLETE
   {
     id: "athlete",
-    name: "Athlete",
+    name: "Atleta",
     tagline: "Performance é força com propósito.",
     emoji: "🏆",
     scientificBase: "Força máxima = fundação de tudo (Suchomel 2016). PAP (>85% 1RM seguido de explosivo após 4-8min) = +5-12% potência (Seitz 2016). Nordic Hamstring = -51% lesão isquiotibial (Petersen 2011).",

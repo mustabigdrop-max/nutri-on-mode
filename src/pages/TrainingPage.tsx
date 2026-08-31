@@ -10,7 +10,7 @@ import {
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
-  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2, Loader2,
+  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2, Loader2, Info,
 } from "lucide-react";
 import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
