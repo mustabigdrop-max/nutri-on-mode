@@ -690,6 +690,12 @@ Português. Específico. Científico. Zero genérico.`;
       });
   }, [userId]);
 
+  useEffect(() => {
+    if (!clientName.trim() || !patients.length) return;
+    const match = patients.find(p => (p.name || "").toLowerCase().trim() === clientName.toLowerCase().trim());
+    if (match?.sex) setClientSex(String(match.sex).toUpperCase().startsWith("F") ? "F" : "M");
+  }, [clientName, patients]);
+
   const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
     // Remove flags internas de carregamento antes de persistir
@@ -908,6 +914,17 @@ Português. Específico. Científico. Zero genérico.`;
             text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
           />
         </Field>
+
+        <div className="rounded-2xl p-3 space-y-2" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold tracking-wider" style={{ color: TEXT_MUTED }}>MOTOR STRATUM · APLICADO AUTOMATICAMENTE</span>
+            <button onClick={() => setShowMethod(v => !v)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: GREEN_DIM, border: `1px solid ${BORDER}`, color: GREEN }} aria-label="Como funciona">
+              <Info className="w-3 h-3" />
+            </button>
+          </div>
+          <StratumBadges result={stratum} compact />
+          {showMethod && <StratumMethodology embedded />}
+        </div>
 
         <div className="space-y-2">
           <div className="flex gap-2 flex-wrap">
@@ -1180,6 +1197,7 @@ Português. Específico. Científico. Zero genérico.`;
               if (proto?.block_overview) {
                 return (
                   <div className="space-y-3">
+                    <StratumBadges result={stratum} />
                     <BlockOverviewCard
                       overview={proto.block_overview}
                       alerts={proto.improvement_alerts}
