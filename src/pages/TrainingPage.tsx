@@ -2480,7 +2480,7 @@ function LoadingState() {
           </div>
           <div>
             <p className="text-[11px] font-bold" style={{ color: TEXT }}>Analisando perfil e montando protocolo...</p>
-            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>Dual-AI: Perplexity + Gemini processando</p>
+            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>Motor científico processando</p>
           </div>
         </div>
         <div className="h-1 rounded-full overflow-hidden" style={{ background: `${GREEN}15` }}>
