@@ -23,10 +23,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import BottomNav from "@/components/BottomNav";
-import StratumModule from "@/components/training/StratumModule";
+import StratumMethodology from "@/components/training/StratumMethodology";
+import StratumBadges from "@/components/training/StratumBadges";
+import { runStratum, buildStratumInstruction } from "@/lib/stratumEngine";
 import StratumGenerationProgress from "@/components/training/StratumGenerationProgress";
 import DayLoadingCard from "@/components/training/DayLoadingCard";
-import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
 import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
 import WeekNavigator from "@/components/training/WeekNavigator";
@@ -76,19 +77,19 @@ import MceBanner from "@/components/mce/MceBanner";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "stratum" | "competicao" | "stratumai" | "vera" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "metodologia" | "competicao" | "stratumai" | "vera" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
   { id: "readiness", label: "Readiness", icon: HeartPulse },
   { id: "fibras", label: "Fibras", icon: Activity },
   { id: "sistemas", label: "Sistemas", icon: Layers, adminOnly: true },
-  { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
+  { id: "metodologia", label: "Metodologia", icon: Microscope },
   { id: "competicao", label: "Competição", icon: Award, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
-  { id: "stratumai", label: "STRATUM AI", icon: Sparkles },
+  { id: "stratumai", label: "STRATUM", icon: Sparkles },
   { id: "vera", label: "VERA", icon: Flower2 },
   { id: "config", label: "Config", icon: Settings },
 ];
@@ -164,9 +165,6 @@ export default function TrainingPage() {
           <div className="ton-header-sub">// MOTOR DE PRESCRIÇÃO DE ELITE v2.4</div>
           <div className="ton-header-title">TRAINING<span>ON</span></div>
         </div>
-        <div className="ton-live-badge">
-          <span className="ton-live-dot" /> AI LIVE
-        </div>
       </div>
 
       {/* ── HUD Tabs ── */}
@@ -208,15 +206,7 @@ export default function TrainingPage() {
             {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
             {section === "readiness" && <TrainingReadinessSection />}
             {section === "fibras" && <TrainingOnFibrasChat />}
-            {section === "stratum" && isAdmin && (
-              <div className="space-y-6">
-                <StratumProtocolHub />
-                <StratumModule onApplyToTraining={({ module, level }) => {
-                  toast.success(`STRATUM ${module.name} (${level}) carregado — vá para Prescrição para gerar.`);
-                  setSection("gerar");
-                }} />
-              </div>
-            )}
+            {section === "metodologia" && <StratumMethodology />}
             {section === "progressao" && <ProgressionSection userId={user?.id} />}
             {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
             {section === "historico" && <HistorySection userId={user?.id} />}
