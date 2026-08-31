@@ -411,7 +411,22 @@ const renderProprietarySlide = async (spec: SlideSpec, w: number, h: number) => 
     y += 42;
   }
 
-  if (spec.body) y = drawBlock(ctx, spec.body, pad, y, preset === "minimal_clean" ? maxW * 0.78 : maxW, 38, "500", "rgba(247,247,250,0.76)", 1.35);
+  if (spec.body) {
+    // Corpo agora carrega o "mini-artigo científico" do slide (achado +
+    // mecanismo + aplicação, ~35-55 palavras) — bem mais texto que o hook
+    // de 8 palavras. Sem auto-ajuste, um body longo em slide de reference
+    // (que já reserva espaço embaixo) estourava em cima do rodapé/contador.
+    // Encolhe a fonte em passos até caber no espaço livre até o rodapé.
+    const bodyMaxW = preset === "minimal_clean" ? maxW * 0.78 : maxW;
+    const bottomLimit = h - (spec.reference ? 230 : 170);
+    let bodySize = 38;
+    const linesFor = (size: number) => {
+      ctx.font = `500 ${size}px 'Space Grotesk', system-ui, sans-serif`;
+      return wrapLines(ctx, spec.body!, bodyMaxW).length;
+    };
+    while (y + linesFor(bodySize) * bodySize * 1.35 > bottomLimit && bodySize > 26) bodySize -= 2;
+    y = drawBlock(ctx, spec.body, pad, y, bodyMaxW, bodySize, "500", "rgba(247,247,250,0.76)", 1.35);
+  }
   if (spec.reference) {
     ctx.fillStyle = accent;
     ctx.fillRect(pad, y + 40, 32, 3);
@@ -445,10 +460,23 @@ const renderProprietarySlide = async (spec: SlideSpec, w: number, h: number) => 
     ctx.fillStyle = "rgba(247,247,250,0.52)";
     ctx.fillText(spec.footer, pad, h - 92);
   }
+  // Convite pra continuar o carrossel — todo slide que não é o último (no
+  // CTA não faz sentido, é o fim). Na capa (hook) não existe contador nem
+  // assinatura ainda, então o "»" vira o próprio elemento do rodapé; nos
+  // demais, pendura no contador que já está ali ("03 / 08 »").
+  if (type === "hook") {
+    ctx.font = `700 24px 'Space Grotesk', system-ui, sans-serif`;
+    ctx.textAlign = "right";
+    ctx.fillStyle = "rgba(247,247,250,0.4)";
+    ctx.fillText("ARRASTE  »", w - pad, h - 92);
+    ctx.textAlign = "left";
+  }
   if (type !== "hook") {
+    ctx.font = `700 24px 'Space Grotesk', system-ui, sans-serif`;
     ctx.textAlign = "right";
     ctx.fillStyle = "rgba(247,247,250,0.35)";
-    ctx.fillText(`${String(spec.slideNumber || 1).padStart(2, "0")} / ${String(spec.slideCount || 1).padStart(2, "0")}`, w - pad, h - 92);
+    const counter = `${String(spec.slideNumber || 1).padStart(2, "0")} / ${String(spec.slideCount || 1).padStart(2, "0")}`;
+    ctx.fillText(type === "cta" ? counter : `${counter}  »`, w - pad, h - 92);
     ctx.textAlign = "left";
   }
   return canvas.toDataURL("image/png");
