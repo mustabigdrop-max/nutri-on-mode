@@ -59,7 +59,7 @@ import {
   ExerciseRBEBadge,
   buildDarksideFinalInstruction,
 } from "@/components/training/DarksideFinalPanels";
-import { buildSystemPrescription } from "@/data/recommendSystem";
+import { buildSystemPrescription, recommendSystem } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import SmartWarmup from "@/components/training/SmartWarmup";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
@@ -329,6 +329,25 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     systemPrescription: trainingSystem ? buildSystemPrescription(trainingSystem, phase) : "",
   }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, trainingSystem]);
 
+  // ── FIBRAS: motor invisível — deriva perfil por grupo do que já foi preenchido ──
+  const fiberCtx = useMemo(() => ({
+    goal: `${phase} ${specificGoal}`.trim(),
+    level, weakPoints, equipment, frequency: days,
+  }), [phase, specificGoal, level, weakPoints, equipment, days]);
+  const fiberProfiles = useMemo(() => fiberMap(muscles, fiberCtx), [muscles, fiberCtx]);
+
+  const isCompetitionGoal = useMemo(
+    () => /competi|palco|show|contest|atleta/i.test(`${phase} ${specificGoal} ${level}`),
+    [phase, specificGoal, level],
+  );
+
+  // ── SISTEMA: selecionado automaticamente pelo objetivo/nível (sem configuração manual) ──
+  const autoSystem = useMemo(() => {
+    if (!phase || !level) return null;
+    try { return recommendSystem({ phase, level, days, weeks, weakPoints, specificGoal }).best; }
+    catch { return null; }
+  }, [phase, level, days, weeks, weakPoints, specificGoal]);
+
   // ── STRATUM: motor invisível — roda automaticamente a partir do contexto da prescrição ──
   const stratum = useMemo(() => runStratum({
     phase, level, days, weeks, muscles,
@@ -397,9 +416,22 @@ ${readyScore >= 8 ? "✅ Score ALTO — protocolo completo, RPE máximo permitid
 ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), descanso 60-90s" : fiberProfile.dominancia === "tipo_iia" ? "→ 6-12 reps, tensão mecânica máxima, descanso 2-3min" : fiberProfile.dominancia === "tipo_iix" ? "→ 3-6 reps pesadas + finisher metabólico, descanso 3-5min" : "→ Periodização por bloco na sessão (pesado → metabólico)"}`
       : `━━━ PERFIL DE FIBRAS: não avaliado (usar padrão para o nível) ━━━`;
 
-    const sistemaBloco = trainingSystem
-      ? buildSystemPrescription(trainingSystem, phase)
-      : `━━━ SISTEMA DE TREINAMENTO: não definido (usar padrão da fase) ━━━`;
+    // Sistema energético/metodológico escolhido automaticamente a partir do objetivo e nível
+    const autoSystemId = trainingSystem || autoSystem?.id || "";
+    const sistemaBloco = autoSystemId
+      ? buildSystemPrescription(autoSystemId, phase)
+      : `━━━ SISTEMA DE TREINAMENTO: padrão da fase ━━━`;
+
+    // Protocolo de competição aplicado automaticamente quando o objetivo é competir
+    const competicaoBloco = isCompetitionGoal
+      ? `━━━ PROTOCOLO DE COMPETIÇÃO (APLICADO AUTOMATICAMENTE) ━━━
+Objetivo identificado como competição/palco. Estruture em blocos:
+- OFF/ACÚMULO: volume alto, RIR 2-3, foco em pontos fracos.
+- INTENSIFICAÇÃO: carga alta, RIR 1, redução de volume acessório.
+- PEAK WEEK: volume -50%, sem falha, sem excêntricas acentuadas, foco em bomba e depleção/carga.
+- Cardio periodizado e controle de fadiga sistêmica semanal (RPE de sessão).
+━━━ FIM PROTOCOLO DE COMPETIÇÃO ━━━`
+      : "";
 
     return `Você é o Motor de Prescrição de Elite do TrainingON — camada máxima do sistema STRATUM.
 
@@ -441,7 +473,11 @@ Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance
 - Após a semana de De-Output, reiniciar mesociclo com +1 série no exercício principal
 ━━━ FIM DETECÇÃO DE PLATÔ ━━━
 
+${competicaoBloco}
+
 ${buildStratumInstruction(stratum)}
+
+${buildFiberInstruction(muscles, fiberCtx)}
 
 ${buildDarksideFinalInstruction()}
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
