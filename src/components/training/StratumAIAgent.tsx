@@ -141,7 +141,7 @@ ${rbe.filter(s => s.alerta).map(s => `• ${s.exercicio}: bout ×${s.boutNumber}
       }
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Erro no STRATUM AI");
+      toast.error(e?.message || "Erro no STRATUM");
     } finally {
       setLoading(false);
     }
@@ -168,8 +168,8 @@ ${rbe.filter(s => s.alerta).map(s => `• ${s.exercicio}: bout ×${s.boutNumber}
             <Brain className="w-4 h-4" style={{ color: GREEN }} />
           </div>
           <div>
-            <p className="text-[13px] font-bold" style={{ color: "#f0fdf4" }}>STRATUM AI</p>
-            <p className="text-[10px]" style={{ color: "#64748b" }}>Agente de periodização · Metodologia Darkside</p>
+            <p className="text-[13px] font-bold" style={{ color: "#f0fdf4" }}>STRATUM</p>
+            <p className="text-[10px]" style={{ color: "#64748b" }}>Motor de periodização · Diogo Mello</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">

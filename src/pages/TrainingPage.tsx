@@ -10,7 +10,7 @@ import {
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
-  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2, Loader2,
+  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2, Loader2, Info,
 } from "lucide-react";
 import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
@@ -23,10 +23,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import BottomNav from "@/components/BottomNav";
-import StratumModule from "@/components/training/StratumModule";
+import StratumMethodology from "@/components/training/StratumMethodology";
+import StratumBadges from "@/components/training/StratumBadges";
+import { runStratum, buildStratumInstruction } from "@/lib/stratumEngine";
 import StratumGenerationProgress from "@/components/training/StratumGenerationProgress";
 import DayLoadingCard from "@/components/training/DayLoadingCard";
-import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
 import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
 import WeekNavigator from "@/components/training/WeekNavigator";
@@ -76,19 +77,19 @@ import MceBanner from "@/components/mce/MceBanner";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "stratum" | "competicao" | "stratumai" | "vera" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "metodologia" | "competicao" | "stratumai" | "vera" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
   { id: "readiness", label: "Readiness", icon: HeartPulse },
   { id: "fibras", label: "Fibras", icon: Activity },
   { id: "sistemas", label: "Sistemas", icon: Layers, adminOnly: true },
-  { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
+  { id: "metodologia", label: "Metodologia", icon: Microscope },
   { id: "competicao", label: "Competição", icon: Award, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
-  { id: "stratumai", label: "STRATUM AI", icon: Sparkles },
+  { id: "stratumai", label: "STRATUM", icon: Sparkles },
   { id: "vera", label: "VERA", icon: Flower2 },
   { id: "config", label: "Config", icon: Settings },
 ];
@@ -164,9 +165,6 @@ export default function TrainingPage() {
           <div className="ton-header-sub">// MOTOR DE PRESCRIÇÃO DE ELITE v2.4</div>
           <div className="ton-header-title">TRAINING<span>ON</span></div>
         </div>
-        <div className="ton-live-badge">
-          <span className="ton-live-dot" /> AI LIVE
-        </div>
       </div>
 
       {/* ── HUD Tabs ── */}
@@ -208,15 +206,7 @@ export default function TrainingPage() {
             {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
             {section === "readiness" && <TrainingReadinessSection />}
             {section === "fibras" && <TrainingOnFibrasChat />}
-            {section === "stratum" && isAdmin && (
-              <div className="space-y-6">
-                <StratumProtocolHub />
-                <StratumModule onApplyToTraining={({ module, level }) => {
-                  toast.success(`STRATUM ${module.name} (${level}) carregado — vá para Prescrição para gerar.`);
-                  setSection("gerar");
-                }} />
-              </div>
-            )}
+            {section === "metodologia" && <StratumMethodology />}
             {section === "progressao" && <ProgressionSection userId={user?.id} />}
             {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
             {section === "historico" && <HistorySection userId={user?.id} />}
@@ -281,6 +271,8 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [days, setDays] = useState("5");
   const [clientName, setClientName] = useState("");
   const [trainingSystem, setTrainingSystem] = useState<string>("");
+  const [clientSex, setClientSex] = useState<"F" | "M" | null>(null);
+  const [showMethod, setShowMethod] = useState(false);
   // Results
   const [protocol, setProtocol] = useState<any>(null);
   const [textResults, setTextResults] = useState<Record<string, string>>({});
@@ -351,6 +343,15 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     trainingSystemName: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || "",
     systemPrescription: trainingSystem ? buildSystemPrescription(trainingSystem, phase) : "",
   }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, trainingSystem]);
+
+  // ── STRATUM: motor invisível — roda automaticamente a partir do contexto da prescrição ──
+  const stratum = useMemo(() => runStratum({
+    phase, level, days, weeks, muscles,
+    weakPoints, specificGoal,
+    correctiveText: correctivePrompt,
+    sex: clientSex,
+    systemName: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome,
+  }), [phase, level, days, weeks, muscles, weakPoints, specificGoal, correctivePrompt, clientSex, trainingSystem]);
 
   // Carrega perfil de fibras + último STRATUM Ready check-in
   useEffect(() => {
@@ -454,6 +455,8 @@ Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance
 - Aumentar RIR (mais conservador) durante a semana de descarga
 - Após a semana de De-Output, reiniciar mesociclo com +1 série no exercício principal
 ━━━ FIM DETECÇÃO DE PLATÔ ━━━
+
+${buildStratumInstruction(stratum)}
 
 ${buildDarksideFinalInstruction()}
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
@@ -679,13 +682,19 @@ Português. Específico. Científico. Zero genérico.`;
       .then(async ({ data }) => {
         if (!data?.length) return;
         const ids = data.map(p => p.patient_user_id);
-        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
-        setPatients(data.map(cp => ({
-          ...cp,
-          name: profiles?.find(pr => pr.user_id === cp.patient_user_id)?.full_name || "Sem nome",
-        })));
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, sex").in("user_id", ids);
+        setPatients(data.map(cp => {
+          const pr = profiles?.find(x => x.user_id === cp.patient_user_id);
+          return { ...cp, name: pr?.full_name || "Sem nome", sex: pr?.sex || null };
+        }));
       });
   }, [userId]);
+
+  useEffect(() => {
+    if (!clientName.trim() || !patients.length) return;
+    const match = patients.find(p => (p.name || "").toLowerCase().trim() === clientName.toLowerCase().trim());
+    if (match?.sex) setClientSex(String(match.sex).toUpperCase().startsWith("F") ? "F" : "M");
+  }, [clientName, patients]);
 
   const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
@@ -905,6 +914,17 @@ Português. Específico. Científico. Zero genérico.`;
             text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
           />
         </Field>
+
+        <div className="rounded-2xl p-3 space-y-2" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold tracking-wider" style={{ color: TEXT_MUTED }}>MOTOR STRATUM · APLICADO AUTOMATICAMENTE</span>
+            <button onClick={() => setShowMethod(v => !v)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: GREEN_DIM, border: `1px solid ${BORDER}`, color: GREEN }} aria-label="Como funciona">
+              <Info className="w-3 h-3" />
+            </button>
+          </div>
+          <StratumBadges result={stratum} compact />
+          {showMethod && <StratumMethodology embedded />}
+        </div>
 
         <div className="space-y-2">
           <div className="flex gap-2 flex-wrap">
@@ -1177,6 +1197,7 @@ Português. Específico. Científico. Zero genérico.`;
               if (proto?.block_overview) {
                 return (
                   <div className="space-y-3">
+                    <StratumBadges result={stratum} />
                     <BlockOverviewCard
                       overview={proto.block_overview}
                       alerts={proto.improvement_alerts}
