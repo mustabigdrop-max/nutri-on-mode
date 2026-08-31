@@ -25,6 +25,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import BottomNav from "@/components/BottomNav";
 import StratumMethodology from "@/components/training/StratumMethodology";
 import StratumBadges from "@/components/training/StratumBadges";
+import FiberBadge from "@/components/training/FiberBadge";
+import { buildFiberInstruction, fiberMap, fiberColor } from "@/lib/fiberEngine";
 import { runStratum, buildStratumInstruction } from "@/lib/stratumEngine";
 import StratumGenerationProgress from "@/components/training/StratumGenerationProgress";
 import DayLoadingCard from "@/components/training/DayLoadingCard";
@@ -77,21 +79,14 @@ import MceBanner from "@/components/mce/MceBanner";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "metodologia" | "competicao" | "stratumai" | "vera" | "progressao" | "volume" | "historico" | "config";
+type Section = "prescrever" | "treinos" | "progressao" | "historico" | "analise";
 
-const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
-  { id: "gerar", label: "Prescrição", icon: Brain },
-  { id: "readiness", label: "Readiness", icon: HeartPulse },
-  { id: "fibras", label: "Fibras", icon: Activity },
-  { id: "sistemas", label: "Sistemas", icon: Layers, adminOnly: true },
-  { id: "metodologia", label: "Metodologia", icon: Microscope },
-  { id: "competicao", label: "Competição", icon: Award, adminOnly: true },
+const sectionNav: { id: Section; label: string; icon: any }[] = [
+  { id: "prescrever", label: "Prescrever", icon: Brain },
+  { id: "treinos", label: "Treinos", icon: Dumbbell },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
-  { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
-  { id: "stratumai", label: "STRATUM", icon: Sparkles },
-  { id: "vera", label: "VERA", icon: Flower2 },
-  { id: "config", label: "Config", icon: Settings },
+  { id: "analise", label: "Análise", icon: BarChart3 },
 ];
 
 // ── Design tokens ──
@@ -111,14 +106,15 @@ export default function TrainingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [section, setSection] = useState<Section>("gerar");
+  const [section, setSection] = useState<Section>("prescrever");
   const isAdmin = user?.id === ADMIN_UID;
-  const visibleNav = sectionNav.filter((s) => !s.adminOnly || isAdmin);
+  const visibleNav = sectionNav;
 
   // APEX → VERA → TrainingON: protocolo recebido
   const veraProtocoloFlag = searchParams.get("vera_protocolo") === "true";
   const veraAtletaId = searchParams.get("atleta");
   const [veraProtocolo, setVeraProtocolo] = useState<{ texto: string; timeline: number } | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
   useEffect(() => {
     if (!veraProtocoloFlag || !veraAtletaId) return;
     (async () => {
@@ -162,9 +158,17 @@ export default function TrainingPage() {
         </button>
         <div className="ton-logo">T↑N</div>
         <div className="flex-1 min-w-0">
-          <div className="ton-header-sub">// MOTOR DE PRESCRIÇÃO DE ELITE v2.4</div>
           <div className="ton-header-title">TRAINING<span>ON</span></div>
         </div>
+        <button onClick={() => setSection("prescrever")} className="sr-only" aria-hidden />
+        <button
+          onClick={() => setShowConfig((v) => !v)}
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: GREEN_DIM, border: `1px solid ${BORDER}`, color: GREEN }}
+          aria-label="Configurações"
+        >
+          <Settings className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* ── HUD Tabs ── */}
@@ -172,18 +176,20 @@ export default function TrainingPage() {
         {visibleNav.map((s) => (
           <button
             key={s.id}
-            onClick={() => {
-              if (s.id === "sistemas") { navigate("/training/systems"); return; }
-              setSection(s.id);
-            }}
+            onClick={() => setSection(s.id)}
             className={`ton-tab ${section === s.id ? "active" : ""}`}
           >
             <s.icon className="w-3.5 h-3.5" />
             {s.label}
-            {s.adminOnly && <span className="ton-tab-badge">ADM</span>}
           </button>
         ))}
       </div>
+
+      {showConfig && (
+        <div className="px-4 pt-3">
+          <CoachConfigSection userId={user?.id} />
+        </div>
+      )}
 
       {/* APEX → VERA → TrainingON banner */}
       {veraProtocolo && (
@@ -203,28 +209,11 @@ export default function TrainingPage() {
       <div className="ton-content">
         <AnimatePresence mode="wait">
           <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
-            {section === "readiness" && <TrainingReadinessSection />}
-            {section === "fibras" && <TrainingOnFibrasChat />}
-            {section === "metodologia" && <StratumMethodology />}
+            {section === "prescrever" && <EliteGenerateSection userId={user?.id} />}
+            {section === "treinos" && <HistorySection userId={user?.id} />}
             {section === "progressao" && <ProgressionSection userId={user?.id} />}
-            {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
-            {section === "historico" && <HistorySection userId={user?.id} />}
-            {section === "config" && <CoachConfigSection userId={user?.id} />}
-            {section === "stratumai" && <StratumAIAgent userId={user?.id} />}
-            {section === "vera" && <VERAAgent userId={user?.id} />}
-            {section === "competicao" && isAdmin && (
-              <div className="space-y-4">
-                <CompetitionModeBlocks />
-                <button
-                  onClick={() => navigate("/coach/dashboard")}
-                  className="w-full p-3 rounded-xl text-xs font-bold transition"
-                  style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER_ACTIVE}` }}
-                >
-                  → Abrir Coach Dashboard (gestão completa de competição)
-                </button>
-              </div>
-            )}
+            {section === "historico" && <ExecutedSessionsSection userId={user?.id} />}
+            {section === "analise" && <AnalysisSection userId={user?.id} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -236,7 +225,7 @@ export default function TrainingPage() {
         <div className="ton-status-item">mTOR: ON</div>
         <div className="ton-ticker">
           <div className="ton-ticker-inner">
-            STRATUM LAYER 7 ACTIVE — FIBER IIA HYPERTROPHY WINDOW: 6-12 REPS — VOLUME PROGRESSIVO — FST-7 INTEGRATION READY — PEAK PROTOCOL STANDBY — NEXUS-BIO SYNC — NUTRION AI ENGINE v3.1
+            STRATUM LAYER 7 ACTIVE — FIBER IIA HYPERTROPHY WINDOW: 6-12 REPS — VOLUME PROGRESSIVO — FST-7 INTEGRATION READY — PEAK PROTOCOL STANDBY — NEXUS-BIO SYNC — MOTOR NUTRION v3.1
           </div>
         </div>
       </div>
