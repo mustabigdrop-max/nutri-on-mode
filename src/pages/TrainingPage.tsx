@@ -10,7 +10,7 @@ import {
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
-  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2, Loader2, Info,
+  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Loader2, Info,
 } from "lucide-react";
 import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
@@ -30,7 +30,6 @@ import { buildFiberInstruction, fiberMap, fiberColor } from "@/lib/fiberEngine";
 import { runStratum, buildStratumInstruction } from "@/lib/stratumEngine";
 import StratumGenerationProgress from "@/components/training/StratumGenerationProgress";
 import DayLoadingCard from "@/components/training/DayLoadingCard";
-import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
 import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
 import WeekNavigator from "@/components/training/WeekNavigator";
 import ExerciseLogPanel from "@/components/training/ExerciseLogPanel";
@@ -62,8 +61,6 @@ import {
 } from "@/components/training/DarksideFinalPanels";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
-import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
-import StratumAIAgent from "@/components/training/StratumAIAgent";
 import SmartWarmup from "@/components/training/SmartWarmup";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
 import { parseProtocolText } from "@/lib/parseProtocolText";
@@ -74,7 +71,6 @@ import {
   WorkoutCompleteCard,
   SetTrackerBlock,
 } from "@/components/training/tracker/WorkoutTracker";
-import VERAAgent from "@/components/training/VERAAgent";
 import MceBanner from "@/components/mce/MceBanner";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
@@ -3078,6 +3074,137 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
 /* ================================================================
    SECTION 5 — COACH CONFIG
    ================================================================ */
+/* ================================================================
+   ANÁLISE — Volume + Readiness + APEX
+   ================================================================ */
+function AnalysisSection({ userId }: { userId?: string }) {
+  return (
+    <div className="space-y-4 mt-3">
+      <TrainingReadinessSection />
+      <VolumeLandmarksSection userId={userId} />
+    </div>
+  );
+}
+
+/* ================================================================
+   HISTÓRICO — sessões executadas (volume por grupo + supercompensação)
+   ================================================================ */
+function ExecutedSessionsSection({ userId }: { userId?: string }) {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [openDay, setOpenDay] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    supabase.from("training_progress")
+      .select("*").eq("user_id", userId)
+      .order("logged_at", { ascending: false }).limit(300)
+      .then(({ data }) => { setLogs(data || []); setLoading(false); });
+  }, [userId]);
+
+  const sessions = useMemo(() => {
+    const byDay = new Map<string, any[]>();
+    logs.forEach((l) => {
+      const key = String(l.logged_at || "").slice(0, 10);
+      if (!key) return;
+      byDay.set(key, [...(byDay.get(key) || []), l]);
+    });
+    return Array.from(byDay.entries()).map(([date, items]) => {
+      const byMuscle = new Map<string, number>();
+      items.forEach((it) => {
+        const groups = inferMuscleFromName(String(it.exercise || ""));
+        const sets = Number(it.sets_done) || 0;
+        (groups.length ? groups : ["Outros"]).forEach((g) => byMuscle.set(g, (byMuscle.get(g) || 0) + sets));
+      });
+      const tonnage = items.reduce((acc, it) => acc + (Number(it.sets_done) || 0) * (Number(it.reps_done) || 0) * (Number(it.weight_kg) || 0), 0);
+      const rpes = items.map((i) => Number(i.rpe_real)).filter((n) => n > 0);
+      const daysAgo = Math.floor((Date.now() - new Date(date + "T12:00:00").getTime()) / 86400000);
+      return {
+        date, items, tonnage,
+        rpe: rpes.length ? (rpes.reduce((a, b) => a + b, 0) / rpes.length) : null,
+        muscles: Array.from(byMuscle.entries()).sort((a, b) => b[1] - a[1]),
+        daysAgo,
+        client: items[0]?.client_name || "",
+      };
+    });
+  }, [logs]);
+
+  // Supercompensação: janela 48-72h por grupo (Zatsiorsky) — corrigida por dias desde o último estímulo
+  const supercomp = useMemo(() => {
+    const last = new Map<string, number>();
+    sessions.forEach((s) => s.muscles.forEach(([m]) => { if (!last.has(m)) last.set(m, s.daysAgo); }));
+    return Array.from(last.entries()).map(([muscle, d]) => {
+      if (d < 2) return { muscle, days: d, label: "Em recuperação", color: "#fbbf24" };
+      if (d <= 4) return { muscle, days: d, label: "Janela de supercompensação", color: GREEN };
+      if (d <= 7) return { muscle, days: d, label: "Janela fechando", color: "#f97316" };
+      return { muscle, days: d, label: "Destreinamento", color: "#ef4444" };
+    }).sort((a, b) => a.days - b.days);
+  }, [sessions]);
+
+  if (loading) return <LoadingState />;
+
+  if (!sessions.length) {
+    return (
+      <div className="rounded-2xl p-6 text-center mt-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <History className="w-6 h-6 mx-auto mb-2" style={{ color: TEXT_MUTED }} />
+        <p className="text-[12px] font-bold" style={{ color: TEXT }}>Nenhuma sessão executada registrada</p>
+        <p className="text-[10px] mt-1" style={{ color: TEXT_MUTED }}>Os registros feitos na aba Progressão aparecem aqui com volume por grupo e supercompensação.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 mt-3">
+      <div className="rounded-2xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <p className="text-[10px] font-bold tracking-wider mb-2" style={{ color: TEXT_MUTED }}>SUPERCOMPENSAÇÃO POR GRUPO</p>
+        <div className="space-y-1.5">
+          {supercomp.map((sc) => (
+            <div key={sc.muscle} className="flex items-center justify-between">
+              <span className="text-[11px]" style={{ color: TEXT }}>{sc.muscle}</span>
+              <span className="text-[10px] font-bold" style={{ color: sc.color }}>
+                {sc.days}d · {sc.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {sessions.map((s) => (
+        <div key={s.date} className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${openDay === s.date ? BORDER_ACTIVE : BORDER}` }}>
+          <button onClick={() => setOpenDay(openDay === s.date ? null : s.date)} className="w-full p-3 flex items-center justify-between">
+            <div className="text-left">
+              <p className="text-[12px] font-bold" style={{ color: TEXT }}>
+                {new Date(s.date + "T12:00:00").toLocaleDateString("pt-BR")} {s.client && `· ${s.client}`}
+              </p>
+              <p className="text-[9px] mt-0.5" style={{ color: TEXT_MUTED }}>
+                {s.items.length} exercícios · {Math.round(s.tonnage).toLocaleString("pt-BR")} kg de tonelagem{s.rpe ? ` · RPE ${s.rpe.toFixed(1)}` : ""}
+              </p>
+            </div>
+            {openDay === s.date ? <ChevronUp className="w-4 h-4" style={{ color: TEXT_MUTED }} /> : <ChevronDown className="w-4 h-4" style={{ color: TEXT_MUTED }} />}
+          </button>
+          {openDay === s.date && (
+            <div className="px-3 pb-3 space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {s.muscles.map(([m, sets]) => (
+                  <span key={m} className="text-[9px] px-2 py-0.5 rounded-full" style={{ background: GREEN_DIM, color: GREEN }}>{m} · {sets} séries</span>
+                ))}
+              </div>
+              {s.items.map((it: any) => (
+                <div key={it.id} className="flex items-center justify-between p-2 rounded-lg" style={{ background: SURFACE2 }}>
+                  <span className="text-[11px]" style={{ color: TEXT }}>{it.exercise}</span>
+                  <span className="text-[10px]" style={{ color: TEXT_DIM }}>
+                    {it.sets_done || "—"}x{it.reps_done || "—"} · {it.weight_kg || "—"}kg{it.rpe_real ? ` · RPE ${it.rpe_real}` : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function CoachConfigSection({ userId }: { userId?: string }) {
   const [coachName, setCoachName] = useState("");
   const [coachTitle, setCoachTitle] = useState("");
