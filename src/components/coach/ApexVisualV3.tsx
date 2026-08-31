@@ -1559,7 +1559,7 @@ export default function ApexVisualV3() {
               )}
               {done && !atletaFeminino && (
                 <button onClick={() => iniciarAvaliacaoVERAouSTRATUM("stratum")} style={{ padding:"6px 14px", borderRadius:8, background:"rgba(52,211,153,0.12)", border:"1px solid rgba(52,211,153,0.4)", color:"#34D399", fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>
-                  ⬡ AVALIAR COM STRATUM AI
+                  ⬡ AVALIAR COM STRATUM
                 </button>
               )}
               {done && <button onClick={reset} style={{ padding:"6px 14px", borderRadius:8, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>+ NOVA ANÁLISE</button>}
