@@ -944,6 +944,26 @@ Português. Específico. Científico. Zero genérico.`;
             </button>
           </div>
           <StratumBadges result={stratum} compact />
+          {fiberProfiles.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {fiberProfiles.map((f) => (
+                <span
+                  key={f.muscle}
+                  className="text-[9px] px-2 py-0.5 rounded-full font-semibold"
+                  style={{ background: `${fiberColor(f.type)}1a`, color: fiberColor(f.type), border: `1px solid ${fiberColor(f.type)}33` }}
+                  title={f.rationale}
+                >
+                  {f.muscle} · {f.type} · {f.reps} reps · {f.rest}
+                </span>
+              ))}
+            </div>
+          )}
+          {autoSystem && (
+            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>
+              Sistema aplicado automaticamente: <span style={{ color: GREEN }}>{autoSystem.nome}</span>
+              {isCompetitionGoal ? " · protocolo de competição ativo" : ""}
+            </p>
+          )}
           {showMethod && <StratumMethodology embedded />}
         </div>
 
@@ -2079,6 +2099,12 @@ const ExerciseCard = memo(function ExerciseCard({
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
               <ResistanceProfileBadge exerciseName={safeExerciseName} />
+              <FiberBadge
+                exerciseName={safeExerciseName}
+                muscleTarget={currentExercise.muscle_target}
+                declared={currentExercise.fiber_type}
+                note={currentExercise.fiber_note}
+              />
               <MuscleRegionBadge exerciseName={safeExerciseName} />
               {(() => {
                 const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
