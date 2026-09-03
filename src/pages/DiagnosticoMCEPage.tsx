@@ -45,6 +45,7 @@ export default function DiagnosticoMCEPage() {
 
   useEffect(() => {
     document.title = "Diagnóstico MCE — Coach Diogo Mello";
+    void trackFunnel("view");
   }, []);
 
   const scores = useMemo(() => computeScores(answers), [answers]);
