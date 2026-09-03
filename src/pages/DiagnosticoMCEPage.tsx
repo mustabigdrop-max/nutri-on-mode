@@ -12,6 +12,7 @@ import {
   type DiagAnswer,
   type DiagPillar,
 } from "@/data/mceDiagnostico";
+import { trackFunnel } from "@/lib/mceFunnel";
 
 const C = {
   bg: "#020205",
@@ -65,7 +66,10 @@ export default function DiagnosticoMCEPage() {
         ]);
         setPicked(null);
         setLeaving(false);
-        if (index + 1 >= QUESTIONS.length) setStep("capture");
+        if (index + 1 >= QUESTIONS.length) {
+          void trackFunnel("quiz_complete");
+          setStep("capture");
+        }
         else setIndex(index + 1);
       }, 250);
     }, 350);
@@ -95,6 +99,7 @@ export default function DiagnosticoMCEPage() {
     } catch {
       /* resultado é exibido mesmo se o registro falhar */
     }
+    void trackFunnel("lead_submitted");
     setSaving(false);
     setStep("result");
     [0, 200, 600, 1600, 2400].forEach((t, i) => setTimeout(() => setReveal(i + 1), t));
