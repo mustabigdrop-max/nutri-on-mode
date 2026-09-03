@@ -17,6 +17,7 @@ const AuthPage = lazy(() => import("./pages/AuthPage"));
 const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
 const DiagnosticoMCEPage = lazy(() => import("./pages/DiagnosticoMCEPage"));
 const LeadsPage = lazy(() => import("./pages/LeadsPage"));
+const ClientesPage = lazy(() => import("./pages/ClientesPage"));
 
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const FirstMealScreen = lazy(() => import("./pages/FirstMealScreen"));
@@ -187,6 +188,7 @@ const App = () => (
             <Route path="/modulos" element={<ModulesPage />} />
             <Route path="/diagnostico" element={<DiagnosticoMCEPage />} />
             <Route path="/leads" element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
+            <Route path="/clientes" element={<ProtectedRoute><ClientesPage /></ProtectedRoute>} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/desafio-21" element={<DesafioSignupPage />} />
             {/* Desafio 30 Dias */}
