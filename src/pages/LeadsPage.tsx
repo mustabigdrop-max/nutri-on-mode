@@ -121,10 +121,12 @@ export default function LeadsPage() {
   async function runFollowupQueue() {
     if (!queue.length || sending) return;
     setSending(true);
-    let opened = 0;
-    for (const lead of queue) {
+    // Abre todas as janelas de forma síncrona (mantém o gesto do usuário)
+    const openedLeads = queue.filter((lead) => {
       const win = window.open(waLink(lead, followupMessage(lead)), "_blank");
-      if (win) opened += 1;
+      return !!win;
+    });
+    for (const lead of openedLeads) {
       const now = new Date().toISOString();
       await supabase
         .from("mce_leads")
@@ -141,9 +143,17 @@ export default function LeadsPage() {
     }
     await load();
     setSending(false);
-    if (opened < queue.length) toast.warning("Libere pop-ups deste site para abrir todas as conversas de uma vez");
-    else toast.success(`${opened} follow-up(s) disparado(s)`);
+    if (!openedLeads.length) {
+      toast.error("Nenhuma conversa foi aberta. Libere pop-ups deste site e tente novamente.");
+    } else if (openedLeads.length < queue.length) {
+      toast.warning(
+        `${openedLeads.length} de ${queue.length} abertos. Libere pop-ups para disparar o restante — os demais seguem na fila.`,
+      );
+    } else {
+      toast.success(`${openedLeads.length} follow-up(s) disparado(s)`);
+    }
   }
+
 
   const total = leads.length;
   const novos = leads.filter((l) => l.status === "novo").length;
