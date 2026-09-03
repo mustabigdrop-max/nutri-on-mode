@@ -280,7 +280,7 @@ function LeadDetail({
   }
 
   async function changeStatus(status: string) {
-    const patch: Record<string, unknown> = { status };
+    const patch: { status: string; contacted_at?: string; converted_at?: string } = { status };
     if (status === "contatado" && !lead.contacted_at) patch.contacted_at = new Date().toISOString();
     if (status === "convertido") patch.converted_at = new Date().toISOString();
     const { data, error } = await supabase.from("mce_leads").update(patch).eq("id", lead.id).select().single();
