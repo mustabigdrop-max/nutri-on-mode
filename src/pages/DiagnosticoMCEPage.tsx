@@ -159,7 +159,7 @@ export default function DiagnosticoMCEPage() {
             ))}
           </div>
           <button
-            onClick={() => setStep("quiz")}
+            onClick={() => { void trackFunnel("quiz_start"); setStep("quiz"); }}
             style={{
               width: "100%",
               background: C.cyan,
