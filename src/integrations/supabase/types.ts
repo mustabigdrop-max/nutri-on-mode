@@ -6358,6 +6358,122 @@ export type Database = {
         }
         Relationships: []
       }
+      mce_lead_activities: {
+        Row: {
+          coach_id: string | null
+          content: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          new_value: string | null
+          old_value: string | null
+          type: string
+        }
+        Insert: {
+          coach_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          new_value?: string | null
+          old_value?: string | null
+          type: string
+        }
+        Update: {
+          coach_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          new_value?: string | null
+          old_value?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mce_lead_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "mce_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mce_leads: {
+        Row: {
+          answers: Json
+          coach_id: string | null
+          contacted_at: string | null
+          converted_at: string | null
+          created_at: string
+          device: string | null
+          goal: string | null
+          id: string
+          level: string
+          name: string
+          notes: string | null
+          referrer: string | null
+          score_comportamento: number
+          score_execucao: number
+          score_mentalidade: number
+          score_total: number
+          status: string
+          updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          answers?: Json
+          coach_id?: string | null
+          contacted_at?: string | null
+          converted_at?: string | null
+          created_at?: string
+          device?: string | null
+          goal?: string | null
+          id?: string
+          level?: string
+          name: string
+          notes?: string | null
+          referrer?: string | null
+          score_comportamento?: number
+          score_execucao?: number
+          score_mentalidade?: number
+          score_total?: number
+          status?: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          answers?: Json
+          coach_id?: string | null
+          contacted_at?: string | null
+          converted_at?: string | null
+          created_at?: string
+          device?: string | null
+          goal?: string | null
+          id?: string
+          level?: string
+          name?: string
+          notes?: string | null
+          referrer?: string | null
+          score_comportamento?: number
+          score_execucao?: number
+          score_mentalidade?: number
+          score_total?: number
+          status?: string
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       mce_scores: {
         Row: {
           created_at: string
