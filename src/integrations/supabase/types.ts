@@ -6310,6 +6310,103 @@ export type Database = {
         }
         Relationships: []
       }
+      mce_client_records: {
+        Row: {
+          client_id: string
+          coach_id: string
+          content: string | null
+          created_at: string
+          id: string
+          record_date: string
+          title: string
+          type: string
+        }
+        Insert: {
+          client_id: string
+          coach_id: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          record_date?: string
+          title: string
+          type?: string
+        }
+        Update: {
+          client_id?: string
+          coach_id?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          record_date?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mce_client_records_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mce_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mce_clients: {
+        Row: {
+          coach_id: string
+          created_at: string
+          goal: string | null
+          id: string
+          lead_id: string | null
+          monthly_value: number | null
+          name: string
+          notes: string | null
+          plan: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          goal?: string | null
+          id?: string
+          lead_id?: string | null
+          monthly_value?: number | null
+          name: string
+          notes?: string | null
+          plan?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          goal?: string | null
+          id?: string
+          lead_id?: string | null
+          monthly_value?: number | null
+          name?: string
+          notes?: string | null
+          plan?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mce_clients_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "mce_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mce_diagnostics: {
         Row: {
           answers: number[]
@@ -6355,6 +6452,42 @@ export type Database = {
           exercise_key?: string
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      mce_funnel_events: {
+        Row: {
+          created_at: string
+          device: string | null
+          id: string
+          referrer: string | null
+          session_id: string
+          step: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          device?: string | null
+          id?: string
+          referrer?: string | null
+          session_id: string
+          step: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          device?: string | null
+          id?: string
+          referrer?: string | null
+          session_id?: string
+          step?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: []
       }
@@ -6407,8 +6540,10 @@ export type Database = {
           converted_at: string | null
           created_at: string
           device: string | null
+          followup_count: number
           goal: string | null
           id: string
+          last_followup_at: string | null
           level: string
           name: string
           notes: string | null
@@ -6431,8 +6566,10 @@ export type Database = {
           converted_at?: string | null
           created_at?: string
           device?: string | null
+          followup_count?: number
           goal?: string | null
           id?: string
+          last_followup_at?: string | null
           level?: string
           name: string
           notes?: string | null
@@ -6455,8 +6592,10 @@ export type Database = {
           converted_at?: string | null
           created_at?: string
           device?: string | null
+          followup_count?: number
           goal?: string | null
           id?: string
+          last_followup_at?: string | null
           level?: string
           name?: string
           notes?: string | null

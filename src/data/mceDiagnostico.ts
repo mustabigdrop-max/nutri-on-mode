@@ -190,4 +190,17 @@ export function weakestPillar(s: { M: number; C: number; E: number }): DiagPilla
   return arr[0][0];
 }
 
-export const COACH_WHATSAPP = "5511999999999";
+export const COACH_WHATSAPP = "5521965802847";
+
+export const DIAGNOSTICO_PATH = "/diagnostico";
+
+export const BIO_UTM = {
+  utm_source: "instagram",
+  utm_medium: "bio",
+  utm_campaign: "mce_diagnostico",
+} as const;
+
+export function bioLink(origin = "https://nutrion.app.br") {
+  const qs = new URLSearchParams(BIO_UTM).toString();
+  return `${origin.replace(/\/$/, "")}${DIAGNOSTICO_PATH}?${qs}`;
+}
