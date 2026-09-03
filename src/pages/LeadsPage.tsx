@@ -22,6 +22,8 @@ interface Lead {
   status: string;
   notes: string | null;
   contacted_at: string | null;
+  last_followup_at: string | null;
+  followup_count: number | null;
   utm_source: string | null;
   utm_campaign: string | null;
 }
@@ -59,11 +61,27 @@ export default function LeadsPage() {
   const [filter, setFilter] = useState<string>("todos");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Lead | null>(null);
+  const [funnel, setFunnel] = useState<Record<string, number>>({});
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     document.title = "Leads — Diagnóstico MCE";
     load();
+    loadFunnel();
   }, []);
+
+  async function loadFunnel() {
+    const { data } = await supabase
+      .from("mce_funnel_events")
+      .select("step, session_id")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    const seen: Record<string, Set<string>> = {};
+    ((data as unknown as { step: string; session_id: string }[]) || []).forEach((e) => {
+      (seen[e.step] ||= new Set()).add(e.session_id);
+    });
+    setFunnel(Object.fromEntries(Object.entries(seen).map(([k, v]) => [k, v.size])));
+  }
 
   async function load() {
     setLoading(true);
@@ -85,6 +103,47 @@ export default function LeadsPage() {
       ),
     [leads, filter, search]
   );
+
+  const queue = useMemo(
+    () =>
+      leads.filter(
+        (l) =>
+          !!l.whatsapp &&
+          l.status !== "convertido" &&
+          l.status !== "perdido" &&
+          !l.contacted_at &&
+          hoursSince(l.created_at) >= 24 &&
+          (!l.last_followup_at || hoursSince(l.last_followup_at) >= 24)
+      ),
+    [leads]
+  );
+
+  async function runFollowupQueue() {
+    if (!queue.length || sending) return;
+    setSending(true);
+    let opened = 0;
+    for (const lead of queue) {
+      const win = window.open(waLink(lead, followupMessage(lead)), "_blank");
+      if (win) opened += 1;
+      const now = new Date().toISOString();
+      await supabase
+        .from("mce_leads")
+        .update({ last_followup_at: now, followup_count: (lead.followup_count || 0) + 1, status: "contatado", contacted_at: now })
+        .eq("id", lead.id);
+      if (user?.id) {
+        await supabase.from("mce_lead_activities").insert({
+          lead_id: lead.id,
+          coach_id: user.id,
+          type: "whatsapp_followup",
+          content: "Follow-up automático de 24h disparado pela fila",
+        });
+      }
+    }
+    await load();
+    setSending(false);
+    if (opened < queue.length) toast.warning("Libere pop-ups deste site para abrir todas as conversas de uma vez");
+    else toast.success(`${opened} follow-up(s) disparado(s)`);
+  }
 
   const total = leads.length;
   const novos = leads.filter((l) => l.status === "novo").length;
@@ -122,6 +181,31 @@ export default function LeadsPage() {
           <Metric label="TOTAL" value={String(total)} />
           <Metric label="NOVOS" value={String(novos)} />
           <Metric label="CONVERSÃO" value={`${taxa}%`} />
+        </div>
+
+        <FunnelPanel funnel={funnel} leads={leads} />
+        <BioLinkCard />
+
+        <div className="border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[9px] font-mono tracking-[2px] text-muted-foreground">FILA DE FOLLOW-UP · 24H SEM CONTATO</div>
+              <div className="text-2xl font-bold mt-1">{queue.length}</div>
+            </div>
+            <button
+              onClick={runFollowupQueue}
+              disabled={!queue.length || sending}
+              className="px-4 py-3 text-[10px] font-mono tracking-widest flex items-center gap-2 disabled:opacity-40"
+              style={{ background: "#25D366", color: "#fff" }}
+            >
+              <Send className="w-3 h-3" /> {sending ? "DISPARANDO..." : "DISPARAR FILA"}
+            </button>
+          </div>
+          {queue.length > 0 && (
+            <p className="text-[10px] font-mono text-muted-foreground mt-2">
+              {queue.map((l) => l.name).join(" · ")}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -181,6 +265,62 @@ function waLink(lead: Lead, message: string) {
   const digits = (lead.whatsapp || "").replace(/\D/g, "");
   const phone = digits.length > 11 ? digits : `55${digits}`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
+
+function followupMessage(lead: Lead) {
+  const w = weakestPillar({ M: lead.score_mentalidade, C: lead.score_comportamento, E: lead.score_execucao });
+  return `Oi ${lead.name}, aqui é o Diogo Mello. Seu Diagnóstico MCE apontou ${PILLAR_META[w].label.toLowerCase()} como o ponto mais frágil — e é exatamente isso que trava a maioria.\n\nTransformação é sistema. Quer que eu te mostre o primeiro passo?`;
+}
+
+function BioLinkCard() {
+  const link = bioLink();
+  return (
+    <div className="border border-border bg-card p-4">
+      <div className="text-[9px] font-mono tracking-[2px] text-muted-foreground">LINK DA BIO · @diogo.mell0</div>
+      <div className="text-xs font-mono break-all mt-2">{link}</div>
+      <button
+        onClick={() => {
+          void navigator.clipboard.writeText(link);
+          toast.success("Link copiado");
+        }}
+        className="mt-3 px-3 py-2 text-[10px] font-mono tracking-widest border border-border flex items-center gap-1"
+      >
+        <Copy className="w-3 h-3" /> COPIAR LINK
+      </button>
+    </div>
+  );
+}
+
+function FunnelPanel({ funnel, leads }: { funnel: Record<string, number>; leads: Lead[] }) {
+  const views = funnel.view || 0;
+  const started = funnel.quiz_start || 0;
+  const completed = funnel.quiz_complete || 0;
+  const withWhats = leads.filter((l) => !!l.whatsapp).length;
+  const rows: [string, number][] = [
+    ["CHEGARAM EM /DIAGNOSTICO", views],
+    ["COMEÇARAM O QUIZ", started],
+    ["COMPLETARAM O QUIZ", completed],
+    ["DEIXARAM WHATSAPP", withWhats],
+  ];
+  const base = Math.max(views, 1);
+  return (
+    <div className="border border-border bg-card p-4 space-y-3">
+      <div className="text-[9px] font-mono tracking-[2px] text-muted-foreground">FUNIL REAL</div>
+      {rows.map(([label, value]) => (
+        <div key={label}>
+          <div className="flex justify-between text-[10px] font-mono">
+            <span className="text-muted-foreground">{label}</span>
+            <span className="font-bold">
+              {value} · {Math.round((value / base) * 100)}%
+            </span>
+          </div>
+          <div className="h-1.5 bg-muted mt-1">
+            <div className="h-full bg-primary" style={{ width: `${Math.min(100, (value / base) * 100)}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function contextMessage(lead: Lead) {
@@ -255,6 +395,7 @@ function LeadDetail({
   onBack: () => void;
   onChanged: (l: Lead) => void;
 }) {
+  const navigate = useNavigate();
   const [notes, setNotes] = useState(lead.notes || "");
   const [activities, setActivities] = useState<Activity[]>([]);
   const weakest = weakestPillar({ M: lead.score_mentalidade, C: lead.score_comportamento, E: lead.score_execucao });
@@ -378,6 +519,13 @@ function LeadDetail({
             SALVAR NOTA
           </button>
         </div>
+
+        <button
+          onClick={() => navigate(`/clientes?lead=${lead.id}`)}
+          className="w-full flex items-center justify-center gap-2 py-4 font-bold tracking-widest bg-primary text-primary-foreground"
+        >
+          <UserPlus className="w-4 h-4" /> TRANSFORMAR EM CLIENTE
+        </button>
 
         {lead.whatsapp && (
           <a
