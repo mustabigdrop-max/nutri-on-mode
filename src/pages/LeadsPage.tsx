@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Search } from "lucide-react";
+import { ArrowLeft, Copy, MessageCircle, Search, Send, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import MceRadar from "@/components/mce/MceRadar";
-import { PILLAR_META, QUESTIONS, insightFor, levelFor, weakestPillar, type DiagPillar } from "@/data/mceDiagnostico";
+import { PILLAR_META, QUESTIONS, bioLink, insightFor, levelFor, weakestPillar, type DiagPillar } from "@/data/mceDiagnostico";
 
 interface Lead {
   id: string;
