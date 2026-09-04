@@ -281,6 +281,28 @@ function VideoUploader({ onCapture }: { onCapture: (base64: string, preview: str
   );
 }
 
+function CopyMini({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
+      }}
+      style={{
+        padding: "3px 8px", fontSize: 8, fontWeight: 700, cursor: "pointer",
+        background: copied ? `${T.green}20` : T.s2, border: `1px solid ${copied ? T.green : T.border}`,
+        color: copied ? T.green : T.muted, fontFamily: T.mono, borderRadius: 4, letterSpacing: 1,
+      }}
+    >
+      {copied ? "✓" : "COPIAR"}
+    </button>
+  );
+}
+
 function ContentCard({ title, icon, color, content }: { title: string; icon: string; color: string; content: string }) {
   const [copied, setCopied] = useState(false);
 
