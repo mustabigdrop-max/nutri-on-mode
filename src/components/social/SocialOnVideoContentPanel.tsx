@@ -605,11 +605,79 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-const LOADING_MESSAGES = [
+      {tab === "growth" && data.growth && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Scores de alcance */}
+          <div style={{
+            display: "flex", justifyContent: "space-around", gap: 8, padding: "14px 10px",
+            background: T.s, border: `1px solid ${T.border}`, borderRadius: 12, flexWrap: "wrap",
+          }}>
+            <MetricRing value={data.growth.share_score ?? 0} label="COMPARTILHAR" color={T.cyan} />
+            <MetricRing value={data.growth.save_score ?? 0} label="SALVAMENTO" color={T.gold} />
+            <MetricRing value={data.growth.comment_score ?? 0} label="COMENTÁRIOS" color={T.purple} />
+            <MetricRing value={data.growth.viral_potential ?? 0} label="POTENCIAL VIRAL" color={T.red} />
+          </div>
+
+          {data.growth.angulo_polemico && (
+            <div style={{ background: `${T.red}0d`, border: `1px solid ${T.red}44`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.red, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🔥 ÂNGULO POLÊMICO</div>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text, lineHeight: 1.6 }}>{data.growth.angulo_polemico}</p>
+            </div>
+          )}
+
+          {data.growth.por_que_compartilham && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>📤 POR QUE COMPARTILHAM</div>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.growth.por_que_compartilham}</p>
+            </div>
+          )}
+
+          {data.growth.gatilho_salvamento && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.gold, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🔖 GATILHO DE SALVAMENTO</div>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.growth.gatilho_salvamento}</p>
+            </div>
+          )}
+
+          {data.growth.pergunta_comentarios && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14, display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.purple, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>💬 PERGUNTA PRA COMENTÁRIOS</div>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text, lineHeight: 1.5 }}>"{data.growth.pergunta_comentarios}"</p>
+              </div>
+              <CopyMini text={data.growth.pergunta_comentarios} />
+            </div>
+          )}
+
+          {/* CTAs */}
+          <div style={{ fontSize: 10, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginTop: 4 }}>CALLS TO ACTION</div>
+          {[
+            { label: "CTA LINK NA BIO", text: data.growth.cta_bio, color: T.cyan, icon: "🔗" },
+            { label: "CTA DM", text: data.growth.cta_dm, color: T.purple, icon: "💬" },
+            { label: "CTA WHATSAPP", text: data.growth.cta_whatsapp, color: "#25D366", icon: "📱" },
+          ].filter((c) => c.text).map((cta, i) => (
+            <div key={i} style={{
+              display: "flex", gap: 10, padding: "12px 14px", background: T.s,
+              border: `1px solid ${T.border}`, borderLeft: `3px solid ${cta.color}`, borderRadius: 8, alignItems: "flex-start",
+            }}>
+              <span style={{ fontSize: 16 }}>{cta.icon}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 9, fontFamily: T.mono, color: cta.color, letterSpacing: 2, fontWeight: 700, marginBottom: 4 }}>{cta.label}</div>
+                <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.5 }}>{cta.text}</p>
+              </div>
+              <CopyMini text={cta.text!} />
+            </div>
+          ))}
+
+          {data.growth.estrategia_post && (
+            <div style={{ background: `${T.cyan}0d`, border: `1px solid ${T.cyan}44`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🎯 ESTRATÉGIA DE PUBLICAÇÃO</div>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{data.growth.estrategia_post}</p>
+            </div>
+          )}
+        </div>
+      )}
   "Identificando exercício...",
   "Analisando padrão de movimento...",
   "Mapeando pontos de execução...",
