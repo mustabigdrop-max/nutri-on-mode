@@ -20,21 +20,33 @@ type VideoContentResult = {
   padrao_movimento?: string;
   musculos_primarios?: string[];
   musculos_secundarios?: string[];
+  zonas_corporais_ativas?: string[];
+  metricas?: {
+    complexidade?: number;
+    risco_sem_avaliacao?: number;
+    impacto_assimetria?: number;
+    necessidade_correcao?: number;
+  };
   analise_execucao?: {
     pontos_positivos?: string[];
     pontos_atencao?: string[];
     cue_principal?: string;
+    angulacoes_chave?: string[];
   };
   conteudo?: {
     hook_reels?: string;
     roteiro_reels?: string;
+    caption_educativa?: string;
     caption_post?: string;
     caption_profissional?: string;
     carrossel_slides?: string[];
     hashtags?: string[];
   };
+  apex_insight?: string;
+  mce_insight?: string;
   conexao_apex?: string;
   conexao_mce?: string;
+  frase_impacto?: string;
 };
 
 const Chip = ({ children, color = T.cyan }: { children: React.ReactNode; color?: string }) => (
@@ -46,6 +58,77 @@ const Chip = ({ children, color = T.cyan }: { children: React.ReactNode; color?:
     {children}
   </span>
 );
+
+// Silhueta corporal com as zonas musculares ativadas brilhando em cyan
+function MuscleMap({ activeZones = [], size = 180 }: { activeZones?: string[]; size?: number }) {
+  const zones: Record<string, { cx: number; cy: number; r: number }> = {
+    upper_chest:  { cx: 50, cy: 26, r: 8 },
+    lower_chest:  { cx: 50, cy: 33, r: 7 },
+    front_delt:   { cx: 35, cy: 20, r: 5 },
+    side_delt:    { cx: 30, cy: 20, r: 5 },
+    rear_delt:    { cx: 33, cy: 22, r: 4 },
+    biceps:       { cx: 28, cy: 34, r: 5 },
+    triceps:      { cx: 72, cy: 34, r: 5 },
+    forearms:     { cx: 25, cy: 44, r: 4 },
+    upper_back:   { cx: 50, cy: 22, r: 9 },
+    lats:         { cx: 42, cy: 32, r: 8 },
+    lower_back:   { cx: 50, cy: 40, r: 6 },
+    core:         { cx: 50, cy: 42, r: 8 },
+    glutes:       { cx: 50, cy: 52, r: 9 },
+    quads:        { cx: 42, cy: 64, r: 8 },
+    hamstrings:   { cx: 58, cy: 64, r: 7 },
+    calves:       { cx: 42, cy: 80, r: 5 },
+  };
+
+  return (
+    <svg viewBox="0 0 100 95" width={size} height={size * 0.95} style={{ display: "block" }}>
+      <ellipse cx="50" cy="10" rx="7" ry="7" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <path d="M38 17 Q35 17 32 20 L26 35 Q24 40 26 45 L28 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <path d="M62 17 Q65 17 68 20 L74 35 Q76 40 74 45 L72 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <rect x="38" y="17" width="24" height="32" rx="4" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <rect x="38" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <rect x="52" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      {Object.entries(zones).map(([key, z]) => {
+        if (!activeZones.includes(key)) return null;
+        return (
+          <g key={key}>
+            <circle cx={z.cx} cy={z.cy} r={z.r + 2} fill={`${T.cyan}15`} style={{ animation: "zonePulse 2s ease-in-out infinite" }} />
+            <circle cx={z.cx} cy={z.cy} r={z.r} fill={`${T.cyan}35`} stroke={T.cyan} strokeWidth="0.6" />
+          </g>
+        );
+      })}
+      <style>{`@keyframes zonePulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
+    </svg>
+  );
+}
+
+// Anel de métrica com animação de preenchimento
+function MetricRing({ value, label, color, size = 64 }: { value: number; label: string; color: string; size?: number }) {
+  const [anim, setAnim] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setAnim(value), 300); return () => clearTimeout(t); }, [value]);
+  const r = 24, circ = 2 * Math.PI * r;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r={r} fill="none" stroke={T.border} strokeWidth="4" />
+        <circle
+          cx="28" cy="28" r={r} fill="none" stroke={color} strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={circ - (circ * anim) / 100}
+          transform="rotate(-90 28 28)"
+          style={{ transition: "stroke-dashoffset 1s ease-out" }}
+        />
+        <text x="28" y="32" textAnchor="middle" fill={T.text} fontSize="13" fontWeight="800" fontFamily={T.mono}>
+          {value}
+        </text>
+      </svg>
+      <span style={{ fontSize: 8, fontFamily: T.mono, color: T.muted, letterSpacing: 1, textAlign: "center", maxWidth: 72 }}>
+        {label}
+      </span>
+    </div>
+  );
+}
 
 function VideoUploader({ onCapture }: { onCapture: (base64: string, preview: string) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
