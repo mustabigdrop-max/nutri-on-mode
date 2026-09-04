@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import AnatomyMuscleMap from "@/components/social/AnatomyMuscleMap";
 import { supabase } from "@/integrations/supabase/client";
 
 // SOCIAL ON — Vídeo → Conteúdo: o coach envia um vídeo de exercício,
