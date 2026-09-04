@@ -56,33 +56,38 @@ function drawOverlay(
   time: number, phase: number, active: MovementPhase | null,
 ) {
   const { cx, cy, scale } = anchor;
-  const bodyH = h * scale;
+  const bodyH = H * scale;
+  const U = Math.max(1, h / 720);
+  ctx.save();
+  ctx.scale(U, U);
+  const W = w / U;
+  const H = h / U;
   const pulse = Math.sin(time * 3) * 0.5 + 0.5;
 
   // Scan grid
   ctx.strokeStyle = "rgba(0,212,255,0.03)";
   ctx.lineWidth = 0.5;
   for (let i = 0; i < 30; i++) {
-    ctx.beginPath(); ctx.moveTo(0, (i / 30) * h); ctx.lineTo(w, (i / 30) * h); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo((i / 30) * w, 0); ctx.lineTo((i / 30) * w, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, (i / 30) * H); ctx.lineTo(W, (i / 30) * H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo((i / 30) * W, 0); ctx.lineTo((i / 30) * W, H); ctx.stroke();
   }
 
   // Scan line
-  const scanY = ((time * 0.15) % 1) * h;
-  const grad = ctx.createLinearGradient(0, scanY, w, scanY);
+  const scanY = ((time * 0.15) % 1) * H;
+  const grad = ctx.createLinearGradient(0, scanY, W, scanY);
   grad.addColorStop(0, "transparent");
   grad.addColorStop(0.3, "rgba(0,212,255,0.15)");
   grad.addColorStop(0.5, "rgba(0,212,255,0.3)");
   grad.addColorStop(0.7, "rgba(0,212,255,0.15)");
   grad.addColorStop(1, "transparent");
   ctx.fillStyle = grad;
-  ctx.fillRect(0, scanY - 1, w, 3);
+  ctx.fillRect(0, scanY - 1, W, 3);
 
   // Corner brackets
   const bLen = 20, bOff = 8;
   ctx.strokeStyle = "rgba(0,212,255,0.6)";
   ctx.lineWidth = 2;
-  ([[bOff, bOff, 1, 1], [w - bOff, bOff, -1, 1], [bOff, h - bOff, 1, -1], [w - bOff, h - bOff, -1, -1]] as const)
+  ([[bOff, bOff, 1, 1], [W - bOff, bOff, -1, 1], [bOff, H - bOff, 1, -1], [W - bOff, H - bOff, -1, -1]] as const)
     .forEach(([x, y, dx, dy]) => {
       ctx.beginPath(); ctx.moveTo(x, y + dy * bLen); ctx.lineTo(x, y); ctx.lineTo(x + dx * bLen, y); ctx.stroke();
     });
@@ -110,11 +115,11 @@ function drawOverlay(
   ctx.font = "bold 11px sans-serif";
   const cueW = Math.min(220, Math.max(120, ctx.measureText(cueText).width + 24));
   ctx.fillStyle = "rgba(2,2,5,0.85)";
-  ctx.fillRect(w - cueW - 8, 8, cueW, 48);
+  ctx.fillRect(W - cueW - 8, 8, cueW, 48);
   ctx.fillStyle = "#B8922A";
-  ctx.fillRect(w - 10, 8, 2, 48);
+  ctx.fillRect(W - 10, 8, 2, 48);
   ctx.font = "bold 8px 'Courier New'";
-  ctx.fillText("CUE TÉCNICO", w - cueW - 2, 22);
+  ctx.fillText("CUE TÉCNICO", W - cueW - 2, 22);
   ctx.font = "bold 11px sans-serif";
   ctx.fillStyle = "#e8edf5";
   const cueWords = cueText.split(" ");
@@ -122,11 +127,11 @@ function drawOverlay(
   for (const word of cueWords) {
     const test = line + " " + word;
     if (ctx.measureText(test.trim()).width > cueW - 16 && line) {
-      ctx.fillText(line.trim(), w - cueW - 2, cueY);
+      ctx.fillText(line.trim(), W - cueW - 2, cueY);
       line = word; cueY += 13;
     } else { line = test; }
   }
-  if (line) ctx.fillText(line.trim(), w - cueW - 2, cueY);
+  if (line) ctx.fillText(line.trim(), W - cueW - 2, cueY);
 
   if (phase < 3) return;
 
@@ -140,7 +145,7 @@ function drawOverlay(
     const color = COLORS[intensity] || T.cyan;
     const mx = cx + off.dx * bodyH;
     const my = cy + off.dy * bodyH;
-    if (mx < 0 || mx > w || my < 0 || my > h) return;
+    if (mx < 0 || mx > W || my < 0 || my > H) return;
 
     const inPhase = active?.musculos_ativos?.includes(key);
     const isPulse = active
@@ -197,15 +202,15 @@ function drawOverlay(
   if (active?.nome) {
     const txt = `${active.nome.toUpperCase()}${active.cue ? " · " + active.cue : ""}`;
     ctx.font = "bold 10px 'Courier New'";
-    const pw = Math.min(w - 24, ctx.measureText(txt).width + 24);
+    const pw = Math.min(W - 24, ctx.measureText(txt).width + 24);
     ctx.fillStyle = "rgba(2,2,5,0.85)";
-    ctx.fillRect((w - pw) / 2, 66, pw, 22);
+    ctx.fillRect((W - pw) / 2, 66, pw, 22);
     ctx.strokeStyle = "rgba(0,212,255,0.4)";
     ctx.lineWidth = 1;
-    ctx.strokeRect((w - pw) / 2, 66, pw, 22);
+    ctx.strokeRect((W - pw) / 2, 66, pw, 22);
     ctx.fillStyle = "#00D4FF";
     ctx.textAlign = "center";
-    ctx.fillText(txt, w / 2, 81);
+    ctx.fillText(txt, W / 2, 81);
     ctx.textAlign = "start";
   }
 
@@ -214,7 +219,7 @@ function drawOverlay(
   // Ângulos
   (data.angulos || []).slice(0, 3).forEach((ang, i) => {
     const ax = 10;
-    const ay = h - 92 - i * 24;
+    const ay = H - 92 - i * 24;
     ctx.fillStyle = "rgba(2,2,5,0.8)";
     ctx.fillRect(ax, ay - 10, 110, 18);
     ctx.fillStyle = "#00d4a1";
@@ -225,32 +230,32 @@ function drawOverlay(
 
   // Alerta (bottom)
   ctx.fillStyle = "rgba(2,2,5,0.9)";
-  ctx.fillRect(8, h - 44, w - 16, 36);
+  ctx.fillRect(8, H - 44, W - 16, 36);
   ctx.fillStyle = "#ff4757";
-  ctx.fillRect(8, h - 8, w - 16, 2);
+  ctx.fillRect(8, H - 8, W - 16, 2);
   ctx.font = "bold 7px 'Courier New'";
-  ctx.fillText("⚠ SEM AVALIAÇÃO PRÉVIA", 14, h - 30);
+  ctx.fillText("⚠ SEM AVALIAÇÃO PRÉVIA", 14, H - 30);
   ctx.font = "11px sans-serif";
   ctx.fillStyle = "#e8edf5";
-  ctx.fillText((data.alerta || "").slice(0, 70), 14, h - 16);
+  ctx.fillText((data.alerta || "").slice(0, 70), 14, H - 16);
 
   // Frase de impacto
   ctx.fillStyle = "rgba(2,2,5,0.8)";
-  ctx.fillRect(8, h - 76, w - 16, 28);
+  ctx.fillRect(8, H - 76, W - 16, 28);
   ctx.fillStyle = "#B8922A";
-  ctx.fillRect(8, h - 76, 2, 28);
+  ctx.fillRect(8, H - 76, 2, 28);
   ctx.font = "italic bold 10px sans-serif";
-  ctx.fillText(`"${(data.frase || "").slice(0, 60)}"`, 16, h - 60);
+  ctx.fillText(`"${(data.frase || "").slice(0, 60)}"`, 16, H - 60);
   ctx.font = "7px 'Courier New'";
   ctx.fillStyle = "#6b7a94";
-  ctx.fillText("@diogo.mell0 · nutriON", 16, h - 50);
+  ctx.fillText("@diogo.mell0 · nutriON", 16, H - 50);
 
   // Watermark
   ctx.globalAlpha = 0.03;
   ctx.font = "bold 48px sans-serif";
   ctx.fillStyle = "#00D4FF";
   ctx.textAlign = "center";
-  ctx.fillText("nutriON", w / 2, h / 2);
+  ctx.fillText("nutriON", W / 2, H / 2);
   ctx.textAlign = "start";
   ctx.globalAlpha = 1;
 }
