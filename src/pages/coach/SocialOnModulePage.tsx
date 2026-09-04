@@ -46,6 +46,7 @@ import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
 import SocialOnMonetizationPanel from "@/components/social/SocialOnMonetizationPanel";
 import SocialOnStudioPanel from "@/components/social/SocialOnStudioPanel";
 import SocialOnVideoContentPanel from "@/components/social/SocialOnVideoContentPanel";
+import SocialOnOverlayStudio from "@/components/social/SocialOnOverlayStudio";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -455,6 +456,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
             <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
             <TabsTrigger value="video_conteudo" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Vídeo→Conteúdo</TabsTrigger>
+            <TabsTrigger value="overlay_studio" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Overlay Studio</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
 
             <TabGroupLabel>🧭 Estratégia e planejamento</TabGroupLabel>
@@ -1073,6 +1075,9 @@ const SocialOnModulePage = () => {
               products={products}
               differentials={differentials}
             />
+          </TabsContent>
+          <TabsContent value="overlay_studio" className="mt-4">
+            <SocialOnOverlayStudio />
           </TabsContent>
           <TabsContent value="pro" className="mt-4">
             <SocialOnProPanel ctx={aiCtx} />
