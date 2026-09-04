@@ -195,11 +195,14 @@ const CoachDashboardPage = () => {
         <section className="space-y-3">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Ações rápidas</p>
           <div className="flex flex-wrap gap-3">
-            <button className="quick-action" onClick={() => navigate("/coach/plano-alimentar")}>
+          <button className="quick-action" onClick={() => navigate("/coach/plano-alimentar")}>
               <UtensilsCrossed className="w-4 h-4" /> Gerar Plano Alimentar
             </button>
             <button className="quick-action" onClick={() => navigate("/coach/exames")}>
               <FlaskConical className="w-4 h-4" /> Solicitar Exames
+            </button>
+            <button className="quick-action" onClick={() => navigate("/leads")}>
+              <Instagram className="w-4 h-4" /> Link da Bio / Leads
             </button>
           </div>
           <CoachUpgradeGate />
