@@ -193,8 +193,8 @@ export default function LeadsPage() {
           <Metric label="CONVERSÃO" value={`${taxa}%`} />
         </div>
 
-        <FunnelPanel funnel={funnel} leads={leads} />
         <BioLinkCard />
+        <FunnelPanel funnel={funnel} leads={leads} />
 
         <div className="border border-border bg-card p-4">
           <div className="flex items-center justify-between gap-3">
