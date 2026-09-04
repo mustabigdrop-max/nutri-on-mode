@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
+import BilateralActivation from "@/components/social/BilateralActivation";
+import { saveExercise, readOverlayHandoff, type ExerciseAnalysis, type MovementPhase } from "@/lib/exerciseLibrary";
 
 const T = {
   bg: "#020205", s: "#0a0e18", s2: "#111827",
@@ -44,25 +46,14 @@ const MUSCLE_OFFSETS: Record<string, { dx: number; dy: number; label: string }> 
 const COLORS: Record<number, string> = { 3: "#00D4FF", 2: "#B8922A", 1: "#00d4a1" };
 const LABELS: Record<number, string> = { 3: "PRI", 2: "SEC", 1: "EST" };
 
-type OverlayData = {
-  exercicio?: string;
-  padrao?: string;
-  musculos_primarios?: string[];
-  musculos_secundarios?: string[];
-  cue_principal?: string;
-  cues?: string[];
-  angulos?: string[];
-  alerta?: string;
-  frase?: string;
-  musculos?: Record<string, number>;
-};
+type OverlayData = ExerciseAnalysis;
 
 type Anchor = { cx: number; cy: number; scale: number };
 
 function drawOverlay(
   ctx: CanvasRenderingContext2D, w: number, h: number,
   data: OverlayData, anchor: { cx: number; cy: number; scale: number },
-  time: number, phase: number,
+  time: number, phase: number, active: MovementPhase | null,
 ) {
   const { cx, cy, scale } = anchor;
   const bodyH = h * scale;
@@ -151,7 +142,13 @@ function drawOverlay(
     const my = cy + off.dy * bodyH;
     if (mx < 0 || mx > w || my < 0 || my > h) return;
 
-    const isPulse = Math.floor(time * 1.2) % activeKeys.length === idx;
+    const inPhase = active?.musculos_ativos?.includes(key);
+    const isPulse = active
+      ? !!inPhase
+      : Math.floor(time * 1.2) % activeKeys.length === idx;
+    if (active && !inPhase && intensity < 3) {
+      ctx.globalAlpha = 0.35;
+    }
     const r = isPulse ? 14 + pulse * 4 : 10;
 
     const glow = ctx.createRadialGradient(mx, my, 0, mx, my, r * 2);
@@ -193,7 +190,24 @@ function drawOverlay(
       ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(cx, cy); ctx.stroke();
       ctx.setLineDash([]);
     }
+    ctx.globalAlpha = 1;
   });
+
+  // Fase atual do movimento
+  if (active?.nome) {
+    const txt = `${active.nome.toUpperCase()}${active.cue ? " · " + active.cue : ""}`;
+    ctx.font = "bold 10px 'Courier New'";
+    const pw = Math.min(w - 24, ctx.measureText(txt).width + 24);
+    ctx.fillStyle = "rgba(2,2,5,0.85)";
+    ctx.fillRect((w - pw) / 2, 66, pw, 22);
+    ctx.strokeStyle = "rgba(0,212,255,0.4)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect((w - pw) / 2, 66, pw, 22);
+    ctx.fillStyle = "#00D4FF";
+    ctx.textAlign = "center";
+    ctx.fillText(txt, w / 2, 81);
+    ctx.textAlign = "start";
+  }
 
   if (phase < 4) return;
 
@@ -255,6 +269,10 @@ export default function SocialOnOverlayStudio() {
   const [phase, setPhase] = useState(0);
   const [loadMsg, setLoadMsg] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [savingLib, setSavingLib] = useState(false);
+  const [igOpen, setIgOpen] = useState(false);
+  const [igLoading, setIgLoading] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const captureVideoRef = useRef<HTMLVideoElement>(null);
@@ -265,33 +283,101 @@ export default function SocialOnOverlayStudio() {
   const startTimeRef = useRef(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const igVideos = (account?.recent_media || []).filter(
+    (m) => (m.media_type || "").toUpperCase().includes("VIDEO") && !!m.media_url,
+  );
+
+  // Exercício vindo da biblioteca: pula direto para o posicionamento após o vídeo entrar
+  useEffect(() => {
+    const handoff = readOverlayHandoff();
+    if (handoff?.data) { setData(handoff.data as OverlayData); setSaved(true); }
+  }, []);
+
+  const useIgVideo = async (mediaUrl: string) => {
+    setIgLoading(mediaUrl); setError(null);
+    try {
+      const proxied = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/media-proxy?url=${encodeURIComponent(mediaUrl)}`;
+      const resp = await fetch(proxied);
+      if (!resp.ok) throw new Error("Não consegui baixar o vídeo desse post.");
+      const blob = await resp.blob();
+      setVideoSrc(URL.createObjectURL(blob));
+      setRecorded(null);
+      setIgOpen(false);
+    } catch (err: any) {
+      setError(err?.message || "Não consegui usar o vídeo desse post. Baixe o arquivo e suba manualmente.");
+    } finally {
+      setIgLoading(null);
+    }
+  };
+
+  const saveToLibrary = async () => {
+    if (!data) return;
+    setSavingLib(true);
+    try {
+      await saveExercise(data, "overlay");
+      setSaved(true);
+    } catch (err: any) {
+      setError(err?.message || "Não consegui salvar na biblioteca.");
+    } finally {
+      setSavingLib(false);
+    }
+  };
+
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) { setVideoSrc(URL.createObjectURL(f)); setError(null); setRecorded(null); }
   };
 
+  const grabFrames = async (v: HTMLVideoElement, count: number): Promise<string[]> => {
+    const dur = v.duration && isFinite(v.duration) ? v.duration : 0;
+    const cv = document.createElement("canvas");
+    cv.width = v.videoWidth;
+    cv.height = v.videoHeight;
+    const ctx = cv.getContext("2d")!;
+    if (!dur) {
+      ctx.drawImage(v, 0, 0);
+      return [cv.toDataURL("image/jpeg", 0.75)];
+    }
+    const wasPaused = v.paused;
+    v.pause();
+    const original = v.currentTime;
+    const frames: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const t = (dur * (i + 0.5)) / count;
+      await new Promise<void>((resolve) => {
+        const onSeek = () => { v.removeEventListener("seeked", onSeek); resolve(); };
+        v.addEventListener("seeked", onSeek);
+        v.currentTime = Math.min(t, Math.max(0, dur - 0.05));
+        setTimeout(() => { v.removeEventListener("seeked", onSeek); resolve(); }, 1500);
+      });
+      ctx.drawImage(v, 0, 0);
+      frames.push(cv.toDataURL("image/jpeg", 0.72));
+    }
+    v.currentTime = original;
+    if (!wasPaused) v.play().catch(() => {});
+    return frames;
+  };
+
   const analyze = useCallback(async () => {
     const v = videoRef.current;
-    if (!v || !v.videoWidth) { setError("Aguarde o vídeo carregar e pause no frame desejado."); return; }
-    const cv = document.createElement("canvas");
-    cv.width = v.videoWidth; cv.height = v.videoHeight;
-    cv.getContext("2d")!.drawImage(v, 0, 0);
-    const b64 = cv.toDataURL("image/jpeg", 0.8).split(",")[1];
-    setStage("loading"); setError(null); setLoadMsg("Identificando exercício...");
+    if (!v || !v.videoWidth) { setError("Aguarde o vídeo carregar por completo."); return; }
+    setStage("loading"); setError(null); setLoadMsg("Lendo o movimento completo...");
 
-    const msgs = ["Mapeando ativação muscular...", "Analisando biomecânica...", "Preparando overlay..."];
-    const timers = msgs.map((m, i) => setTimeout(() => setLoadMsg(m), (i + 1) * 2200));
+    const msgs = ["Mapeando ativação muscular bilateral...", "Separando fases do movimento...", "Preparando overlay..."];
+    const timers = msgs.map((m, i) => setTimeout(() => setLoadMsg(m), (i + 1) * 2600));
 
     try {
+      const frames = await grabFrames(v, 5);
       const { data: res, error: fnError } = await supabase.functions.invoke("social-on-generate", {
-        body: { mode: "video_overlay", images: [`data:image/jpeg;base64,${b64}`], handle },
+        body: { mode: "video_overlay", images: frames, handle },
       });
       if (fnError) throw new Error(fnError.message);
       if (res?.error) throw new Error(res.error);
       setData(res?.result as OverlayData);
+      setSaved(false);
       setStage("position");
     } catch (err: any) {
-      setError(err?.message || "Falha na análise. Tente outro frame.");
+      setError(err?.message || "Falha na análise. Tente outro vídeo.");
       setStage("upload");
     } finally {
       timers.forEach(clearTimeout);
@@ -312,7 +398,12 @@ export default function SocialOnOverlayStudio() {
       const h = (canvas.height = video.videoHeight || 1280);
       ctx.drawImage(video, 0, 0, w, h);
       const t = (performance.now() - startTimeRef.current) / 1000;
-      drawOverlay(ctx, w, h, data, { cx: anchor.cx * w, cy: anchor.cy * h, scale: anchor.scale }, t, phase);
+      const dur = video.duration || 0;
+      const frac = dur > 0 ? (video.currentTime % dur) / dur : 0;
+      const active = (data.fases || []).find(
+        (f) => frac >= (f.inicio ?? 0) && frac <= (f.fim ?? 1),
+      ) || (data.fases || [])[0] || null;
+      drawOverlay(ctx, w, h, data, { cx: anchor.cx * w, cy: anchor.cy * h, scale: anchor.scale }, t, phase, active);
       animRef.current = requestAnimationFrame(render);
     };
     render();
