@@ -255,6 +255,9 @@ const CoachDashboardPage = () => {
             <button className="quick-action" onClick={() => navigate("/coach/social")}>
               <Instagram className="w-4 h-4" /> Social ON
             </button>
+            <button className="quick-action" onClick={() => navigate("/coach/exercicios")}>
+              <Dumbbell className="w-4 h-4" /> Biblioteca de Exercícios
+            </button>
           </div>
           <CoachUpgradeGate />
         </section>
