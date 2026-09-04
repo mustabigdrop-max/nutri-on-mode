@@ -204,6 +204,44 @@ const CoachDashboardPage = () => {
         {/* SUGESTÕES DE AJUSTE */}
         <ProtocolSuggestionsPanel athleteIds={athleteIds} athleteNames={athleteNames} />
 
+        {/* LINK DA BIO / LEADS */}
+        <Card className="border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent overflow-hidden">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <Instagram className="w-4 h-4 text-amber-400" />
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-amber-400">Link da bio · Diagnóstico MCE</p>
+                </div>
+                <p className="text-sm text-muted-foreground truncate">
+                  {bioLink}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Cole esse link no campo "Site" do Instagram para capturar leads automaticamente.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyBioLink}
+                  className="gap-2 border-amber-500/30 hover:bg-amber-500/10"
+                >
+                  {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                  {copied ? "Copiado" : "Copiar link"}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/leads")}
+                  className="gap-2 bg-amber-500 hover:bg-amber-600 text-black"
+                >
+                  <Link2 className="w-4 h-4" /> Ver leads
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* AÇÕES RÁPIDAS */}
         <section className="space-y-3">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Ações rápidas</p>
@@ -214,8 +252,8 @@ const CoachDashboardPage = () => {
             <button className="quick-action" onClick={() => navigate("/coach/exames")}>
               <FlaskConical className="w-4 h-4" /> Solicitar Exames
             </button>
-            <button className="quick-action" onClick={() => navigate("/leads")}>
-              <Instagram className="w-4 h-4" /> Link da Bio / Leads
+            <button className="quick-action" onClick={() => navigate("/coach/social")}>
+              <Instagram className="w-4 h-4" /> Social ON
             </button>
           </div>
           <CoachUpgradeGate />
