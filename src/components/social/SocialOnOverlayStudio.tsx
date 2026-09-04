@@ -1,425 +1,439 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 
 const T = {
   bg: "#020205", s: "#0a0e18", s2: "#111827",
   cyan: "#00D4FF", gold: "#B8922A", green: "#00d4a1",
   red: "#ff4757", text: "#e8edf5", muted: "#6b7a94",
   border: "#1e2d45",
-  font: "'Rajdhani', 'Segoe UI', sans-serif", mono: "'Space Mono', monospace",
+  font: "'Rajdhani', sans-serif", mono: "'Space Mono', monospace",
 };
+
+// Posições relativas ao centro do corpo (% da altura corporal)
+const MUSCLE_OFFSETS: Record<string, { dx: number; dy: number; label: string }> = {
+  trapezio:       { dx: 0,     dy: -0.32, label: "Trapézio" },
+  deltoide_e:     { dx: -0.18, dy: -0.26, label: "Deltóide E" },
+  deltoide_d:     { dx: 0.18,  dy: -0.26, label: "Deltóide D" },
+  peitoral_e:     { dx: -0.08, dy: -0.20, label: "Peitoral E" },
+  peitoral_d:     { dx: 0.08,  dy: -0.20, label: "Peitoral D" },
+  biceps_e:       { dx: -0.22, dy: -0.14, label: "Bíceps E" },
+  biceps_d:       { dx: 0.22,  dy: -0.14, label: "Bíceps D" },
+  triceps_e:      { dx: -0.24, dy: -0.16, label: "Tríceps E" },
+  triceps_d:      { dx: 0.24,  dy: -0.16, label: "Tríceps D" },
+  antebraco_e:    { dx: -0.26, dy: -0.04, label: "Antebraço E" },
+  antebraco_d:    { dx: 0.26,  dy: -0.04, label: "Antebraço D" },
+  dorsal_e:       { dx: -0.12, dy: -0.12, label: "Dorsal E" },
+  dorsal_d:       { dx: 0.12,  dy: -0.12, label: "Dorsal D" },
+  lombar:         { dx: 0,     dy: -0.04, label: "Lombar" },
+  abdomen:        { dx: 0,     dy: -0.08, label: "Core" },
+  obliquo_e:      { dx: -0.10, dy: -0.06, label: "Oblíquo E" },
+  obliquo_d:      { dx: 0.10,  dy: -0.06, label: "Oblíquo D" },
+  gluteo_e:       { dx: -0.08, dy: 0.06,  label: "Glúteo E" },
+  gluteo_d:       { dx: 0.08,  dy: 0.06,  label: "Glúteo D" },
+  quadriceps_e:   { dx: -0.10, dy: 0.18,  label: "Quad E" },
+  quadriceps_d:   { dx: 0.10,  dy: 0.18,  label: "Quad D" },
+  isquiotibial_e: { dx: -0.10, dy: 0.20,  label: "Isquio E" },
+  isquiotibial_d: { dx: 0.10,  dy: 0.20,  label: "Isquio D" },
+  adutor_e:       { dx: -0.05, dy: 0.16,  label: "Adutor E" },
+  adutor_d:       { dx: 0.05,  dy: 0.16,  label: "Adutor D" },
+  panturrilha_e:  { dx: -0.08, dy: 0.36,  label: "Panturrilha E" },
+  panturrilha_d:  { dx: 0.08,  dy: 0.36,  label: "Panturrilha D" },
+};
+
+const COLORS: Record<number, string> = { 3: "#00D4FF", 2: "#B8922A", 1: "#00d4a1" };
+const LABELS: Record<number, string> = { 3: "PRI", 2: "SEC", 1: "EST" };
 
 type OverlayData = {
-  exercicio: string;
-  padrao: string;
+  exercicio?: string;
+  padrao?: string;
   musculos_primarios?: string[];
   musculos_secundarios?: string[];
-  zonas_ativas?: Record<string, boolean>;
-  intensidade_ativacao?: Record<string, number>;
-  cue_principal: string;
-  cues_secundarios?: string[];
-  angulacoes?: string[];
-  fase_concentrica?: string;
-  fase_excentrica?: string;
+  cue_principal?: string;
+  cues?: string[];
+  angulos?: string[];
   alerta?: string;
-  frase_impacto?: string;
+  frase?: string;
+  musculos?: Record<string, number>;
 };
 
-const MUSCLE_POS: Record<string, { x: number; y: number; label: string }> = {
-  peitoral_dir:  { x: 58, y: 26, label: "Peitoral D" },
-  peitoral_esq:  { x: 42, y: 26, label: "Peitoral E" },
-  deltoide_ant:  { x: 32, y: 20, label: "Deltóide Ant" },
-  deltoide_lat:  { x: 28, y: 21, label: "Deltóide Lat" },
-  deltoide_post: { x: 72, y: 21, label: "Deltóide Post" },
-  biceps:        { x: 26, y: 33, label: "Bíceps" },
-  triceps:       { x: 74, y: 33, label: "Tríceps" },
-  antebraco:     { x: 22, y: 42, label: "Antebraço" },
-  trapezio:      { x: 50, y: 15, label: "Trapézio" },
-  dorsais:       { x: 65, y: 32, label: "Dorsais" },
-  lombar:        { x: 50, y: 40, label: "Lombar" },
-  abdomen:       { x: 50, y: 38, label: "Core" },
-  obliquos:      { x: 38, y: 36, label: "Oblíquos" },
-  gluteos:       { x: 50, y: 50, label: "Glúteos" },
-  quadriceps:    { x: 42, y: 62, label: "Quadríceps" },
-  isquiotibiais: { x: 58, y: 62, label: "Isquiotibiais" },
-  panturrilha:   { x: 42, y: 78, label: "Panturrilha" },
-  adutor:        { x: 50, y: 58, label: "Adutor" },
-};
+type Anchor = { cx: number; cy: number; scale: number };
 
-type Layers = { muscles: boolean; cues: boolean; angles: boolean; alert: boolean; grid: boolean };
+function drawOverlay(
+  ctx: CanvasRenderingContext2D, w: number, h: number,
+  data: OverlayData, anchor: { cx: number; cy: number; scale: number },
+  time: number, phase: number,
+) {
+  const { cx, cy, scale } = anchor;
+  const bodyH = h * scale;
+  const pulse = Math.sin(time * 3) * 0.5 + 0.5;
 
-function OverlayHUD({ data, playing, layers }: { data: OverlayData; playing: boolean; layers: Layers }) {
-  const [phase, setPhase] = useState(0);
-  const [pulseIdx, setPulseIdx] = useState(0);
+  // Scan grid
+  ctx.strokeStyle = "rgba(0,212,255,0.03)";
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < 30; i++) {
+    ctx.beginPath(); ctx.moveTo(0, (i / 30) * h); ctx.lineTo(w, (i / 30) * h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo((i / 30) * w, 0); ctx.lineTo((i / 30) * w, h); ctx.stroke();
+  }
 
-  const activeMuscles = Object.entries(data.zonas_ativas || {}).filter(([, v]) => v).map(([k]) => k);
+  // Scan line
+  const scanY = ((time * 0.15) % 1) * h;
+  const grad = ctx.createLinearGradient(0, scanY, w, scanY);
+  grad.addColorStop(0, "transparent");
+  grad.addColorStop(0.3, "rgba(0,212,255,0.15)");
+  grad.addColorStop(0.5, "rgba(0,212,255,0.3)");
+  grad.addColorStop(0.7, "rgba(0,212,255,0.15)");
+  grad.addColorStop(1, "transparent");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, scanY - 1, w, 3);
 
-  useEffect(() => {
-    const iv = setInterval(() => setPulseIdx((i) => (i + 1) % Math.max(activeMuscles.length, 1)), 800);
-    return () => clearInterval(iv);
-  }, [activeMuscles.length]);
+  // Corner brackets
+  const bLen = 20, bOff = 8;
+  ctx.strokeStyle = "rgba(0,212,255,0.6)";
+  ctx.lineWidth = 2;
+  ([[bOff, bOff, 1, 1], [w - bOff, bOff, -1, 1], [bOff, h - bOff, 1, -1], [w - bOff, h - bOff, -1, -1]] as const)
+    .forEach(([x, y, dx, dy]) => {
+      ctx.beginPath(); ctx.moveTo(x, y + dy * bLen); ctx.lineTo(x, y); ctx.lineTo(x + dx * bLen, y); ctx.stroke();
+    });
 
-  useEffect(() => {
-    if (!playing) { setPhase(0); return; }
-    const timers = [
-      setTimeout(() => setPhase(1), 500),
-      setTimeout(() => setPhase(2), 1200),
-      setTimeout(() => setPhase(3), 2000),
-      setTimeout(() => setPhase(4), 3000),
-    ];
-    return () => timers.forEach(clearTimeout);
-  }, [playing]);
+  if (phase < 1) return;
 
-  const getIntensityColor = (level: number) =>
-    level === 3 ? T.cyan : level === 2 ? T.gold : level === 1 ? T.green : "transparent";
+  // Top-left: exercício
+  ctx.fillStyle = "rgba(2,2,5,0.85)";
+  ctx.fillRect(8, 8, 200, 50);
+  ctx.fillStyle = "#00D4FF";
+  ctx.fillRect(8, 8, 2, 50);
+  ctx.font = "bold 8px 'Courier New'";
+  ctx.fillText("SOCIAL ON · ANÁLISE", 16, 22);
+  ctx.font = "bold 16px 'Rajdhani', sans-serif";
+  ctx.fillStyle = "#e8edf5";
+  ctx.fillText((data.exercicio || "").slice(0, 22), 16, 42);
+  ctx.font = "bold 9px 'Courier New'";
+  ctx.fillStyle = "#00D4FF";
+  ctx.fillText(data.padrao || "", 16, 54);
 
-  const getIntensityGlow = (level: number) => {
-    if (level === 3) return `0 0 12px ${T.cyan}80, 0 0 24px ${T.cyan}30`;
-    if (level === 2) return `0 0 8px ${T.gold}60, 0 0 16px ${T.gold}20`;
-    if (level === 1) return `0 0 6px ${T.green}40`;
-    return "none";
-  };
+  if (phase < 2) return;
 
-  return (
-    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", fontFamily: T.font }}>
-      {layers.grid && (
-        <div style={{ position: "absolute", inset: 0, opacity: 0.06 }}>
-          {Array.from({ length: 30 }).map((_, i) => (
-            <div key={`v${i}`} style={{ position: "absolute", left: `${i * 3.45}%`, top: 0, bottom: 0, width: 1, background: T.cyan }} />
-          ))}
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div key={`h${i}`} style={{ position: "absolute", top: `${i * 5.26}%`, left: 0, right: 0, height: 1, background: T.cyan }} />
-          ))}
-        </div>
-      )}
+  // Top-right: cue
+  const cueText = data.cue_principal || "";
+  ctx.font = "bold 11px sans-serif";
+  const cueW = Math.min(220, Math.max(120, ctx.measureText(cueText).width + 24));
+  ctx.fillStyle = "rgba(2,2,5,0.85)";
+  ctx.fillRect(w - cueW - 8, 8, cueW, 48);
+  ctx.fillStyle = "#B8922A";
+  ctx.fillRect(w - 10, 8, 2, 48);
+  ctx.font = "bold 8px 'Courier New'";
+  ctx.fillText("CUE TÉCNICO", w - cueW - 2, 22);
+  ctx.font = "bold 11px sans-serif";
+  ctx.fillStyle = "#e8edf5";
+  const cueWords = cueText.split(" ");
+  let line = "", cueY = 36;
+  for (const word of cueWords) {
+    const test = line + " " + word;
+    if (ctx.measureText(test.trim()).width > cueW - 16 && line) {
+      ctx.fillText(line.trim(), w - cueW - 2, cueY);
+      line = word; cueY += 13;
+    } else { line = test; }
+  }
+  if (line) ctx.fillText(line.trim(), w - cueW - 2, cueY);
 
-      {[[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y], i) => (
-        <div key={i} style={{
-          position: "absolute", [x ? "right" : "left"]: 8, [y ? "bottom" : "top"]: 8,
-          width: 20, height: 20,
-          borderTop: y ? "none" : `2px solid ${T.cyan}`,
-          borderBottom: y ? `2px solid ${T.cyan}` : "none",
-          borderLeft: x ? "none" : `2px solid ${T.cyan}`,
-          borderRight: x ? `2px solid ${T.cyan}` : "none",
-          opacity: 0.7,
-        }} />
-      ))}
+  if (phase < 3) return;
 
-      {layers.cues && (
-        <div style={{
-          position: "absolute", top: 12, left: 12,
-          opacity: phase >= 1 ? 1 : 0, transform: phase >= 1 ? "translateX(0)" : "translateX(-20px)",
-          transition: "all 0.6s ease",
-        }}>
-          <div style={{ background: "rgba(2,2,5,0.85)", border: `1px solid ${T.cyan}40`, padding: "8px 12px", backdropFilter: "blur(4px)" }}>
-            <div style={{ fontSize: 8, color: T.cyan, fontFamily: T.mono, letterSpacing: 2 }}>SOCIAL ON · ANÁLISE</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginTop: 2 }}>{data.exercicio}</div>
-            <div style={{ marginTop: 4 }}>
-              <span style={{ fontSize: 9, color: T.bg, background: T.cyan, padding: "2px 6px", fontWeight: 700, fontFamily: T.mono }}>{data.padrao}</span>
-            </div>
-          </div>
-        </div>
-      )}
+  // Marcadores de ativação muscular
+  const muscles = data.musculos || {};
+  const activeKeys = Object.keys(muscles).filter((k) => (muscles[k] ?? 0) > 0 && MUSCLE_OFFSETS[k]);
 
-      {layers.cues && (
-        <div style={{
-          position: "absolute", top: 12, right: 12, maxWidth: "45%",
-          opacity: phase >= 2 ? 1 : 0, transform: phase >= 2 ? "translateX(0)" : "translateX(20px)",
-          transition: "all 0.6s ease",
-        }}>
-          <div style={{ background: "rgba(2,2,5,0.85)", border: `1px solid ${T.gold}40`, padding: "8px 12px", backdropFilter: "blur(4px)" }}>
-            <div style={{ fontSize: 8, color: T.gold, fontFamily: T.mono, letterSpacing: 2 }}>🎯 CUE</div>
-            <div style={{ fontSize: 12, color: T.text, marginTop: 2, lineHeight: 1.3 }}>{data.cue_principal}</div>
-          </div>
-        </div>
-      )}
+  activeKeys.forEach((key, idx) => {
+    const off = MUSCLE_OFFSETS[key];
+    const intensity = muscles[key];
+    const color = COLORS[intensity] || T.cyan;
+    const mx = cx + off.dx * bodyH;
+    const my = cy + off.dy * bodyH;
+    if (mx < 0 || mx > w || my < 0 || my > h) return;
 
-      {layers.muscles && phase >= 2 && activeMuscles.map((key, idx) => {
-        const pos = MUSCLE_POS[key];
-        if (!pos) return null;
-        const intensity = data.intensidade_ativacao?.[key] || 1;
-        const color = getIntensityColor(intensity);
-        const isPulsing = idx === pulseIdx;
-        const delay = idx * 150;
-        return (
-          <div key={key} style={{
-            position: "absolute", left: `${pos.x}%`, top: `${pos.y}%`,
-            transform: "translate(-50%, -50%)",
-            opacity: phase >= 3 ? 1 : 0,
-            transition: `opacity 0.4s ease ${delay}ms`,
-          }}>
-            <div style={{
-              width: 14, height: 14, borderRadius: "50%",
-              background: color, boxShadow: getIntensityGlow(intensity),
-              animation: isPulsing ? "overlaypulse 0.8s ease" : "none",
-            }} />
-            {isPulsing && (
-              <div style={{
-                position: "absolute", bottom: 18, left: "50%", transform: "translateX(-50%)",
-                background: "rgba(2,2,5,0.9)", border: `1px solid ${color}60`,
-                padding: "3px 8px", whiteSpace: "nowrap",
-              }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: T.text }}>{pos.label}</div>
-                <div style={{ fontSize: 8, color, fontFamily: T.mono }}>
-                  {intensity === 3 ? "PRIMÁRIO" : intensity === 2 ? "SECUNDÁRIO" : "ESTABILIZADOR"}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
+    const isPulse = Math.floor(time * 1.2) % activeKeys.length === idx;
+    const r = isPulse ? 14 + pulse * 4 : 10;
 
-      {layers.angles && phase >= 3 && (data.angulacoes || []).map((ang, i) => (
-        <div key={i} style={{
-          position: "absolute", left: 12, bottom: 60 + i * 26,
-          opacity: phase >= 3 ? 0.9 : 0,
-          transition: `opacity 0.5s ease ${i * 200}ms`,
-        }}>
-          <div style={{
-            background: "rgba(2,2,5,0.8)", border: `1px solid ${T.border}`,
-            borderLeft: `2px solid ${T.cyan}`, padding: "3px 8px",
-            fontSize: 10, color: T.text, fontFamily: T.mono,
-          }}>
-            {ang}
-          </div>
-        </div>
-      ))}
+    const glow = ctx.createRadialGradient(mx, my, 0, mx, my, r * 2);
+    glow.addColorStop(0, color + (isPulse ? "40" : "20"));
+    glow.addColorStop(1, "transparent");
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(mx, my, r * 2, 0, Math.PI * 2); ctx.fill();
 
-      {layers.alert && phase >= 4 && data.alerta && (
-        <div style={{
-          position: "absolute", bottom: 8, left: 12, right: 12,
-          opacity: phase >= 4 ? 1 : 0, transition: "opacity 0.5s ease",
-        }}>
-          <div style={{
-            background: "rgba(2,2,5,0.9)", border: `1px solid ${T.red}50`,
-            borderLeft: `3px solid ${T.red}`, padding: "6px 10px",
-            display: "flex", gap: 8, alignItems: "center",
-          }}>
-            <span style={{ color: T.red, fontSize: 12 }}>⚠</span>
-            <span style={{ fontSize: 10, color: T.text, lineHeight: 1.3 }}>{data.alerta}</span>
-          </div>
-        </div>
-      )}
+    ctx.strokeStyle = color + (isPulse ? "cc" : "60");
+    ctx.lineWidth = isPulse ? 2 : 1;
+    ctx.beginPath(); ctx.arc(mx, my, r, 0, Math.PI * 2); ctx.stroke();
 
-      {layers.cues && phase >= 4 && data.frase_impacto && (
-        <div style={{
-          position: "absolute", bottom: "28%", left: 0, right: 0, textAlign: "center",
-          opacity: phase >= 4 ? 1 : 0, transition: "opacity 0.8s ease",
-        }}>
-          <div style={{ display: "inline-block", background: "rgba(2,2,5,0.85)", padding: "10px 20px", border: `1px solid ${T.cyan}30` }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, maxWidth: 420, lineHeight: 1.3 }}>
-              "{data.frase_impacto}"
-            </div>
-            <div style={{ fontSize: 9, color: T.muted, fontFamily: T.mono, marginTop: 4 }}>@diogo.mell0 · nutriON</div>
-          </div>
-        </div>
-      )}
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(mx, my, isPulse ? 4 : 3, 0, Math.PI * 2); ctx.fill();
 
-      {playing && (
-        <div style={{
-          position: "absolute", left: 0, right: 0, height: 2,
-          background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`,
-          animation: "overlayscan 4s linear infinite",
-          opacity: 0.6,
-        }} />
-      )}
+    if (isPulse || intensity === 3) {
+      ctx.font = "bold 9px sans-serif";
+      const tw = Math.max(ctx.measureText(off.label).width, 40) + 12;
+      const lx = mx - tw / 2;
+      const ly = my + r + 4;
+      ctx.fillStyle = "rgba(2,2,5,0.88)";
+      ctx.fillRect(lx, ly, tw, 24);
+      ctx.strokeStyle = color + "60";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(lx, ly, tw, 24);
+      ctx.fillStyle = color;
+      ctx.textAlign = "center";
+      ctx.fillText(off.label, mx, ly + 10);
+      ctx.font = "bold 7px 'Courier New'";
+      ctx.fillStyle = "#6b7a94";
+      ctx.fillText(LABELS[intensity] || "", mx, ly + 20);
+      ctx.textAlign = "start";
+    }
 
-      <div style={{ position: "absolute", bottom: 8, right: 12, fontSize: 9, color: `${T.cyan}60`, fontFamily: T.mono, letterSpacing: 2 }}>
-        nutriON
-      </div>
+    if (intensity === 3) {
+      ctx.strokeStyle = color + "18";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(cx, cy); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  });
 
-      <style>{`
-        @keyframes overlayscan {
-          0% { top: -2px; }
-          50% { top: calc(100% + 2px); }
-          100% { top: -2px; }
-        }
-        @keyframes overlaypulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.6); }
-          100% { transform: scale(1); }
-        }
-      `}</style>
-    </div>
-  );
+  if (phase < 4) return;
+
+  // Ângulos
+  (data.angulos || []).slice(0, 3).forEach((ang, i) => {
+    const ax = 10;
+    const ay = h - 92 - i * 24;
+    ctx.fillStyle = "rgba(2,2,5,0.8)";
+    ctx.fillRect(ax, ay - 10, 110, 18);
+    ctx.fillStyle = "#00d4a1";
+    ctx.beginPath(); ctx.arc(ax + 6, ay - 1, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.font = "bold 9px 'Courier New'";
+    ctx.fillText(ang.slice(0, 18), ax + 14, ay + 2);
+  });
+
+  // Alerta (bottom)
+  ctx.fillStyle = "rgba(2,2,5,0.9)";
+  ctx.fillRect(8, h - 44, w - 16, 36);
+  ctx.fillStyle = "#ff4757";
+  ctx.fillRect(8, h - 8, w - 16, 2);
+  ctx.font = "bold 7px 'Courier New'";
+  ctx.fillText("⚠ SEM AVALIAÇÃO PRÉVIA", 14, h - 30);
+  ctx.font = "11px sans-serif";
+  ctx.fillStyle = "#e8edf5";
+  ctx.fillText((data.alerta || "").slice(0, 70), 14, h - 16);
+
+  // Frase de impacto
+  ctx.fillStyle = "rgba(2,2,5,0.8)";
+  ctx.fillRect(8, h - 76, w - 16, 28);
+  ctx.fillStyle = "#B8922A";
+  ctx.fillRect(8, h - 76, 2, 28);
+  ctx.font = "italic bold 10px sans-serif";
+  ctx.fillText(`"${(data.frase || "").slice(0, 60)}"`, 16, h - 60);
+  ctx.font = "7px 'Courier New'";
+  ctx.fillStyle = "#6b7a94";
+  ctx.fillText("@diogo.mell0 · nutriON", 16, h - 50);
+
+  // Watermark
+  ctx.globalAlpha = 0.03;
+  ctx.font = "bold 48px sans-serif";
+  ctx.fillStyle = "#00D4FF";
+  ctx.textAlign = "center";
+  ctx.fillText("nutriON", w / 2, h / 2);
+  ctx.textAlign = "start";
+  ctx.globalAlpha = 1;
 }
-
-function Legend() {
-  return (
-    <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-      {[
-        { color: T.cyan, label: "Primário" },
-        { color: T.gold, label: "Secundário" },
-        { color: T.green, label: "Estabilizador" },
-      ].map((l) => (
-        <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.color, boxShadow: `0 0 6px ${l.color}80` }} />
-          <span style={{ fontSize: 10, color: T.muted, fontFamily: T.mono }}>{l.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-const LOAD_MSGS = [
-  "Identificando exercício...", "Mapeando ativação muscular...",
-  "Analisando biomecânica...", "Cruzando com protocolo APEX...",
-  "Preparando overlay...",
-];
 
 export default function SocialOnOverlayStudio() {
-  const [stage, setStage] = useState<"upload" | "loading" | "overlay">("upload");
+  const { account } = useInstagramAccount();
+  const handle = account?.username || "@diogo.mell0";
+
+  const [stage, setStage] = useState<"upload" | "loading" | "position" | "overlay">("upload");
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [data, setData] = useState<OverlayData | null>(null);
+  const [anchor, setAnchor] = useState<Anchor>({ cx: 0.5, cy: 0.45, scale: 0.7 });
+  const [recording, setRecording] = useState(false);
+  const [recorded, setRecorded] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
-  const [loadPhase, setLoadPhase] = useState(0);
-  const [error, setError] = useState("");
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const overlayVideoRef = useRef<HTMLVideoElement>(null);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [layers, setLayers] = useState<Layers>({ muscles: true, cues: true, angles: true, alert: true, grid: true });
+  const [phase, setPhase] = useState(0);
+  const [loadMsg, setLoadMsg] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (stage !== "loading") return;
-    let i = 0;
-    const iv = setInterval(() => { i++; if (i < LOAD_MSGS.length) setLoadPhase(i); }, 2000);
-    return () => clearInterval(iv);
-  }, [stage]);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const captureVideoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef = useRef<number>(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const startTimeRef = useRef(0);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setVideoSrc(URL.createObjectURL(file));
-    setError("");
+    const f = e.target.files?.[0];
+    if (f) { setVideoSrc(URL.createObjectURL(f)); setError(null); setRecorded(null); }
   };
 
   const analyze = useCallback(async () => {
-    const v = videoRef.current, cv = canvasRef.current;
-    if (!v || !cv) return;
+    const v = videoRef.current;
+    if (!v || !v.videoWidth) { setError("Aguarde o vídeo carregar e pause no frame desejado."); return; }
+    const cv = document.createElement("canvas");
     cv.width = v.videoWidth; cv.height = v.videoHeight;
-    cv.getContext("2d")?.drawImage(v, 0, 0);
-    const b64 = cv.toDataURL("image/jpeg", 0.85);
-    setStage("loading"); setLoadPhase(0); setError("");
+    cv.getContext("2d")!.drawImage(v, 0, 0);
+    const b64 = cv.toDataURL("image/jpeg", 0.8).split(",")[1];
+    setStage("loading"); setError(null); setLoadMsg("Identificando exercício...");
+
+    const msgs = ["Mapeando ativação muscular...", "Analisando biomecânica...", "Preparando overlay..."];
+    const timers = msgs.map((m, i) => setTimeout(() => setLoadMsg(m), (i + 1) * 2200));
+
     try {
-      const { data: d, error: fnError } = await supabase.functions.invoke("social-on-generate", {
-        body: { mode: "video_overlay", images: [b64] },
+      const { data: res, error: fnError } = await supabase.functions.invoke("social-on-generate", {
+        body: { mode: "video_overlay", images: [`data:image/jpeg;base64,${b64}`], handle },
       });
       if (fnError) throw new Error(fnError.message);
-      if (d?.error) throw new Error(d.error);
-      const parsed = d?.result as OverlayData;
-      if (!parsed || typeof parsed !== "object" || !parsed.exercicio) throw new Error("Resposta vazia");
-      setData(parsed);
-      setTimeout(() => setStage("overlay"), 800);
-    } catch (err) {
-      console.error("[OverlayStudio]", err);
-      setError("Erro na análise. Tente um frame com melhor iluminação e o corpo inteiro visível.");
+      if (res?.error) throw new Error(res.error);
+      setData(res?.result as OverlayData);
+      setStage("position");
+    } catch (err: any) {
+      setError(err?.message || "Falha na análise. Tente outro frame.");
       setStage("upload");
+    } finally {
+      timers.forEach(clearTimeout);
     }
-  }, []);
+  }, [handle]);
+
+  // Render loop
+  useEffect(() => {
+    if (stage !== "overlay" || !data) return;
+    const canvas = canvasRef.current;
+    const video = captureVideoRef.current;
+    if (!canvas || !video) return;
+    const ctx = canvas.getContext("2d")!;
+    startTimeRef.current = performance.now();
+
+    const render = () => {
+      const w = (canvas.width = video.videoWidth || 720);
+      const h = (canvas.height = video.videoHeight || 1280);
+      ctx.drawImage(video, 0, 0, w, h);
+      const t = (performance.now() - startTimeRef.current) / 1000;
+      drawOverlay(ctx, w, h, data, { cx: anchor.cx * w, cy: anchor.cy * h, scale: anchor.scale }, t, phase);
+      animRef.current = requestAnimationFrame(render);
+    };
+    render();
+    return () => cancelAnimationFrame(animRef.current);
+  }, [stage, data, anchor, phase]);
+
+  // Fases progressivas
+  useEffect(() => {
+    if (stage !== "overlay" || !playing) return;
+    setPhase(0);
+    const timers = [
+      setTimeout(() => setPhase(1), 300),
+      setTimeout(() => setPhase(2), 1000),
+      setTimeout(() => setPhase(3), 1800),
+      setTimeout(() => setPhase(4), 2800),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [stage, playing]);
 
   const togglePlay = () => {
-    const v = overlayVideoRef.current;
+    const v = captureVideoRef.current;
     if (!v) return;
-    if (v.paused) { v.play(); setPlaying(true); }
+    if (v.paused) { v.play().catch(() => {}); setPlaying(true); }
     else { v.pause(); setPlaying(false); }
   };
 
-  const reset = () => { setStage("upload"); setData(null); setVideoSrc(null); setPlaying(false); };
+  const startRecording = () => {
+    const canvas = canvasRef.current;
+    const video = captureVideoRef.current;
+    if (!canvas || !video) return;
+    video.currentTime = 0;
+    video.play().catch(() => {});
+    setPlaying(true);
+    setPhase(0);
 
-  const card: React.CSSProperties = { background: T.s, border: `1px solid ${T.border}`, padding: 14 };
+    const stream = canvas.captureStream(30);
+    try {
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createMediaElementSource(video);
+      const dest = audioCtx.createMediaStreamDestination();
+      source.connect(dest);
+      source.connect(audioCtx.destination);
+      dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+    } catch { /* sem áudio */ }
+
+    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+    const recorder = new MediaRecorder(stream, { mimeType: mime });
+    chunksRef.current = [];
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      setRecorded(URL.createObjectURL(blob));
+      setRecording(false);
+    };
+    recorder.start();
+    recorderRef.current = recorder;
+    setRecording(true);
+  };
+
+  const stopRecording = () => {
+    recorderRef.current?.stop();
+    captureVideoRef.current?.pause();
+    setPlaying(false);
+  };
+
+  const handleCanvasTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (stage !== "position") return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setAnchor((a) => ({
+      ...a,
+      cx: (e.clientX - rect.left) / rect.width,
+      cy: (e.clientY - rect.top) / rect.height,
+    }));
+  };
+
+  const reset = () => {
+    setStage("upload"); setData(null); setVideoSrc(null);
+    setPlaying(false); setRecorded(null); setPhase(0); setError(null);
+  };
 
   return (
-    <div style={{ background: T.bg, minHeight: "70vh", fontFamily: T.font, color: T.text, padding: "16px 0" }}>
-      <canvas ref={canvasRef} style={{ display: "none" }} />
-
+    <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 12, padding: 16, fontFamily: T.font, color: T.text }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 34, height: 34, background: T.s, border: `1px solid ${T.cyan}40`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 900, color: T.cyan,
-          }}>S.ON</div>
+          <div style={{ width: 34, height: 34, borderRadius: 8, background: `${T.cyan}18`, border: `1px solid ${T.cyan}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🎞️</div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: 1 }}>OVERLAY STUDIO</div>
-            <div style={{ fontSize: 9, color: T.muted, fontFamily: T.mono, letterSpacing: 2 }}>ATIVAÇÕES MUSCULARES NO SEU VÍDEO</div>
+            <div style={{ fontSize: 10, color: T.muted, fontFamily: T.mono, letterSpacing: 1 }}>SOCIAL ON · nutriON</div>
           </div>
         </div>
-        {stage === "overlay" && (
-          <button onClick={reset} style={{
-            padding: "4px 10px", fontSize: 9, background: T.s, border: `1px solid ${T.border}`,
-            color: T.muted, cursor: "pointer", fontFamily: T.mono,
-          }}>NOVO</button>
+        {(stage === "overlay" || stage === "position") && (
+          <button onClick={reset} style={{ padding: "8px 14px", background: T.s, border: `1px solid ${T.border}`, color: T.muted, borderRadius: 8, cursor: "pointer", fontSize: 11, fontFamily: T.font }}>NOVO</button>
         )}
       </div>
 
+      {error && (
+        <div style={{ background: `${T.red}14`, border: `1px solid ${T.red}55`, borderRadius: 8, padding: "10px 12px", fontSize: 12, color: T.red, marginBottom: 12 }}>{error}</div>
+      )}
+
       {/* UPLOAD */}
       {stage === "upload" && (
-        <div style={{ maxWidth: 520, margin: "0 auto" }}>
+        <div>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, marginBottom: 4 }}>Ativações musculares sobre seu vídeo</div>
+            <div style={{ fontSize: 12, color: T.muted }}>Suba o vídeo → marque o centro do corpo → grave o vídeo final com um toque.</div>
+          </div>
+          <input ref={fileRef} type="file" accept="video/mp4,video/quicktime,video/webm" onChange={handleFile} style={{ display: "none" }} />
           {!videoSrc ? (
-            <div>
-              <div style={{ textAlign: "center", marginBottom: 18 }}>
-                <div style={{ fontSize: 9, color: T.cyan, fontFamily: T.mono, letterSpacing: 3, marginBottom: 6 }}>OVERLAY STUDIO</div>
-                <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.15 }}>Ativações musculares<br />no seu vídeo</div>
-                <div style={{ fontSize: 12, color: T.muted, marginTop: 8, lineHeight: 1.5, maxWidth: 380, margin: "8px auto 0" }}>
-                  Suba seu vídeo de exercício. O sistema analisa e aplica overlay com ativações, cues técnicos e métricas em tempo real.
-                </div>
-              </div>
-
-              <label style={{
-                display: "block", border: `1px dashed ${T.cyan}50`, background: `${T.cyan}08`,
-                padding: "28px 16px", textAlign: "center", cursor: "pointer",
-              }}>
-                <input type="file" accept="video/mp4,video/quicktime,video/webm" onChange={handleFile} style={{ display: "none" }} />
-                <div style={{ fontSize: 26 }}>🎬</div>
-                <div style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>Adicionar vídeo</div>
-                <div style={{ fontSize: 10, color: T.muted, fontFamily: T.mono, marginTop: 3 }}>MP4, MOV ou WebM</div>
-              </label>
-
-              <div style={{ ...card, marginTop: 14 }}>
-                <div style={{ fontSize: 9, color: T.cyan, fontFamily: T.mono, letterSpacing: 2, marginBottom: 8 }}>O QUE APARECE NO VÍDEO</div>
-                {["Ativações musculares pulsando", "Cue técnico principal", "Angulações articulares", "Alerta sem avaliação", "Frase de impacto", "Scanner grid", "Watermark nutriON"].map((f) => (
-                  <div key={f} style={{ fontSize: 11, color: T.text, padding: "3px 0", borderBottom: `1px solid ${T.border}22` }}>· {f}</div>
-                ))}
-                <div style={{ fontSize: 10, color: T.gold, marginTop: 10, fontFamily: T.mono }}>
-                  💡 Grave a tela com o vídeo rodando e poste como Reels
-                </div>
-              </div>
-
-              {error && <div style={{ marginTop: 10, fontSize: 11, color: T.red, textAlign: "center" }}>{error}</div>}
-            </div>
+            <button onClick={() => fileRef.current?.click()} style={{ width: "100%", padding: "40px 16px", background: T.s, border: `1px dashed ${T.border}`, borderRadius: 12, cursor: "pointer", color: T.text, fontFamily: T.font }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🎬</div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>Toque para adicionar vídeo</div>
+              <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>MP4, MOV ou WebM</div>
+            </button>
           ) : (
             <div>
-              <div style={{ position: "relative", background: "#000" }}>
-                <video
-                  ref={videoRef} src={videoSrc} style={{ width: "100%", display: "block", maxHeight: 420 }}
-                  onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
-                  onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime || 0)} controls
-                />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, fontSize: 10, fontFamily: T.mono, color: T.muted }}>
-                <span>{currentTime.toFixed(1)}s</span>
-                <input
-                  type="range" min={0} max={duration || 0} step={0.1} value={currentTime}
-                  onChange={(e) => { if (videoRef.current) videoRef.current.currentTime = parseFloat(e.target.value); }}
-                  style={{ flex: 1, accentColor: T.cyan }}
-                />
-                <span>{duration.toFixed(1)}s</span>
-              </div>
-              <div style={{ fontSize: 10, color: T.gold, fontFamily: T.mono, marginTop: 8, textAlign: "center" }}>
-                💡 Pause no ponto de maior amplitude do movimento
-              </div>
-              <button onClick={analyze} style={{
-                width: "100%", marginTop: 12, padding: "14px 0", fontSize: 14, fontWeight: 800,
-                background: T.cyan, color: T.bg, border: "none", cursor: "pointer",
-                fontFamily: T.font, letterSpacing: 2,
-              }}>
-                GERAR OVERLAY
+              <video ref={videoRef} src={videoSrc} controls playsInline style={{ width: "100%", borderRadius: 10, background: "#000", maxHeight: 420 }} />
+              <div style={{ fontSize: 11, color: T.gold, margin: "10px 0", textAlign: "center" }}>💡 Pause no frame de maior amplitude do movimento</div>
+              <button onClick={analyze} style={{ width: "100%", padding: 16, background: T.cyan, color: "#000", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: T.font, letterSpacing: 1 }}>
+                ANALISAR EXERCÍCIO
               </button>
-              {error && <div style={{ marginTop: 10, fontSize: 11, color: T.red, textAlign: "center" }}>{error}</div>}
             </div>
           )}
         </div>
@@ -427,132 +441,106 @@ export default function SocialOnOverlayStudio() {
 
       {/* LOADING */}
       {stage === "loading" && (
-        <div style={{ textAlign: "center", padding: "60px 0" }}>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          <div style={{
-            width: 46, height: 46, margin: "0 auto 16px", borderRadius: "50%",
-            border: `3px solid ${T.border}`, borderTopColor: T.cyan,
-            animation: "spin 0.9s linear infinite",
-          }} />
-          <div style={{ fontSize: 13, fontWeight: 700 }}>{LOAD_MSGS[loadPhase]}</div>
-          <div style={{ fontSize: 10, color: T.muted, fontFamily: T.mono, marginTop: 6 }}>analisando o frame real do seu vídeo</div>
+        <div style={{ textAlign: "center", padding: "48px 0" }}>
+          <div style={{ width: 44, height: 44, border: `3px solid ${T.border}`, borderTopColor: T.cyan, borderRadius: "50%", margin: "0 auto 16px", animation: "ovSpin 0.9s linear infinite" }} />
+          <div style={{ fontSize: 13, color: T.muted, fontFamily: T.mono }}>{loadMsg}</div>
+          <style>{`@keyframes ovSpin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
 
-      {/* OVERLAY MODE */}
+      {/* POSITION ANCHOR */}
+      {stage === "position" && data && (
+        <div>
+          <div style={{ textAlign: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>👆 Toque no centro do corpo (tronco/quadril)</div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>Os marcadores de ativação serão posicionados a partir deste ponto</div>
+          </div>
+          <div onClick={handleCanvasTap} style={{ position: "relative", cursor: "crosshair", borderRadius: 10, overflow: "hidden" }}>
+            <video src={videoSrc!} muted playsInline style={{ width: "100%", display: "block", background: "#000" }} />
+            {/* Anchor marker */}
+            <div style={{ position: "absolute", left: `${anchor.cx * 100}%`, top: `${anchor.cy * 100}%`, transform: "translate(-50%,-50%)", pointerEvents: "none" }}>
+              <div style={{ width: 28, height: 28, border: `2px solid ${T.cyan}`, borderRadius: "50%", animation: "ovPulse 1.4s ease-in-out infinite" }} />
+              <div style={{ position: "absolute", left: "50%", top: -14, width: 1, height: 56, background: `${T.cyan}80`, transform: "translateX(-50%)" }} />
+              <div style={{ position: "absolute", top: "50%", left: -14, height: 1, width: 56, background: `${T.cyan}80`, transform: "translateY(-50%)" }} />
+            </div>
+            <style>{`@keyframes ovPulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }`}</style>
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 11, fontFamily: T.mono, color: T.muted, marginBottom: 6 }}>Escala do corpo</div>
+            <input type="range" min={0.4} max={1.1} step={0.02} value={anchor.scale}
+              onChange={(e) => setAnchor((a) => ({ ...a, scale: parseFloat(e.target.value) }))}
+              style={{ width: "100%", accentColor: T.cyan }} />
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: T.muted }}>
+              <span>Longe</span><span>Perto</span>
+            </div>
+          </div>
+          <button onClick={() => { setStage("overlay"); setPhase(0); }} style={{ width: "100%", padding: 16, marginTop: 14, background: T.cyan, color: "#000", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: T.font, letterSpacing: 1 }}>
+            APLICAR OVERLAY
+          </button>
+        </div>
+      )}
+
+      {/* OVERLAY PLAYER */}
       {stage === "overlay" && data && (
         <div>
-          <div style={{ position: "relative", background: "#000", maxWidth: 480, margin: "0 auto" }}>
-            <video
-              ref={overlayVideoRef} src={videoSrc!} style={{ width: "100%", display: "block" }}
-              loop playsInline
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
-              onClick={togglePlay}
-            />
-            <OverlayHUD data={data} playing={playing} layers={layers} />
+          <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#000" }}>
+            <video ref={captureVideoRef} src={videoSrc!} playsInline loop style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+              onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
+            <canvas ref={canvasRef} onClick={togglePlay} style={{ width: "100%", display: "block", cursor: "pointer" }} />
             {!playing && (
-              <div
-                onClick={togglePlay}
-                style={{
-                  position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                  background: "rgba(2,2,5,0.35)", cursor: "pointer",
-                }}
-              >
-                <div style={{
-                  width: 56, height: 56, borderRadius: "50%", background: `${T.cyan}dd`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 20, color: T.bg,
-                }}>▶</div>
+              <div onClick={togglePlay} style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(0,212,255,0.2)", border: `2px solid ${T.cyan}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, color: T.cyan }}>▶</div>
               </div>
             )}
           </div>
 
-          <div style={{ maxWidth: 480, margin: "12px auto 0" }}>
-            <div style={{ fontSize: 9, color: T.muted, fontFamily: T.mono, letterSpacing: 2, marginBottom: 6 }}>CAMADAS DO OVERLAY</div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-              {([
-                { key: "muscles", label: "Músculos", icon: "💪" },
-                { key: "cues", label: "Cues", icon: "🎯" },
-                { key: "angles", label: "Ângulos", icon: "📐" },
-                { key: "alert", label: "Alerta", icon: "⚠️" },
-                { key: "grid", label: "Grid", icon: "📊" },
-              ] as const).map((l) => (
-                <button
-                  key={l.key}
-                  onClick={() => setLayers((p) => ({ ...p, [l.key]: !p[l.key] }))}
-                  style={{
-                    padding: "6px 10px", fontSize: 10, cursor: "pointer",
-                    background: layers[l.key] ? `${T.cyan}15` : T.s,
-                    border: `1px solid ${layers[l.key] ? T.cyan : T.border}`,
-                    color: layers[l.key] ? T.cyan : T.muted, fontFamily: T.font, fontWeight: 700,
-                  }}
-                >
-                  {l.icon} {l.label}
-                </button>
+          {/* Legenda */}
+          <div style={{ display: "flex", gap: 14, justifyContent: "center", margin: "12px 0" }}>
+            {[{ c: T.cyan, l: "Primário" }, { c: T.gold, l: "Secundário" }, { c: T.green, l: "Estabilizador" }].map((l) => (
+              <div key={l.l} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: l.c }} />
+                <span style={{ fontSize: 11, color: T.muted }}>{l.l}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Ações */}
+          <div style={{ display: "flex", gap: 8 }}>
+            {!recording ? (
+              <button onClick={startRecording} style={{ flex: 1, padding: 14, background: T.red, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: T.font, letterSpacing: 1 }}>
+                ● GRAVAR VÍDEO
+              </button>
+            ) : (
+              <button onClick={stopRecording} style={{ flex: 1, padding: 14, background: T.s2, color: T.red, border: `1px solid ${T.red}`, borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: T.font, animation: "ovRec 1s ease-in-out infinite" }}>
+                ■ PARAR GRAVAÇÃO
+              </button>
+            )}
+            <button onClick={() => setStage("position")} style={{ padding: "14px 16px", background: T.s, border: `1px solid ${T.border}`, borderRadius: 8, color: T.muted, cursor: "pointer", fontSize: 13, fontFamily: T.font }}>⚙️</button>
+          </div>
+          <style>{`@keyframes ovRec { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }`}</style>
+
+          {recorded && (
+            <a href={recorded} download={`overlay-${(data.exercicio || "exercicio").toLowerCase().replace(/\s+/g, "-")}.webm`}
+              style={{ display: "block", textAlign: "center", marginTop: 10, padding: 14, background: `${T.green}18`, border: `1px solid ${T.green}55`, borderRadius: 8, color: T.green, fontSize: 13, fontWeight: 800, textDecoration: "none", letterSpacing: 1 }}>
+              ⬇ BAIXAR VÍDEO COM OVERLAY
+            </a>
+          )}
+
+          {/* Info card */}
+          <div style={{ marginTop: 14, background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>{data.exercicio}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+              {(data.musculos_primarios || []).map((m) => (
+                <span key={m} style={{ fontSize: 10, padding: "3px 8px", borderRadius: 999, color: T.cyan, background: `${T.cyan}18`, border: `1px solid ${T.cyan}55` }}>{m}</span>
               ))}
             </div>
-
-            <Legend />
-
-            <div style={{ ...card, marginTop: 12 }}>
-              <div style={{ fontSize: 15, fontWeight: 800 }}>{data.exercicio}</div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
-                <span style={{ fontSize: 9, color: T.bg, background: T.cyan, padding: "2px 6px", fontWeight: 700, fontFamily: T.mono }}>{data.padrao}</span>
-                {(data.musculos_primarios || []).map((m) => (
-                  <span key={m} style={{ fontSize: 9, color: T.cyan, border: `1px solid ${T.cyan}40`, padding: "2px 6px", fontFamily: T.mono }}>{m}</span>
-                ))}
-              </div>
-              <div style={{ marginTop: 10, fontSize: 12, color: T.gold, lineHeight: 1.4 }}>🎯 {data.cue_principal}</div>
-              {(data.cues_secundarios || []).map((c, i) => (
-                <div key={i} style={{ fontSize: 11, color: T.text, marginTop: 4, opacity: 0.85 }}>• {c}</div>
-              ))}
-              {(data.fase_concentrica || data.fase_excentrica) && (
-                <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
-                  {data.fase_concentrica && (
-                    <div style={{ fontSize: 10, color: T.muted }}>
-                      <span style={{ color: T.cyan, fontFamily: T.mono }}>CONCÊNTRICA: </span>{data.fase_concentrica}
-                    </div>
-                  )}
-                  {data.fase_excentrica && (
-                    <div style={{ fontSize: 10, color: T.muted }}>
-                      <span style={{ color: T.gold, fontFamily: T.mono }}>EXCÊNTRICA: </span>{data.fase_excentrica}
-                    </div>
-                  )}
-                </div>
-              )}
-              {data.frase_impacto && (
-                <button
-                  onClick={() => { navigator.clipboard.writeText(data.frase_impacto || ""); toast.success("Frase copiada"); }}
-                  style={{
-                    marginTop: 10, width: "100%", padding: "8px 10px", background: "transparent",
-                    border: `1px dashed ${T.cyan}40`, color: T.text, fontSize: 11, cursor: "pointer",
-                    fontFamily: T.font, textAlign: "left",
-                  }}
-                >
-                  "{data.frase_impacto}" <span style={{ color: T.cyan, fontSize: 9, fontFamily: T.mono }}>· COPIAR</span>
-                </button>
-              )}
-            </div>
-
-            <div style={{ ...card, marginTop: 12 }}>
-              <div style={{ fontSize: 9, color: T.cyan, fontFamily: T.mono, letterSpacing: 2, marginBottom: 8 }}>COMO USAR PRO INSTAGRAM</div>
-              <div style={{ fontSize: 11, color: T.text, lineHeight: 1.7, whiteSpace: "pre-line" }}>
-                {`1. Dê play no vídeo acima
-2. Grave a tela do celular (screen recording)
-3. O overlay com ativações, cues e métricas aparece automaticamente
-4. Poste como Reels com a legenda gerada no SOCIAL ON
-5. Use a frase de impacto como texto na tela`}
-              </div>
-            </div>
+            <div style={{ fontSize: 12, color: T.gold }}>🎯 {data.cue_principal}</div>
+            {(data.cues || []).map((c, i) => (
+              <div key={i} style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>· {c}</div>
+            ))}
           </div>
         </div>
       )}
-
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20, fontSize: 8, color: T.muted, fontFamily: T.mono, letterSpacing: 2 }}>
-        <span>SOCIAL ON · OVERLAY STUDIO · nutriON</span>
-        <span>@diogo.mell0</span>
-      </div>
     </div>
   );
 }
