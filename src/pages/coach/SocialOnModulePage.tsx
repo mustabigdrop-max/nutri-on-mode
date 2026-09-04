@@ -1066,6 +1066,14 @@ const SocialOnModulePage = () => {
           <TabsContent value="editor" className="mt-4">
             <VideoTextEditorPanel />
           </TabsContent>
+          <TabsContent value="video_conteudo" className="mt-4">
+            <SocialOnVideoContentPanel
+              handle={ig.account?.username || handle}
+              niches={niches}
+              products={products}
+              differentials={differentials}
+            />
+          </TabsContent>
           <TabsContent value="pro" className="mt-4">
             <SocialOnProPanel ctx={aiCtx} />
           </TabsContent>
