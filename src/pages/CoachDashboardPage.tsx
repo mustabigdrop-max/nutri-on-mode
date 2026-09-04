@@ -53,6 +53,19 @@ const CoachDashboardPage = () => {
   const [sendTarget, setSendTarget] = useState<CoachAthlete | null>(null);
   const [sendType, setSendType] = useState<SendPlanType>("meal_plan");
   const [sendOpen, setSendOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const bioLink = "https://nutrion.app.br/diagnostico?utm_source=instagram&utm_medium=bio&utm_campaign=mce_diagnostico";
+
+  const handleCopyBioLink = async () => {
+    try {
+      await navigator.clipboard.writeText(bioLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback silencioso
+    }
+  };
 
   const agenda = useMemo(() => generateAgenda(athletes), [athletes]);
 
