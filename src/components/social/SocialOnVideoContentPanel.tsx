@@ -433,19 +433,23 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
         </div>
       )}
 
-      {/* Mapa muscular + frase de impacto */}
+      {/* Mapa muscular anatômico + frase de impacto */}
       {((data.zonas_corporais_ativas?.length ?? 0) > 0 || data.frase_impacto) && (
         <div style={{
-          display: "flex", gap: 14, padding: 14, background: T.s,
-          border: `1px solid ${T.border}`, borderRadius: 12, alignItems: "center", flexWrap: "wrap",
+          display: "flex", gap: 16, padding: 14, background: T.s,
+          border: `1px solid ${T.border}`, borderRadius: 12, alignItems: "flex-start", flexWrap: "wrap",
         }}>
           {(data.zonas_corporais_ativas?.length ?? 0) > 0 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginBottom: 6 }}>MAPA MUSCULAR</div>
-              <MuscleMap activeZones={data.zonas_corporais_ativas} />
+            <div style={{ flex: "1 1 340px", minWidth: 300 }}>
+              <div style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginBottom: 8 }}>MAPA MUSCULAR · ATIVAÇÃO</div>
+              <AnatomyMuscleMap
+                activeZones={[...(data.zonas_corporais_ativas ?? []), ...(data.musculos_primarios ?? [])]}
+                secondaryZones={data.musculos_secundarios ?? []}
+                height={300}
+              />
             </div>
           )}
-          <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ flex: "1 1 220px", minWidth: 200 }}>
             {data.frase_impacto && (
               <p style={{
                 margin: 0, fontSize: 16, fontWeight: 700, color: T.text, lineHeight: 1.5,
@@ -453,12 +457,6 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
               }}>
                 "{data.frase_impacto}"
               </p>
-            )}
-            {data.musculos_secundarios && data.musculos_secundarios.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                <span style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 1, display: "block", marginBottom: 6 }}>SINERGISTAS</span>
-                {data.musculos_secundarios.slice(0, 4).map((m, i) => <Chip key={i} color={T.muted}>{m}</Chip>)}
-              </div>
             )}
           </div>
         </div>
