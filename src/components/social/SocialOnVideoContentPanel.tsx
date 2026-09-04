@@ -303,6 +303,12 @@ function ContentCard({ title, icon, color, content }: { title: string; icon: str
 
 function CarrosselCard({ slides }: { slides: string[] }) {
   const [active, setActive] = useState(0);
+  const [copiedAll, setCopiedAll] = useState(false);
+  const copyAll = () => {
+    navigator.clipboard.writeText(slides.join("\n\n---\n\n"));
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2000);
+  };
   return (
     <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden" }}>
       <div style={{
@@ -311,6 +317,18 @@ function CarrosselCard({ slides }: { slides: string[] }) {
         fontSize: 12, fontWeight: 700, letterSpacing: 1, color: T.gold, fontFamily: T.font,
       }}>
         📑 Roteiro Carrossel
+        <span style={{ fontSize: 8, color: T.muted, fontFamily: T.mono, marginLeft: "auto" }}>{slides.length} SLIDES</span>
+        <button
+          type="button"
+          onClick={copyAll}
+          style={{
+            padding: "4px 10px", fontSize: 9, fontWeight: 700, cursor: "pointer",
+            background: copiedAll ? `${T.green}20` : T.s, border: `1px solid ${copiedAll ? T.green : T.border}`,
+            color: copiedAll ? T.green : T.muted, fontFamily: T.mono, borderRadius: 4,
+          }}
+        >
+          {copiedAll ? "✓ COPIADO" : "COPIAR TUDO"}
+        </button>
       </div>
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", gap: 4 }}>
