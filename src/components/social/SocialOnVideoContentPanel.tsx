@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import AnatomyMuscleMap from "@/components/social/AnatomyMuscleMap";
 import { supabase } from "@/integrations/supabase/client";
 
 // SOCIAL ON — Vídeo → Conteúdo: o coach envia um vídeo de exercício,
@@ -76,48 +77,6 @@ const Chip = ({ children, color = T.cyan }: { children: React.ReactNode; color?:
   </span>
 );
 
-// Silhueta corporal com as zonas musculares ativadas brilhando em cyan
-function MuscleMap({ activeZones = [], size = 180 }: { activeZones?: string[]; size?: number }) {
-  const zones: Record<string, { cx: number; cy: number; r: number }> = {
-    upper_chest:  { cx: 50, cy: 26, r: 8 },
-    lower_chest:  { cx: 50, cy: 33, r: 7 },
-    front_delt:   { cx: 35, cy: 20, r: 5 },
-    side_delt:    { cx: 30, cy: 20, r: 5 },
-    rear_delt:    { cx: 33, cy: 22, r: 4 },
-    biceps:       { cx: 28, cy: 34, r: 5 },
-    triceps:      { cx: 72, cy: 34, r: 5 },
-    forearms:     { cx: 25, cy: 44, r: 4 },
-    upper_back:   { cx: 50, cy: 22, r: 9 },
-    lats:         { cx: 42, cy: 32, r: 8 },
-    lower_back:   { cx: 50, cy: 40, r: 6 },
-    core:         { cx: 50, cy: 42, r: 8 },
-    glutes:       { cx: 50, cy: 52, r: 9 },
-    quads:        { cx: 42, cy: 64, r: 8 },
-    hamstrings:   { cx: 58, cy: 64, r: 7 },
-    calves:       { cx: 42, cy: 80, r: 5 },
-  };
-
-  return (
-    <svg viewBox="0 0 100 95" width={size} height={size * 0.95} style={{ display: "block" }}>
-      <ellipse cx="50" cy="10" rx="7" ry="7" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <path d="M38 17 Q35 17 32 20 L26 35 Q24 40 26 45 L28 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <path d="M62 17 Q65 17 68 20 L74 35 Q76 40 74 45 L72 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <rect x="38" y="17" width="24" height="32" rx="4" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <rect x="38" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <rect x="52" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      {Object.entries(zones).map(([key, z]) => {
-        if (!activeZones.includes(key)) return null;
-        return (
-          <g key={key}>
-            <circle cx={z.cx} cy={z.cy} r={z.r + 2} fill={`${T.cyan}15`} style={{ animation: "zonePulse 2s ease-in-out infinite" }} />
-            <circle cx={z.cx} cy={z.cy} r={z.r} fill={`${T.cyan}35`} stroke={T.cyan} strokeWidth="0.6" />
-          </g>
-        );
-      })}
-      <style>{`@keyframes zonePulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
-    </svg>
-  );
-}
 
 // Anel de métrica com animação de preenchimento
 function MetricRing({ value, label, color, size = 64 }: { value: number; label: string; color: string; size?: number }) {
@@ -433,19 +392,23 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
         </div>
       )}
 
-      {/* Mapa muscular + frase de impacto */}
+      {/* Mapa muscular anatômico + frase de impacto */}
       {((data.zonas_corporais_ativas?.length ?? 0) > 0 || data.frase_impacto) && (
         <div style={{
-          display: "flex", gap: 14, padding: 14, background: T.s,
-          border: `1px solid ${T.border}`, borderRadius: 12, alignItems: "center", flexWrap: "wrap",
+          display: "flex", gap: 16, padding: 14, background: T.s,
+          border: `1px solid ${T.border}`, borderRadius: 12, alignItems: "flex-start", flexWrap: "wrap",
         }}>
           {(data.zonas_corporais_ativas?.length ?? 0) > 0 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginBottom: 6 }}>MAPA MUSCULAR</div>
-              <MuscleMap activeZones={data.zonas_corporais_ativas} />
+            <div style={{ flex: "1 1 340px", minWidth: 300 }}>
+              <div style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginBottom: 8 }}>MAPA MUSCULAR · ATIVAÇÃO</div>
+              <AnatomyMuscleMap
+                activeZones={[...(data.zonas_corporais_ativas ?? []), ...(data.musculos_primarios ?? [])]}
+                secondaryZones={data.musculos_secundarios ?? []}
+                height={300}
+              />
             </div>
           )}
-          <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ flex: "1 1 220px", minWidth: 200 }}>
             {data.frase_impacto && (
               <p style={{
                 margin: 0, fontSize: 16, fontWeight: 700, color: T.text, lineHeight: 1.5,
@@ -453,12 +416,6 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
               }}>
                 "{data.frase_impacto}"
               </p>
-            )}
-            {data.musculos_secundarios && data.musculos_secundarios.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                <span style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 1, display: "block", marginBottom: 6 }}>SINERGISTAS</span>
-                {data.musculos_secundarios.slice(0, 4).map((m, i) => <Chip key={i} color={T.muted}>{m}</Chip>)}
-              </div>
             )}
           </div>
         </div>
