@@ -33,13 +33,30 @@ type VideoContentResult = {
     cue_principal?: string;
     angulacoes_chave?: string[];
   };
+  growth?: {
+    share_score?: number;
+    save_score?: number;
+    comment_score?: number;
+    viral_potential?: number;
+    angulo_polemico?: string;
+    por_que_compartilham?: string;
+    gatilho_salvamento?: string;
+    pergunta_comentarios?: string;
+    cta_bio?: string;
+    cta_dm?: string;
+    cta_whatsapp?: string;
+    estrategia_post?: string;
+  };
   conteudo?: {
     hook_reels?: string;
+    hook_reels_3_opcoes?: string[];
     roteiro_reels?: string;
+    texto_tela_reels?: string[];
     caption_educativa?: string;
     caption_post?: string;
     caption_profissional?: string;
     carrossel_slides?: string[];
+    stories_sequencia?: string[];
     hashtags?: string[];
   };
   apex_insight?: string;
@@ -264,6 +281,28 @@ function VideoUploader({ onCapture }: { onCapture: (base64: string, preview: str
   );
 }
 
+function CopyMini({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
+      }}
+      style={{
+        padding: "3px 8px", fontSize: 8, fontWeight: 700, cursor: "pointer",
+        background: copied ? `${T.green}20` : T.s2, border: `1px solid ${copied ? T.green : T.border}`,
+        color: copied ? T.green : T.muted, fontFamily: T.mono, borderRadius: 4, letterSpacing: 1,
+      }}
+    >
+      {copied ? "✓" : "COPIAR"}
+    </button>
+  );
+}
+
 function ContentCard({ title, icon, color, content }: { title: string; icon: string; color: string; content: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -350,6 +389,7 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
     { id: "reels", label: "Reels", icon: "🎬" },
     { id: "feed", label: "Feed", icon: "📸" },
     { id: "pro", label: "B2B", icon: "💼" },
+    ...(data.growth ? [{ id: "growth", label: "Growth", icon: "🚀" }] : []),
   ];
 
   const hashtags = (data.conteudo?.hashtags || []).map((h) => (h.startsWith("#") ? h : `#${h}`)).join(" ");
@@ -493,8 +533,54 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
 
       {tab === "reels" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <ContentCard title="HOOK (0-3s)" icon="⚡" color={T.cyan} content={data.conteudo?.hook_reels || ""} />
-          <ContentCard title="ROTEIRO COMPLETO (30-60s)" icon="🎬" color={T.green} content={data.conteudo?.roteiro_reels || ""} />
+          {(data.conteudo?.hook_reels_3_opcoes?.length ?? 0) > 0 ? (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 10, fontFamily: T.font }}>⚡ ESCOLHA SEU HOOK</div>
+              {data.conteudo!.hook_reels_3_opcoes!.map((h, i) => {
+                const labels = ["POLÊMICO", "EDUCATIVO", "PESSOAL"];
+                const colors = [T.red, T.cyan, T.gold];
+                return (
+                  <div key={i} style={{ padding: "10px 12px", marginBottom: 8, background: T.s2, border: `1px solid ${T.border}`, borderLeft: `3px solid ${colors[i]}`, borderRadius: 6 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                      <span style={{ fontSize: 9, fontFamily: T.mono, color: colors[i], letterSpacing: 2, fontWeight: 700 }}>HOOK {i + 1} · {labels[i]}</span>
+                      <CopyMini text={h} />
+                    </div>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text, lineHeight: 1.5 }}>"{h}"</p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <ContentCard title="HOOK (0-3s)" icon="⚡" color={T.cyan} content={data.conteudo?.hook_reels || ""} />
+          )}
+          <ContentCard title="ROTEIRO COMPLETO (30-45s)" icon="🎬" color={T.green} content={data.conteudo?.roteiro_reels || ""} />
+          {(data.conteudo?.texto_tela_reels?.length ?? 0) > 0 && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.purple, letterSpacing: 1, marginBottom: 10, fontFamily: T.font }}>📱 TEXTO NA TELA — CADA CORTE</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {data.conteudo!.texto_tela_reels!.map((txt, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: T.s2, border: `1px solid ${T.border}`, borderRadius: 6 }}>
+                    <span style={{ fontSize: 10, fontFamily: T.mono, color: T.purple, fontWeight: 700 }}>{i + 1}.</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{txt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {(data.conteudo?.stories_sequencia?.length ?? 0) > 0 && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.gold, letterSpacing: 1, marginBottom: 10, fontFamily: T.font }}>📲 SEQUÊNCIA DE STORIES</div>
+              {data.conteudo!.stories_sequencia!.map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
+                  <span style={{
+                    minWidth: 22, height: 22, borderRadius: "50%", background: `${T.gold}22`, border: `1px solid ${T.gold}55`,
+                    color: T.gold, fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: T.mono,
+                  }}>{i + 1}</span>
+                  <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.5 }}>{s}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -517,6 +603,79 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
               A sequência ideal: publique o conteúdo B2C (público geral) primeiro para gerar engajamento, depois publique a versão B2B mostrando o "bastidor" — como o sistema funciona. Profissionais se identificam quando veem o processo.
             </p>
           </div>
+        </div>
+      )}
+
+      {tab === "growth" && data.growth && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Scores de alcance */}
+          <div style={{
+            display: "flex", justifyContent: "space-around", gap: 8, padding: "14px 10px",
+            background: T.s, border: `1px solid ${T.border}`, borderRadius: 12, flexWrap: "wrap",
+          }}>
+            <MetricRing value={data.growth.share_score ?? 0} label="COMPARTILHAR" color={T.cyan} />
+            <MetricRing value={data.growth.save_score ?? 0} label="SALVAMENTO" color={T.gold} />
+            <MetricRing value={data.growth.comment_score ?? 0} label="COMENTÁRIOS" color={T.purple} />
+            <MetricRing value={data.growth.viral_potential ?? 0} label="POTENCIAL VIRAL" color={T.red} />
+          </div>
+
+          {data.growth.angulo_polemico && (
+            <div style={{ background: `${T.red}0d`, border: `1px solid ${T.red}44`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.red, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🔥 ÂNGULO POLÊMICO</div>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text, lineHeight: 1.6 }}>{data.growth.angulo_polemico}</p>
+            </div>
+          )}
+
+          {data.growth.por_que_compartilham && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>📤 POR QUE COMPARTILHAM</div>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.growth.por_que_compartilham}</p>
+            </div>
+          )}
+
+          {data.growth.gatilho_salvamento && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.gold, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🔖 GATILHO DE SALVAMENTO</div>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.growth.gatilho_salvamento}</p>
+            </div>
+          )}
+
+          {data.growth.pergunta_comentarios && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14, display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.purple, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>💬 PERGUNTA PRA COMENTÁRIOS</div>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text, lineHeight: 1.5 }}>"{data.growth.pergunta_comentarios}"</p>
+              </div>
+              <CopyMini text={data.growth.pergunta_comentarios} />
+            </div>
+          )}
+
+          {/* CTAs */}
+          <div style={{ fontSize: 10, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginTop: 4 }}>CALLS TO ACTION</div>
+          {[
+            { label: "CTA LINK NA BIO", text: data.growth.cta_bio, color: T.cyan, icon: "🔗" },
+            { label: "CTA DM", text: data.growth.cta_dm, color: T.purple, icon: "💬" },
+            { label: "CTA WHATSAPP", text: data.growth.cta_whatsapp, color: "#25D366", icon: "📱" },
+          ].filter((c) => c.text).map((cta, i) => (
+            <div key={i} style={{
+              display: "flex", gap: 10, padding: "12px 14px", background: T.s,
+              border: `1px solid ${T.border}`, borderLeft: `3px solid ${cta.color}`, borderRadius: 8, alignItems: "flex-start",
+            }}>
+              <span style={{ fontSize: 16 }}>{cta.icon}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 9, fontFamily: T.mono, color: cta.color, letterSpacing: 2, fontWeight: 700, marginBottom: 4 }}>{cta.label}</div>
+                <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.5 }}>{cta.text}</p>
+              </div>
+              <CopyMini text={cta.text!} />
+            </div>
+          ))}
+
+          {data.growth.estrategia_post && (
+            <div style={{ background: `${T.cyan}0d`, border: `1px solid ${T.cyan}44`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🎯 ESTRATÉGIA DE PUBLICAÇÃO</div>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{data.growth.estrategia_post}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
