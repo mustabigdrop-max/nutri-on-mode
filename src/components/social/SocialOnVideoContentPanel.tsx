@@ -678,6 +678,11 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+const LOADING_MESSAGES = [
   "Identificando exercício...",
   "Analisando padrão de movimento...",
   "Mapeando pontos de execução...",
