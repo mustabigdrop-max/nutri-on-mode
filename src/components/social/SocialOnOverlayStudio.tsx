@@ -56,12 +56,12 @@ function drawOverlay(
   time: number, phase: number, active: MovementPhase | null,
 ) {
   const { cx, cy, scale } = anchor;
-  const bodyH = H * scale;
   const U = Math.max(1, h / 720);
   ctx.save();
   ctx.scale(U, U);
   const W = w / U;
   const H = h / U;
+  const bodyH = H * scale;
   const pulse = Math.sin(time * 3) * 0.5 + 0.5;
 
   // Scan grid
