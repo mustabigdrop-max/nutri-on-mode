@@ -649,6 +649,13 @@ export default function DiagnosticoMCEPage() {
               nutrion.app.br/diagnostico · @diogo.mell0
             </div>
           </div>
+
+          <div style={{ textAlign: "center", marginTop: 26, paddingBottom: 30 }}>
+            <div style={{ fontFamily: MONO, fontSize: 8, letterSpacing: 3, color: C.muted }}>POWERED BY</div>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: 1, color: C.text, marginTop: 4 }}>
+              nutriON
+            </div>
+          </div>
         </div>
       </div>
     </div>
