@@ -33,13 +33,30 @@ type VideoContentResult = {
     cue_principal?: string;
     angulacoes_chave?: string[];
   };
+  growth?: {
+    share_score?: number;
+    save_score?: number;
+    comment_score?: number;
+    viral_potential?: number;
+    angulo_polemico?: string;
+    por_que_compartilham?: string;
+    gatilho_salvamento?: string;
+    pergunta_comentarios?: string;
+    cta_bio?: string;
+    cta_dm?: string;
+    cta_whatsapp?: string;
+    estrategia_post?: string;
+  };
   conteudo?: {
     hook_reels?: string;
+    hook_reels_3_opcoes?: string[];
     roteiro_reels?: string;
+    texto_tela_reels?: string[];
     caption_educativa?: string;
     caption_post?: string;
     caption_profissional?: string;
     carrossel_slides?: string[];
+    stories_sequencia?: string[];
     hashtags?: string[];
   };
   apex_insight?: string;
@@ -350,6 +367,7 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
     { id: "reels", label: "Reels", icon: "🎬" },
     { id: "feed", label: "Feed", icon: "📸" },
     { id: "pro", label: "B2B", icon: "💼" },
+    ...(data.growth ? [{ id: "growth", label: "Growth", icon: "🚀" }] : []),
   ];
 
   const hashtags = (data.conteudo?.hashtags || []).map((h) => (h.startsWith("#") ? h : `#${h}`)).join(" ");
