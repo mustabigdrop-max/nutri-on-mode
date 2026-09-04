@@ -20,21 +20,33 @@ type VideoContentResult = {
   padrao_movimento?: string;
   musculos_primarios?: string[];
   musculos_secundarios?: string[];
+  zonas_corporais_ativas?: string[];
+  metricas?: {
+    complexidade?: number;
+    risco_sem_avaliacao?: number;
+    impacto_assimetria?: number;
+    necessidade_correcao?: number;
+  };
   analise_execucao?: {
     pontos_positivos?: string[];
     pontos_atencao?: string[];
     cue_principal?: string;
+    angulacoes_chave?: string[];
   };
   conteudo?: {
     hook_reels?: string;
     roteiro_reels?: string;
+    caption_educativa?: string;
     caption_post?: string;
     caption_profissional?: string;
     carrossel_slides?: string[];
     hashtags?: string[];
   };
+  apex_insight?: string;
+  mce_insight?: string;
   conexao_apex?: string;
   conexao_mce?: string;
+  frase_impacto?: string;
 };
 
 const Chip = ({ children, color = T.cyan }: { children: React.ReactNode; color?: string }) => (
@@ -46,6 +58,77 @@ const Chip = ({ children, color = T.cyan }: { children: React.ReactNode; color?:
     {children}
   </span>
 );
+
+// Silhueta corporal com as zonas musculares ativadas brilhando em cyan
+function MuscleMap({ activeZones = [], size = 180 }: { activeZones?: string[]; size?: number }) {
+  const zones: Record<string, { cx: number; cy: number; r: number }> = {
+    upper_chest:  { cx: 50, cy: 26, r: 8 },
+    lower_chest:  { cx: 50, cy: 33, r: 7 },
+    front_delt:   { cx: 35, cy: 20, r: 5 },
+    side_delt:    { cx: 30, cy: 20, r: 5 },
+    rear_delt:    { cx: 33, cy: 22, r: 4 },
+    biceps:       { cx: 28, cy: 34, r: 5 },
+    triceps:      { cx: 72, cy: 34, r: 5 },
+    forearms:     { cx: 25, cy: 44, r: 4 },
+    upper_back:   { cx: 50, cy: 22, r: 9 },
+    lats:         { cx: 42, cy: 32, r: 8 },
+    lower_back:   { cx: 50, cy: 40, r: 6 },
+    core:         { cx: 50, cy: 42, r: 8 },
+    glutes:       { cx: 50, cy: 52, r: 9 },
+    quads:        { cx: 42, cy: 64, r: 8 },
+    hamstrings:   { cx: 58, cy: 64, r: 7 },
+    calves:       { cx: 42, cy: 80, r: 5 },
+  };
+
+  return (
+    <svg viewBox="0 0 100 95" width={size} height={size * 0.95} style={{ display: "block" }}>
+      <ellipse cx="50" cy="10" rx="7" ry="7" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <path d="M38 17 Q35 17 32 20 L26 35 Q24 40 26 45 L28 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <path d="M62 17 Q65 17 68 20 L74 35 Q76 40 74 45 L72 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <rect x="38" y="17" width="24" height="32" rx="4" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <rect x="38" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      <rect x="52" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
+      {Object.entries(zones).map(([key, z]) => {
+        if (!activeZones.includes(key)) return null;
+        return (
+          <g key={key}>
+            <circle cx={z.cx} cy={z.cy} r={z.r + 2} fill={`${T.cyan}15`} style={{ animation: "zonePulse 2s ease-in-out infinite" }} />
+            <circle cx={z.cx} cy={z.cy} r={z.r} fill={`${T.cyan}35`} stroke={T.cyan} strokeWidth="0.6" />
+          </g>
+        );
+      })}
+      <style>{`@keyframes zonePulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
+    </svg>
+  );
+}
+
+// Anel de métrica com animação de preenchimento
+function MetricRing({ value, label, color, size = 64 }: { value: number; label: string; color: string; size?: number }) {
+  const [anim, setAnim] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setAnim(value), 300); return () => clearTimeout(t); }, [value]);
+  const r = 24, circ = 2 * Math.PI * r;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r={r} fill="none" stroke={T.border} strokeWidth="4" />
+        <circle
+          cx="28" cy="28" r={r} fill="none" stroke={color} strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={circ - (circ * anim) / 100}
+          transform="rotate(-90 28 28)"
+          style={{ transition: "stroke-dashoffset 1s ease-out" }}
+        />
+        <text x="28" y="32" textAnchor="middle" fill={T.text} fontSize="13" fontWeight="800" fontFamily={T.mono}>
+          {value}
+        </text>
+      </svg>
+      <span style={{ fontSize: 8, fontFamily: T.mono, color: T.muted, letterSpacing: 1, textAlign: "center", maxWidth: 72 }}>
+        {label}
+      </span>
+    </div>
+  );
+}
 
 function VideoUploader({ onCapture }: { onCapture: (base64: string, preview: string) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -297,6 +380,50 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
         </div>
       </div>
 
+      {/* Métricas do exercício */}
+      {data.metricas && (
+        <div style={{
+          display: "flex", justifyContent: "space-around", gap: 8, padding: "14px 10px",
+          background: T.s, border: `1px solid ${T.border}`, borderRadius: 12, flexWrap: "wrap",
+        }}>
+          <MetricRing value={data.metricas.complexidade ?? 0} label="COMPLEXIDADE" color={T.cyan} />
+          <MetricRing value={data.metricas.risco_sem_avaliacao ?? 0} label="RISCO S/ AVALIAÇÃO" color={T.red} />
+          <MetricRing value={data.metricas.impacto_assimetria ?? 0} label="IMPACTO ASSIMETRIA" color={T.gold} />
+          <MetricRing value={data.metricas.necessidade_correcao ?? 0} label="CORREÇÃO TÉCNICA" color={T.purple} />
+        </div>
+      )}
+
+      {/* Mapa muscular + frase de impacto */}
+      {((data.zonas_corporais_ativas?.length ?? 0) > 0 || data.frase_impacto) && (
+        <div style={{
+          display: "flex", gap: 14, padding: 14, background: T.s,
+          border: `1px solid ${T.border}`, borderRadius: 12, alignItems: "center", flexWrap: "wrap",
+        }}>
+          {(data.zonas_corporais_ativas?.length ?? 0) > 0 && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginBottom: 6 }}>MAPA MUSCULAR</div>
+              <MuscleMap activeZones={data.zonas_corporais_ativas} />
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 200 }}>
+            {data.frase_impacto && (
+              <p style={{
+                margin: 0, fontSize: 16, fontWeight: 700, color: T.text, lineHeight: 1.5,
+                fontStyle: "italic", borderLeft: `3px solid ${T.cyan}`, paddingLeft: 12,
+              }}>
+                "{data.frase_impacto}"
+              </p>
+            )}
+            {data.musculos_secundarios && data.musculos_secundarios.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <span style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 1, display: "block", marginBottom: 6 }}>SINERGISTAS</span>
+                {data.musculos_secundarios.slice(0, 4).map((m, i) => <Chip key={i} color={T.muted}>{m}</Chip>)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4 }}>
         {tabs.map((t) => (
@@ -333,6 +460,13 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
             ))}
           </div>
 
+          {(data.analise_execucao?.angulacoes_chave?.length ?? 0) > 0 && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 8, fontFamily: T.font }}>📐 ANGULAÇÕES-CHAVE</div>
+              {data.analise_execucao?.angulacoes_chave?.map((a, i) => <Chip key={i}>{a}</Chip>)}
+            </div>
+          )}
+
           {data.analise_execucao?.cue_principal && (
             <div style={{ background: `${T.cyan}0d`, border: `1px solid ${T.cyan}44`, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🎯 CUE PRINCIPAL</div>
@@ -340,26 +474,20 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
             </div>
           )}
 
-          {data.conexao_apex && (
+          {(data.apex_insight || data.conexao_apex) && (
             <div style={{ background: T.s, border: `1px solid ${T.gold}44`, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.gold, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>CONEXÃO APEX</div>
-              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.conexao_apex}</p>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.apex_insight || data.conexao_apex}</p>
             </div>
           )}
 
-          {data.conexao_mce && (
+          {(data.mce_insight || data.conexao_mce) && (
             <div style={{ background: T.s, border: `1px solid ${T.purple}44`, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.purple, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>CONEXÃO MCE</div>
-              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.conexao_mce}</p>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.mce_insight || data.conexao_mce}</p>
             </div>
           )}
 
-          {data.musculos_secundarios && data.musculos_secundarios.length > 0 && (
-            <div style={{ padding: "4px 2px" }}>
-              <span style={{ fontSize: 10, fontFamily: T.mono, color: T.muted, letterSpacing: 1, display: "block", marginBottom: 6 }}>SINERGISTAS</span>
-              {data.musculos_secundarios.map((m, i) => <Chip key={i} color={T.muted}>{m}</Chip>)}
-            </div>
-          )}
         </div>
       )}
 
@@ -372,7 +500,7 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
 
       {tab === "feed" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <ContentCard title="LEGENDA DO POST" icon="📸" color={T.cyan} content={data.conteudo?.caption_post || ""} />
+          <ContentCard title="LEGENDA DO POST" icon="📸" color={T.cyan} content={data.conteudo?.caption_educativa || data.conteudo?.caption_post || ""} />
           {data.conteudo?.carrossel_slides && <CarrosselCard slides={data.conteudo.carrossel_slides} />}
           <ContentCard title="HASHTAGS" icon="#" color={T.muted} content={hashtags} />
         </div>
@@ -538,11 +666,34 @@ export default function SocialOnVideoContentPanel({ handle, niches = [], product
       {stage === "loading" && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, padding: "40px 0" }}>
           {framePreview && (
-            <img
-              src={framePreview}
-              alt="Frame em análise"
-              style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 12, border: `2px solid ${T.cyan}55` }}
-            />
+            <div style={{ position: "relative", width: 140, height: 140 }}>
+              <img
+                src={framePreview}
+                alt="Frame em análise"
+                style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 12, border: `2px solid ${T.cyan}55` }}
+              />
+              {/* Scan line */}
+              <div style={{
+                position: "absolute", left: 0, right: 0, height: 2, borderRadius: 2,
+                background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`,
+                boxShadow: `0 0 12px ${T.cyan}`, animation: "sonScan 2.2s ease-in-out infinite",
+              }} />
+              {/* Corner brackets */}
+              {(["top-left", "top-right", "bottom-left", "bottom-right"] as const).map((pos) => (
+                <div key={pos} style={{
+                  position: "absolute", width: 14, height: 14,
+                  top: pos.startsWith("top") ? -3 : undefined,
+                  bottom: pos.startsWith("bottom") ? -3 : undefined,
+                  left: pos.endsWith("left") ? -3 : undefined,
+                  right: pos.endsWith("right") ? -3 : undefined,
+                  borderTop: pos.startsWith("top") ? `2px solid ${T.cyan}` : "none",
+                  borderBottom: pos.startsWith("bottom") ? `2px solid ${T.cyan}` : "none",
+                  borderLeft: pos.endsWith("left") ? `2px solid ${T.cyan}` : "none",
+                  borderRight: pos.endsWith("right") ? `2px solid ${T.cyan}` : "none",
+                }} />
+              ))}
+              <style>{`@keyframes sonScan { 0% { top: 0; } 50% { top: calc(100% - 2px); } 100% { top: 0; } }`}</style>
+            </div>
           )}
           <style>{`@keyframes sonSpin { to { transform: rotate(360deg); } }`}</style>
           <div style={{
