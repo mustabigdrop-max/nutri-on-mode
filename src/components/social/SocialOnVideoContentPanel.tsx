@@ -511,8 +511,54 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
 
       {tab === "reels" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <ContentCard title="HOOK (0-3s)" icon="⚡" color={T.cyan} content={data.conteudo?.hook_reels || ""} />
-          <ContentCard title="ROTEIRO COMPLETO (30-60s)" icon="🎬" color={T.green} content={data.conteudo?.roteiro_reels || ""} />
+          {(data.conteudo?.hook_reels_3_opcoes?.length ?? 0) > 0 ? (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 10, fontFamily: T.font }}>⚡ ESCOLHA SEU HOOK</div>
+              {data.conteudo!.hook_reels_3_opcoes!.map((h, i) => {
+                const labels = ["POLÊMICO", "EDUCATIVO", "PESSOAL"];
+                const colors = [T.red, T.cyan, T.gold];
+                return (
+                  <div key={i} style={{ padding: "10px 12px", marginBottom: 8, background: T.s2, border: `1px solid ${T.border}`, borderLeft: `3px solid ${colors[i]}`, borderRadius: 6 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                      <span style={{ fontSize: 9, fontFamily: T.mono, color: colors[i], letterSpacing: 2, fontWeight: 700 }}>HOOK {i + 1} · {labels[i]}</span>
+                      <CopyMini text={h} />
+                    </div>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text, lineHeight: 1.5 }}>"{h}"</p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <ContentCard title="HOOK (0-3s)" icon="⚡" color={T.cyan} content={data.conteudo?.hook_reels || ""} />
+          )}
+          <ContentCard title="ROTEIRO COMPLETO (30-45s)" icon="🎬" color={T.green} content={data.conteudo?.roteiro_reels || ""} />
+          {(data.conteudo?.texto_tela_reels?.length ?? 0) > 0 && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.purple, letterSpacing: 1, marginBottom: 10, fontFamily: T.font }}>📱 TEXTO NA TELA — CADA CORTE</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {data.conteudo!.texto_tela_reels!.map((txt, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: T.s2, border: `1px solid ${T.border}`, borderRadius: 6 }}>
+                    <span style={{ fontSize: 10, fontFamily: T.mono, color: T.purple, fontWeight: 700 }}>{i + 1}.</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{txt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {(data.conteudo?.stories_sequencia?.length ?? 0) > 0 && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.gold, letterSpacing: 1, marginBottom: 10, fontFamily: T.font }}>📲 SEQUÊNCIA DE STORIES</div>
+              {data.conteudo!.stories_sequencia!.map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
+                  <span style={{
+                    minWidth: 22, height: 22, borderRadius: "50%", background: `${T.gold}22`, border: `1px solid ${T.gold}55`,
+                    color: T.gold, fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: T.mono,
+                  }}>{i + 1}</span>
+                  <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.5 }}>{s}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
