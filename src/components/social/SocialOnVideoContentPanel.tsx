@@ -77,48 +77,6 @@ const Chip = ({ children, color = T.cyan }: { children: React.ReactNode; color?:
   </span>
 );
 
-// Silhueta corporal com as zonas musculares ativadas brilhando em cyan
-function MuscleMap({ activeZones = [], size = 180 }: { activeZones?: string[]; size?: number }) {
-  const zones: Record<string, { cx: number; cy: number; r: number }> = {
-    upper_chest:  { cx: 50, cy: 26, r: 8 },
-    lower_chest:  { cx: 50, cy: 33, r: 7 },
-    front_delt:   { cx: 35, cy: 20, r: 5 },
-    side_delt:    { cx: 30, cy: 20, r: 5 },
-    rear_delt:    { cx: 33, cy: 22, r: 4 },
-    biceps:       { cx: 28, cy: 34, r: 5 },
-    triceps:      { cx: 72, cy: 34, r: 5 },
-    forearms:     { cx: 25, cy: 44, r: 4 },
-    upper_back:   { cx: 50, cy: 22, r: 9 },
-    lats:         { cx: 42, cy: 32, r: 8 },
-    lower_back:   { cx: 50, cy: 40, r: 6 },
-    core:         { cx: 50, cy: 42, r: 8 },
-    glutes:       { cx: 50, cy: 52, r: 9 },
-    quads:        { cx: 42, cy: 64, r: 8 },
-    hamstrings:   { cx: 58, cy: 64, r: 7 },
-    calves:       { cx: 42, cy: 80, r: 5 },
-  };
-
-  return (
-    <svg viewBox="0 0 100 95" width={size} height={size * 0.95} style={{ display: "block" }}>
-      <ellipse cx="50" cy="10" rx="7" ry="7" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <path d="M38 17 Q35 17 32 20 L26 35 Q24 40 26 45 L28 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <path d="M62 17 Q65 17 68 20 L74 35 Q76 40 74 45 L72 50" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <rect x="38" y="17" width="24" height="32" rx="4" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <rect x="38" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      <rect x="52" y="49" width="10" height="35" rx="3" fill={T.s2} stroke={T.border} strokeWidth="0.4" />
-      {Object.entries(zones).map(([key, z]) => {
-        if (!activeZones.includes(key)) return null;
-        return (
-          <g key={key}>
-            <circle cx={z.cx} cy={z.cy} r={z.r + 2} fill={`${T.cyan}15`} style={{ animation: "zonePulse 2s ease-in-out infinite" }} />
-            <circle cx={z.cx} cy={z.cy} r={z.r} fill={`${T.cyan}35`} stroke={T.cyan} strokeWidth="0.6" />
-          </g>
-        );
-      })}
-      <style>{`@keyframes zonePulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
-    </svg>
-  );
-}
 
 // Anel de métrica com animação de preenchimento
 function MetricRing({ value, label, color, size = 64 }: { value: number; label: string; color: string; size?: number }) {
