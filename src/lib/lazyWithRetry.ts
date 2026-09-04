@@ -19,12 +19,22 @@ export function lazyWithRetry<T extends ComponentType<any>>(factory: Factory<T>)
           await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
           continue;
         }
-        // Provável chunk obsoleto após novo deploy: recarrega uma única vez
+        // Provável chunk obsoleto após novo deploy: recarrega uma única vez sem cache
         try {
           const last = Number(sessionStorage.getItem(RELOAD_KEY) || 0);
           if (Date.now() - last > 30000) {
             sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
-            window.location.reload();
+            try {
+              if ("caches" in window) {
+                const keys = await caches.keys();
+                await Promise.all(keys.map((k) => caches.delete(k)));
+              }
+            } catch {
+              /* cache indisponível */
+            }
+            const url = new URL(window.location.href);
+            url.searchParams.set("_r", Date.now().toString(36));
+            window.location.replace(url.toString());
             await new Promise(() => {});
           }
         } catch {
