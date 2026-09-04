@@ -285,27 +285,47 @@ function followupMessage(lead: Lead) {
 function BioLinkCard() {
   const link = bioLink();
   return (
-    <div className="relative overflow-hidden border border-primary/40 bg-card p-5">
-      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="relative">
-        <div className="flex items-center gap-2 text-[10px] font-mono tracking-[2px] text-primary mb-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
-          LINK DA BIO · @diogo.mell0
+    <div className="relative overflow-hidden border-2 border-primary/50 bg-card">
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl" />
+      <div className="relative p-5 md:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-[10px] font-mono tracking-[2px] text-primary mb-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
+              LINK DA BIO · @diogo.mell0
+            </div>
+            <div className="text-sm md:text-lg font-mono break-all text-foreground font-semibold">{link}</div>
+            <ol className="mt-4 space-y-1.5 text-[11px] text-muted-foreground list-decimal list-inside">
+              <li>Abra o Instagram e vá no seu perfil.</li>
+              <li>Toque em <strong>Editar perfil</strong> → <strong>Links</strong> → <strong>Adicionar link externo</strong>.</li>
+              <li>Cole o link acima no campo <strong>URL</strong> e salve.</li>
+            </ol>
+          </div>
+          <button
+            onClick={() => {
+              void navigator.clipboard.writeText(link);
+              toast.success("Link copiado para a área de transferência");
+            }}
+            className="shrink-0 px-4 py-3 text-[11px] font-bold font-mono tracking-widest flex items-center gap-2 rounded-md"
+            style={{ background: "#E8A020", color: "#03030a" }}
+          >
+            <Copy className="w-4 h-4" /> COPIAR
+          </button>
         </div>
-        <div className="text-sm md:text-base font-mono break-all text-foreground">{link}</div>
-        <button
-          onClick={() => {
-            void navigator.clipboard.writeText(link);
-            toast.success("Link copiado para a área de transferência");
-          }}
-          className="mt-4 px-4 py-2.5 text-[11px] font-bold font-mono tracking-widest flex items-center gap-2"
-          style={{ background: "#E8A020", color: "#03030a" }}
-        >
-          <Copy className="w-4 h-4" /> COPIAR E COLAR NO INSTAGRAM
-        </button>
-        <p className="mt-3 text-[10px] text-muted-foreground font-mono">
-          Cole esse link no campo "Site" do perfil do Instagram. Os UTMs já estão configurados.
-        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <a
+            href={link}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[10px] font-mono tracking-widest px-3 py-2 border border-border hover:border-primary/40 transition-colors"
+          >
+            ABRIR LINK PARA TESTAR
+          </a>
+          <span className="text-[10px] font-mono text-muted-foreground">
+            UTMs: instagram / bio / mce_diagnostico
+          </span>
+        </div>
       </div>
     </div>
   );
