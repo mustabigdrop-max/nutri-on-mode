@@ -380,6 +380,50 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
         </div>
       </div>
 
+      {/* Métricas do exercício */}
+      {data.metricas && (
+        <div style={{
+          display: "flex", justifyContent: "space-around", gap: 8, padding: "14px 10px",
+          background: T.s, border: `1px solid ${T.border}`, borderRadius: 12, flexWrap: "wrap",
+        }}>
+          <MetricRing value={data.metricas.complexidade ?? 0} label="COMPLEXIDADE" color={T.cyan} />
+          <MetricRing value={data.metricas.risco_sem_avaliacao ?? 0} label="RISCO S/ AVALIAÇÃO" color={T.red} />
+          <MetricRing value={data.metricas.impacto_assimetria ?? 0} label="IMPACTO ASSIMETRIA" color={T.gold} />
+          <MetricRing value={data.metricas.necessidade_correcao ?? 0} label="CORREÇÃO TÉCNICA" color={T.purple} />
+        </div>
+      )}
+
+      {/* Mapa muscular + frase de impacto */}
+      {((data.zonas_corporais_ativas?.length ?? 0) > 0 || data.frase_impacto) && (
+        <div style={{
+          display: "flex", gap: 14, padding: 14, background: T.s,
+          border: `1px solid ${T.border}`, borderRadius: 12, alignItems: "center", flexWrap: "wrap",
+        }}>
+          {(data.zonas_corporais_ativas?.length ?? 0) > 0 && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 2, marginBottom: 6 }}>MAPA MUSCULAR</div>
+              <MuscleMap activeZones={data.zonas_corporais_ativas} />
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 200 }}>
+            {data.frase_impacto && (
+              <p style={{
+                margin: 0, fontSize: 16, fontWeight: 700, color: T.text, lineHeight: 1.5,
+                fontStyle: "italic", borderLeft: `3px solid ${T.cyan}`, paddingLeft: 12,
+              }}>
+                "{data.frase_impacto}"
+              </p>
+            )}
+            {data.musculos_secundarios && data.musculos_secundarios.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <span style={{ fontSize: 9, fontFamily: T.mono, color: T.muted, letterSpacing: 1, display: "block", marginBottom: 6 }}>SINERGISTAS</span>
+                {data.musculos_secundarios.slice(0, 4).map((m, i) => <Chip key={i} color={T.muted}>{m}</Chip>)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4 }}>
         {tabs.map((t) => (
@@ -416,6 +460,13 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
             ))}
           </div>
 
+          {(data.analise_execucao?.angulacoes_chave?.length ?? 0) > 0 && (
+            <div style={{ background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 8, fontFamily: T.font }}>📐 ANGULAÇÕES-CHAVE</div>
+              {data.analise_execucao?.angulacoes_chave?.map((a, i) => <Chip key={i}>{a}</Chip>)}
+            </div>
+          )}
+
           {data.analise_execucao?.cue_principal && (
             <div style={{ background: `${T.cyan}0d`, border: `1px solid ${T.cyan}44`, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.cyan, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>🎯 CUE PRINCIPAL</div>
@@ -423,17 +474,17 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
             </div>
           )}
 
-          {data.conexao_apex && (
+          {(data.apex_insight || data.conexao_apex) && (
             <div style={{ background: T.s, border: `1px solid ${T.gold}44`, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.gold, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>CONEXÃO APEX</div>
-              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.conexao_apex}</p>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.apex_insight || data.conexao_apex}</p>
             </div>
           )}
 
-          {data.conexao_mce && (
+          {(data.mce_insight || data.conexao_mce) && (
             <div style={{ background: T.s, border: `1px solid ${T.purple}44`, borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.purple, letterSpacing: 1, marginBottom: 6, fontFamily: T.font }}>CONEXÃO MCE</div>
-              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.conexao_mce}</p>
+              <p style={{ margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 }}>{data.mce_insight || data.conexao_mce}</p>
             </div>
           )}
 
