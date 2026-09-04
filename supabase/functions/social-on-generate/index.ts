@@ -60,7 +60,7 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "share_score" | "hook_analyzer" | "save_triggers" | "instagram_seo"
   | "grid_architect" | "bio_optimizer" | "pinned_strategy" | "profile_audit"
   | "conversion_bridge" | "cta_intelligence" | "collab_finder"
-  | "studio_subtitles" | "studio_versions" | "studio_vision" | "video_content"
+  | "studio_subtitles" | "studio_versions" | "studio_vision" | "video_content" | "video_overlay"
   | "daily_brief" | "content_score" | "daily_signal";
 
 const SCHEMAS: Record<Mode, string> = {
