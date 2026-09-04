@@ -25,6 +25,7 @@ const SECTIONS: HubSection[] = [
       { id: "lote", name: "Modo Lote", icon: "🚀", desc: "Sobe a semana toda → agenda sozinho", hot: true, isNew: true },
       { id: "studio", name: "Studio", icon: "🎬", desc: "Legendas auto + editor + 4 versões", hot: true },
       { id: "video_conteudo", name: "Vídeo → Conteúdo", icon: "🎥", desc: "Frame do treino → análise + posts prontos", hot: true, isNew: true },
+      { id: "overlay_studio", name: "Overlay Studio", icon: "🎞️", desc: "Ativações musculares animadas no seu vídeo", hot: true, isNew: true },
       { id: "post_pronto", name: "Post Pronto", icon: "📋", desc: "Templates editáveis" },
       { id: "editor", name: "Editor", icon: "✏️", desc: "Texto + mídia em tempo real" },
       { id: "criar", name: "Criar", icon: "⚙️", desc: "Do zero, com IA guiada" },
