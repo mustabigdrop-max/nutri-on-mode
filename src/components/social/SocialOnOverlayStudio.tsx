@@ -512,6 +512,34 @@ export default function SocialOnOverlayStudio() {
             <div style={{ fontSize: 12, color: T.muted }}>Suba o vídeo → marque o centro do corpo → grave o vídeo final com um toque.</div>
           </div>
           <input ref={fileRef} type="file" accept="video/mp4,video/quicktime,video/webm" onChange={handleFile} style={{ display: "none" }} />
+
+          {data && (
+            <div style={{ background: `${T.green}12`, border: `1px solid ${T.green}55`, borderRadius: 10, padding: "10px 12px", fontSize: 12, color: T.green, marginBottom: 12 }}>
+              Análise salva carregada: <strong>{data.exercicio}</strong> — suba o vídeo e aplique direto, sem reanalisar.
+            </div>
+          )}
+
+          {!!igVideos.length && (
+            <div style={{ marginBottom: 12 }}>
+              <button onClick={() => setIgOpen((v) => !v)}
+                style={{ width: "100%", padding: 12, background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, color: T.text, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: T.font }}>
+                📸 Usar vídeo de um post do Instagram ({igVideos.length})
+              </button>
+              {igOpen && (
+                <div style={{ display: "grid", gap: 8, marginTop: 8, maxHeight: 240, overflowY: "auto" }}>
+                  {igVideos.map((m) => (
+                    <button key={m.id} onClick={() => void useIgVideo(m.media_url!)} disabled={!!igLoading}
+                      style={{ textAlign: "left", padding: "10px 12px", background: T.s, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text, cursor: "pointer", fontSize: 11, fontFamily: T.font }}>
+                      <div style={{ fontWeight: 700 }}>{(m.caption || "Post sem legenda").slice(0, 60)}</div>
+                      <div style={{ color: T.muted, fontFamily: T.mono, fontSize: 10, marginTop: 2 }}>
+                        {igLoading === m.media_url ? "Baixando vídeo..." : (m.timestamp || "").slice(0, 10)}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {!videoSrc ? (
             <button onClick={() => fileRef.current?.click()} style={{ width: "100%", padding: "40px 16px", background: T.s, border: `1px dashed ${T.border}`, borderRadius: 12, cursor: "pointer", color: T.text, fontFamily: T.font }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>🎬</div>
@@ -521,7 +549,13 @@ export default function SocialOnOverlayStudio() {
           ) : (
             <div>
               <video ref={videoRef} src={videoSrc} controls playsInline style={{ width: "100%", borderRadius: 10, background: "#000", maxHeight: 420 }} />
-              <div style={{ fontSize: 11, color: T.gold, margin: "10px 0", textAlign: "center" }}>💡 Pause no frame de maior amplitude do movimento</div>
+              <div style={{ fontSize: 11, color: T.gold, margin: "10px 0", textAlign: "center" }}>💡 O movimento inteiro é lido — não precisa pausar em nenhum frame</div>
+              {data && (
+                <button onClick={() => setStage("position")}
+                  style={{ width: "100%", padding: 14, marginBottom: 8, background: `${T.green}18`, border: `1px solid ${T.green}55`, color: T.green, borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: T.font, letterSpacing: 1 }}>
+                  USAR ANÁLISE SALVA · {data.exercicio}
+                </button>
+              )}
               <button onClick={analyze} style={{ width: "100%", padding: 16, background: T.cyan, color: "#000", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: T.font, letterSpacing: 1 }}>
                 ANALISAR EXERCÍCIO
               </button>
@@ -620,15 +654,17 @@ export default function SocialOnOverlayStudio() {
           {/* Info card */}
           <div style={{ marginTop: 14, background: T.s, border: `1px solid ${T.border}`, borderRadius: 10, padding: 14 }}>
             <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>{data.exercicio}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-              {(data.musculos_primarios || []).map((m) => (
-                <span key={m} style={{ fontSize: 10, padding: "3px 8px", borderRadius: 999, color: T.cyan, background: `${T.cyan}18`, border: `1px solid ${T.cyan}55` }}>{m}</span>
-              ))}
-            </div>
+            <div style={{ fontSize: 11, color: T.muted, fontFamily: T.mono, marginBottom: 10 }}>{data.padrao || ""}</div>
+            <BilateralActivation musculos={data.musculos} />
+            <div style={{ marginTop: 12 }} />
             <div style={{ fontSize: 12, color: T.gold }}>🎯 {data.cue_principal}</div>
             {(data.cues || []).map((c, i) => (
               <div key={i} style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>· {c}</div>
             ))}
+            <button onClick={saveToLibrary} disabled={savingLib || saved}
+              style={{ width: "100%", marginTop: 12, padding: 12, background: saved ? `${T.green}18` : T.s2, border: `1px solid ${saved ? T.green + "55" : T.border}`, color: saved ? T.green : T.text, borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: saved ? "default" : "pointer", fontFamily: T.font, letterSpacing: 1 }}>
+              {saved ? "✓ NA BIBLIOTECA" : savingLib ? "SALVANDO..." : "SALVAR NA BIBLIOTECA"}
+            </button>
           </div>
         </div>
       )}
