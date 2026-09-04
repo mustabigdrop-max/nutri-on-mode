@@ -5051,6 +5051,45 @@ export type Database = {
           },
         ]
       }
+      exercise_library: {
+        Row: {
+          coach_id: string
+          created_at: string
+          data: Json
+          exercicio: string
+          id: string
+          notes: string | null
+          padrao: string | null
+          source: string | null
+          times_used: number
+          updated_at: string
+        }
+        Insert: {
+          coach_id?: string
+          created_at?: string
+          data?: Json
+          exercicio: string
+          id?: string
+          notes?: string | null
+          padrao?: string | null
+          source?: string | null
+          times_used?: number
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          data?: Json
+          exercicio?: string
+          id?: string
+          notes?: string | null
+          padrao?: string | null
+          source?: string | null
+          times_used?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exercise_sets: {
         Row: {
           concluida: boolean | null

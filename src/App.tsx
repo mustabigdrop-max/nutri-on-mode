@@ -157,6 +157,7 @@ const VeraPage = lazy(() => import("./pages/VeraPage"));
 const SocialOnPage = lazy(() => import("./pages/coach/SocialOnPage"));
 const SocialOnModulePage = lazy(() => import("./pages/coach/SocialOnModulePage"));
 const LectureKitPage = lazy(() => import("./pages/coach/LectureKitPage"));
+const ExerciseLibraryPage = lazy(() => import("./pages/coach/ExerciseLibraryPage"));
 const MyPlanPage = lazy(() => import("./pages/athlete/MyPlanPage"));
 const MyTrainingPage = lazy(() => import("./pages/athlete/MyTrainingPage"));
 const AthleteCheckinPage = lazy(() => import("./pages/athlete/AthleteCheckinPage"));
@@ -347,6 +348,7 @@ const App = () => (
             <Route path="/coach/social" element={<CoachToolRoute><ProtectedRoute><SocialOnModulePage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/social-on" element={<CoachToolRoute><ProtectedRoute><SocialOnModulePage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/social-classic" element={<CoachToolRoute><ProtectedRoute><SocialOnPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/exercicios" element={<CoachToolRoute><ProtectedRoute><ExerciseLibraryPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/palestra" element={<CoachToolRoute><ProtectedRoute><LectureKitPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/vera" element={<CoachToolRoute><ProtectedRoute><VeraPage /></ProtectedRoute></CoachToolRoute>} />
 

@@ -135,3 +135,6 @@ verify_jwt = false
 [functions.vera-agent]
 verify_jwt = false
 
+
+[functions.media-proxy]
+verify_jwt = false
