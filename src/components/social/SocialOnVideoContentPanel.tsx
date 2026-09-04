@@ -488,12 +488,6 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
             </div>
           )}
 
-          {data.musculos_secundarios && data.musculos_secundarios.length > 0 && (
-            <div style={{ padding: "4px 2px" }}>
-              <span style={{ fontSize: 10, fontFamily: T.mono, color: T.muted, letterSpacing: 1, display: "block", marginBottom: 6 }}>SINERGISTAS</span>
-              {data.musculos_secundarios.map((m, i) => <Chip key={i} color={T.muted}>{m}</Chip>)}
-            </div>
-          )}
         </div>
       )}
 
@@ -506,7 +500,7 @@ function AnalysisPanel({ data, framePreview }: { data: VideoContentResult; frame
 
       {tab === "feed" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <ContentCard title="LEGENDA DO POST" icon="📸" color={T.cyan} content={data.conteudo?.caption_post || ""} />
+          <ContentCard title="LEGENDA DO POST" icon="📸" color={T.cyan} content={data.conteudo?.caption_educativa || data.conteudo?.caption_post || ""} />
           {data.conteudo?.carrossel_slides && <CarrosselCard slides={data.conteudo.carrossel_slides} />}
           <ContentCard title="HASHTAGS" icon="#" color={T.muted} content={hashtags} />
         </div>
@@ -672,11 +666,34 @@ export default function SocialOnVideoContentPanel({ handle, niches = [], product
       {stage === "loading" && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, padding: "40px 0" }}>
           {framePreview && (
-            <img
-              src={framePreview}
-              alt="Frame em análise"
-              style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 12, border: `2px solid ${T.cyan}55` }}
-            />
+            <div style={{ position: "relative", width: 140, height: 140 }}>
+              <img
+                src={framePreview}
+                alt="Frame em análise"
+                style={{ width: 140, height: 140, objectFit: "cover", borderRadius: 12, border: `2px solid ${T.cyan}55` }}
+              />
+              {/* Scan line */}
+              <div style={{
+                position: "absolute", left: 0, right: 0, height: 2, borderRadius: 2,
+                background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`,
+                boxShadow: `0 0 12px ${T.cyan}`, animation: "sonScan 2.2s ease-in-out infinite",
+              }} />
+              {/* Corner brackets */}
+              {(["top-left", "top-right", "bottom-left", "bottom-right"] as const).map((pos) => (
+                <div key={pos} style={{
+                  position: "absolute", width: 14, height: 14,
+                  top: pos.startsWith("top") ? -3 : undefined,
+                  bottom: pos.startsWith("bottom") ? -3 : undefined,
+                  left: pos.endsWith("left") ? -3 : undefined,
+                  right: pos.endsWith("right") ? -3 : undefined,
+                  borderTop: pos.startsWith("top") ? `2px solid ${T.cyan}` : "none",
+                  borderBottom: pos.startsWith("bottom") ? `2px solid ${T.cyan}` : "none",
+                  borderLeft: pos.endsWith("left") ? `2px solid ${T.cyan}` : "none",
+                  borderRight: pos.endsWith("right") ? `2px solid ${T.cyan}` : "none",
+                }} />
+              ))}
+              <style>{`@keyframes sonScan { 0% { top: 0; } 50% { top: calc(100% - 2px); } 100% { top: 0; } }`}</style>
+            </div>
           )}
           <style>{`@keyframes sonSpin { to { transform: rotate(360deg); } }`}</style>
           <div style={{
