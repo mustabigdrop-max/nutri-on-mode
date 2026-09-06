@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import BreakdownRecorder from "./BreakdownRecorder";
+import { listBreakdownSessions, saveBreakdownSession, getBreakdownVideoUrl, deleteBreakdownSession, type BreakdownSession } from "@/lib/breakdownSessions";
 
 /* Breakdown Studio — corte do vídeo, momentos-chave e freeze com análise
    completa em camadas (execução, ativação muscular, MCE e alerta APEX).
@@ -176,11 +178,14 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
 }
 
 /* ─── Main ─── */
-type Stage = "upload" | "trim" | "setpoints" | "loading" | "player";
+type Stage = "upload" | "trim" | "setpoints" | "loading" | "player" | "record";
 
 export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { handle?: string }) {
   const [stage, setStage] = useState<Stage>("upload");
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [sessions, setSessions] = useState<BreakdownSession[]>([]);
+  const [saving, setSaving] = useState(false);
   const [duration, setDuration] = useState(0);
   const [trim, setTrim] = useState({ start: 0, end: 0 });
   const [breakpoints, setBreakpoints] = useState<number[]>([]);
@@ -201,6 +206,7 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
       toast({ title: "Vídeo muito grande", description: "Use até 150 MB.", variant: "destructive" });
       return;
     }
+    setVideoFile(f);
     setVideoSrc(URL.createObjectURL(f));
     setBreakpoints([]); setAnalyses([]);
     setDuration(0); setTrim({ start: 0, end: 0 });
@@ -249,7 +255,53 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
       return;
     }
     setStage("player");
-  }, [breakpoints, handle]);
+    setSaving(true);
+    try {
+      const saved = await saveBreakdownSession({
+        file: videoFile,
+        title: (results.find((r) => r?.exercicio)?.exercicio) || "Breakdown",
+        exercise: results.find((r) => r?.exercicio)?.exercicio ?? null,
+        trimStart: trim.start,
+        trimEnd: trim.end,
+        breakpoints,
+        analyses: results,
+      });
+      if (saved) {
+        setSessions((p) => [saved, ...p]);
+        toast({ title: "Análise salva", description: "Você pode reabrir esta análise quando quiser." });
+      }
+    } catch {
+      toast({ title: "Análise não salva", description: "O breakdown funciona, mas não consegui guardar no histórico.", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }, [breakpoints, handle, videoFile, trim.start, trim.end]);
+
+  useEffect(() => { listBreakdownSessions().then(setSessions).catch(() => undefined); }, []);
+
+  const openSession = useCallback(async (s: BreakdownSession) => {
+    const url = await getBreakdownVideoUrl(s.video_path);
+    if (!url) {
+      toast({ title: "Vídeo indisponível", description: "Esta análise foi salva sem o vídeo original.", variant: "destructive" });
+      return;
+    }
+    setVideoFile(null);
+    setVideoSrc(url);
+    setTrim({ start: s.trim_start, end: s.trim_end });
+    setBreakpoints(s.breakpoints);
+    setAnalyses(s.analyses);
+    setFrozen(false); setCurrentBreak(-1); setPlaying(false);
+    setStage("player");
+  }, []);
+
+  const removeSession = useCallback(async (s: BreakdownSession) => {
+    try {
+      await deleteBreakdownSession(s);
+      setSessions((p) => p.filter((x) => x.id !== s.id));
+    } catch {
+      toast({ title: "Não consegui apagar", variant: "destructive" });
+    }
+  }, []);
 
   // Breakpoint watcher — pausa sozinho em cada momento marcado
   useEffect(() => {
@@ -288,7 +340,7 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
   };
 
   const reset = () => {
-    setStage("upload"); setVideoSrc(null); setBreakpoints([]); setAnalyses([]);
+    setStage("upload"); setVideoSrc(null); setVideoFile(null); setBreakpoints([]); setAnalyses([]);
     setFrozen(false); setCurrentBreak(-1); setPlaying(false);
     setTrim({ start: 0, end: 0 }); setDuration(0);
   };
@@ -322,6 +374,23 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
             🎬 Adicionar vídeo
             <input type="file" accept="video/*" style={{ display: "none" }} onChange={handleFile} />
           </label>
+        </div>
+      )}
+
+      {stage === "upload" && sessions.length > 0 && (
+        <div style={{ ...box, marginTop: 12, display: "grid", gap: 8 }}>
+          <div style={{ fontFamily: "monospace", fontSize: 10, color: T.cyan, letterSpacing: 1 }}>ANÁLISES SALVAS</div>
+          {sessions.map((s) => (
+            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, background: T.s2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 11px" }}>
+              <button onClick={() => openSession(s)} style={{ flex: 1, textAlign: "left", background: "none", border: "none", color: T.text, cursor: "pointer" }}>
+                <div style={{ fontSize: 12, fontWeight: 700 }}>{s.exercise || s.title}</div>
+                <div style={{ fontFamily: "monospace", fontSize: 9, color: T.muted, marginTop: 2 }}>
+                  {s.analyses.length} momento(s) · {new Date(s.created_at).toLocaleDateString("pt-BR")}{s.video_path ? "" : " · sem vídeo"}
+                </div>
+              </button>
+              <button onClick={() => removeSession(s)} style={{ background: "none", border: "none", color: T.red, cursor: "pointer", fontSize: 14 }}>✕</button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -421,10 +490,16 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
               <button onClick={resumePlay} style={{ ...btn, width: "auto", flex: 1 }}>CONTINUAR ▶</button>
             )}
           </div>
+          <button onClick={() => setStage("record")} style={{ ...btn, background: T.gold, color: "#000" }}>🎥 GRAVAR TELA PARA REELS</button>
+          {saving && <div style={{ fontFamily: "monospace", fontSize: 9, color: T.muted, textAlign: "center" }}>SALVANDO ANÁLISE...</div>}
           <div style={{ fontSize: 11, color: T.muted, background: T.s2, borderRadius: 6, padding: "10px 12px", lineHeight: 1.6 }}>
             📱 Como postar: dê play → grave a tela do celular → o vídeo congela nos momentos marcados com a análise completa → corte o início da gravação → poste como Reels com a legenda do gerador de conteúdo.
           </div>
         </div>
+      )}
+
+      {stage === "record" && (
+        <BreakdownRecorder onBack={() => setStage("player")} />
       )}
     </div>
   );

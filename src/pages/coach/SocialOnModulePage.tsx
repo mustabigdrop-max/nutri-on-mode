@@ -48,6 +48,7 @@ import SocialOnStudioPanel from "@/components/social/SocialOnStudioPanel";
 import SocialOnVideoContentPanel from "@/components/social/SocialOnVideoContentPanel";
 import SocialOnOverlayStudio from "@/components/social/SocialOnOverlayStudio";
 import SocialOnBreakdownStudio from "@/components/social/SocialOnBreakdownStudio";
+import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerator";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -459,6 +460,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="video_conteudo" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Vídeo→Conteúdo</TabsTrigger>
             <TabsTrigger value="overlay_studio" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Overlay Studio</TabsTrigger>
             <TabsTrigger value="breakdown_studio" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Breakdown Studio</TabsTrigger>
+            <TabsTrigger value="content_generator" className="text-xs gap-1"><Target className="w-3 h-3" />Gerador de Conteúdo</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
 
             <TabGroupLabel>🧭 Estratégia e planejamento</TabGroupLabel>
@@ -1083,6 +1085,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="breakdown_studio" className="mt-4">
             <SocialOnBreakdownStudio handle={handle} />
+          </TabsContent>
+          <TabsContent value="content_generator" className="mt-4">
+            <SocialOnContentGenerator handle={handle} />
           </TabsContent>
           <TabsContent value="pro" className="mt-4">
             <SocialOnProPanel ctx={aiCtx} />
