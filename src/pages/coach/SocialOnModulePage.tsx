@@ -49,6 +49,7 @@ import SocialOnVideoContentPanel from "@/components/social/SocialOnVideoContentP
 import SocialOnOverlayStudio from "@/components/social/SocialOnOverlayStudio";
 import SocialOnBreakdownStudio from "@/components/social/SocialOnBreakdownStudio";
 import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerator";
+import ContentPackTodayPanel from "@/components/social/ContentPackTodayPanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -452,6 +453,7 @@ const SocialOnModulePage = () => {
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
+            <TabsTrigger value="pacote_dia" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Pacote do Dia</TabsTrigger>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
             <TabsTrigger value="lote" className="text-xs gap-1"><Rocket className="w-3 h-3" />Modo Lote</TabsTrigger>
             <TabsTrigger value="signal" className="text-xs gap-1"><Zap className="w-3 h-3" />SIGNAL</TabsTrigger>
@@ -1082,6 +1084,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="overlay_studio" className="mt-4">
             <SocialOnOverlayStudio />
+          </TabsContent>
+          <TabsContent value="pacote_dia" className="mt-4">
+            <ContentPackTodayPanel />
           </TabsContent>
           <TabsContent value="breakdown_studio" className="mt-4">
             <SocialOnBreakdownStudio handle={handle} />
