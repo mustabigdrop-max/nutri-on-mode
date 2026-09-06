@@ -61,6 +61,7 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "grid_architect" | "bio_optimizer" | "pinned_strategy" | "profile_audit"
   | "conversion_bridge" | "cta_intelligence" | "collab_finder"
   | "studio_subtitles" | "studio_versions" | "studio_vision" | "video_content" | "video_overlay" | "video_breakdown"
+  | "breakdown_caption"
   | "daily_brief" | "content_score" | "daily_signal";
 
 const SCHEMAS: Record<Mode, string> = {
