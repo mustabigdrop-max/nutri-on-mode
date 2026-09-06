@@ -73,11 +73,12 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
   useEffect(() => {
     setP(0);
     const ts = [
-      setTimeout(() => setP(1), 300),
-      setTimeout(() => setP(2), 1500),
-      setTimeout(() => setP(3), 3500),
-      setTimeout(() => setP(4), 5500),
-      setTimeout(() => onResume(), 8500),
+      setTimeout(() => setP(1), 400),
+      setTimeout(() => setP(2), 3000),
+      setTimeout(() => setP(3), 7500),
+      setTimeout(() => setP(4), 11500),
+      setTimeout(() => setP(5), 15500),
+      setTimeout(() => onResume(), 20500),
     ];
     return () => ts.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
