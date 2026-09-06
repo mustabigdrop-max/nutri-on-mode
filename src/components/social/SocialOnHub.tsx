@@ -20,6 +20,7 @@ const SECTIONS: HubSection[] = [
     label: "RÁPIDO",
     accent: CYAN,
     tools: [
+      { id: "pacote_dia", name: "Pacote do Dia", icon: "📦", desc: "Reels, carrossel, stories e cronograma prontos", hot: true, isNew: true },
       { id: "signal", name: "SIGNAL", icon: "📡", desc: "Briefing diário completo", hot: true },
       { id: "um_toque", name: "1 Toque", icon: "✦", desc: "Upload → 4 versões prontas", hot: true },
       { id: "lote", name: "Modo Lote", icon: "🚀", desc: "Sobe a semana toda → agenda sozinho", hot: true, isNew: true },
