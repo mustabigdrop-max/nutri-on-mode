@@ -73,166 +73,171 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
   useEffect(() => {
     setP(0);
     const ts = [
-      setTimeout(() => setP(1), 300),
-      setTimeout(() => setP(2), 1500),
-      setTimeout(() => setP(3), 3500),
-      setTimeout(() => setP(4), 5500),
-      setTimeout(() => onResume(), 8500),
+      setTimeout(() => setP(1), 400),
+      setTimeout(() => setP(2), 3000),
+      setTimeout(() => setP(3), 7500),
+      setTimeout(() => setP(4), 11500),
+      setTimeout(() => setP(5), 15500),
+      setTimeout(() => onResume(), 20500),
     ];
     return () => ts.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   if (!data) return null;
-  const phase = (n: number) => ({
-    opacity: p >= n ? 1 : 0,
-    transform: p >= n ? "translate(0,0)" : n === 1 ? "translateX(-30px)" : "translateY(20px)",
-    transition: "all 0.5s ease",
-  });
+
+  const muscles = Object.entries(data.musculos_ativos || {})
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 6);
+
+  const STEP_LABEL = ["ANALISANDO", "EXECUÇÃO", "CUE E ERRO", "ATIVAÇÃO MUSCULAR", "MÉTODO MCE", "APEX"];
+
+  const wrap: React.CSSProperties = {
+    position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+    justifyContent: "center", gap: "3cqh", padding: "12cqh 7cqw", overflow: "hidden",
+    animation: "stepIn 0.45s ease",
+  };
 
   return (
-    <div style={{ position: "absolute", inset: 0, background: "rgba(2,2,5,0.88)", backdropFilter: "blur(6px)", display: "flex", flexDirection: "column", animation: "fadeIn 0.4s ease", zIndex: 10, overflow: "hidden" }}>
+    <div
+      onClick={() => setP((v) => Math.min(v + 1, 5))}
+      style={{ position: "absolute", inset: 0, background: "rgba(2,2,5,0.93)", backdropFilter: "blur(6px)", animation: "fadeIn 0.4s ease", zIndex: 10, overflow: "hidden", containerType: "size", cursor: "pointer" }}
+    >
       <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 10px rgba(0,212,255,0.3); } 50% { box-shadow: 0 0 25px rgba(0,212,255,0.6); } }
+@keyframes stepIn { from { opacity: 0; transform: translateY(4cqh) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 10px rgba(0,212,255,0.3); } 50% { box-shadow: 0 0 30px rgba(0,212,255,0.6); } }
 @keyframes edgePulse { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; } }
 @keyframes scanDown { 0% { top: 0; } 100% { top: 100%; } }
 @keyframes bracketPulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.03); } }
-@keyframes barGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+@keyframes barGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
 @keyframes freezeFlash { 0% { opacity: 0.55; } 12% { opacity: 0; } 100% { opacity: 0; } }
 @keyframes rgbShift { 0%,100% { text-shadow: -2px 0 #ff0000, 2px 0 #00ffff; } 50% { text-shadow: 2px 0 #ff0000, -2px 0 #00ffff; } }
-@keyframes scanPulse { 0%,100% { opacity: 0.4; width: 40%; } 50% { opacity: 1; width: 60%; } }
-@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
-@keyframes energyFlow { 0%,100% { opacity: 0.25; } 50% { opacity: 0.9; } }
-@keyframes ringCountdown { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 138; } }`}</style>
+@keyframes scanPulse { 0%,100% { opacity: 0.4; width: 40%; } 50% { opacity: 1; width: 62%; } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@keyframes energyFlow { 0%,100% { opacity: 0.25; } 50% { opacity: 0.9; } }`}</style>
 
       {/* Flash no congelamento */}
       <div style={{ position: "absolute", inset: 0, background: T.cyan, animation: "freezeFlash 0.7s ease forwards", pointerEvents: "none" }} />
-
-      {/* Brilho nas bordas */}
       <div style={{ position: "absolute", inset: 0, boxShadow: `inset 0 0 70px ${T.cyan}40`, animation: "edgePulse 2.5s ease-in-out infinite", pointerEvents: "none" }} />
-
-      {/* Linha de varredura */}
       <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`, animation: "scanDown 3s linear infinite", pointerEvents: "none" }} />
 
-      {/* Cantos */}
       {[[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y], i) => (
         <div key={i} style={{
-          position: "absolute", width: 26, height: 26, pointerEvents: "none",
-          [x ? "right" : "left"]: 10, [y ? "bottom" : "top"]: 10,
+          position: "absolute", width: "7cqw", height: "7cqw", pointerEvents: "none",
+          [x ? "right" : "left"]: "2cqw", [y ? "bottom" : "top"]: "2cqw",
           [`border${y ? "Bottom" : "Top"}`]: `2px solid ${T.cyan}`,
           [`border${x ? "Right" : "Left"}`]: `2px solid ${T.cyan}`,
           animation: "bracketPulse 2s ease-in-out infinite",
         } as React.CSSProperties} />
       ))}
-
-      {/* Barras de energia laterais */}
       {[0, 1].map((side) => (
         <div key={side} style={{
-          position: "absolute", top: "22%", bottom: "22%", width: 3, borderRadius: 3,
+          position: "absolute", top: "20%", bottom: "20%", width: 3, borderRadius: 3,
           [side ? "right" : "left"]: 4,
           background: `linear-gradient(180deg, transparent, ${T.cyan}, transparent)`,
           animation: "energyFlow 2.2s ease-in-out infinite", pointerEvents: "none",
         } as React.CSSProperties} />
       ))}
 
-      {/* Anel de contagem */}
-      <div style={{ position: "absolute", top: 12, right: 12, width: 52, height: 52, opacity: p >= 1 ? 0.75 : 0, transition: "opacity 0.3s", pointerEvents: "none" }}>
-        <svg width="52" height="52" viewBox="0 0 52 52">
-          <circle cx="26" cy="26" r="22" fill="none" stroke={T.border} strokeWidth="3" />
-          <circle cx="26" cy="26" r="22" fill="none" stroke={T.cyan} strokeWidth="3" strokeLinecap="round"
-            strokeDasharray="138" transform="rotate(-90 26 26)"
-            style={{ animation: "ringCountdown 8s linear forwards" }} />
-        </svg>
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: T.cyan }}>⏸</div>
-      </div>
-
-      {/* Fase inicial — varredura */}
-      {p === 0 && (
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, pointerEvents: "none" }}>
-          <div style={{ fontFamily: "monospace", fontSize: 13, color: T.cyan, letterSpacing: 6, animation: "rgbShift 0.25s steps(1) 3" }}>ANALISANDO</div>
-          <div style={{ height: 3, borderRadius: 3, background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`, animation: "scanPulse 1s ease-in-out infinite", width: "50%" }} />
+      {/* Cabeçalho fixo — exercício + etapa */}
+      {p >= 1 && (
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "3cqh 6cqw 2cqh", borderBottom: `2px solid ${T.cyan}`, background: "linear-gradient(180deg, rgba(2,2,5,0.95), transparent)", pointerEvents: "none" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "2.6cqw", color: T.cyan, letterSpacing: "0.35em" }}>
+            {STEP_LABEL[p]} · {p}/5
+          </div>
+          <div style={{ fontSize: "5.4cqw", fontWeight: 900, color: T.text, lineHeight: 1.05, marginTop: "0.8cqh" }}>
+            {data.exercicio?.toUpperCase()}
+          </div>
         </div>
       )}
 
-
-      {/* Top bar */}
-      <div style={{ padding: "14px 16px 10px", borderBottom: `2px solid ${T.cyan}`, ...phase(1) }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: "monospace", fontSize: 9, color: T.cyan, letterSpacing: 2 }}>SOCIAL ON · BREAKDOWN</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: T.text, letterSpacing: 0.5, marginTop: 4, lineHeight: 1.1 }}>{data.exercicio?.toUpperCase()}</div>
-          </div>
-          <div style={{ background: `${T.cyan}18`, border: `1px solid ${T.cyan}50`, color: T.cyan, fontFamily: "monospace", fontSize: 10, fontWeight: 700, padding: "4px 10px", borderRadius: 6, flexShrink: 0 }}>{data.padrao}</div>
-        </div>
+      {/* Barra de progresso das etapas */}
+      <div style={{ position: "absolute", bottom: "2.5cqh", left: "6cqw", right: "6cqw", display: "flex", gap: "1.2cqw", pointerEvents: "none" }}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <div key={n} style={{ flex: 1, height: 4, borderRadius: 4, background: p >= n ? T.cyan : T.border, boxShadow: p === n ? `0 0 10px ${T.cyan}` : "none", transition: "all 0.4s ease" }} />
+        ))}
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px", display: "grid", gap: 10, alignContent: "start" }}>
-        {/* Execução */}
-        <div style={{ background: "rgba(2,2,5,0.85)", border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 14px", ...phase(1) }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: T.text, lineHeight: 1.3 }}>{data.execucao?.titulo}</div>
-          <div style={{ fontSize: 11.5, color: T.muted, lineHeight: 1.5, marginTop: 6 }}>{data.execucao?.descricao}</div>
-          <div style={{ marginTop: 8, background: "rgba(0,212,255,0.08)", border: `1px solid rgba(0,212,255,0.3)`, borderRadius: 8, padding: "8px 10px", animation: p >= 1 ? "pulseGlow 2s ease infinite" : "none" }}>
-            <div style={{ fontFamily: "monospace", fontSize: 8, color: T.cyan, letterSpacing: 1 }}>CUE PRINCIPAL</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.cyan, marginTop: 3, lineHeight: 1.4 }}>{data.execucao?.cue}</div>
+      {/* ETAPA 0 — varredura */}
+      {p === 0 && (
+        <div style={{ ...wrap, alignItems: "center", justifyContent: "center" }}>
+          <div style={{ fontFamily: "monospace", fontSize: "5cqw", color: T.cyan, letterSpacing: "0.5em", animation: "rgbShift 0.25s steps(1) 3" }}>ANALISANDO</div>
+          <div style={{ height: 4, borderRadius: 4, background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`, animation: "scanPulse 1s ease-in-out infinite", width: "55%" }} />
+        </div>
+      )}
+
+      {/* ETAPA 1 — execução */}
+      {p === 1 && (
+        <div key="s1" style={wrap}>
+          <div style={{ fontSize: "7cqw", fontWeight: 900, color: T.text, lineHeight: 1.15 }}>{data.execucao?.titulo}</div>
+          <div style={{ fontSize: "4.4cqw", color: T.muted, lineHeight: 1.5 }}>{data.execucao?.descricao}</div>
+        </div>
+      )}
+
+      {/* ETAPA 2 — cue + erro */}
+      {p === 2 && (
+        <div key="s2" style={wrap}>
+          <div style={{ background: "rgba(0,212,255,0.08)", border: `2px solid rgba(0,212,255,0.35)`, borderRadius: 14, padding: "3.5cqh 5cqw", animation: "pulseGlow 2s ease infinite" }}>
+            <div style={{ fontFamily: "monospace", fontSize: "2.8cqw", color: T.cyan, letterSpacing: "0.3em" }}>CUE PRINCIPAL</div>
+            <div style={{ fontSize: "6cqw", fontWeight: 800, color: T.cyan, marginTop: "1.2cqh", lineHeight: 1.25 }}>{data.execucao?.cue}</div>
           </div>
-          <div style={{ marginTop: 6, borderLeft: `3px solid ${T.red}`, paddingLeft: 10, background: "rgba(255,71,87,0.06)", borderRadius: 4, padding: "6px 10px", animation: p >= 1 ? "shake 0.3s ease 1.2s" : "none" }}>
-            <span style={{ fontFamily: "monospace", fontSize: 8, color: T.red, letterSpacing: 1 }}>ERRO COMUM · </span>
-            <span style={{ fontSize: 11, color: T.text }}>{data.execucao?.erro_comum}</span>
+          <div style={{ borderLeft: `5px solid ${T.red}`, background: "rgba(255,71,87,0.08)", borderRadius: 10, padding: "2.5cqh 4cqw", animation: "shake 0.35s ease 0.6s" }}>
+            <div style={{ fontFamily: "monospace", fontSize: "2.8cqw", color: T.red, letterSpacing: "0.3em" }}>ERRO COMUM</div>
+            <div style={{ fontSize: "4.6cqw", color: T.text, marginTop: "1cqh", lineHeight: 1.4 }}>{data.execucao?.erro_comum}</div>
           </div>
         </div>
+      )}
 
-        {/* Ativação muscular */}
-        <div style={{ background: "rgba(2,2,5,0.85)", border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 14px", ...phase(2) }}>
-          <div style={{ fontFamily: "monospace", fontSize: 9, color: T.muted, letterSpacing: 2, marginBottom: 8 }}>ATIVAÇÃO MUSCULAR</div>
-          <div style={{ display: "grid", gap: 6 }}>
-            {Object.entries(data.musculos_ativos || {})
-              .filter(([, v]) => v > 0)
-              .sort(([, a], [, b]) => b - a)
-              .slice(0, 8)
-              .map(([key, level], i) => {
-                const color = LVL_COLOR[level] || T.green;
-                return (
-                  <div key={key} style={{ opacity: p >= 2 ? 1 : 0, transform: p >= 2 ? "translateX(0)" : "translateX(-30px)", transition: `all 0.4s ease ${i * 0.1}s` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: T.text }}>{MUSCLE_NAMES[key] || key}</span>
-                      <span style={{ fontFamily: "monospace", fontSize: 8, color, letterSpacing: 1 }}>{LVL_LABEL[level] || ""}</span>
-                    </div>
-                    <div style={{ height: 6, background: T.s2, borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: p >= 2 ? `${LVL_PCT[level] || 33}%` : "0%", background: `linear-gradient(90deg, ${color}90, ${color})`, boxShadow: level === 3 ? `0 0 12px ${color}60, 0 0 24px ${color}30` : level === 2 ? `0 0 8px ${color}40` : "none", borderRadius: 4, transition: `width 0.8s ease ${i * 0.1 + 0.3}s`, animation: level === 3 && p >= 2 ? "barGlow 2s ease-in-out infinite" : "none" }} />
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-          <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
-            {[{ c: T.cyan, l: "Primário" }, { c: T.gold, l: "Secundário" }, { c: T.green, l: "Estabilizador" }].map((x) => (
-              <div key={x.l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <div style={{ width: 7, height: 7, borderRadius: "50%", background: x.c, boxShadow: `0 0 6px ${x.c}` }} />
-                <span style={{ fontFamily: "monospace", fontSize: 8, color: T.muted, letterSpacing: 1 }}>{x.l.toUpperCase()}</span>
+      {/* ETAPA 3 — ativação muscular */}
+      {p === 3 && (
+        <div key="s3" style={{ ...wrap, gap: "2.2cqh" }}>
+          {muscles.map(([key, level], i) => {
+            const color = LVL_COLOR[level] || T.green;
+            return (
+              <div key={key} style={{ animation: `stepIn 0.4s ease ${i * 0.12}s both` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.8cqh" }}>
+                  <span style={{ fontSize: "4.6cqw", fontWeight: 800, color: T.text }}>{MUSCLE_NAMES[key] || key}</span>
+                  <span style={{ fontFamily: "monospace", fontSize: "2.6cqw", color, letterSpacing: "0.2em" }}>{LVL_LABEL[level] || ""}</span>
+                </div>
+                <div style={{ height: "1.8cqh", minHeight: 10, background: T.s2, borderRadius: 8, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${LVL_PCT[level] || 33}%`, background: `linear-gradient(90deg, ${color}90, ${color})`, boxShadow: level === 3 ? `0 0 16px ${color}70` : "none", borderRadius: 8, transition: `width 0.8s ease ${i * 0.12 + 0.2}s`, animation: level === 3 ? "barGlow 2s ease-in-out infinite" : "none" }} />
+                </div>
               </div>
-            ))}
+            );
+          })}
+        </div>
+      )}
+
+      {/* ETAPA 4 — MCE */}
+      {p === 4 && (
+        <div key="s4" style={{ ...wrap, gap: "2.5cqh" }}>
+          {[
+            { icon: "🧠", label: "MENTALIDADE", text: data.mce?.mentalidade, color: T.cyan },
+            { icon: "⚡", label: "COMPORTAMENTO", text: data.mce?.comportamento, color: T.gold },
+            { icon: "🎯", label: "EXECUÇÃO", text: data.mce?.execucao_mce, color: T.green },
+          ].map((item, i) => (
+            <div key={item.label} style={{ borderLeft: `5px solid ${item.color}`, background: "rgba(2,2,5,0.8)", borderRadius: 12, padding: "2.5cqh 4cqw", animation: `stepIn 0.45s ease ${i * 0.18}s both` }}>
+              <div style={{ fontFamily: "monospace", fontSize: "2.8cqw", color: item.color, letterSpacing: "0.3em" }}>{item.icon} {item.label}</div>
+              <div style={{ fontSize: "4.6cqw", color: T.text, lineHeight: 1.4, marginTop: "1cqh" }}>{item.text}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ETAPA 5 — APEX + frase */}
+      {p === 5 && (
+        <div key="s5" style={{ ...wrap, gap: "4cqh" }}>
+          <div style={{ borderLeft: `5px solid ${T.gold}`, background: "rgba(184,146,42,0.1)", borderRadius: 12, padding: "2.5cqh 4cqw" }}>
+            <div style={{ fontFamily: "monospace", fontSize: "2.8cqw", color: T.gold, letterSpacing: "0.3em" }}>⚠ AVALIAÇÃO POSTURAL PRÉVIA</div>
+            <div style={{ fontSize: "4.4cqw", color: T.text, marginTop: "1cqh", lineHeight: 1.4 }}>{data.alerta_apex}</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: "6.2cqw", fontWeight: 900, color: T.cyan, lineHeight: 1.25 }}>"{data.frase_impacto}"</div>
+            <div style={{ fontFamily: "monospace", fontSize: "2.6cqw", color: T.muted, letterSpacing: "0.25em", marginTop: "2cqh" }}>@diogo.mell0 · nutriON · Método MCE</div>
           </div>
         </div>
-
-        {/* MCE */}
-        <div style={{ background: "rgba(2,2,5,0.85)", border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 14px", ...phase(3) }}>
-          <div style={{ fontFamily: "monospace", fontSize: 9, color: T.gold, letterSpacing: 2, marginBottom: 8, animation: p >= 3 ? "rgbShift 0.2s steps(1) 2" : "none" }}>MÉTODO MCE</div>
-          <MCECard mce={data.mce} />
-        </div>
-      </div>
-
-      {/* Bottom */}
-      <div style={{ padding: "10px 16px 14px", display: "grid", gap: 8, ...phase(4) }}>
-        <div style={{ borderLeft: `3px solid ${T.gold}`, background: "rgba(184,146,42,0.08)", borderRadius: 6, padding: "8px 12px" }}>
-          <div style={{ fontFamily: "monospace", fontSize: 8, color: T.gold, letterSpacing: 1 }}>⚠ AVALIAÇÃO POSTURAL PRÉVIA</div>
-          <div style={{ fontSize: 11, color: T.text, marginTop: 3, lineHeight: 1.4 }}>{data.alerta_apex}</div>
-        </div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: T.cyan, lineHeight: 1.3 }}>"{data.frase_impacto}"</div>
-          <div style={{ fontFamily: "monospace", fontSize: 8, color: T.muted, letterSpacing: 1, marginTop: 4 }}>@diogo.mell0 · nutriON · Método MCE</div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
