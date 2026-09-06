@@ -93,7 +93,67 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
   return (
     <div style={{ position: "absolute", inset: 0, background: "rgba(2,2,5,0.88)", backdropFilter: "blur(6px)", display: "flex", flexDirection: "column", animation: "fadeIn 0.4s ease", zIndex: 10, overflow: "hidden" }}>
       <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 10px rgba(0,212,255,0.3); } 50% { box-shadow: 0 0 25px rgba(0,212,255,0.6); } }`}</style>
+@keyframes pulseGlow { 0%,100% { box-shadow: 0 0 10px rgba(0,212,255,0.3); } 50% { box-shadow: 0 0 25px rgba(0,212,255,0.6); } }
+@keyframes edgePulse { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+@keyframes scanDown { 0% { top: 0; } 100% { top: 100%; } }
+@keyframes bracketPulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.03); } }
+@keyframes barGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+@keyframes freezeFlash { 0% { opacity: 0.55; } 12% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes rgbShift { 0%,100% { text-shadow: -2px 0 #ff0000, 2px 0 #00ffff; } 50% { text-shadow: 2px 0 #ff0000, -2px 0 #00ffff; } }
+@keyframes scanPulse { 0%,100% { opacity: 0.4; width: 40%; } 50% { opacity: 1; width: 60%; } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@keyframes energyFlow { 0%,100% { opacity: 0.25; } 50% { opacity: 0.9; } }
+@keyframes ringCountdown { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 138; } }`}</style>
+
+      {/* Flash no congelamento */}
+      <div style={{ position: "absolute", inset: 0, background: T.cyan, animation: "freezeFlash 0.7s ease forwards", pointerEvents: "none" }} />
+
+      {/* Brilho nas bordas */}
+      <div style={{ position: "absolute", inset: 0, boxShadow: `inset 0 0 70px ${T.cyan}40`, animation: "edgePulse 2.5s ease-in-out infinite", pointerEvents: "none" }} />
+
+      {/* Linha de varredura */}
+      <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`, animation: "scanDown 3s linear infinite", pointerEvents: "none" }} />
+
+      {/* Cantos */}
+      {[[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y], i) => (
+        <div key={i} style={{
+          position: "absolute", width: 26, height: 26, pointerEvents: "none",
+          [x ? "right" : "left"]: 10, [y ? "bottom" : "top"]: 10,
+          [`border${y ? "Bottom" : "Top"}`]: `2px solid ${T.cyan}`,
+          [`border${x ? "Right" : "Left"}`]: `2px solid ${T.cyan}`,
+          animation: "bracketPulse 2s ease-in-out infinite",
+        } as React.CSSProperties} />
+      ))}
+
+      {/* Barras de energia laterais */}
+      {[0, 1].map((side) => (
+        <div key={side} style={{
+          position: "absolute", top: "22%", bottom: "22%", width: 3, borderRadius: 3,
+          [side ? "right" : "left"]: 4,
+          background: `linear-gradient(180deg, transparent, ${T.cyan}, transparent)`,
+          animation: "energyFlow 2.2s ease-in-out infinite", pointerEvents: "none",
+        } as React.CSSProperties} />
+      ))}
+
+      {/* Anel de contagem */}
+      <div style={{ position: "absolute", top: 12, right: 12, width: 52, height: 52, opacity: p >= 1 ? 0.75 : 0, transition: "opacity 0.3s", pointerEvents: "none" }}>
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke={T.border} strokeWidth="3" />
+          <circle cx="26" cy="26" r="22" fill="none" stroke={T.cyan} strokeWidth="3" strokeLinecap="round"
+            strokeDasharray="138" transform="rotate(-90 26 26)"
+            style={{ animation: "ringCountdown 8s linear forwards" }} />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: T.cyan }}>⏸</div>
+      </div>
+
+      {/* Fase inicial — varredura */}
+      {p === 0 && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, pointerEvents: "none" }}>
+          <div style={{ fontFamily: "monospace", fontSize: 13, color: T.cyan, letterSpacing: 6, animation: "rgbShift 0.25s steps(1) 3" }}>ANALISANDO</div>
+          <div style={{ height: 3, borderRadius: 3, background: `linear-gradient(90deg, transparent, ${T.cyan}, transparent)`, animation: "scanPulse 1s ease-in-out infinite", width: "50%" }} />
+        </div>
+      )}
+
 
       {/* Top bar */}
       <div style={{ padding: "14px 16px 10px", borderBottom: `2px solid ${T.cyan}`, ...phase(1) }}>
