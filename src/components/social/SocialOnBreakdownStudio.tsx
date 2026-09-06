@@ -377,6 +377,23 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
         </div>
       )}
 
+      {stage === "upload" && sessions.length > 0 && (
+        <div style={{ ...box, marginTop: 12, display: "grid", gap: 8 }}>
+          <div style={{ fontFamily: "monospace", fontSize: 10, color: T.cyan, letterSpacing: 1 }}>ANÁLISES SALVAS</div>
+          {sessions.map((s) => (
+            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, background: T.s2, border: `1px solid ${T.border}`, borderRadius: 8, padding: "9px 11px" }}>
+              <button onClick={() => openSession(s)} style={{ flex: 1, textAlign: "left", background: "none", border: "none", color: T.text, cursor: "pointer" }}>
+                <div style={{ fontSize: 12, fontWeight: 700 }}>{s.exercise || s.title}</div>
+                <div style={{ fontFamily: "monospace", fontSize: 9, color: T.muted, marginTop: 2 }}>
+                  {s.analyses.length} momento(s) · {new Date(s.created_at).toLocaleDateString("pt-BR")}{s.video_path ? "" : " · sem vídeo"}
+                </div>
+              </button>
+              <button onClick={() => removeSession(s)} style={{ background: "none", border: "none", color: T.red, cursor: "pointer", fontSize: 14 }}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* TRIM */}
       {stage === "trim" && videoSrc && (
         <div style={{ ...box, display: "grid", gap: 10 }}>
@@ -473,10 +490,16 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
               <button onClick={resumePlay} style={{ ...btn, width: "auto", flex: 1 }}>CONTINUAR ▶</button>
             )}
           </div>
+          <button onClick={() => setStage("record")} style={{ ...btn, background: T.gold, color: "#000" }}>🎥 GRAVAR TELA PARA REELS</button>
+          {saving && <div style={{ fontFamily: "monospace", fontSize: 9, color: T.muted, textAlign: "center" }}>SALVANDO ANÁLISE...</div>}
           <div style={{ fontSize: 11, color: T.muted, background: T.s2, borderRadius: 6, padding: "10px 12px", lineHeight: 1.6 }}>
             📱 Como postar: dê play → grave a tela do celular → o vídeo congela nos momentos marcados com a análise completa → corte o início da gravação → poste como Reels com a legenda do gerador de conteúdo.
           </div>
         </div>
+      )}
+
+      {stage === "record" && (
+        <BreakdownRecorder onBack={() => setStage("player")} />
       )}
     </div>
   );
