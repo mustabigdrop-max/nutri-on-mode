@@ -2241,6 +2241,48 @@ export type Database = {
         }
         Relationships: []
       }
+      breakdown_sessions: {
+        Row: {
+          analyses: Json
+          breakpoints: Json
+          created_at: string
+          exercise: string | null
+          id: string
+          title: string
+          trim_end: number
+          trim_start: number
+          updated_at: string
+          user_id: string
+          video_path: string | null
+        }
+        Insert: {
+          analyses?: Json
+          breakpoints?: Json
+          created_at?: string
+          exercise?: string | null
+          id?: string
+          title?: string
+          trim_end?: number
+          trim_start?: number
+          updated_at?: string
+          user_id: string
+          video_path?: string | null
+        }
+        Update: {
+          analyses?: Json
+          breakpoints?: Json
+          created_at?: string
+          exercise?: string | null
+          id?: string
+          title?: string
+          trim_end?: number
+          trim_start?: number
+          updated_at?: string
+          user_id?: string
+          video_path?: string | null
+        }
+        Relationships: []
+      }
       business_tasks: {
         Row: {
           coach_user_id: string
