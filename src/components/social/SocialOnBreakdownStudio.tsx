@@ -176,11 +176,14 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
 }
 
 /* ─── Main ─── */
-type Stage = "upload" | "trim" | "setpoints" | "loading" | "player";
+type Stage = "upload" | "trim" | "setpoints" | "loading" | "player" | "record";
 
 export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { handle?: string }) {
   const [stage, setStage] = useState<Stage>("upload");
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [sessions, setSessions] = useState<BreakdownSession[]>([]);
+  const [saving, setSaving] = useState(false);
   const [duration, setDuration] = useState(0);
   const [trim, setTrim] = useState({ start: 0, end: 0 });
   const [breakpoints, setBreakpoints] = useState<number[]>([]);
