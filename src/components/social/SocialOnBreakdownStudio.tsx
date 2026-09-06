@@ -176,7 +176,7 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
             <div style={{ fontFamily: "monospace", fontSize: 8, color: T.cyan, letterSpacing: 1 }}>CUE PRINCIPAL</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: T.cyan, marginTop: 3, lineHeight: 1.4 }}>{data.execucao?.cue}</div>
           </div>
-          <div style={{ marginTop: 6, borderLeft: `3px solid ${T.red}`, paddingLeft: 10, background: "rgba(255,71,87,0.06)", borderRadius: 4, padding: "6px 10px" }}>
+          <div style={{ marginTop: 6, borderLeft: `3px solid ${T.red}`, paddingLeft: 10, background: "rgba(255,71,87,0.06)", borderRadius: 4, padding: "6px 10px", animation: p >= 1 ? "shake 0.3s ease 1.2s" : "none" }}>
             <span style={{ fontFamily: "monospace", fontSize: 8, color: T.red, letterSpacing: 1 }}>ERRO COMUM · </span>
             <span style={{ fontSize: 11, color: T.text }}>{data.execucao?.erro_comum}</span>
           </div>
@@ -199,7 +199,7 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
                       <span style={{ fontFamily: "monospace", fontSize: 8, color, letterSpacing: 1 }}>{LVL_LABEL[level] || ""}</span>
                     </div>
                     <div style={{ height: 6, background: T.s2, borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: p >= 2 ? `${LVL_PCT[level] || 33}%` : "0%", background: `linear-gradient(90deg, ${color}90, ${color})`, boxShadow: level === 3 ? `0 0 12px ${color}60` : "none", borderRadius: 4, transition: `width 0.8s ease ${i * 0.1 + 0.3}s` }} />
+                      <div style={{ height: "100%", width: p >= 2 ? `${LVL_PCT[level] || 33}%` : "0%", background: `linear-gradient(90deg, ${color}90, ${color})`, boxShadow: level === 3 ? `0 0 12px ${color}60, 0 0 24px ${color}30` : level === 2 ? `0 0 8px ${color}40` : "none", borderRadius: 4, transition: `width 0.8s ease ${i * 0.1 + 0.3}s`, animation: level === 3 && p >= 2 ? "barGlow 2s ease-in-out infinite" : "none" }} />
                     </div>
                   </div>
                 );
@@ -217,7 +217,7 @@ function FreezeOverlay({ data, onResume }: { data: BreakdownAnalysis | null; onR
 
         {/* MCE */}
         <div style={{ background: "rgba(2,2,5,0.85)", border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 14px", ...phase(3) }}>
-          <div style={{ fontFamily: "monospace", fontSize: 9, color: T.gold, letterSpacing: 2, marginBottom: 8 }}>MÉTODO MCE</div>
+          <div style={{ fontFamily: "monospace", fontSize: 9, color: T.gold, letterSpacing: 2, marginBottom: 8, animation: p >= 3 ? "rgbShift 0.2s steps(1) 2" : "none" }}>MÉTODO MCE</div>
           <MCECard mce={data.mce} />
         </div>
       </div>
