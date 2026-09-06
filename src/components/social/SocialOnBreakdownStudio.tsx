@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import BreakdownRecorder from "./BreakdownRecorder";
+import { listBreakdownSessions, saveBreakdownSession, getBreakdownVideoUrl, deleteBreakdownSession, type BreakdownSession } from "@/lib/breakdownSessions";
 
 /* Breakdown Studio — corte do vídeo, momentos-chave e freeze com análise
    completa em camadas (execução, ativação muscular, MCE e alerta APEX).
@@ -204,6 +206,7 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
       toast({ title: "Vídeo muito grande", description: "Use até 150 MB.", variant: "destructive" });
       return;
     }
+    setVideoFile(f);
     setVideoSrc(URL.createObjectURL(f));
     setBreakpoints([]); setAnalyses([]);
     setDuration(0); setTrim({ start: 0, end: 0 });
@@ -252,7 +255,53 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
       return;
     }
     setStage("player");
-  }, [breakpoints, handle]);
+    setSaving(true);
+    try {
+      const saved = await saveBreakdownSession({
+        file: videoFile,
+        title: (results.find((r) => r?.exercicio)?.exercicio) || "Breakdown",
+        exercise: results.find((r) => r?.exercicio)?.exercicio ?? null,
+        trimStart: trim.start,
+        trimEnd: trim.end,
+        breakpoints,
+        analyses: results,
+      });
+      if (saved) {
+        setSessions((p) => [saved, ...p]);
+        toast({ title: "Análise salva", description: "Você pode reabrir esta análise quando quiser." });
+      }
+    } catch {
+      toast({ title: "Análise não salva", description: "O breakdown funciona, mas não consegui guardar no histórico.", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }, [breakpoints, handle, videoFile, trim.start, trim.end]);
+
+  useEffect(() => { listBreakdownSessions().then(setSessions).catch(() => undefined); }, []);
+
+  const openSession = useCallback(async (s: BreakdownSession) => {
+    const url = await getBreakdownVideoUrl(s.video_path);
+    if (!url) {
+      toast({ title: "Vídeo indisponível", description: "Esta análise foi salva sem o vídeo original.", variant: "destructive" });
+      return;
+    }
+    setVideoFile(null);
+    setVideoSrc(url);
+    setTrim({ start: s.trim_start, end: s.trim_end });
+    setBreakpoints(s.breakpoints);
+    setAnalyses(s.analyses);
+    setFrozen(false); setCurrentBreak(-1); setPlaying(false);
+    setStage("player");
+  }, []);
+
+  const removeSession = useCallback(async (s: BreakdownSession) => {
+    try {
+      await deleteBreakdownSession(s);
+      setSessions((p) => p.filter((x) => x.id !== s.id));
+    } catch {
+      toast({ title: "Não consegui apagar", variant: "destructive" });
+    }
+  }, []);
 
   // Breakpoint watcher — pausa sozinho em cada momento marcado
   useEffect(() => {
@@ -291,7 +340,7 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
   };
 
   const reset = () => {
-    setStage("upload"); setVideoSrc(null); setBreakpoints([]); setAnalyses([]);
+    setStage("upload"); setVideoSrc(null); setVideoFile(null); setBreakpoints([]); setAnalyses([]);
     setFrozen(false); setCurrentBreak(-1); setPlaying(false);
     setTrim({ start: 0, end: 0 }); setDuration(0);
   };
