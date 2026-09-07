@@ -62,6 +62,7 @@ export default function NutrySyncPanel({
   trainingLabel, trainingKcal = 0, activities, climateLabel, climateMl = 0,
   onAddActivity, onRemoveActivity, readOnly,
 }: Props) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const target = Math.round(baseKcal + adjustKcal);
   const pct = target > 0 ? Math.min(100, Math.round((consumedKcal / target) * 100)) : 0;
   const remaining = Math.max(0, target - consumedKcal);
