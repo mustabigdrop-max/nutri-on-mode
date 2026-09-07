@@ -333,6 +333,17 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
           readOnly={preview}
         />
 
+        {/* Botão inline logo após a rotina — mobile */}
+        {!preview && (
+          <button
+            onClick={() => setShowActivitySheet(true)}
+            className="md:hidden w-full py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
+            style={{ background: "rgba(239,159,39,0.12)", color: "#EF9F27", border: "1px solid rgba(239,159,39,0.35)" }}
+          >
+            <Plus className="w-4 h-4" /> Adicionar atividade
+          </button>
+        )}
+
         {/* Plano + Treino */}
 
         <div className="grid gap-3 sm:grid-cols-2">
