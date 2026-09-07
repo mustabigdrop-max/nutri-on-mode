@@ -50,6 +50,7 @@ import SocialOnOverlayStudio from "@/components/social/SocialOnOverlayStudio";
 import SocialOnBreakdownStudio from "@/components/social/SocialOnBreakdownStudio";
 import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerator";
 import ContentPackTodayPanel from "@/components/social/ContentPackTodayPanel";
+import MceCarouselPanel from "@/components/social/MceCarouselPanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -1084,6 +1085,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="overlay_studio" className="mt-4">
             <SocialOnOverlayStudio />
+          </TabsContent>
+          <TabsContent value="carrossel_mce" className="mt-4">
+            <MceCarouselPanel handle={handle} />
           </TabsContent>
           <TabsContent value="pacote_dia" className="mt-4">
             <ContentPackTodayPanel />
