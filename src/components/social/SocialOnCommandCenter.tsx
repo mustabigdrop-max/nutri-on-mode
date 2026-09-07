@@ -6,6 +6,15 @@ import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import { usePublishToInstagram } from "@/hooks/usePublishToInstagram";
 import { renderSlide, downloadMany, SOCIAL_BRAND, monogramFromHandle } from "@/lib/socialImageKit";
 import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
+import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
+import { renderStoryFrames, type StoryScript } from "@/lib/storyFrameTemplate";
+import {
+  detectarTipoConteudo, CONTENT_TYPE_LABEL, usesMedia, isPostType, type PlanContentType,
+} from "@/lib/socialContentTypes";
+import {
+  InteractionPackCard, DmScriptsCard, StoryFramesCard, storyScriptText,
+  type InteractionPack, type DmScripts,
+} from "@/components/social/PlanItemOutputs";
 
 const C = {
   bg: "#020205", s1: "#0B0B12", s2: "#10101A", s3: "#181824",
@@ -40,10 +49,17 @@ interface ReadyContent {
   carousel?: CarouselSlideSpec[]; slideImages?: string[];
   // gerado a partir de foto/vídeo real do coach (prism-analyze)
   mediaFile?: File; mediaPreview?: string; mediaKind?: "image" | "video";
+  // outputs por tipo de item do plano
+  kind?: PlanContentType;
+  pack?: InteractionPack;
+  dm?: DmScripts;
+  story?: StoryScript;
 }
 
-const readyText = (r: ReadyContent) =>
-  [r.hook, "", r.caption, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
+const readyText = (r: ReadyContent) => {
+  if (r.story) return storyScriptText(r.story);
+  return [r.hook, "", r.caption, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
+};
 
 const copyReady = (r: ReadyContent) => {
   navigator.clipboard.writeText(readyText(r));
@@ -66,10 +82,63 @@ function DailyCoach({
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const coverFileRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
+  /** Tema do post mais recente antes deste item — contexto do pack de interação. */
+  const previousPostTopic = (i: number) => {
+    const actions = brief?.actions || [];
+    for (let k = i - 1; k >= 0; k--) {
+      if (isPostType(detectarTipoConteudo({ title: actions[k]?.title, detail: actions[k]?.detail }))) {
+        return [actions[k]?.title, actions[k]?.detail].filter(Boolean).join(" — ");
+      }
+    }
+    return "";
+  };
+
   /** Gera o carrossel de cards; se `coverFile` vier, a capa usa sua foto real de fundo em vez do gradiente puro. */
   const generateReady = async (i: number, action: BriefAction, coverFile?: File) => {
+    const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
+    const topic = [action.title, action.detail].filter(Boolean).join(" — ");
     setGenerating(i);
     try {
+      if (kind === "PACK_INTERACAO") {
+        const r = await callSocialAI({ mode: "interaction_pack", topic, postContext: previousPostTopic(i), ...identity });
+        setReady((p) => ({ ...p, [i]: { kind, pack: r as InteractionPack } }));
+        return;
+      }
+      if (kind === "GESTAO_DM") {
+        const r = await callSocialAI({ mode: "dm_scripts", topic, ...identity });
+        setReady((p) => ({ ...p, [i]: { kind, dm: r as DmScripts } }));
+        return;
+      }
+      if (kind === "STORY_BASTIDOR" || kind === "STORY_CTA") {
+        const r = await callSocialAI({
+          mode: "story_frames", topic,
+          storyKind: kind === "STORY_CTA" ? "cta" : "bastidor",
+          ...identity,
+        });
+        const story = { tema: action.title, ...(r as StoryScript) } as StoryScript;
+        const slideImages = renderStoryFrames(story, identity.handle || "diogo.mell0");
+        setReady((p) => ({ ...p, [i]: { kind, story, slideImages } }));
+        return;
+      }
+      if (kind === "CARROSSEL_MCE" && !coverFile) {
+        const [content, pkg] = await Promise.all([
+          callSocialAI({ mode: "mce_carousel", topic, ...identity }),
+          callSocialAI({ mode: "post_package", format: "carrossel", topic, ...identity }),
+        ]);
+        const safe = { ...(content as MceCarouselContent), tema: topic, handle: identity.handle || "diogo.mell0" };
+        setReady((p) => ({
+          ...p,
+          [i]: {
+            kind,
+            hook: (pkg as ReadyContent)?.hook,
+            caption: (pkg as ReadyContent)?.caption,
+            hashtags: (pkg as ReadyContent)?.hashtags,
+            self_comment: (pkg as ReadyContent)?.self_comment,
+            slideImages: renderMceCarousel(safe),
+          },
+        }));
+        return;
+      }
       const coverImage = coverFile ? await compressImageFile(coverFile) : null;
       const r = await callSocialAI({
         mode: "post_package",
@@ -104,7 +173,7 @@ function DailyCoach({
           });
         }),
       );
-      setReady((p) => ({ ...p, [i]: { ...(r as ReadyContent), carousel: slides, slideImages } }));
+      setReady((p) => ({ ...p, [i]: { ...(r as ReadyContent), kind, carousel: slides, slideImages } }));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar o conteúdo");
     } finally {
