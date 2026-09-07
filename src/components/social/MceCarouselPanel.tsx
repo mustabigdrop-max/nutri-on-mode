@@ -97,7 +97,11 @@ export default function MceCarouselPanel({ handle }: { handle?: string | null })
             <Button
               variant="outline"
               className="gap-2"
-              onClick={() => downloadMany(images, "mce-carrossel")}
+              onClick={() =>
+                downloadMany(
+                  images.map((url, i) => ({ url, filename: `mce-carrossel-${i + 1}-${SLIDE_LABELS[i].toLowerCase().replace(/\s+/g, "-")}.png` })),
+                )
+              }
             >
               <Download className="h-4 w-4" /> Baixar os 7 slides
             </Button>
