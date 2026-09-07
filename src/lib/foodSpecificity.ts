@@ -176,6 +176,35 @@ interface GenericRule {
   livre?: boolean;
 }
 
+/** Termos que, sozinhos, são categoria — nunca alimento. */
+export const TERMOS_GENERICOS = [
+  "fruta", "frutas", "vegetal", "vegetais", "verdura", "verduras", "legume", "legumes",
+  "castanha", "castanhas", "proteina", "proteinas", "carboidrato", "carboidratos",
+  "gordura", "gorduras", "fibra", "fibras", "grao", "graos", "oleaginosa", "oleaginosas",
+  "tuberculo", "tuberculos", "peixe", "carne", "salada", "suco natural", "suco",
+  "vitamina", "cha", "tempero", "tempero funcional",
+];
+
+const QUALIFIERS = [
+  "", "variada", "variadas", "variado", "variados", "diversos", "diversas", "a gosto",
+  "a vontade", "da epoca", "da estacao", "a escolher", "magra", "magro", "boa", "boas",
+  "natural", "naturais", "cozidos", "cozidas", "no vapor", "crua", "cru", "mista", "verde",
+];
+
+const plain = (value: unknown) =>
+  safeString(value).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s+]/g, " ").replace(/\s+/g, " ").trim();
+
+/** "Castanha do Pará" é específico; "Castanhas variadas" não. */
+export const isGenericFoodName = (name: unknown): boolean => {
+  const raw = plain(name).replace(/^(1|um|uma|uns|umas)\s+/, "");
+  if (!raw) return true;
+  if (/[:\-–]/.test(safeString(name)) && raw.split(" ").length > 3) return false;
+  return TERMOS_GENERICOS.some((termo) =>
+    QUALIFIERS.some((q) => raw === (q ? `${termo} ${q}` : termo)),
+  );
+};
+
 const GENERIC_RULES: GenericRule[] = [
   { match: /^(uma\s+|1\s+)?frutas?$/i, alimento: "Banana média", medida: "1 unidade média" },
   { match: /^fruta (da [ée]poca|a escolher|variada)$/i, alimento: "Banana média", medida: "1 unidade média" },
@@ -185,7 +214,12 @@ const GENERIC_RULES: GenericRule[] = [
   { match: /^(castanhas|oleaginosas|mix de castanhas)$/i, alimento: "Castanha do pará", medida: "3 unidades" },
   { match: /^(carne|prote[íi]na)( magra| animal)?$/i, alimento: "Frango grelhado", medida: "1 palma da mão" },
   { match: /^(carboidrato|tub[ée]rculo)s?$/i, alimento: "Arroz branco", medida: "6 colheres de sopa cheias" },
-  { match: /^(gordura|gorduras boas)$/i, alimento: "Azeite extra virgem", medida: "1 colher de sopa" },
+  { match: /^(gordura|gorduras boas?)$/i, alimento: "Azeite extra virgem", medida: "1 colher de sopa" },
+  { match: /^(fibras?|gr[ãa]os?)$/i, alimento: "Aveia em flocos", medida: "2 colheres de sopa" },
+  { match: /^peixe$/i, alimento: "Tilápia grelhada", medida: "1 palma da mão" },
+  { match: /^(suco|suco natural|vitamina)$/i, alimento: "Suco de limão com água (sem açúcar)", medida: "300 ml" },
+  { match: /^ch[áa]$/i, alimento: "Chá de camomila sem açúcar", medida: "1 xícara (200 ml)" },
+  { match: /^tempero( funcional)?$/i, alimento: "Cúrcuma + pimenta-preta", medida: "1 pitada" },
 ];
 
 /** "Salada com azeite" → salada livre + azeite com medida própria. */
@@ -204,7 +238,7 @@ const buildSubs = (
 
   const out: FoodSubstitution[] = [];
   const push = (s: FoodSubstitution) => {
-    if (!s.alimento) return;
+    if (!s.alimento || isGenericFoodName(s.alimento)) return;
     if (sameFood(s.alimento, nome)) return;
     if (out.some((m) => sameFood(m.alimento, s.alimento))) return;
     out.push(s);
