@@ -297,6 +297,8 @@ function DailyCoach({
         {(brief.actions || []).map((action, i) => {
           const urgencyColors: Record<string, string> = { alta: C.orange, "média": C.cyan, baixa: C.muted };
           const typeIcons: Record<string, string> = { postar: "📤", responder: "💬", reciclar: "♻️", engajar: "⚡", analisar: "📊", criar: "✦" };
+          const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
+          const showMedia = usesMedia(kind);
           return (
             <div key={i} style={{ display: "flex", gap: 10, background: C.s2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px" }}>
               <span style={{ fontSize: 16 }}>{typeIcons[action.type || ""] || "📌"}</span>
@@ -324,8 +326,9 @@ function DailyCoach({
                         fontSize: 11, fontWeight: 700, color: C.cyan, opacity: generating === i ? 0.6 : 1,
                       }}
                     >
-                      {generating === i ? "Gerando..." : "✦ GERAR SEM FOTO"}
+                      {generating === i ? "Gerando..." : CONTENT_TYPE_LABEL[kind]}
                     </button>
+                    {showMedia && (<>
                     <input
                       ref={(el) => { fileRefs.current[i] = el; }}
                       type="file"
@@ -365,10 +368,34 @@ function DailyCoach({
                     >
                       🖼️ CAPA COM SUA FOTO
                     </button>
+                    </>)}
                   </div>
                 )}
 
-                {ready[i] && (
+                {ready[i]?.pack && (
+                  <div style={{ marginTop: 8 }}>
+                    <InteractionPackCard pack={ready[i].pack!} time={action.time} />
+                  </div>
+                )}
+
+                {ready[i]?.dm && (
+                  <div style={{ marginTop: 8 }}>
+                    <DmScriptsCard data={ready[i].dm!} time={action.time} />
+                  </div>
+                )}
+
+                {ready[i]?.story && (
+                  <div style={{ marginTop: 8 }}>
+                    <StoryFramesCard
+                      script={ready[i].story!}
+                      images={ready[i].slideImages || []}
+                      title={kind === "STORY_CTA" ? "STORIES CTA" : "STORIES BASTIDOR"}
+                      time={action.time}
+                    />
+                  </div>
+                )}
+
+                {ready[i] && !ready[i].pack && !ready[i].dm && !ready[i].story && (
                   <div style={{ marginTop: 8, background: C.s3, border: `1px solid ${C.border}`, borderRadius: 8, padding: 10 }}>
                     {!!ready[i].slideImages?.length && (
                       <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8, paddingBottom: 2 }}>
