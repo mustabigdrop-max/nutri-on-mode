@@ -85,6 +85,20 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
   const { completed, toggleMeal, climate, setClimate } = useDayContext(targetUserId);
   const [showActivitySheet, setShowActivitySheet] = useState(false);
   const [weightKg, setWeightKg] = useState(70);
+  const [showActivityFAB, setShowActivityFAB] = useState(false);
+
+  // FAB mobile: some quando o botão original está visível na tela
+  useEffect(() => {
+    if (preview) return;
+    const btn = document.getElementById("add-activity-btn");
+    if (!btn || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowActivityFAB(!entry.isIntersecting),
+      { threshold: 0.5 },
+    );
+    observer.observe(btn);
+    return () => observer.disconnect();
+  }, [preview, loading]);
 
   useEffect(() => {
     if (!targetUserId) return;
