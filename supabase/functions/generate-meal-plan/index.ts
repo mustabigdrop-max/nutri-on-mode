@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { enforceFoodSpecificity, FOOD_SPECIFICITY_PROMPT } from "../_shared/food-specificity.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -369,7 +370,7 @@ LINGUAGEM: tom técnico E empoderador. NUNCA "excesso de gordura" → "reserva a
       return "";
     })();
 
-    const systemPrompt = `Você é o NutriPlan Elite — módulo de prescrição nutricional clínico-esportiva do nutriON, com formação equivalente a PhD em Nutrição Esportiva e especialização em farmacologia do esporte.
+    const systemPrompt = FOOD_SPECIFICITY_PROMPT + `Você é o NutriPlan Elite — módulo de prescrição nutricional clínico-esportiva do nutriON, com formação equivalente a PhD em Nutrição Esportiva e especialização em farmacologia do esporte.
 
 Você integra 6 dimensões em cada plano:
 1) TDEE FARMACOLOGICAMENTE AJUSTADO (multiplicadores por composto ativo do Dr. VERTEX)
@@ -579,6 +580,8 @@ RETORNE usando a ferramenta generate_plan.`;
     if (!toolCall) throw new Error("No tool call in response");
 
     const plan = JSON.parse(toolCall.function.arguments);
+    const especificidade = enforceFoodSpecificity(plan);
+    if (especificidade.corrigidos.length) console.log("Alimentos genéricos corrigidos:", especificidade.corrigidos);
 
     // ═══════════════════════════════════════════════════════════════
     // SINCRONIZAÇÃO TRAININGON ↔ NUTRION — pós-processamento determinístico

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { enforceCeiaPosition } from "./meal_timing.ts";
 import { calculatePlanFromItems } from "../_shared/nutrition-validation.ts";
+import { enforceFoodSpecificity, FOOD_SPECIFICITY_PROMPT } from "../_shared/food-specificity.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -60,7 +61,7 @@ PESOS DE REFERÊNCIA OBRIGATÓRIOS: banana média sem casca 120g; ovo inteiro 50
 
 `;
 
-const ESPECIFICIDADE_RULE = `⛔ REGRA OBRIGATÓRIA — NUNCA USAR NOMES GENÉRICOS DE ALIMENTOS:
+const ESPECIFICIDADE_RULE = FOOD_SPECIFICITY_PROMPT + `⛔ REGRA OBRIGATÓRIA — NUNCA USAR NOMES GENÉRICOS DE ALIMENTOS:
 - "Fruta" → especificar qual fruta (banana média, maçã média, 8 morangos, ½ manga...)
 - "Legumes" → listar quais legumes (brócolis, cenoura, abobrinha, vagem...) com medida caseira
 - "Vegetais" / "Verduras" → listar quais (alface, tomate, pepino, rúcula, agrião...)
@@ -4258,6 +4259,8 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
     // Fonte final da verdade: gramatura individual × densidade TACO, seguida de Atwater.
     // Também corrige porções unitárias incompatíveis e recalibra fontes energéticas para a meta.
     if (parsed && typeof parsed === "object") {
+      const especificidade = enforceFoodSpecificity(parsed);
+      if (especificidade.corrigidos.length) console.log("Alimentos genéricos corrigidos:", especificidade.corrigidos);
       calculatePlanFromItems(parsed, Number(calc?.metaKcal) || Number(calorias) || 0, true);
     }
 
