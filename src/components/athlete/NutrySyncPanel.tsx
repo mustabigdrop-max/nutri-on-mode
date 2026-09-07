@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Plus, Trash2 } from "lucide-react";
+import { Zap, Plus, Trash2, ChevronDown } from "lucide-react";
 import { activityMeta, fmtKcal, type PhaseConfig } from "@/lib/nutrySync";
 import { metActivity } from "@/lib/nutrySyncMet";
 import type { DailyActivity } from "@/hooks/useDailyActivities";
@@ -61,6 +62,7 @@ export default function NutrySyncPanel({
   trainingLabel, trainingKcal = 0, activities, climateLabel, climateMl = 0,
   onAddActivity, onRemoveActivity, readOnly,
 }: Props) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const target = Math.round(baseKcal + adjustKcal);
   const pct = target > 0 ? Math.min(100, Math.round((consumedKcal / target) * 100)) : 0;
   const remaining = Math.max(0, target - consumedKcal);
@@ -118,8 +120,23 @@ export default function NutrySyncPanel({
         <strong style={{ color: "#fff" }}>{fmtKcal(remaining)}</strong>
       </p>
 
-      {/* Ajustes do dia */}
-      <p className="text-[10px] uppercase tracking-wider mb-2" style={{ color: DIM }}>Ajustes do dia</p>
+      {/* Ajustes do dia — colapsável no mobile */}
+      <button
+        type="button"
+        onClick={() => setDetailsOpen((v) => !v)}
+        className="md:hidden flex items-center justify-between w-full mb-2"
+      >
+        <span className="text-[10px] uppercase tracking-wider" style={{ color: DIM }}>Ajustes do dia</span>
+        <span className="text-[10px] font-semibold flex items-center gap-1" style={{ color: CYAN }}>
+          {detailsOpen ? "Ocultar" : "Ver ajustes do dia"}
+          <ChevronDown
+            className="w-3.5 h-3.5 transition-transform"
+            style={{ transform: detailsOpen ? "rotate(180deg)" : "none" }}
+          />
+        </span>
+      </button>
+      <p className="hidden md:block text-[10px] uppercase tracking-wider mb-2" style={{ color: DIM }}>Ajustes do dia</p>
+      <div className={`${detailsOpen ? "" : "hidden"} md:block`}>
       <div className="space-y-1.5 mb-3">
         {trainingLabel && (
           <div className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.04)" }}>
@@ -163,8 +180,10 @@ export default function NutrySyncPanel({
         <MacroBar label="Carbo" target={targetMacros.carbs} consumed={consumedMacros.carbs} color={CYAN} />
         <MacroBar label="Gordura" target={targetMacros.fat} consumed={consumedMacros.fat} color={GOLD} />
       </div>
+      </div>
 
       <button
+        id="add-activity-btn"
         onClick={onAddActivity}
         disabled={readOnly}
         className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40"

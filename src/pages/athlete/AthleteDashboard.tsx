@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   UtensilsCrossed, Dumbbell, Pill, TrendingUp, MessageSquare,
-  ChevronRight, Bell, User, Flame, Camera, Scale, Loader2,
+  ChevronRight, Bell, User, Flame, Camera, Scale, Loader2, Plus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +85,20 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
   const { completed, toggleMeal, climate, setClimate } = useDayContext(targetUserId);
   const [showActivitySheet, setShowActivitySheet] = useState(false);
   const [weightKg, setWeightKg] = useState(70);
+  const [showActivityFAB, setShowActivityFAB] = useState(false);
+
+  // FAB mobile: some quando o botão original está visível na tela
+  useEffect(() => {
+    if (preview) return;
+    const btn = document.getElementById("add-activity-btn");
+    if (!btn || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowActivityFAB(!entry.isIntersecting),
+      { threshold: 0.5 },
+    );
+    observer.observe(btn);
+    return () => observer.disconnect();
+  }, [preview, loading]);
 
   useEffect(() => {
     if (!targetUserId) return;
@@ -319,6 +333,17 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
           readOnly={preview}
         />
 
+        {/* Botão inline logo após a rotina — mobile */}
+        {!preview && (
+          <button
+            onClick={() => setShowActivitySheet(true)}
+            className="md:hidden w-full py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
+            style={{ background: "rgba(239,159,39,0.12)", color: "#EF9F27", border: "1px solid rgba(239,159,39,0.35)" }}
+          >
+            <Plus className="w-4 h-4" /> Adicionar atividade
+          </button>
+        )}
+
         {/* Plano + Treino */}
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -547,6 +572,29 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
           </Card>
         )}
       </main>
+
+      {/* FAB mobile — Adicionar atividade sempre acessível */}
+      {!preview && showActivityFAB && (
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          onClick={() => setShowActivitySheet(true)}
+          aria-label="Adicionar atividade"
+          className="md:hidden fixed z-50 flex items-center justify-center rounded-full"
+          style={{
+            bottom: 150,
+            right: 20,
+            width: 56,
+            height: 56,
+            background: "#EF9F27",
+            color: "#0A0A0A",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          }}
+        >
+          <Plus className="w-7 h-7" strokeWidth={2.75} />
+        </motion.button>
+      )}
 
       <AddActivitySheet
         open={showActivitySheet && !preview}
