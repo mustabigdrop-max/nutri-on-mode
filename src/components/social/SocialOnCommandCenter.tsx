@@ -120,7 +120,7 @@ function DailyCoach({
         setReady((p) => ({ ...p, [i]: { kind, story, slideImages } }));
         return;
       }
-      if (kind === "CARROSSEL_MCE" && !coverFile) {
+      if (kind === "CARROSSEL_MCE") {
         const [content, pkg] = await Promise.all([
           callSocialAI({ mode: "mce_carousel", topic, ...identity }),
           callSocialAI({ mode: "post_package", format: "carrossel", topic, ...identity }),
