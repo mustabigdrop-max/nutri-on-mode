@@ -20,6 +20,7 @@ const SECTIONS: HubSection[] = [
     label: "RÁPIDO",
     accent: CYAN,
     tools: [
+      { id: "carrossel_mce", name: "Carrossel MCE", icon: "▤", desc: "Tema → 7 slides no template MCE Educacional", hot: true, isNew: true },
       { id: "pacote_dia", name: "Pacote do Dia", icon: "📦", desc: "Reels, carrossel, stories e cronograma prontos", hot: true, isNew: true },
       { id: "signal", name: "SIGNAL", icon: "📡", desc: "Briefing diário completo", hot: true },
       { id: "um_toque", name: "1 Toque", icon: "✦", desc: "Upload → 4 versões prontas", hot: true },
