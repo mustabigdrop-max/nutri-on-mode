@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   UtensilsCrossed, Dumbbell, Pill, TrendingUp, MessageSquare,
-  ChevronRight, Bell, User, Flame, Camera, Scale, Loader2,
+  ChevronRight, Bell, User, Flame, Camera, Scale, Loader2, Plus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
