@@ -573,6 +573,29 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
         )}
       </main>
 
+      {/* FAB mobile — Adicionar atividade sempre acessível */}
+      {!preview && showActivityFAB && (
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          onClick={() => setShowActivitySheet(true)}
+          aria-label="Adicionar atividade"
+          className="md:hidden fixed z-50 flex items-center justify-center rounded-full"
+          style={{
+            bottom: 150,
+            right: 20,
+            width: 56,
+            height: 56,
+            background: "#EF9F27",
+            color: "#0A0A0A",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          }}
+        >
+          <Plus className="w-7 h-7" strokeWidth={2.75} />
+        </motion.button>
+      )}
+
       <AddActivitySheet
         open={showActivitySheet && !preview}
         weightKg={weightKg}
