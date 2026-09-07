@@ -120,8 +120,23 @@ export default function NutrySyncPanel({
         <strong style={{ color: "#fff" }}>{fmtKcal(remaining)}</strong>
       </p>
 
-      {/* Ajustes do dia */}
-      <p className="text-[10px] uppercase tracking-wider mb-2" style={{ color: DIM }}>Ajustes do dia</p>
+      {/* Ajustes do dia — colapsável no mobile */}
+      <button
+        type="button"
+        onClick={() => setDetailsOpen((v) => !v)}
+        className="md:hidden flex items-center justify-between w-full mb-2"
+      >
+        <span className="text-[10px] uppercase tracking-wider" style={{ color: DIM }}>Ajustes do dia</span>
+        <span className="text-[10px] font-semibold flex items-center gap-1" style={{ color: CYAN }}>
+          {detailsOpen ? "Ocultar" : "Ver ajustes do dia"}
+          <ChevronDown
+            className="w-3.5 h-3.5 transition-transform"
+            style={{ transform: detailsOpen ? "rotate(180deg)" : "none" }}
+          />
+        </span>
+      </button>
+      <p className="hidden md:block text-[10px] uppercase tracking-wider mb-2" style={{ color: DIM }}>Ajustes do dia</p>
+      <div className={`${detailsOpen ? "" : "hidden"} md:block`}>
       <div className="space-y-1.5 mb-3">
         {trainingLabel && (
           <div className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.04)" }}>
