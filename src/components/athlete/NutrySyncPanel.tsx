@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Plus, Trash2 } from "lucide-react";
+import { Zap, Plus, Trash2, ChevronDown } from "lucide-react";
 import { activityMeta, fmtKcal, type PhaseConfig } from "@/lib/nutrySync";
 import { metActivity } from "@/lib/nutrySyncMet";
 import type { DailyActivity } from "@/hooks/useDailyActivities";
