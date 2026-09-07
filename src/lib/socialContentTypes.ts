@@ -24,7 +24,11 @@ export function detectarTipoConteudo(item: { title?: string; detail?: string }):
   const descricao = norm(item.detail);
   const all = `${titulo} ${descricao}`;
 
-  if (titulo.includes("mce_drop") || titulo.includes("mce drop")) return "CARROSSEL_MCE";
+  // O briefing já retornou este nome com espaço, underscore, hífen e até
+  // prefixos como "Post". Normalizar separadores evita que qualquer variação
+  // de MCE Drop caia no carrossel genérico antigo.
+  const tituloCompacto = titulo.replace(/[^a-z0-9]+/g, " ").trim();
+  if (/\bmce\s+drop\b/.test(tituloCompacto)) return "CARROSSEL_MCE";
   if (titulo.includes("interacao") && all.includes("post")) return "PACK_INTERACAO";
   if (all.includes("bastidor")) return "STORY_BASTIDOR";
   if (titulo.includes("story cta") || (titulo.includes("story") && descricao.includes("venda"))) return "STORY_CTA";
@@ -46,7 +50,8 @@ export const CONTENT_TYPE_LABEL: Record<PlanContentType, string> = {
 };
 
 /** Itens de texto/ação não precisam dos botões de foto/vídeo. */
-export const usesMedia = (t: PlanContentType) => t !== "PACK_INTERACAO" && t !== "GESTAO_DM";
+export const usesMedia = (t: PlanContentType) =>
+  t !== "CARROSSEL_MCE" && t !== "PACK_INTERACAO" && t !== "GESTAO_DM";
 
 /** Tipos que produzem post/carrossel — servem de contexto pro pack de interação. */
 export const isPostType = (t: PlanContentType) =>
