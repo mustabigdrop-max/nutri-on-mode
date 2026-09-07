@@ -180,8 +180,10 @@ export default function NutrySyncPanel({
         <MacroBar label="Carbo" target={targetMacros.carbs} consumed={consumedMacros.carbs} color={CYAN} />
         <MacroBar label="Gordura" target={targetMacros.fat} consumed={consumedMacros.fat} color={GOLD} />
       </div>
+      </div>
 
       <button
+        id="add-activity-btn"
         onClick={onAddActivity}
         disabled={readOnly}
         className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40"
