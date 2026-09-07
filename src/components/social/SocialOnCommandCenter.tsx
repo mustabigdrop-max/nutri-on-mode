@@ -228,7 +228,8 @@ function DailyCoach({
   const downloadReady = async (i: number) => {
     const r = ready[i];
     if (!r?.slideImages?.length) return;
-    const n = await downloadMany(r.slideImages.map((url, idx) => ({ url, filename: `post-${i + 1}-slide-${idx + 1}.png` })));
+    const prefix = r.kind === "CARROSSEL_MCE" ? "mce-educacional" : `post-${i + 1}`;
+    const n = await downloadMany(r.slideImages.map((url, idx) => ({ url, filename: `${prefix}-slide-${idx + 1}.png` })));
     if (n) toast.success(`${n} imagens baixadas!`); else toast.error("Não consegui baixar as imagens");
   };
 
@@ -397,6 +398,11 @@ function DailyCoach({
 
                 {ready[i] && !ready[i].pack && !ready[i].dm && !ready[i].story && (
                   <div style={{ marginTop: 8, background: C.s3, border: `1px solid ${C.border}`, borderRadius: 8, padding: 10 }}>
+                    {ready[i].kind === "CARROSSEL_MCE" && (
+                      <div style={{ fontFamily: F.m, fontSize: 8, color: C.gold, letterSpacing: 1, marginBottom: 8 }}>
+                        MCE EDUCACIONAL · 7 SLIDES · MODELO OFICIAL
+                      </div>
+                    )}
                     {!!ready[i].slideImages?.length && (
                       <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 8, paddingBottom: 2 }}>
                         {ready[i].slideImages!.map((url, idx) => (
