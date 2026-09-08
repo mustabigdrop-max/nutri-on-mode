@@ -1,3 +1,5 @@
+import { peptidesExpansion } from "./peptideVaultExpansion";
+
 export interface Peptide {
   id: string;
   name: string;
@@ -17,7 +19,16 @@ export interface Peptide {
   synergies: string;
   dietImpact: string;
   recentStudies: string[];
+  evidencia?: "FORTE" | "MODERADA" | "PRELIMINAR" | "ANECDÓTICA";
+  beneficios?: string[];
+  efeitosColaterais?: string[];
+  notas?: string;
+  vanguarda?: boolean;
 }
+
+/** Aviso obrigatório em todas as visualizações de peptídeos. */
+export const PEPTIDE_DISCLAIMER =
+  "⚕️ Informação educacional. Não constitui prescrição ou recomendação de uso. Consulte um médico.";
 
 export const CATEGORIES = [
   "Todos", "Metabólico", "Eixo GH", "Eixo IGF", "Reparo", "Blends",
@@ -31,7 +42,7 @@ export const OBJECTIVE_TAGS = [
   "anti-aging", "cognitivo",
 ] as const;
 
-export const peptides: Peptide[] = [
+const peptidesBase: Peptide[] = [
   // ─── APROVADOS ───────────────────────────────────────────
   {
     id: "semaglutide",
@@ -3082,3 +3093,6 @@ export const searchSuggestions = [
   "Bioreguladores Khavinson longevidade",
   "MOTS-c exercício-mimético mitocôndria",
 ];
+
+
+export const peptides: Peptide[] = [...peptidesBase, ...peptidesExpansion];
