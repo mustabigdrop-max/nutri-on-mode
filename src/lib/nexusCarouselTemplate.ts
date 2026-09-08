@@ -10,6 +10,8 @@
  * Nos textos, trechos entre **asteriscos duplos** saem destacados no acento.
  */
 
+import { chunk, drawSlideFooter, limitWords } from "@/lib/slideBase";
+
 export const NEXUS_TPL = {
   bg: "#0A0A0A",
   ink: "#F5F0E8",
@@ -89,6 +91,17 @@ export const NEXUS_CTA_SLIDE = {
 } as const;
 
 const S = 3; // 360px de referência → 1080px reais
+
+/** Limites rígidos de conteúdo por slide — o excedente vira slide adicional. */
+export const MAX_PASSOS = 3;
+export const MAX_PALAVRAS_PASSO = 15;
+export const MAX_BENEFICIOS_SLIDE = 2;
+export const MAX_BENEFICIOS_TOTAL = 4;
+export const MAX_RISCOS_SLIDE = 3;
+export const MAX_RISCOS_TOTAL = 6;
+export const MAX_PERGUNTAS_SLIDE = 3;
+export const MAX_PERGUNTAS_TOTAL = 6;
+export const MAX_LINHAS_RESUMO = 5;
 const px = (v: number) => v * S;
 
 const font = (weight: number, size: number) =>
@@ -272,24 +285,14 @@ const statusBadge = (ctx: CanvasRenderingContext2D, w: number, status: NexusStat
   ctx.textBaseline = "alphabetic";
 };
 
-const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) => {
-  const x = px(28);
-  const y = h - px(30);
-  ctx.textBaseline = "alphabetic";
-  ctx.font = font(700, 15);
-  ctx.fillStyle = dark ? "#0A0A0A" : NEXUS_TPL.ink;
-  ctx.fillText("nutri", x, y);
-  const nutriW = ctx.measureText("nutri").width;
-  ctx.font = `italic 700 ${px(15)}px Inter, system-ui, sans-serif`;
-  ctx.fillStyle = dark ? "#0A0A0A" : NEXUS_TPL.accent;
-  ctx.fillText("ON", x + nutriW, y);
-
-  ctx.font = font(400, 9);
-  ctx.fillStyle = dark ? NEXUS_TPL.ctaHandle : NEXUS_TPL.footerMuted;
-  ctx.textAlign = "right";
-  ctx.fillText(handle, w - x, y);
-  ctx.textAlign = "left";
-};
+/** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
+const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
+  drawSlideFooter(ctx, w, h, handle, {
+    ink: dark ? "#0A0A0A" : NEXUS_TPL.ink,
+    accent: dark ? "#0A0A0A" : NEXUS_TPL.accent,
+    handleColor: dark ? NEXUS_TPL.ctaHandle : NEXUS_TPL.footerMuted,
+    scale: S,
+  });
 
 /** Referência científica discreta no rodapé do slide. */
 const refLine = (ctx: CanvasRenderingContext2D, text: string, x: number, h: number, w: number) => {
@@ -454,7 +457,7 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     const { canvas, ctx } = baseSlide(s, 2.1);
     let y = px(100);
     y = sectionTitle(ctx, "COMO FUNCIONA", x, y);
-    const passos = (content.slide3_mecanismo?.passos || []).slice(0, 4);
+    const passos = (content.slide3_mecanismo?.passos || []).slice(0, MAX_PASSOS).map((p) => limitWords(p, MAX_PALAVRAS_PASSO));
     passos.forEach((passo, i) => {
       const top = y;
       ctx.font = font(900, 13);
@@ -508,9 +511,8 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
 
   // 4 — BENEFÍCIOS COM DADOS (máx. 2 por slide)
   {
-    const todos = (content.slide4_beneficios || []).slice(0, 4);
-    const grupos: NexusBeneficio[][] = [];
-    for (let i = 0; i < todos.length; i += 2) grupos.push(todos.slice(i, i + 2));
+    const todos = (content.slide4_beneficios || []).slice(0, MAX_BENEFICIOS_TOTAL);
+    const grupos: NexusBeneficio[][] = chunk(todos, MAX_BENEFICIOS_SLIDE);
     if (!grupos.length) grupos.push([]);
     grupos.forEach((grupo, gi) => {
       const { canvas, ctx } = baseSlide(s, 3.3);
@@ -546,12 +548,14 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     });
   }
 
-  // 5 — O OUTRO LADO
-  {
+  // 5 — O OUTRO LADO (máx. 3 riscos por slide)
+  const gruposRiscos = chunk((content.slide5_riscos || []).slice(0, MAX_RISCOS_TOTAL), MAX_RISCOS_SLIDE);
+  if (!gruposRiscos.length) gruposRiscos.push([]);
+  gruposRiscos.forEach((grupoRisco, ri) => {
     const { canvas, ctx } = baseSlide(s, 4.5);
     let y = px(100);
-    y = sectionTitle(ctx, "O OUTRO LADO", x, y);
-    for (const r of (content.slide5_riscos || []).slice(0, 4)) {
+    y = sectionTitle(ctx, ri === 0 ? "O OUTRO LADO" : "O OUTRO LADO (2)", x, y);
+    for (const r of grupoRisco) {
 
       ctx.font = font(900, 12);
       ctx.fillStyle = A;
@@ -567,7 +571,7 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
       }
       y += px(16);
     }
-    if (content.slide5_nao_indicado) {
+    if (content.slide5_nao_indicado && ri === gruposRiscos.length - 1) {
       y += px(6);
       const boxTop = y;
       const boxEnd = drawRich(ctx, content.slide5_nao_indicado, x + px(16), y + px(34), {
@@ -585,7 +589,7 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     }
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
-  }
+  });
 
   // 6 — COMPARATIVO (opcional)
   if (content.slide6_tabela?.length && content.slide6_comparativo_nome) {
@@ -672,12 +676,14 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     out.push(canvas.toDataURL("image/png"));
   }
 
-  // 8 — PERGUNTAS PRO MÉDICO
-  {
+  // 8 — PERGUNTAS PRO MÉDICO (máx. 3 por slide)
+  const gruposPerguntas = chunk((content.slide8_perguntas_medico || []).slice(0, MAX_PERGUNTAS_TOTAL), MAX_PERGUNTAS_SLIDE);
+  if (!gruposPerguntas.length) gruposPerguntas.push([]);
+  gruposPerguntas.forEach((grupoPergunta, qi) => {
     const { canvas, ctx } = baseSlide(s, 7.4);
     let y = px(100);
-    y = sectionTitle(ctx, "LEVE PRO SEU MÉDICO", x, y);
-    (content.slide8_perguntas_medico || []).slice(0, 4).forEach((q, i) => {
+    y = sectionTitle(ctx, qi === 0 ? "LEVE PRO SEU MÉDICO" : "LEVE PRO SEU MÉDICO (2)", x, y);
+    grupoPergunta.forEach((q, i) => {
       const top = y;
       const end = drawRich(ctx, `“${q}”`, x + px(46), top + px(30), {
         size: 12, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.55, maxWidth: maxW - px(66), hiWeight: 800,
@@ -700,7 +706,7 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
 
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
-  }
+  });
 
   // 9 — RESUMO VISUAL
   {
@@ -728,11 +734,16 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
       cy += px(16);
     };
 
-    line("O QUE É", r.oque, A);
-    line("BENEFÍCIO", r.beneficio, G);
-    line("RISCO", r.risco, A);
-    line("EVIDÊNCIA", r.evidencia || "PRELIMINAR", P);
-    if (r.custo) line("CUSTO", r.custo, NEXUS_TPL.muted);
+    const linhasResumo: [string, string, string][] = [
+      ["O QUE É", r.oque, A],
+      ["BENEFÍCIO", r.beneficio, G],
+      ["RISCO", r.risco, A],
+      ["EVIDÊNCIA", r.evidencia || "PRELIMINAR", P],
+      ["CUSTO", r.custo || "", NEXUS_TPL.muted],
+    ];
+    for (const [label, value, color] of linhasResumo.filter(([, v]) => v).slice(0, MAX_LINHAS_RESUMO)) {
+      line(label, value, color);
+    }
 
     cy += px(4);
     const vTop = cy;
@@ -798,11 +809,17 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
 
 /** Rótulos dos slides gerados, na mesma ordem do array de imagens. */
 export const nexusSlideLabels = (content: NexusCarouselContent): string[] => {
-  const base = ["CAPA", "FICHA", "MECANISMO", "BENEFÍCIOS"];
-  if ((content.slide4_beneficios || []).length > 2) base.push("BENEFÍCIOS 2");
-  base.push("RISCOS");
-  if (content.slide6_tabela?.length && content.slide6_comparativo_nome) base.push("COMPARATIVO");
-  return [...base, "PRA QUEM", "PERGUNTAS", "RESUMO", "CTA"];
+  const labels = ["CAPA", "FICHA", "MECANISMO"];
+  const nBenef = chunk((content.slide4_beneficios || []).slice(0, MAX_BENEFICIOS_TOTAL), MAX_BENEFICIOS_SLIDE).length || 1;
+  for (let i = 0; i < nBenef; i++) labels.push(i === 0 ? "BENEFÍCIOS" : `BENEFÍCIOS ${i + 1}`);
+  const nRisco = chunk((content.slide5_riscos || []).slice(0, MAX_RISCOS_TOTAL), MAX_RISCOS_SLIDE).length || 1;
+  for (let i = 0; i < nRisco; i++) labels.push(i === 0 ? "RISCOS" : `RISCOS ${i + 1}`);
+  if (content.slide6_tabela?.length && content.slide6_comparativo_nome) labels.push("COMPARATIVO");
+  labels.push("PRA QUEM");
+  const nPerg = chunk((content.slide8_perguntas_medico || []).slice(0, MAX_PERGUNTAS_TOTAL), MAX_PERGUNTAS_SLIDE).length || 1;
+  for (let i = 0; i < nPerg; i++) labels.push(i === 0 ? "PERGUNTAS" : `PERGUNTAS ${i + 1}`);
+  labels.push("RESUMO", "CTA");
+  return labels;
 };
 
 
