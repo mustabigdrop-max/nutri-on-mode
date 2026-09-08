@@ -794,10 +794,13 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
 
 /** Rótulos dos slides gerados, na mesma ordem do array de imagens. */
 export const nexusSlideLabels = (content: NexusCarouselContent): string[] => {
-  const base = ["CAPA", "FICHA", "MECANISMO", "BENEFÍCIOS", "RISCOS"];
+  const base = ["CAPA", "FICHA", "MECANISMO", "BENEFÍCIOS"];
+  if ((content.slide4_beneficios || []).length > 2) base.push("BENEFÍCIOS 2");
+  base.push("RISCOS");
   if (content.slide6_tabela?.length && content.slide6_comparativo_nome) base.push("COMPARATIVO");
   return [...base, "PRA QUEM", "PERGUNTAS", "RESUMO", "CTA"];
 };
+
 
 /** Escolhe o template certo pela origem do conteúdo. Nunca misturar. */
 export const getTemplate = (origem?: string | null): "NEXUS_BIO" | "MCE" => {
