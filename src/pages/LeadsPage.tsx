@@ -442,6 +442,25 @@ function LeadDetail({
   const navigate = useNavigate();
   const [notes, setNotes] = useState(lead.notes || "");
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [scriptOpen, setScriptOpen] = useState(false);
+
+  // Texto legível das respostas — a fonte das perguntas vive no frontend,
+  // então mandamos resolvido pro gerador de script.
+  const answersText = useMemo(
+    () =>
+      (lead.answers || [])
+        .map((a) => {
+          const q = QUESTIONS[a.question_index];
+          if (!q) return null;
+          return {
+            pilar: PILLAR_META[a.pillar].label,
+            pergunta: q.text,
+            resposta: q.options.find((o) => o.value === a.score)?.text ?? `valor ${a.score}`,
+          };
+        })
+        .filter(Boolean) as { pilar: string; pergunta: string; resposta: string }[],
+    [lead.answers],
+  );
   const weakest = weakestPillar({ M: lead.score_mentalidade, C: lead.score_comportamento, E: lead.score_execucao });
   const weakScore = { M: lead.score_mentalidade, C: lead.score_comportamento, E: lead.score_execucao }[weakest];
 
