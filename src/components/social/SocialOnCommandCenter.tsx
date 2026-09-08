@@ -16,6 +16,7 @@ import {
   detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
 } from "@/lib/socialContentTypes";
 import PhotoStoryStudio from "@/components/social/PhotoStoryStudio";
+import PhotoDayStudio from "@/components/social/PhotoDayStudio";
 import { HookChooser, ScreenTextTimeline, ViralExtras } from "@/components/social/ViralKitPanel";
 import {
   analisarViralidade, melhorHorario, CTA_POR_TIPO, gerarHashtags, achatarHashtags,
@@ -98,6 +99,7 @@ function DailyCoach({
   const coverFileRefs = useRef<Record<number, HTMLInputElement | null>>({});
   /** Foto real escolhida por item — abre o estúdio de story com overlay. */
   const [photoStory, setPhotoStory] = useState<Record<number, File | undefined>>({});
+  const [photoDay, setPhotoDay] = useState(false);
 
   /** Plano do dia montado pelo calendário semanal por série (rotaciona as 6 séries). */
   const planItems = useMemo<BriefAction[]>(
@@ -370,8 +372,26 @@ function DailyCoach({
         </span>
       </div>
 
+      {/* Postar com minha foto — gera o dia inteiro a partir de 1 foto */}
+      {photoDay ? (
+        <div style={{ marginBottom: 12 }}>
+          <PhotoDayStudio tema={planItems[0]?.title} handle="diogo.mell0" onClose={() => setPhotoDay(false)} />
+        </div>
+      ) : (
+        <button
+          onClick={() => setPhotoDay(true)}
+          style={{
+            width: "100%", height: 60, marginBottom: 12, background: "#EF9F27", color: "#0A0A0A",
+            border: "none", borderRadius: 12, fontFamily: F.t, fontWeight: 700, fontSize: 17, cursor: "pointer",
+          }}
+        >
+          📸 POSTAR COM MINHA FOTO
+        </button>
+      )}
+
       {/* Sugestão da MicrobiotaVault */}
       <MicrobiotaSuggestion />
+
 
       {/* Actions */}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
