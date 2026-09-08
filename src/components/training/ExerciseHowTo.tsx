@@ -4,7 +4,7 @@ import { Play, X, MessageCircle, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
-import { getVideoVerificado, listarMapeamentos, resolverCoachUserIdDoAluno, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import { getVideoParaExibir, listarMapeamentos, resolverCoachUserIdDoAluno, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
 import { exerciseKey } from "@/lib/exerciseGuide";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 import AnatomyMuscleMap from "@/components/social/AnatomyMuscleMap";
@@ -93,7 +93,11 @@ function VideoCard({ video, exerciseName }: { video: ExerciseVideo; exerciseName
           textAlign: "left",
         }}
       >
-        Vídeo verificado pelo coach
+        {video.status === "custom"
+          ? "Vídeo do coach"
+          : video.status === "verified"
+            ? "Demonstração verificada pelo coach"
+            : "Demonstração do movimento (referência automática)"}
       </div>
       {video.type === "video" ? (
         <video
@@ -426,7 +430,7 @@ export function ExerciseHowTo({
     setOpen(true);
     if (!video && !videoTried) {
       setVideoTried(true);
-      getVideoVerificado(exerciseName, coachMode ? coachId : undefined)
+      getVideoParaExibir(exerciseName, coachMode ? coachId : undefined)
         .then((v) => setVideo(v))
         .catch(() => {});
     }
@@ -470,10 +474,25 @@ export function ExerciseHowTo({
 
       {coachMode && coachId && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
-          <span style={{ fontSize: 11, color: mapping?.gif_verified ? TEAL : "#f0b429" }}>
-            {mapping?.gif_verified
-              ? `GIF verificado${mapping.custom_video_url ? " (seu vídeo)" : mapping.exercise_name_en ? ` · ${mapping.exercise_name_en}` : ""}`
-              : "GIF não verificado"}
+          <span
+            style={{
+              fontSize: 11,
+              color: mapping?.custom_video_url
+                ? TEAL
+                : mapping?.gif_verified
+                  ? TEAL
+                  : video
+                    ? "#f0b429"
+                    : DIM,
+            }}
+          >
+            {mapping?.custom_video_url
+              ? "📤 Personalizado (seu vídeo)"
+              : mapping?.gif_verified
+                ? `✅ Verificado${mapping.exercise_name_en ? ` · ${mapping.exercise_name_en}` : ""}`
+                : video
+                  ? `🔄 Automático${video.nameEn ? ` · ${video.nameEn}` : ""} — revisão opcional`
+                  : "⚠️ Sem mídia"}
           </span>
           <ActionButton onClick={() => setLinking(true)} color={mapping ? DIM : AMBER}>
             {mapping ? "Trocar vídeo" : "Vincular vídeo"}
