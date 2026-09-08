@@ -120,6 +120,8 @@ export function PeptideNutritionalStrategy({ peptideSlug, fallbackData }: Props)
           <p className="text-sm">{synergies}</p>
         </div>
       )}
+
+      <PeptideDisclaimer />
     </div>
   );
 }
