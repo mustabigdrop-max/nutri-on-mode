@@ -545,7 +545,7 @@ export const microbiotaItems: MicrobiotaItem[] = [
     classe: "Posbiótico — AGCC",
     categoria: "Posbióticos",
     status: "VALIDADO",
-    objetivos: ["emagrecimento", "metabolismo" as never, "inflamação"].filter(Boolean) as string[],
+    objetivos: ["emagrecimento", "digestão", "inflamação"],
     mecanismo_acao:
       "Ativa receptores de ácidos graxos livres (FFAR2/3) no intestino e estimula a liberação de GLP-1 e PYY, os hormônios da saciedade.",
     evidencia_cientifica: "FORTE",
