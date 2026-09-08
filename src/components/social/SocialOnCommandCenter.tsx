@@ -15,6 +15,7 @@ import { montarPlanoDeHoje, totalMinutos, ICONE_DO_DIA, LEGENDA_SERIES } from "@
 import {
   detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
 } from "@/lib/socialContentTypes";
+import PhotoStoryStudio from "@/components/social/PhotoStoryStudio";
 import { HookChooser, ScreenTextTimeline, ViralExtras } from "@/components/social/ViralKitPanel";
 import {
   analisarViralidade, melhorHorario, CTA_POR_TIPO, gerarHashtags, achatarHashtags,
@@ -95,6 +96,8 @@ function DailyCoach({
   const { publish, publishCarousel } = usePublishToInstagram();
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const coverFileRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  /** Foto real escolhida por item — abre o estúdio de story com overlay. */
+  const [photoStory, setPhotoStory] = useState<Record<number, File | undefined>>({});
 
   /** Plano do dia montado pelo calendário semanal por série (rotaciona as 6 séries). */
   const planItems = useMemo<BriefAction[]>(
@@ -434,13 +437,12 @@ function DailyCoach({
                       type="file"
                       accept="image/*"
                       style={{ display: "none" }}
-                      onChange={(e) => { const f = e.target.files?.[0]; if (f) generateReady(i, action, f); e.target.value = ""; }}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) setPhotoStory((p) => ({ ...p, [i]: f })); e.target.value = ""; }}
                     />
                     <button
                       type="button"
                       onClick={() => coverFileRefs.current[i]?.click()}
-                      disabled={generating === i}
-                      title="Carrossel de cards, mas com sua foto real na capa — melhor pra viralizar"
+                      title="Sua foto real com overlay nutriON — story 1080x1920 pronto pra postar"
                       style={{
                         padding: "6px 12px", background: `${C.purple}12`, border: `1px solid ${C.purple}40`,
                         borderRadius: 6, cursor: generating === i ? "default" : "pointer", fontFamily: F.t,
@@ -451,6 +453,15 @@ function DailyCoach({
                     </button>
                     </>)}
                   </div>
+                )}
+
+                {photoStory[i] && (
+                  <PhotoStoryStudio
+                    file={photoStory[i]!}
+                    tema={[action.title, action.detail].filter(Boolean).join(" — ")}
+                    handle={identity.handle}
+                    onClose={() => setPhotoStory((p) => ({ ...p, [i]: undefined }))}
+                  />
                 )}
 
                 {ready[i]?.pack && (
