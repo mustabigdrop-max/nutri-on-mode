@@ -220,6 +220,16 @@ function ExerciseRow({
   );
 }
 
+function DayVideoReview({ day, dayLabel }: { day: ParsedDay; dayLabel: string }) {
+  const { coachMode, coachId } = useContext(CoachVideoCtx);
+  if (!coachMode || !coachId) return null;
+  const nomes = [...(day.warmup || []), ...(day.exercises || [])]
+    .map((e) => e.name)
+    .filter(Boolean) as string[];
+  if (!nomes.length) return null;
+  return <ExerciseVideoReview title={dayLabel} exercises={nomes} coachId={coachId} />;
+}
+
 function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(!!defaultOpen);
   const dayLabel = `D${day.day_number}${day.session_title ? ` · ${day.session_title}` : ""}`;
