@@ -288,8 +288,8 @@ const statusBadge = (ctx: CanvasRenderingContext2D, w: number, status: NexusStat
 /** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
 const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
   drawSlideFooter(ctx, w, h, handle, {
-    ink: dark ? "#0A0A0A" : NEXUS_TPL.ink,
-    accent: dark ? "#0A0A0A" : NEXUS_TPL.accent,
+    ink: NEXUS_TPL.ink,
+    accent: NEXUS_TPL.accent,
     handleColor: dark ? NEXUS_TPL.ctaHandle : NEXUS_TPL.footerMuted,
     background: dark ? NEXUS_TPL.accent : NEXUS_TPL.bg,
     scale: S,

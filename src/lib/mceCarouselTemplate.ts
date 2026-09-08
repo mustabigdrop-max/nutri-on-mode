@@ -181,8 +181,8 @@ const pill = (
 /** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
 const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
   drawSlideFooter(ctx, w, h, handle, {
-    ink: dark ? "#0A0A0A" : MCE_TPL.ink,
-    accent: dark ? "#0A0A0A" : MCE_TPL.gold,
+    ink: MCE_TPL.ink,
+    accent: MCE_TPL.gold,
     handleColor: dark ? MCE_TPL.ctaHandle : MCE_TPL.footerMuted,
     background: dark ? MCE_TPL.gold : MCE_TPL.bg,
     scale: S,
