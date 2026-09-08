@@ -11,10 +11,13 @@ export const EXERCISEDB_BASE =
 
 const API = `${EXERCISEDB_BASE}/exercises`;
 
+export type ExerciseVideoStatus = "custom" | "verified" | "auto";
+
 export interface ExerciseVideo {
   type: "video" | "gif";
   url: string;
   nameEn?: string | null;
+  status?: ExerciseVideoStatus;
 }
 
 export interface VideoMappingRow {
