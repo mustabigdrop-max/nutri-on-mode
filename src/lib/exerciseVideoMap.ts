@@ -221,33 +221,49 @@ export async function resolverCoachId(): Promise<string | null> {
   return (await resolverCoachUserIdDoAluno(uid)) || uid;
 }
 
-/** Vídeo aprovado pelo coach. Sem aprovação → null (nunca exibir vídeo automático). */
-export async function getVideoVerificado(
+/**
+ * Vídeo para exibir no "Como fazer".
+ * Prioridade: vídeo do coach → GIF verificado → GIF do mapeamento não verificado → sugestão automática da ExerciseDB.
+ */
+export async function getVideoParaExibir(
   exerciseName: string,
   coachId?: string | null,
 ): Promise<ExerciseVideo | null> {
   const key = exerciseKey(exerciseName);
   if (!key) return null;
   const cid = coachId ?? (await resolverCoachId());
-  if (!cid) return null;
-  const { data } = await supabase
-    .from("exercise_video_mappings")
-    .select("gif_url, custom_video_url, exercise_name_en, gif_verified")
-    .eq("exercise_key", key)
-    .eq("coach_id", cid)
-    .eq("gif_verified", true)
-    .limit(1)
-    .maybeSingle();
-  const row = data as any;
-  if (!row) return null;
-  if (!row.gif_verified) return null;
-  if (row.custom_video_url) {
-    const url = await resolveStoredVideoUrl(row.custom_video_url);
-    return url ? { type: "video", url, nameEn: row.exercise_name_en } : null;
+
+  if (cid) {
+    const { data } = await supabase
+      .from("exercise_video_mappings")
+      .select("gif_url, custom_video_url, exercise_name_en, gif_verified")
+      .eq("exercise_key", key)
+      .eq("coach_id", cid)
+      .limit(1)
+      .maybeSingle();
+    const row = data as any;
+    if (row?.custom_video_url) {
+      const url = await resolveStoredVideoUrl(row.custom_video_url);
+      if (url) return { type: "video", url, nameEn: row.exercise_name_en, status: "custom" };
+    }
+    if (row?.gif_url) {
+      return {
+        type: "gif",
+        url: row.gif_url,
+        nameEn: row.exercise_name_en,
+        status: row.gif_verified ? "verified" : "auto",
+      };
+    }
   }
-  if (row.gif_url) return { type: "gif", url: row.gif_url, nameEn: row.exercise_name_en };
-  return null;
+
+  // Sem vínculo: usa a sugestão automática da ExerciseDB (marcada como automática).
+  const sugestoes = await buscarSugestoes(termoSugerido(exerciseName));
+  const s = sugestoes[0];
+  return s ? { type: "gif", url: s.gifUrl, nameEn: s.nome, status: "auto" } : null;
 }
+
+/** Compatibilidade: mantém o nome antigo apontando para a exibição atual. */
+export const getVideoVerificado = getVideoParaExibir;
 
 /** Mapeamentos do coach para uma lista de exercícios (revisão em lote). */
 export async function listarMapeamentos(
