@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
 import { parseProtocolToDays, type ParsedDay, type ParsedExercise } from "@/lib/parseProtocolMarkdown";
 import { ExerciseHowTo } from "@/components/training/ExerciseHowTo";
+import { ExerciseVideoReview } from "@/components/training/ExerciseVideoReview";
+import { supabase } from "@/integrations/supabase/client";
+
+const CoachVideoCtx = createContext<{ coachMode: boolean; coachId: string | null }>({
+  coachMode: false,
+  coachId: null,
+});
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
