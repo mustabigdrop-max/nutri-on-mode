@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import MceRadar from "@/components/mce/MceRadar";
+import LeadScriptDialog from "@/components/mce/LeadScriptDialog";
+import LeadFollowupTracker from "@/components/mce/LeadFollowupTracker";
 import { PILLAR_META, QUESTIONS, bioLink, insightFor, levelFor, weakestPillar, type DiagPillar } from "@/data/mceDiagnostico";
 
 interface Lead {
@@ -26,6 +28,8 @@ interface Lead {
   followup_count: number | null;
   utm_source: string | null;
   utm_campaign: string | null;
+  replied?: boolean | null;
+  scheduled_call_at?: string | null;
 }
 
 interface Activity {
@@ -406,15 +410,13 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
           {new Date(lead.created_at).toLocaleDateString("pt-BR")}
         </span>
         {lead.whatsapp && (
-          <a
-            href={waLink(lead, contextMessage(lead))}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            onClick={onOpen}
             className="text-[10px] font-mono tracking-widest px-3 py-2 flex items-center gap-1"
             style={{ background: "#25D366", color: "#fff" }}
           >
             <MessageCircle className="w-3 h-3" /> WHATSAPP
-          </a>
+          </button>
         )}
         <button onClick={onOpen} className="text-[10px] font-mono tracking-widest px-3 py-2 border border-border">
           DETALHES
@@ -438,6 +440,25 @@ function LeadDetail({
   const navigate = useNavigate();
   const [notes, setNotes] = useState(lead.notes || "");
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [scriptOpen, setScriptOpen] = useState(false);
+
+  // Texto legível das respostas — a fonte das perguntas vive no frontend,
+  // então mandamos resolvido pro gerador de script.
+  const answersText = useMemo(
+    () =>
+      (lead.answers || [])
+        .map((a) => {
+          const q = QUESTIONS[a.question_index];
+          if (!q) return null;
+          return {
+            pilar: PILLAR_META[a.pillar].label,
+            pergunta: q.text,
+            resposta: q.options.find((o) => o.value === a.score)?.text ?? `valor ${a.score}`,
+          };
+        })
+        .filter(Boolean) as { pilar: string; pergunta: string; resposta: string }[],
+    [lead.answers],
+  );
   const weakest = weakestPillar({ M: lead.score_mentalidade, C: lead.score_comportamento, E: lead.score_execucao });
   const weakScore = { M: lead.score_mentalidade, C: lead.score_comportamento, E: lead.score_execucao }[weakest];
 
@@ -469,6 +490,49 @@ function LeadDetail({
     onChanged(data as unknown as Lead);
     await logActivity("status_change", `Status alterado para ${STATUS_LABEL[status]}`, lead.status, status);
     toast.success("Status atualizado");
+  }
+
+  /** Abre o WhatsApp com a mensagem inicial e marca o lead como contatado. */
+  async function sendInitial(message: string) {
+    const win = window.open(waLink(lead, message), "_blank", "noopener");
+    if (!win) return toast.error("O navegador bloqueou a janela do WhatsApp");
+    setScriptOpen(false);
+
+    const now = new Date().toISOString();
+    const patch: { contacted_at: string; last_followup_at: string; status?: string } = {
+      contacted_at: lead.contacted_at || now,
+      last_followup_at: now,
+    };
+    if (lead.status === "novo") patch.status = "contatado";
+    const { data } = await supabase.from("mce_leads").update(patch).eq("id", lead.id).select().single();
+    if (data) onChanged(data as unknown as Lead);
+    await logActivity("whatsapp_sent", `Script inicial enviado: ${message.slice(0, 120)}`);
+    toast.success("Mensagem aberta no WhatsApp");
+  }
+
+  /** Registra resposta do lead / conversa agendada e ajusta o status. */
+  async function markFollowup(patchIn: { replied?: boolean; scheduled_call_at?: string | null }) {
+    const patch: {
+      replied?: boolean;
+      scheduled_call_at?: string | null;
+      status?: string;
+      last_followup_at?: string;
+    } = { ...patchIn };
+    if (patchIn.replied === true || patchIn.scheduled_call_at) {
+      if (lead.status === "novo" || lead.status === "contatado") patch.status = "em_negociacao";
+    }
+    if (patchIn.replied === false) patch.last_followup_at = new Date().toISOString();
+    const { data, error } = await supabase.from("mce_leads").update(patch).eq("id", lead.id).select().single();
+    if (error) return toast.error("Não foi possível registrar o follow-up");
+    onChanged(data as unknown as Lead);
+    await logActivity(
+      "followup",
+      patchIn.scheduled_call_at
+        ? `Conversa agendada para ${new Date(patchIn.scheduled_call_at).toLocaleString("pt-BR")}`
+        : patchIn.replied
+          ? "Lead respondeu"
+          : "Lead não respondeu — enviar 2º follow-up",
+    );
   }
 
   async function saveNotes() {
@@ -568,16 +632,32 @@ function LeadDetail({
         </button>
 
         {lead.whatsapp && (
-          <a
-            href={waLink(lead, contextMessage(lead))}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => logActivity("whatsapp_sent", "Mensagem enviada pelo WhatsApp")}
-            className="block text-center py-4 font-bold tracking-widest"
-            style={{ background: "#25D366", color: "#fff" }}
-          >
-            FALAR NO WHATSAPP
-          </a>
+          <>
+            <button
+              onClick={() => setScriptOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-4 font-bold tracking-widest"
+              style={{ background: "#25D366", color: "#fff" }}
+            >
+              <MessageCircle className="w-4 h-4" /> FALAR NO WHATSAPP
+            </button>
+
+            <LeadFollowupTracker
+              contactedAt={lead.contacted_at}
+              scheduledCallAt={lead.scheduled_call_at ?? null}
+              replied={lead.replied ?? null}
+              onShowFollowupScript={() => setScriptOpen(true)}
+              onMark={markFollowup}
+            />
+
+            <LeadScriptDialog
+              leadId={lead.id}
+              leadName={lead.name}
+              answersText={answersText}
+              open={scriptOpen}
+              onClose={() => setScriptOpen(false)}
+              onSendInitial={sendInitial}
+            />
+          </>
         )}
 
         <div className="border border-border bg-card p-4">
