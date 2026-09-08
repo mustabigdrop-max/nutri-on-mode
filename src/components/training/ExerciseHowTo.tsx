@@ -312,15 +312,10 @@ function QuestionBox({
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth.user?.id;
       if (!uid) throw new Error("Faça login para enviar a dúvida.");
-      const { data: link } = await supabase
-        .from("coach_patients")
-        .select("coach_user_id")
-        .eq("patient_user_id", uid)
-        .limit(1)
-        .maybeSingle();
+      const coachUserId = await resolverCoachUserIdDoAluno(uid);
       const { error } = await supabase.from("exercise_questions").insert({
         user_id: uid,
-        coach_user_id: (link as any)?.coach_user_id ?? null,
+        coach_user_id: coachUserId,
         exercise_name: exerciseName,
         day_label: dayLabel || null,
         question: q,

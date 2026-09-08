@@ -115,7 +115,7 @@ export default function BreakdownRecorder({ onBack }: { onBack: () => void }) {
       {supported && !raw && (
         <>
           <p style={{ fontSize: 12, color: T.muted, margin: 0, lineHeight: 1.6 }}>
-            Clique em gravar, escolha esta aba, volte ao player e dê play. O vídeo congela sozinho em cada momento com a análise completa.
+            Clique em gravar, escolha esta aba e dê play no player acima. O vídeo congela sozinho em cada momento com a análise completa.
           </p>
           {!recording ? (
             <button onClick={start} style={btn}>● COMEÇAR GRAVAÇÃO</button>

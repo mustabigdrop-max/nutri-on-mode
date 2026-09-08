@@ -191,18 +191,31 @@ export async function buscarSugestoes(termo: string): Promise<ExerciseSuggestion
   }
 }
 
+/** user_id do coach vinculado ao aluno (coach_patients.coach_id → coach_profiles.user_id), ou null. */
+export async function resolverCoachUserIdDoAluno(patientUserId: string): Promise<string | null> {
+  const { data: link } = await supabase
+    .from("coach_patients")
+    .select("coach_id")
+    .eq("patient_user_id", patientUserId)
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
+  const coachProfileId = (link as any)?.coach_id as string | undefined;
+  if (!coachProfileId) return null;
+  const { data: prof } = await supabase
+    .from("coach_profiles")
+    .select("user_id")
+    .eq("id", coachProfileId)
+    .maybeSingle();
+  return (prof as any)?.user_id || null;
+}
+
 /** Coach responsável: o próprio usuário quando é coach, ou o coach do aluno. */
 export async function resolverCoachId(): Promise<string | null> {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth.user?.id;
   if (!uid) return null;
-  const { data: link } = await supabase
-    .from("coach_patients")
-    .select("coach_user_id")
-    .eq("patient_user_id", uid)
-    .limit(1)
-    .maybeSingle();
-  return (link as any)?.coach_user_id || uid;
+  return (await resolverCoachUserIdDoAluno(uid)) || uid;
 }
 
 /** Vídeo aprovado pelo coach. Sem aprovação → null (nunca exibir vídeo automático). */
