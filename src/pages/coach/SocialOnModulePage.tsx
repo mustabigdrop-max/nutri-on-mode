@@ -51,6 +51,7 @@ import SocialOnBreakdownStudio from "@/components/social/SocialOnBreakdownStudio
 import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerator";
 import ContentPackTodayPanel from "@/components/social/ContentPackTodayPanel";
 import MceCarouselPanel from "@/components/social/MceCarouselPanel";
+import NexusCarouselPanel from "@/components/social/NexusCarouselPanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -457,6 +458,7 @@ const SocialOnModulePage = () => {
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
+            <TabsTrigger value="carrossel_nexus" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Carrossel NEXUS-BIO</TabsTrigger>
             <TabsTrigger value="pacote_dia" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Pacote do Dia</TabsTrigger>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
             <TabsTrigger value="lote" className="text-xs gap-1"><Rocket className="w-3 h-3" />Modo Lote</TabsTrigger>
@@ -1091,6 +1093,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="carrossel_mce" className="mt-4">
             <MceCarouselPanel handle={handle} initialTema={initialTema} />
+          </TabsContent>
+          <TabsContent value="carrossel_nexus" className="mt-4">
+            <NexusCarouselPanel handle={handle} initialTema={initialTema} />
           </TabsContent>
           <TabsContent value="pacote_dia" className="mt-4">
             <ContentPackTodayPanel />
