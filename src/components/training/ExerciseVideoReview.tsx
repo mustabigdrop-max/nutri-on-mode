@@ -47,11 +47,49 @@ export function ExerciseVideoReview({
 
   useEffect(carregar, [coachId, nomes.join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Sugestões automáticas (apenas visão do coach; nunca vão para o cliente sem aprovação).
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    (async () => {
+      for (const n of nomes) {
+        if (map[exerciseKey(n)]?.gif_verified) continue;
+        if (n in sugestoes) continue;
+        const lista = await buscarSugestoes(termoSugerido(n));
+        if (!alive) return;
+        setSugestoes((prev) => ({ ...prev, [n]: lista[0] || null }));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [open, nomes.join("|"), Object.keys(map).length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!coachId || !nomes.length) return null;
 
   const pendentes = nomes.filter((n) => !map[exerciseKey(n)]?.gif_verified);
   const vinculados = nomes.length - pendentes.length;
   const atual = queue[0];
+
+  const aprovar = async (nome: string, s: ExerciseSuggestion) => {
+    setAprovando(nome);
+    try {
+      const row = await salvarMapeamento({
+        coachId,
+        exerciseNamePt: nome,
+        exerciseNameEn: s.nome,
+        exercisedbId: s.id,
+        gifUrl: s.gifUrl,
+        customVideoUrl: null,
+      });
+      if (row) setMap((prev) => ({ ...prev, [exerciseKey(nome)]: row }));
+      toast.success("GIF aprovado. Já aparece para o cliente.");
+    } catch (e) {
+      toast.error((e as Error).message || "Não foi possível aprovar.");
+    } finally {
+      setAprovando(null);
+    }
+  };
 
   return (
     <div
