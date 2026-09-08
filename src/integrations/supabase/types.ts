@@ -5271,6 +5271,9 @@ export type Database = {
           exercise_name_pt: string
           exercisedb_id: string | null
           gif_url: string | null
+          gif_verified: boolean
+          gif_verified_at: string | null
+          gif_verified_by: string | null
           id: string
           updated_at: string
           verified: boolean
@@ -5284,6 +5287,9 @@ export type Database = {
           exercise_name_pt: string
           exercisedb_id?: string | null
           gif_url?: string | null
+          gif_verified?: boolean
+          gif_verified_at?: string | null
+          gif_verified_by?: string | null
           id?: string
           updated_at?: string
           verified?: boolean
@@ -5297,6 +5303,9 @@ export type Database = {
           exercise_name_pt?: string
           exercisedb_id?: string | null
           gif_url?: string | null
+          gif_verified?: boolean
+          gif_verified_at?: string | null
+          gif_verified_by?: string | null
           id?: string
           updated_at?: string
           verified?: boolean
