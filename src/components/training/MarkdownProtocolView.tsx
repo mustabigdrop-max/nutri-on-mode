@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
 import { parseProtocolToDays, type ParsedDay, type ParsedExercise } from "@/lib/parseProtocolMarkdown";
 import { ExerciseHowTo } from "@/components/training/ExerciseHowTo";
+import { ExerciseVideoReview } from "@/components/training/ExerciseVideoReview";
+import { supabase } from "@/integrations/supabase/client";
+
+const CoachVideoCtx = createContext<{ coachMode: boolean; coachId: string | null }>({
+  coachMode: false,
+  coachId: null,
+});
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
@@ -124,6 +131,20 @@ function SectionLabel({ text }: { text: string }) {
   );
 }
 
+function ExerciseGuideSlot({ ex, dayLabel }: { ex: ParsedExercise; dayLabel?: string }) {
+  const { coachMode, coachId } = useContext(CoachVideoCtx);
+  return (
+    <ExerciseHowTo
+      exerciseName={ex.name}
+      muscleTarget={ex.muscle_target}
+      tempo={ex.tempo}
+      dayLabel={dayLabel}
+      coachMode={coachMode}
+      coachId={coachId}
+    />
+  );
+}
+
 function ExerciseRow({
   ex,
   index,
@@ -193,17 +214,20 @@ function ExerciseRow({
             {ex.notes}
           </p>
         )}
-        {showGuide !== false && ex.name && (
-          <ExerciseHowTo
-            exerciseName={ex.name}
-            muscleTarget={ex.muscle_target}
-            tempo={ex.tempo}
-            dayLabel={dayLabel}
-          />
-        )}
+        {showGuide !== false && ex.name && <ExerciseGuideSlot ex={ex} dayLabel={dayLabel} />}
       </div>
     </div>
   );
+}
+
+function DayVideoReview({ day, dayLabel }: { day: ParsedDay; dayLabel: string }) {
+  const { coachMode, coachId } = useContext(CoachVideoCtx);
+  if (!coachMode || !coachId) return null;
+  const nomes = [...(day.warmup || []), ...(day.exercises || [])]
+    .map((e) => e.name)
+    .filter(Boolean) as string[];
+  if (!nomes.length) return null;
+  return <ExerciseVideoReview title={dayLabel} exercises={nomes} coachId={coachId} />;
 }
 
 function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }) {
@@ -338,6 +362,7 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
                 background: "rgba(255,255,255,0.03)",
               }}
             >
+              <DayVideoReview day={day} dayLabel={dayLabel} />
               {hasExercises ? (
                 <>
                   {warmup.length > 0 && (
@@ -561,10 +586,18 @@ function FallbackCard({
 export function MarkdownProtocolView({
   content,
   title,
+  coachMode,
 }: {
   content: any;
   title?: string;
+  coachMode?: boolean;
 }) {
+  const [coachId, setCoachId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!coachMode) return;
+    supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
+  }, [coachMode]);
+
   // Strings JSON são normalizadas antes da renderização. Objetos estruturados
   // são aceitos porque parseProtocolToDays já converte training_days em cards.
   const isJsonLike = (v: any) => {
@@ -612,11 +645,13 @@ export function MarkdownProtocolView({
   }
 
   return (
-    <div>
-      {parsed.intro && <IntroCard text={parsed.intro} />}
-      {parsed.days.map((day, i) => (
-        <DayCard key={i} day={day} defaultOpen={i === 0} />
-      ))}
-    </div>
+    <CoachVideoCtx.Provider value={{ coachMode: !!coachMode, coachId }}>
+      <div>
+        {parsed.intro && <IntroCard text={parsed.intro} />}
+        {parsed.days.map((day, i) => (
+          <DayCard key={i} day={day} defaultOpen={i === 0} />
+        ))}
+      </div>
+    </CoachVideoCtx.Provider>
   );
 }

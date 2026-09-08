@@ -1278,7 +1278,7 @@ Português. Específico. Científico. Zero genérico.`;
                 );
               }
               if (markdown) {
-                return <MarkdownProtocolView content={markdown} title={clientName || "Protocolo"} />;
+                return <MarkdownProtocolView content={markdown} title={clientName || "Protocolo"} coachMode />;
               }
               return (
                 <p className="text-xs text-center py-8 text-zinc-500">
@@ -1352,7 +1352,7 @@ Português. Específico. Científico. Zero genérico.`;
                 );
               }
               if (protocolMd) {
-                return <MarkdownProtocolView content={protocolMd} title={clientName || "Protocolo"} />;
+                return <MarkdownProtocolView content={protocolMd} title={clientName || "Protocolo"} coachMode />;
               }
               return (
                 <p className="text-xs text-center py-8 text-zinc-500">
@@ -3104,6 +3104,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
             <MarkdownProtocolView
               content={rawMarkdown}
               title={p.client_name || "Protocolo"}
+              coachMode
             />
           ) : (
             <p className="text-xs text-center py-8" style={{ color: TEXT_MUTED }}>Sem dados do protocolo</p>

@@ -5261,6 +5261,48 @@ export type Database = {
           },
         ]
       }
+      exercise_video_mappings: {
+        Row: {
+          coach_id: string
+          created_at: string
+          custom_video_url: string | null
+          exercise_key: string
+          exercise_name_en: string | null
+          exercise_name_pt: string
+          exercisedb_id: string | null
+          gif_url: string | null
+          id: string
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          custom_video_url?: string | null
+          exercise_key: string
+          exercise_name_en?: string | null
+          exercise_name_pt: string
+          exercisedb_id?: string | null
+          gif_url?: string | null
+          id?: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          custom_video_url?: string | null
+          exercise_key?: string
+          exercise_name_en?: string | null
+          exercise_name_pt?: string
+          exercisedb_id?: string | null
+          gif_url?: string | null
+          id?: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
           created_at: string | null

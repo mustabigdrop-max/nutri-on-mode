@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, X, MessageCircle, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
-import { buscarGifExercicio } from "@/lib/exerciseGif";
+import { getVideoVerificado, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import { exerciseKey } from "@/lib/exerciseGuide";
+import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 
 const AMBER = "#EF9F27";
 const TEAL = "#5DCAA5";
@@ -66,7 +68,7 @@ function ActionButton({
   );
 }
 
-function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
+function VideoCard({ video, exerciseName }: { video: ExerciseVideo; exerciseName: string }) {
   return (
     <div
       style={{
@@ -91,18 +93,29 @@ function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
       >
         Vídeo do movimento
       </div>
-      <img
-        src={gif.gifUrl}
-        alt={`Demonstração animada do exercício ${gif.nomeEN}`}
-        loading="lazy"
-        style={{
-          width: "100%",
-          maxWidth: 260,
-          borderRadius: 8,
-          background: "#fff",
-          display: "inline-block",
-        }}
-      />
+      {video.type === "video" ? (
+        <video
+          src={video.url}
+          controls
+          loop
+          muted
+          playsInline
+          style={{ width: "100%", maxWidth: 320, borderRadius: 8, display: "inline-block" }}
+        />
+      ) : (
+        <img
+          src={video.url}
+          alt={`Demonstração animada do exercício ${video.nameEn || exerciseName}`}
+          loading="lazy"
+          style={{
+            width: "100%",
+            maxWidth: 260,
+            borderRadius: 8,
+            background: "#fff",
+            display: "inline-block",
+          }}
+        />
+      )}
       <div style={{ fontSize: 11, color: DIM, marginTop: 6 }}>
         Assista 2–3 repetições antes de começar a sua série.
       </div>
@@ -110,10 +123,9 @@ function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
   );
 }
 
-function GuideView({ guide, gif }: { guide: ExerciseGuide; gif: { gifUrl: string; nomeEN: string } | null }) {
+function GuideView({ guide }: { guide: ExerciseGuide }) {
   return (
     <div>
-      {gif && <GifCard gif={gif} />}
 
 
       {(guide.aparelho || guide.ajuste || guide.pegada) && (
@@ -336,19 +348,40 @@ export function ExerciseHowTo({
   muscleTarget,
   tempo,
   dayLabel,
+  coachMode,
+  coachId,
 }: {
   exerciseName: string;
   muscleTarget?: string | null;
   tempo?: string | null;
   dayLabel?: string;
+  coachMode?: boolean;
+  coachId?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [asking, setAsking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guide, setGuide] = useState<ExerciseGuide | null>(null);
-  const [gif, setGif] = useState<{ gifUrl: string; nomeEN: string } | null>(null);
-  const [gifTried, setGifTried] = useState(false);
+  const [video, setVideo] = useState<ExerciseVideo | null>(null);
+  const [videoTried, setVideoTried] = useState(false);
+  const [mapping, setMapping] = useState<VideoMappingRow | null>(null);
+  const [linking, setLinking] = useState(false);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
+
+  useEffect(() => {
+    if (!coachMode || !coachId) return;
+    let alive = true;
+    listarMapeamentos(coachId, [exerciseKey(exerciseName)])
+      .then((m) => {
+        if (!alive) return;
+        const row = m[exerciseKey(exerciseName)] || null;
+        setMapping(row);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [coachMode, coachId, exerciseName]);
 
   const toggle = async () => {
     if (open) {
@@ -356,9 +389,11 @@ export function ExerciseHowTo({
       return;
     }
     setOpen(true);
-    if (!gif && !gifTried) {
-      setGifTried(true);
-      buscarGifExercicio(exerciseName).then((g) => g && setGif(g)).catch(() => {});
+    if (!video && !videoTried) {
+      setVideoTried(true);
+      getVideoVerificado(exerciseName, coachMode ? coachId : undefined)
+        .then((v) => v && setVideo(v))
+        .catch(() => {});
     }
     if (!guide && !loading) {
       setLoading(true);
@@ -398,6 +433,39 @@ export function ExerciseHowTo({
         </ActionButton>
       </div>
 
+      {coachMode && coachId && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+          <span style={{ fontSize: 11, color: mapping ? TEAL : "#f0b429" }}>
+            {mapping
+              ? `Vídeo vinculado${mapping.custom_video_url ? " (seu vídeo)" : mapping.exercise_name_en ? ` · ${mapping.exercise_name_en}` : ""}`
+              : "Vídeo não vinculado"}
+          </span>
+          <ActionButton onClick={() => setLinking(true)} color={mapping ? DIM : AMBER}>
+            {mapping ? "Trocar vídeo" : "Vincular vídeo"}
+          </ActionButton>
+        </div>
+      )}
+
+      {linking && coachId && (
+        <ExerciseVideoLinker
+          exerciseName={exerciseName}
+          coachId={coachId}
+          current={mapping}
+          onSaved={(row) => {
+            setMapping(row);
+            setVideo(
+              row?.custom_video_url
+                ? { type: "video", url: row.custom_video_url, nameEn: row.exercise_name_en }
+                : row?.gif_url
+                  ? { type: "gif", url: row.gif_url, nameEn: row.exercise_name_en }
+                  : null,
+            );
+          }}
+          onClose={() => setLinking(false)}
+        />
+      )}
+
+
       <AnimatePresence initial={false}>
         {asking && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
@@ -416,8 +484,8 @@ export function ExerciseHowTo({
                   Montando o guia deste exercício...
                 </div>
               )}
-              {guide && <GuideView guide={guide} gif={gif} />}
-              {!guide && gif && <GifCard gif={gif} />}
+              {video && <VideoCard video={video} exerciseName={exerciseName} />}
+              {guide && <GuideView guide={guide} />}
               {answers.map((a, i) => (
                 <div
                   key={i}
