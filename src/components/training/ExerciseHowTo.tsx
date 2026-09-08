@@ -484,8 +484,8 @@ export function ExerciseHowTo({
                   Montando o guia deste exercício...
                 </div>
               )}
-              {guide && <GuideView guide={guide} gif={gif} />}
-              {!guide && gif && <GifCard gif={gif} />}
+              {video && <VideoCard video={video} exerciseName={exerciseName} />}
+              {guide && <GuideView guide={guide} />}
               {answers.map((a, i) => (
                 <div
                   key={i}
