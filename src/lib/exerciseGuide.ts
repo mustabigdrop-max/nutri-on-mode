@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fallbackMusculos, nomeLeigo } from "@/lib/muscleFallback";
 
 export interface GuideErro {
   erro: string;
@@ -64,6 +65,15 @@ function normalize(raw: any): ExerciseGuide | null {
   return guide;
 }
 
+/** Garante mapa muscular: usa fallback pelo nome e traduz para linguagem acessível. */
+function aplicarMusculos(guide: ExerciseGuide, nome: string) {
+  const temPrincipal = guide.musculos?.some((m) => m.tipo === "principal");
+  if (!temPrincipal) {
+    guide.musculos = fallbackMusculos(nome) || guide.musculos || [];
+  }
+  guide.musculos = (guide.musculos || []).map((m) => ({ ...m, nome: nomeLeigo(m.nome) }));
+}
+
 /** Busca no cache do banco; se não existir, gera e salva uma única vez. */
 export async function loadExerciseGuide(params: {
   name: string;
@@ -80,7 +90,10 @@ export async function loadExerciseGuide(params: {
     .maybeSingle();
 
   const fromCache = normalize(cached?.guide);
-  if (fromCache) return fromCache;
+  if (fromCache) {
+    aplicarMusculos(fromCache, params.name);
+    return fromCache;
+  }
 
   const { data, error } = await supabase.functions.invoke("exercise-guide", {
     body: {
@@ -93,6 +106,7 @@ export async function loadExerciseGuide(params: {
   if (error) throw new Error(error.message);
   const guide = normalize((data as any)?.guide);
   if (!guide) throw new Error("Não foi possível montar o guia deste exercício.");
+  aplicarMusculos(guide, params.name);
 
   await supabase
     .from("exercise_guides")

@@ -8,6 +8,7 @@ import { getVideoVerificado, listarMapeamentos, resolverCoachUserIdDoAluno, type
 import { exerciseKey } from "@/lib/exerciseGuide";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 import AnatomyMuscleMap from "@/components/social/AnatomyMuscleMap";
+import { deveMostrarMapa } from "@/lib/muscleFallback";
 
 const AMBER = "#EF9F27";
 const TEAL = "#5DCAA5";
@@ -199,7 +200,7 @@ function GuideView({ guide }: { guide: ExerciseGuide }) {
         </Section>
       )}
 
-      {!!guide.musculos?.length && (
+      {deveMostrarMapa(guide.musculos) && (
         <Section title="Músculos ativados">
           <div
             style={{
