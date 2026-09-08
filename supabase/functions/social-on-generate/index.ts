@@ -285,6 +285,23 @@ serve(async (req) => {
 - Frases curtas e diretas. Um conceito por slide, sem repetir ideia entre slides.
 - Textos curtos: eles são desenhados em imagem, então respeite os limites de palavras do schema.`
         : "",
+      body?.mode === "nexus_carousel"
+        ? `TEMPLATE FIXO "NEXUS-BIO" — carrossel CIENTÍFICO sobre o composto informado (origem: PeptideVault ou MicrobiotaVault).
+Dados estruturados do composto (use como fonte primária, não invente nada que os contradiga): ${body?.compoundData ? (typeof body.compoundData === "string" ? body.compoundData : JSON.stringify(body.compoundData)) : "sem ficha estruturada — use apenas conhecimento científico consolidado"}
+REGRAS:
+- 90% CIÊNCIA, 10% contexto prático.
+- NÃO force o método MCE. NUNCA mencione Mentalidade, Comportamento, Execução, mindset ou coaching nos slides.
+- Cite estudos reais com nome e ano; se não tiver certeza do estudo, descreva o achado sem inventar referência.
+- Inclua números concretos quando existirem; sem exagero e sem promessa de resultado.
+- Riscos com o MESMO peso dos benefícios: honesto, não alarmista.
+- Linguagem acessível respeitando a ciência. Tom: educador que traduz ciência, não vendedor.
+- Se o composto for EXPERIMENTAL, deixe CLARO que não tem aprovação regulatória.
+- Marque no máximo 3 palavras por texto entre **asteriscos duplos** para destaque de cor.
+- Sem emoji e sem hashtag dentro dos slides (emoji e hashtag só na legenda).
+- Só preencha o comparativo quando existir comparação honesta com composto da mesma classe; caso contrário devolva string vazia e array vazio.
+- Os textos são desenhados em imagem: respeite os limites de caracteres do schema.
+- Nunca use "IA", "AI" ou "inteligência artificial".`
+        : "",
       body?.mode === "mito_metodo"
         ? `TEMPLATE FIXO "MITO OU MÉTODO" — carrossel de 8 slides sobre a crença informada:
 1 capa com a crença, 2 a 5 evidências, 6 veredito, 7 alternativa prática, 8 CTA (fixo, não gere).
