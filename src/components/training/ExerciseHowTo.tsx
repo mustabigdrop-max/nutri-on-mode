@@ -4,7 +4,7 @@ import { Play, X, MessageCircle, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
-import { getVideoVerificado, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import { getVideoVerificado, listarMapeamentos, resolverCoachUserIdDoAluno, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
 import { exerciseKey } from "@/lib/exerciseGuide";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 import AnatomyMuscleMap from "@/components/social/AnatomyMuscleMap";
