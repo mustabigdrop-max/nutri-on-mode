@@ -7,6 +7,8 @@
  * acento do slide.
  */
 
+import { drawSlideFooter } from "@/lib/slideBase";
+
 export const MCE_TPL = {
   bg: "#0A0A0A",
   ink: "#F5F0E8",
@@ -176,24 +178,14 @@ const pill = (
   return y + h;
 };
 
-const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) => {
-  const x = px(28);
-  const y = h - px(30);
-  ctx.textBaseline = "alphabetic";
-  ctx.font = font(700, 15);
-  ctx.fillStyle = dark ? "#0A0A0A" : MCE_TPL.ink;
-  ctx.fillText("nutri", x, y);
-  const nutriW = ctx.measureText("nutri").width;
-  ctx.font = `italic 700 ${px(15)}px Inter, system-ui, sans-serif`;
-  ctx.fillStyle = dark ? "#0A0A0A" : MCE_TPL.gold;
-  ctx.fillText("ON", x + nutriW, y);
-
-  ctx.font = font(400, 9);
-  ctx.fillStyle = dark ? MCE_TPL.ctaHandle : MCE_TPL.footerMuted;
-  ctx.textAlign = "right";
-  ctx.fillText(handle, w - x, y);
-  ctx.textAlign = "left";
-};
+/** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
+const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
+  drawSlideFooter(ctx, w, h, handle, {
+    ink: dark ? "#0A0A0A" : MCE_TPL.ink,
+    accent: dark ? "#0A0A0A" : MCE_TPL.gold,
+    handleColor: dark ? MCE_TPL.ctaHandle : MCE_TPL.footerMuted,
+    scale: S,
+  });
 
 const canvasOf = (w: number, h: number) => {
   const canvas = document.createElement("canvas");
