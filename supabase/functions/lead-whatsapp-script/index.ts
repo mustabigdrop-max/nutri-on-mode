@@ -46,7 +46,7 @@ serve(async (req) => {
       });
     }
 
-    const { lead_id } = await req.json().catch(() => ({}));
+    const { lead_id, answers_text } = await req.json().catch(() => ({}));
     if (!lead_id || typeof lead_id !== "string") {
       return new Response(JSON.stringify({ error: "lead_id é obrigatório" }), {
         status: 400,
