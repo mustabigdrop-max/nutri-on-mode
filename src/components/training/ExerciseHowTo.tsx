@@ -4,7 +4,9 @@ import { Play, X, MessageCircle, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
-import { buscarGifExercicio } from "@/lib/exerciseGif";
+import { getVideoVerificado, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import { exerciseKey } from "@/lib/exerciseGuide";
+import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 
 const AMBER = "#EF9F27";
 const TEAL = "#5DCAA5";
