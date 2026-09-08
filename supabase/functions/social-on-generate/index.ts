@@ -321,6 +321,31 @@ REGRAS DE CONTEÚDO:
 - Dose estudada é OBRIGATÓRIA na ficha técnica.`
 
         : "",
+      ["nexus_reels", "nexus_stories", "nexus_como_obter"].includes(body?.mode)
+        ? `CONTEXTO NEXUS-BIO (${body?.origem || "PeptideVault"}) — ficha real do composto:
+${body?.compoundData ? JSON.stringify(body.compoundData).slice(0, 4000) : "sem ficha estruturada"}
+${body?.labData ? `Dados extras do Lab:\n${JSON.stringify(body.labData).slice(0, 3000)}` : ""}
+${body?.angulo ? `Ângulo do conteúdo: ${body.angulo}` : ""}
+REGRAS: 90% ciência, linguagem acessível em português do Brasil. Use os dados REAIS da ficha; complemente com ciência consolidada só onde faltar. Cite estudos reais (autor, ano). Nunca recomende uso: apenas informe. Nunca mencione MCE, mindset ou coaching. Nunca use "IA", "AI" ou "inteligência artificial". Sem emoji nos textos de tela.`
+        : "",
+      body?.mode === "nexus_reels"
+        ? `Gere o ROTEIRO DE REELS do composto: 5 cortes na ordem hook (0-3s), mecanismo (3-10s), o que ninguém fala / risco (10-22s), na prática (22-28s) e CTA (28-30s). "texto_tela" é o que aparece na tela: caixa alta, curtíssimo, legível sem som. "fala" é o que o coach diz. "acao" é a direção de gravação. CTA final leva pro diagnóstico gratuito no link da bio.`
+        : "",
+      body?.mode === "nexus_stories"
+        ? `Gere a SEQUÊNCIA DE STORIES do composto: 4 frames (GANCHO, CONTEUDO com 3 bullets, ENQUETE com 2 opções, CTA para o diagnóstico gratuito no link da bio). Textos curtos, legíveis no celular. Preencha só os campos que fazem sentido em cada tipo.`
+        : "",
+      body?.mode === "nexus_como_obter"
+        ? `Gere as informações práticas de COMO OBTER ou estimular este composto, com rigor farmacêutico e científico:
+- Suplementos comerciais existentes (nome, fabricante, dose, via, custo estimado, status regulatório, disponibilidade no Brasil e onde comprar).
+- Para fármacos/peptídeos: nomes comerciais reais com fabricante, indicação aprovada, apresentações, via, status ANVISA e faixa de custo no Brasil; e o protocolo de escalonamento padrão quando existir.
+- Fármacos ou compostos que modulam/aumentam, com mecanismo, estudo (autor e ano), dose estudada e se exige prescrição.
+- Prebióticos/alimentos que estimulam, com estudo e dose.
+- Fatores de estilo de vida que aumentam, com mecanismo, estudo e dose; e uma lista do que reduz/prejudica.
+- Exames recomendados antes de iniciar.
+- Combinações documentadas na literatura, com motivo, evidência e protocolo.
+- Protocolos de centros de referência mundiais, com país e pesquisador quando houver.
+REGRAS: só informações reais e verificáveis; se não houver dado para uma seção, devolva array vazio — NUNCA invente marca, preço, estudo ou aprovação. Valores em R$ para o Brasil e moeda original quando importado. Informação educacional, sem prescrever.`
+        : "",
       body?.mode === "mito_metodo"
         ? `TEMPLATE FIXO "MITO OU MÉTODO" — carrossel de 8 slides sobre a crença informada:
 1 capa com a crença, 2 a 5 evidências, 6 veredito, 7 alternativa prática, 8 CTA (fixo, não gere).
