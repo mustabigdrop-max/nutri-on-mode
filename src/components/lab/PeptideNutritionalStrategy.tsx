@@ -1,3 +1,4 @@
+import { PeptideDisclaimer } from "@/components/lab/PeptideDisclaimer";
 import { AlertTriangle, Zap, Clock } from "lucide-react";
 import { peptideStrategies } from "@/data/peptideStrategies";
 
