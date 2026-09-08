@@ -66,50 +66,55 @@ function ActionButton({
   );
 }
 
+function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
+  return (
+    <div
+      style={{
+        marginTop: 8,
+        background: CARD,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 8,
+        padding: 12,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: TEAL,
+          fontWeight: 700,
+          marginBottom: 8,
+          textAlign: "left",
+        }}
+      >
+        Vídeo do movimento
+      </div>
+      <img
+        src={gif.gifUrl}
+        alt={`Demonstração animada do exercício ${gif.nomeEN}`}
+        loading="lazy"
+        style={{
+          width: "100%",
+          maxWidth: 260,
+          borderRadius: 8,
+          background: "#fff",
+          display: "inline-block",
+        }}
+      />
+      <div style={{ fontSize: 11, color: DIM, marginTop: 6 }}>
+        Assista 2–3 repetições antes de começar a sua série.
+      </div>
+    </div>
+  );
+}
+
 function GuideView({ guide, gif }: { guide: ExerciseGuide; gif: { gifUrl: string; nomeEN: string } | null }) {
   return (
     <div>
-      {gif && (
-        <div
-          style={{
-            marginTop: 8,
-            background: CARD,
-            border: `1px solid ${BORDER}`,
-            borderRadius: 8,
-            padding: 12,
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: TEAL,
-              fontWeight: 700,
-              marginBottom: 8,
-              textAlign: "left",
-            }}
-          >
-            Vídeo do movimento
-          </div>
-          <img
-            src={gif.gifUrl}
-            alt={`Demonstração animada do exercício ${gif.nomeEN}`}
-            loading="lazy"
-            style={{
-              width: "100%",
-              maxWidth: 260,
-              borderRadius: 8,
-              background: "#fff",
-              display: "inline-block",
-            }}
-          />
-          <div style={{ fontSize: 11, color: DIM, marginTop: 6 }}>
-            Assista 2–3 repetições antes de começar a sua série.
-          </div>
-        </div>
-      )}
+      {gif && <GifCard gif={gif} />}
+
 
       {(guide.aparelho || guide.ajuste || guide.pegada) && (
         <Section title="Preparação">
@@ -412,6 +417,7 @@ export function ExerciseHowTo({
                 </div>
               )}
               {guide && <GuideView guide={guide} gif={gif} />}
+              {!guide && gif && <GifCard gif={gif} />}
               {answers.map((a, i) => (
                 <div
                   key={i}
