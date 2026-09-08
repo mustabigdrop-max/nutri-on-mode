@@ -131,6 +131,20 @@ function SectionLabel({ text }: { text: string }) {
   );
 }
 
+function ExerciseGuideSlot({ ex, dayLabel }: { ex: ParsedExercise; dayLabel?: string }) {
+  const { coachMode, coachId } = useContext(CoachVideoCtx);
+  return (
+    <ExerciseHowTo
+      exerciseName={ex.name}
+      muscleTarget={ex.muscle_target}
+      tempo={ex.tempo}
+      dayLabel={dayLabel}
+      coachMode={coachMode}
+      coachId={coachId}
+    />
+  );
+}
+
 function ExerciseRow({
   ex,
   index,
