@@ -13,6 +13,11 @@ import { montarPlanoDeHoje, totalMinutos, ICONE_DO_DIA, LEGENDA_SERIES } from "@
 import {
   detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
 } from "@/lib/socialContentTypes";
+import { HookChooser, ScreenTextTimeline, ViralExtras } from "@/components/social/ViralKitPanel";
+import {
+  analisarViralidade, melhorHorario, CTA_POR_TIPO, gerarHashtags, achatarHashtags,
+  type ViralKit, type HookOption, type ViralAnalise,
+} from "@/lib/socialViral";
 import {
   InteractionPackCard, DmScriptsCard, StoryFramesCard, storyScriptText,
   type InteractionPack, type DmScripts,
@@ -54,6 +59,8 @@ interface ReadyContent {
   // outputs por tipo de item do plano
   kind?: PlanContentType;
   pack?: InteractionPack;
+  viral?: ViralKit;
+  chosenHook?: string;
   dm?: DmScripts;
   story?: StoryScript;
 }
@@ -107,11 +114,44 @@ function DailyCoach({
     return "";
   };
 
+  /** Kit de viralização (hooks, texto de tela, CTA, self-comment, hashtags). */
+  const fetchViralKit = async (kind: PlanContentType, topic: string): Promise<ViralKit | undefined> => {
+    if (!isPostType(kind) && kind !== "STORY_CTA") return undefined;
+    const fallbackCta = CTA_POR_TIPO[kind];
+    try {
+      const r = (await callSocialAI({
+        mode: "viral_kit",
+        topic,
+        format: kind === "ROTEIRO_REELS" ? "reels" : "carrossel",
+        ...identity,
+      })) as ViralKit;
+      return {
+        ...r,
+        cta_post: r?.cta_post || fallbackCta.no_post,
+        cta_caption: r?.cta_caption || fallbackCta.no_caption,
+        self_comment: r?.self_comment || fallbackCta.self_comment,
+        hashtags: r?.hashtags?.alcance?.length ? r.hashtags : gerarHashtags(topic),
+      };
+    } catch {
+      return {
+        cta_post: fallbackCta.no_post,
+        cta_caption: fallbackCta.no_caption,
+        self_comment: fallbackCta.self_comment,
+        hashtags: gerarHashtags(topic),
+      };
+    }
+  };
+
   /** Gera o carrossel de cards; se `coverFile` vier, a capa usa sua foto real de fundo em vez do gradiente puro. */
   const generateReady = async (i: number, action: BriefAction, coverFile?: File) => {
     const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
     const topic = [action.title, action.detail].filter(Boolean).join(" — ");
     setGenerating(i);
+    const viralPromise = fetchViralKit(kind, topic);
+    const attachViral = async () => {
+      const viral = await viralPromise;
+      if (viral) setReady((p) => (p[i] ? { ...p, [i]: { ...p[i], viral } } : p));
+    };
     try {
       if (kind === "PACK_INTERACAO") {
         const r = await callSocialAI({ mode: "interaction_pack", topic, postContext: previousPostTopic(i), ...identity });
@@ -207,6 +247,7 @@ function DailyCoach({
       toast.error(e instanceof Error ? e.message : "Não consegui gerar o conteúdo");
     } finally {
       setGenerating(null);
+      void attachViral();
     }
   };
 
@@ -329,6 +370,7 @@ function DailyCoach({
           const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
           const showMedia = usesMedia(kind, action.title);
           const minutes = action.minutes || CONTENT_TYPE_MINUTES[kind];
+          const horario = melhorHorario(kind);
           return (
             <div key={i} style={{ display: "flex", gap: 10, background: C.s2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px" }}>
               <span style={{ fontSize: 16 }}>{action.icon || typeIcons[action.type || ""] || "📌"}</span>
@@ -341,7 +383,7 @@ function DailyCoach({
                 </div>
                 <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.4 }}>{action.detail}</div>
                 <div style={{ display: "flex", gap: 10, marginTop: 3 }}>
-                  {action.time && <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>⏰ {action.time}</span>}
+                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>⏰ {horario.hora} — {horario.motivo}</span>
                   <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>⏱️ ~{minutes}min</span>
                 </div>
 
