@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { PeptideDisclaimer } from "@/components/lab/PeptideDisclaimer";
 import { Send, Loader2, Bookmark } from "lucide-react";
 import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -150,6 +151,7 @@ const DrNexusChat = () => {
                       [&_h2]:text-[#a78bfa] [&_h2]:text-base [&_h2]:font-bold [&_h1]:text-[#c4b5fd]
                       [&_code]:bg-[#7c3aed]/10 [&_code]:text-[#06b6d4] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <PeptideDisclaimer />
                     </div>
                     <button onClick={() => saveToNotebook(msg, i)}
                       className="flex items-center gap-1 text-[10px] font-['JetBrains_Mono'] text-muted-foreground hover:text-[#a78bfa] transition-colors mt-1">

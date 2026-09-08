@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { PeptideNutritionalStrategy } from "@/components/lab/PeptideNutritionalStrategy";
 import { PeptideReconstitutionCard } from "@/components/lab/PeptideReconstitutionCard";
+import { PeptideDisclaimer } from "@/components/lab/PeptideDisclaimer";
 import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
   quickPrompts, searchSuggestions, type Peptide, type Alert
@@ -208,6 +209,7 @@ function OracleTab({ userId }: { userId?: string }) {
                   {m.role === "assistant" ? (
                     <div className="prose prose-sm prose-invert max-w-none">
                       <ReactMarkdown>{m.content}</ReactMarkdown>
+                    <PeptideDisclaimer />
                     </div>
                   ) : m.content}
                 </div>
@@ -314,6 +316,42 @@ function EncyclopediaTab() {
             </CardContent>
           </Card>
 
+          {(selected.beneficios?.length || selected.efeitosColaterais?.length || selected.notas || selected.evidencia) && (
+            <Card className="border border-gray-800 bg-gray-900/50">
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-sm font-semibold text-gray-300">
+                  🧾 Perfil {selected.evidencia ? `· Evidência ${selected.evidencia}` : ""}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 space-y-3">
+                {!!selected.beneficios?.length && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-[#4ade80] mb-1">Benefícios relatados</p>
+                    <ul className="space-y-0.5">
+                      {selected.beneficios.map((b, i) => <li key={i} className="text-xs text-gray-400">• {b}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {!!selected.efeitosColaterais?.length && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-orange-400 mb-1">Efeitos colaterais</p>
+                    <ul className="space-y-0.5">
+                      {selected.efeitosColaterais.map((b, i) => <li key={i} className="text-xs text-gray-400">• {b}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {selected.notas && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 mb-1">Notas e contraindicações</p>
+                    <p className="text-xs text-gray-400 leading-relaxed">{selected.notas}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          <PeptideDisclaimer />
+
           <PeptideReconstitutionCard peptideId={selected.id} />
 
           <PeptideNutritionalStrategy
@@ -414,8 +452,9 @@ function EncyclopediaTab() {
           </div>
         )}
 
+        <PeptideDisclaimer className="text-center" />
         <p className="text-center text-[10px] text-gray-700 py-4">
-          NEXUS-BIO PeptideVault v2 · nutriON · Fins educacionais e científicos. Não substituem orientação médica.
+          NEXUS-BIO PeptideVault v2 · nutriON
         </p>
       </div>
     </ScrollArea>
@@ -507,6 +546,7 @@ function ResearchTab({ userId }: { userId?: string }) {
               <CardContent className="p-4">
                 <div className="prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{result}</ReactMarkdown>
+                    <PeptideDisclaimer />
                 </div>
                 {citations.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-gray-800 space-y-1">
