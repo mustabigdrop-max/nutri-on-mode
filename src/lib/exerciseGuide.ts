@@ -65,6 +65,15 @@ function normalize(raw: any): ExerciseGuide | null {
   return guide;
 }
 
+/** Garante mapa muscular: usa fallback pelo nome e traduz para linguagem acessível. */
+function aplicarMusculos(guide: ExerciseGuide, nome: string) {
+  const temPrincipal = guide.musculos?.some((m) => m.tipo === "principal");
+  if (!temPrincipal) {
+    guide.musculos = fallbackMusculos(nome) || guide.musculos || [];
+  }
+  guide.musculos = (guide.musculos || []).map((m) => ({ ...m, nome: nomeLeigo(m.nome) }));
+}
+
 /** Busca no cache do banco; se não existir, gera e salva uma única vez. */
 export async function loadExerciseGuide(params: {
   name: string;
