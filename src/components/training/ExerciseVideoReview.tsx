@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, AlertTriangle, Video } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Video, Check, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { exerciseKey } from "@/lib/exerciseGuide";
-import { listarMapeamentos, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import {
+  listarMapeamentos,
+  buscarSugestoes,
+  salvarMapeamento,
+  termoSugerido,
+  type ExerciseSuggestion,
+  type VideoMappingRow,
+} from "@/lib/exerciseVideoMap";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 
 const AMBER = "#EF9F27";
@@ -27,6 +35,8 @@ export function ExerciseVideoReview({
   const [map, setMap] = useState<Record<string, VideoMappingRow>>({});
   const [queue, setQueue] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [sugestoes, setSugestoes] = useState<Record<string, ExerciseSuggestion | null>>({});
+  const [aprovando, setAprovando] = useState<string | null>(null);
 
   const carregar = () => {
     if (!coachId || !nomes.length) return;
@@ -37,11 +47,49 @@ export function ExerciseVideoReview({
 
   useEffect(carregar, [coachId, nomes.join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Sugestões automáticas (apenas visão do coach; nunca vão para o cliente sem aprovação).
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    (async () => {
+      for (const n of nomes) {
+        if (map[exerciseKey(n)]?.gif_verified) continue;
+        if (n in sugestoes) continue;
+        const lista = await buscarSugestoes(termoSugerido(n));
+        if (!alive) return;
+        setSugestoes((prev) => ({ ...prev, [n]: lista[0] || null }));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [open, nomes.join("|"), Object.keys(map).length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!coachId || !nomes.length) return null;
 
   const pendentes = nomes.filter((n) => !map[exerciseKey(n)]?.gif_verified);
   const vinculados = nomes.length - pendentes.length;
   const atual = queue[0];
+
+  const aprovar = async (nome: string, s: ExerciseSuggestion) => {
+    setAprovando(nome);
+    try {
+      const row = await salvarMapeamento({
+        coachId,
+        exerciseNamePt: nome,
+        exerciseNameEn: s.nome,
+        exercisedbId: s.id,
+        gifUrl: s.gifUrl,
+        customVideoUrl: null,
+      });
+      if (row) setMap((prev) => ({ ...prev, [exerciseKey(nome)]: row }));
+      toast.success("GIF aprovado. Já aparece para o cliente.");
+    } catch (e) {
+      toast.error((e as Error).message || "Não foi possível aprovar.");
+    } finally {
+      setAprovando(null);
+    }
+  };
 
   return (
     <div
@@ -80,17 +128,77 @@ export function ExerciseVideoReview({
           {nomes.map((n) => {
             const m = map[exerciseKey(n)];
             const verificado = m?.gif_verified === true;
+            const s = verificado ? null : sugestoes[n];
+            const buscando = !verificado && !(n in sugestoes);
             return (
-              <div key={n} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: TEXT }}>
+              <div
+                key={n}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12,
+                  color: TEXT,
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 8,
+                  padding: 8,
+                }}
+              >
                 {verificado ? (
                   <CheckCircle2 style={{ width: 14, height: 14, color: TEAL, flexShrink: 0 }} />
                 ) : (
                   <AlertTriangle style={{ width: 14, height: 14, color: AMBER, flexShrink: 0 }} />
                 )}
-                <span style={{ flex: 1, minWidth: 0 }}>{n}</span>
-                <span style={{ fontSize: 11, color: DIM }}>
-                  {verificado ? (m.custom_video_url ? "seu vídeo · verificado" : `${m.exercise_name_en || "GIF"} · verificado`) : "revisar"}
-                </span>
+                {(verificado ? m.gif_url : s?.gifUrl) && (
+                  <img
+                    src={(verificado ? m.gif_url : s?.gifUrl) as string}
+                    alt={`Demonstração sugerida para ${n}`}
+                    loading="lazy"
+                    style={{ width: 56, height: 56, borderRadius: 6, background: "#fff", objectFit: "contain", flexShrink: 0 }}
+                  />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600 }}>{n}</div>
+                  <div style={{ fontSize: 11, color: verificado ? TEAL : DIM }}>
+                    {verificado
+                      ? m.custom_video_url
+                        ? "seu vídeo · verificado"
+                        : `${m.exercise_name_en || "GIF"} · verificado`
+                      : buscando
+                        ? "buscando sugestão..."
+                        : s
+                          ? `sugestão: ${s.nome}`
+                          : "sem sugestão automática"}
+                  </div>
+                </div>
+                {!verificado && s && (
+                  <button
+                    type="button"
+                    onClick={() => aprovar(n, s)}
+                    disabled={aprovando === n}
+                    style={{
+                      minHeight: 32,
+                      padding: "0 10px",
+                      borderRadius: 6,
+                      border: `1px solid ${TEAL}66`,
+                      background: "transparent",
+                      color: TEAL,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {aprovando === n ? (
+                      <Loader2 className="animate-spin" style={{ width: 12, height: 12 }} />
+                    ) : (
+                      <Check style={{ width: 12, height: 12 }} />
+                    )}
+                    Aprovar
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setQueue([n])}
@@ -105,7 +213,7 @@ export function ExerciseVideoReview({
                     cursor: "pointer",
                   }}
                 >
-                  {verificado ? "Trocar" : "Revisar"}
+                  {verificado ? "Trocar" : "Buscar outro"}
                 </button>
               </div>
             );
