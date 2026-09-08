@@ -41,7 +41,7 @@ export const MCE_CTA_SLIDE = {
   titulo: "Diagnóstico MCE Gratuito",
   subtitulo: "Descubra qual pilar está travando seu resultado.",
   caixa: "Link na bio",
-  caixaSub: "9 perguntas · 3 minutos · resultado na hora",
+  caixaSub: "14 perguntas · 4 minutos · resultado imediato",
 } as const;
 
 const PILLAR_NAMES = { M: "MENTALIDADE", C: "COMPORTAMENTO", E: "EXECUÇÃO" } as const;
