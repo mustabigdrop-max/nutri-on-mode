@@ -278,7 +278,7 @@ const canvasOf = (w: number, h: number) => {
 
 type SlideCtx = { w: number; h: number; handle: string; status: NexusStatus };
 
-const baseSlide = (s: SlideCtx, orbColor = NEXUS_TPL.accent) => {
+const baseSlide = (s: SlideCtx, orbColor: string = NEXUS_TPL.accent) => {
   const { canvas, ctx } = canvasOf(s.w, s.h);
   ctx.fillStyle = NEXUS_TPL.bg;
   ctx.fillRect(0, 0, s.w, s.h);
