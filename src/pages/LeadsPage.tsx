@@ -494,6 +494,41 @@ function LeadDetail({
     toast.success("Status atualizado");
   }
 
+  /** Abre o WhatsApp com a mensagem inicial e marca o lead como contatado. */
+  async function sendInitial(message: string) {
+    const win = window.open(waLink(lead, message), "_blank", "noopener");
+    if (!win) return toast.error("O navegador bloqueou a janela do WhatsApp");
+    setScriptOpen(false);
+
+    const now = new Date().toISOString();
+    const patch: Record<string, unknown> = { contacted_at: lead.contacted_at || now, last_followup_at: now };
+    if (lead.status === "novo") patch.status = "contatado";
+    const { data } = await supabase.from("mce_leads").update(patch).eq("id", lead.id).select().single();
+    if (data) onChanged(data as unknown as Lead);
+    await logActivity("whatsapp_sent", `Script inicial enviado: ${message.slice(0, 120)}`);
+    toast.success("Mensagem aberta no WhatsApp");
+  }
+
+  /** Registra resposta do lead / conversa agendada e ajusta o status. */
+  async function markFollowup(patchIn: { replied?: boolean; scheduled_call_at?: string | null }) {
+    const patch: Record<string, unknown> = { ...patchIn };
+    if (patchIn.replied === true || patchIn.scheduled_call_at) {
+      if (lead.status === "novo" || lead.status === "contatado") patch.status = "em_negociacao";
+    }
+    if (patchIn.replied === false) patch.last_followup_at = new Date().toISOString();
+    const { data, error } = await supabase.from("mce_leads").update(patch).eq("id", lead.id).select().single();
+    if (error) return toast.error("Não foi possível registrar o follow-up");
+    onChanged(data as unknown as Lead);
+    await logActivity(
+      "followup",
+      patchIn.scheduled_call_at
+        ? `Conversa agendada para ${new Date(patchIn.scheduled_call_at).toLocaleString("pt-BR")}`
+        : patchIn.replied
+          ? "Lead respondeu"
+          : "Lead não respondeu — enviar 2º follow-up",
+    );
+  }
+
   async function saveNotes() {
     const { data, error } = await supabase.from("mce_leads").update({ notes }).eq("id", lead.id).select().single();
     if (error) return toast.error("Não foi possível salvar a nota");
