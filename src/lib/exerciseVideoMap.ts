@@ -303,43 +303,59 @@ const EQUIP_PT: Record<string, string[]> = {
   livre: ["body weight", "barbell"],
 };
 
+/** Palavras da biblioteca que não mudam o movimento (não devem penalizar). */
+const RUIDO = new Set(["male", "female", "version", "alternate", "alternating"]);
+
 /** Pontua o quanto um resultado da biblioteca corresponde ao exercício pedido. */
 function pontuar(alvoEn: string, nomePT: string, item: ExerciseSuggestion): number {
   const alvo = tokens(alvoEn);
   const nome = plain(item.nome);
-  const nomeTokens = tokens(item.nome);
+  const nomeTokens = tokens(item.nome).filter((t) => !RUIDO.has(t) && !/^v\d?$/.test(t));
   if (!alvo.length) return 0;
 
   const cobertos = alvo.filter((t) => nome.includes(t)).length;
   let score = (cobertos / alvo.length) * 100;
   if (plain(alvoEn) === nome) score += 40;
-  // penaliza resultados muito mais longos (movimentos diferentes)
-  score -= Math.max(0, nomeTokens.length - alvo.length) * 6;
+  // penaliza levemente resultados mais longos
+  score -= Math.max(0, nomeTokens.length - alvo.length) * 4;
 
   // equipamento citado em português precisa bater
   const base = plain(nomePT);
   const equip = plain(item.equipamento || "");
   for (const [pt, ens] of Object.entries(EQUIP_PT)) {
     if (base.includes(pt)) {
-      score += ens.some((e) => equip.includes(e)) ? 15 : -25;
+      score += ens.some((e) => equip.includes(e)) ? 12 : -12;
     }
   }
   // unilateral / lateral precisa bater
   for (const marca of ["lateral", "unilateral", "inclinad", "declinad"]) {
     const pedido = base.includes(marca);
     const tem = nome.includes(marca.slice(0, 6));
-    if (pedido && !tem) score -= 20;
+    if (pedido && !tem) score -= 12;
   }
   return score;
 }
 
+/** Consultas progressivas: termo completo, depois recortes menores. */
+function consultas(alvo: string): string[] {
+  const t = plain(alvo).split(" ").filter(Boolean);
+  const out = [t.join(" ")];
+  if (t.length > 2) out.push(t.slice(-2).join(" "));
+  if (t.length > 1) out.push(t[t.length - 1]);
+  return Array.from(new Set(out.filter(Boolean)));
+}
+
+const cacheAuto = new Map<string, ExerciseVideo | null>();
+
 /**
- * Demonstração automática de alta confiança (aquecimento e exercícios).
- * Só devolve quando o movimento realmente corresponde; caso contrário, null.
+ * Demonstração automática do movimento (aquecimento, mobilidade e exercícios).
+ * Escolhe o melhor resultado da biblioteca; só devolve null quando nada corresponde.
  */
 export async function buscarVideoAutomatico(nomePT: string): Promise<ExerciseVideo | null> {
   const base = plain(nomePT);
   if (!base) return null;
+  if (cacheAuto.has(base)) return cacheAuto.get(base) || null;
+
   let alvo = TRADUCOES_EXTRA[base] || "";
   if (!alvo) {
     for (const chave of Object.keys(TRADUCOES_EXTRA)) {
@@ -349,19 +365,21 @@ export async function buscarVideoAutomatico(nomePT: string): Promise<ExerciseVid
   if (!alvo) alvo = termoSugerido(nomePT);
   if (!alvo) return null;
 
-  const candidatos = await buscarSugestoes(alvo);
-  if (!candidatos.length) return null;
-
   let melhor: ExerciseSuggestion | null = null;
   let melhorScore = -Infinity;
-  for (const c of candidatos) {
-    const s = pontuar(alvo, nomePT, c);
-    if (s > melhorScore) {
-      melhorScore = s;
-      melhor = c;
+  for (const q of consultas(alvo)) {
+    const candidatos = await buscarSugestoes(q);
+    for (const c of candidatos) {
+      const s = pontuar(alvo, nomePT, c);
+      if (s > melhorScore) {
+        melhorScore = s;
+        melhor = c;
+      }
     }
+    if (melhorScore >= 70) break;
   }
-  // limiar de confiança: abaixo disso, é melhor não mostrar vídeo nenhum
-  if (!melhor || melhorScore < 85) return null;
-  return { type: "gif", url: melhor.gifUrl, nameEn: melhor.nome, auto: true };
+
+  const achado = melhor && melhorScore >= 40 ? { type: "gif" as const, url: melhor.gifUrl, nameEn: melhor.nome, auto: true } : null;
+  cacheAuto.set(base, achado);
+  return achado;
 }
