@@ -125,7 +125,7 @@ export default function NexusCarouselPanel({
       };
       setImages(renderNexusCarousel(content));
       setLabels(nexusSlideLabels(content));
-      setLegenda(content.legenda || "");
+      setLegenda(cleanCaption(content.legenda));
       setActive(0);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar agora.");
