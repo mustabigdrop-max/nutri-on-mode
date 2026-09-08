@@ -200,14 +200,7 @@ function ExerciseRow({
             {ex.notes}
           </p>
         )}
-        {showGuide !== false && ex.name && (
-          <ExerciseHowTo
-            exerciseName={ex.name}
-            muscleTarget={ex.muscle_target}
-            tempo={ex.tempo}
-            dayLabel={dayLabel}
-          />
-        )}
+        {showGuide !== false && ex.name && <ExerciseGuideSlot ex={ex} dayLabel={dayLabel} />}
       </div>
     </div>
   );
