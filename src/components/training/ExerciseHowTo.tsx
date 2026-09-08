@@ -4,7 +4,7 @@ import { Play, X, MessageCircle, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
-import { getVideoVerificado, buscarVideoAutomatico, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import { getVideoVerificado, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
 import { exerciseKey } from "@/lib/exerciseGuide";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 
@@ -91,7 +91,7 @@ function VideoCard({ video, exerciseName }: { video: ExerciseVideo; exerciseName
           textAlign: "left",
         }}
       >
-        {video.auto ? "Demonstração do movimento" : "Vídeo do movimento"}
+        Vídeo verificado pelo coach
       </div>
       {video.type === "video" ? (
         <video
@@ -392,14 +392,7 @@ export function ExerciseHowTo({
     if (!video && !videoTried) {
       setVideoTried(true);
       getVideoVerificado(exerciseName, coachMode ? coachId : undefined)
-        .then(async (v) => {
-          if (v) {
-            setVideo(v);
-            return;
-          }
-          const auto = await buscarVideoAutomatico(exerciseName);
-          if (auto) setVideo(auto);
-        })
+        .then((v) => setVideo(v))
         .catch(() => {});
     }
     if (!guide && !loading) {
@@ -442,10 +435,10 @@ export function ExerciseHowTo({
 
       {coachMode && coachId && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
-          <span style={{ fontSize: 11, color: mapping ? TEAL : "#f0b429" }}>
-            {mapping
-              ? `Vídeo vinculado${mapping.custom_video_url ? " (seu vídeo)" : mapping.exercise_name_en ? ` · ${mapping.exercise_name_en}` : ""}`
-              : "Vídeo não vinculado"}
+          <span style={{ fontSize: 11, color: mapping?.gif_verified ? TEAL : "#f0b429" }}>
+            {mapping?.gif_verified
+              ? `GIF verificado${mapping.custom_video_url ? " (seu vídeo)" : mapping.exercise_name_en ? ` · ${mapping.exercise_name_en}` : ""}`
+              : "GIF não verificado"}
           </span>
           <ActionButton onClick={() => setLinking(true)} color={mapping ? DIM : AMBER}>
             {mapping ? "Trocar vídeo" : "Vincular vídeo"}

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Search, X, Check, Loader2, Link2 } from "lucide-react";
+import { Search, X, Check, Loader2, Link2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   buscarSugestoes,
   salvarMapeamento,
   removerMapeamento,
   termoSugerido,
+  uploadVideoDoCoach,
   type ExerciseSuggestion,
   type VideoMappingRow,
 } from "@/lib/exerciseVideoMap";
@@ -34,6 +35,7 @@ export function ExerciseVideoLinker({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
   const [customUrl, setCustomUrl] = useState(current?.custom_video_url || "");
+  const [uploading, setUploading] = useState(false);
 
   const run = async (q: string) => {
     setLoading(true);
@@ -106,6 +108,28 @@ export function ExerciseVideoLinker({
     }
   };
 
+  const subirVideo = async (file?: File) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const stored = await uploadVideoDoCoach(coachId, exerciseName, file);
+      const row = await salvarMapeamento({
+        coachId,
+        exerciseNamePt: exerciseName,
+        exerciseNameEn: current?.exercise_name_en ?? null,
+        gifUrl: null,
+        customVideoUrl: stored,
+      });
+      toast.success("Vídeo enviado, vinculado e verificado.");
+      onSaved(row);
+      onClose();
+    } catch (e) {
+      toast.error((e as Error).message || "Não foi possível enviar o vídeo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div
       role="dialog"
@@ -137,7 +161,7 @@ export function ExerciseVideoLinker({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: "0.08em", color: TEAL, fontWeight: 700 }}>
-              VINCULAR VÍDEO
+              BUSCAR GIF
             </div>
             <div style={{ fontSize: 15, color: TEXT, fontWeight: 700 }}>{exerciseName}</div>
           </div>
@@ -268,6 +292,11 @@ export function ExerciseVideoLinker({
           <div style={{ fontSize: 11, color: DIM, marginTop: 6 }}>
             O seu vídeo tem prioridade sobre a demonstração da biblioteca.
           </div>
+          <label style={{ marginTop: 10, minHeight: 44, width: "100%", borderRadius: 8, border: `1px solid ${TEAL}66`, color: TEAL, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+            {uploading ? <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} /> : <Upload style={{ width: 16, height: 16 }} />}
+            {uploading ? "Enviando..." : "Subir vídeo do dispositivo"}
+            <input type="file" accept="video/*" disabled={uploading} onChange={(e) => subirVideo(e.target.files?.[0])} style={{ display: "none" }} />
+          </label>
         </div>
 
         {current && (

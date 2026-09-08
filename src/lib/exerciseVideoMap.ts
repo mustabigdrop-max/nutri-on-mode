@@ -21,6 +21,9 @@ export interface VideoMappingRow {
   gif_url: string | null;
   custom_video_url: string | null;
   verified: boolean;
+  gif_verified: boolean;
+  gif_verified_at: string | null;
+  gif_verified_by: string | null;
 }
 
 export interface ExerciseSuggestion {
@@ -33,24 +36,37 @@ export interface ExerciseSuggestion {
 
 /** Sugestões de tradução PT → EN (apenas sugerem a busca; nunca vinculam sozinhas). */
 const TRADUCOES: Record<string, string> = {
+  "mobilidade de quadril": "hip circles standing",
+  "mobilidade de quadril rotacoes circulos extensoes": "standing hip circles",
+  "rotacao de quadril": "hip rotation standing",
+  "circulos de quadril": "hip circles",
+  "gato vaca": "cat cow stretch",
+  "ponte de gluteos": "glute bridge",
+  "ponte de gluteos com banda": "glute bridge band",
+  "ativacao de gluteos": "glute bridge",
+  "ativacao de gluteos ponte de gluteos com banda": "glute bridge resistance band",
   "prancha abdominal": "front plank",
   "prancha": "plank",
   "prancha lateral": "side plank",
-  "puxada alta": "lat pulldown",
-  "puxada frontal": "lat pulldown",
+  "puxada alta": "cable wide grip lat pulldown",
+  "puxada alta com barra reta": "cable wide grip lat pulldown",
+  "puxada frontal": "cable lat pulldown",
+  "puxada supinada": "cable underhand grip lat pulldown",
   "remada curvada": "barbell bent over row",
   "remada curvada com barra": "barbell bent over row",
+  "remada curvada com barra pegada pronada": "barbell bent over row",
   "remada unilateral": "dumbbell one arm row",
-  "remada unilateral com halteres": "dumbbell one arm row",
+  "remada unilateral com halteres": "dumbbell bent over row",
+  "remada unilateral com halteres serrote": "dumbbell one arm row",
   "remada baixa": "seated cable row",
-  "remada cavalinho": "t bar row",
-  "remada com elastico": "resistance band row",
+  "remada cavalinho": "lever t bar row",
+  "remada com elastico": "resistance band seated row",
   "elevacao lateral": "dumbbell lateral raise",
   "elevacao lateral com halteres": "dumbbell lateral raise",
   "elevacao frontal": "front raise",
   "crucifixo": "dumbbell fly",
-  "crucifixo invertido": "machine reverse fly",
-  "crucifixo invertido na maquina": "machine reverse fly",
+  "crucifixo invertido": "dumbbell rear delt fly",
+  "crucifixo invertido na maquina": "lever reverse fly",
   "voador na maquina": "pec deck fly",
   "crossover": "cable crossover",
   "abdominal": "crunch",
@@ -58,27 +74,41 @@ const TRADUCOES: Record<string, string> = {
   "abdominal supra na maquina": "machine crunch",
   "abdominal infra": "leg raise",
   "rotacao externa de ombro": "cable external rotation",
-  "alongamento dinamico de tronco": "standing trunk rotation",
+  "alongamento dinamico de tronco": "standing trunk rotation stretch",
   "rotacao de tronco": "standing trunk rotation",
   "supino reto": "barbell bench press",
   "supino reto com barra": "barbell bench press",
   "supino inclinado": "incline bench press",
+  "supino declinado": "barbell decline bench press",
+  "supino com halteres": "dumbbell bench press",
+  "crucifixo inclinado": "dumbbell incline fly",
+  "voador": "lever pec deck fly",
+  "cross over": "cable crossover",
+  "flexao de braco": "push up",
+  "mergulho": "chest dip",
   "agachamento": "squat",
-  "agachamento livre": "barbell squat",
-  "agachamento bulgaro": "bulgarian split squat",
+  "agachamento livre": "barbell full squat",
+  "agachamento bulgaro": "dumbbell bulgarian split squat",
   "afundo": "lunge",
-  "leg press": "leg press",
-  "leg press 45": "leg press",
-  "cadeira extensora": "leg extension machine",
-  "mesa flexora": "lying leg curl machine",
+  "leg press": "leg press machine",
+  "leg press 45": "sled 45 leg press",
+  "cadeira extensora": "lever leg extension",
+  "mesa flexora": "lever lying leg curl",
+  "cadeira abdutora": "lever seated hip abduction",
+  "cadeira adutora": "lever seated hip adduction",
   "cadeira flexora": "seated leg curl",
   "stiff": "barbell romanian deadlift",
   "stiff com barra": "barbell romanian deadlift",
+  "stiff com halteres": "dumbbell romanian deadlift",
   "levantamento terra": "deadlift",
-  "hip thrust": "hip thrust",
+  "hip thrust": "barbell hip thrust",
+  "hack squat": "sled hack squat",
+  "passada": "dumbbell walking lunge",
+  "avanco": "dumbbell lunge",
   "elevacao pelvica": "glute bridge",
   "panturrilha": "calf raise",
   "panturrilha no smith": "smith machine calf raise",
+  "panturrilha sentado": "lever seated calf raise",
   "panturrilha em pe": "standing calf raise",
   "rosca direta": "barbell curl",
   "rosca direta com barra": "barbell curl",
@@ -91,13 +121,23 @@ const TRADUCOES: Record<string, string> = {
   "mergulho em paralelas": "chest dip",
   "desenvolvimento": "shoulder press",
   "desenvolvimento com halteres": "dumbbell shoulder press",
+  "desenvolvimento com barra": "barbell overhead press",
   "desenvolvimento militar": "overhead press",
   "encolhimento": "shrug",
   "barra fixa": "pull up",
   "flexao": "push up",
   "pullover": "dumbbell pullover",
   "pullover com halteres": "dumbbell pullover",
-  "face pull": "face pull",
+  "face pull": "cable face pull",
+  "rosca concentrada": "dumbbell concentration curl",
+  "rosca no cabo": "cable curl",
+  "triceps corda": "cable rope pushdown",
+  "triceps banco": "bench dip",
+  "triceps mergulho": "triceps dip",
+  "abdominal na maquina": "lever crunch",
+  "elevacao de pernas": "hanging leg raise",
+  "russian twist": "russian twist",
+  "wood chop": "cable wood chop",
 };
 
 function plain(s: string): string {
@@ -170,15 +210,19 @@ export async function getVideoVerificado(
   if (!cid) return null;
   const { data } = await supabase
     .from("exercise_video_mappings")
-    .select("gif_url, custom_video_url, exercise_name_en")
+    .select("gif_url, custom_video_url, exercise_name_en, gif_verified")
     .eq("exercise_key", key)
     .eq("coach_id", cid)
-    .eq("verified", true)
+    .eq("gif_verified", true)
     .limit(1)
     .maybeSingle();
   const row = data as any;
   if (!row) return null;
-  if (row.custom_video_url) return { type: "video", url: row.custom_video_url, nameEn: row.exercise_name_en };
+  if (!row.gif_verified) return null;
+  if (row.custom_video_url) {
+    const url = await resolveStoredVideoUrl(row.custom_video_url);
+    return url ? { type: "video", url, nameEn: row.exercise_name_en } : null;
+  }
   if (row.gif_url) return { type: "gif", url: row.gif_url, nameEn: row.exercise_name_en };
   return null;
 }
@@ -222,6 +266,9 @@ export async function salvarMapeamento(params: {
         gif_url: params.gifUrl ?? null,
         custom_video_url: params.customVideoUrl ?? null,
         verified: true,
+        gif_verified: true,
+        gif_verified_at: new Date().toISOString(),
+        gif_verified_by: params.coachId,
       },
       { onConflict: "coach_id,exercise_key" },
     )
@@ -229,6 +276,24 @@ export async function salvarMapeamento(params: {
     .maybeSingle();
   if (error) throw error;
   return (data as any) || null;
+}
+
+/** Guarda vídeos próprios em bucket privado e gera URL temporária só ao exibir. */
+export async function uploadVideoDoCoach(coachId: string, exerciseName: string, file: File): Promise<string> {
+  if (!file.type.startsWith("video/")) throw new Error("Selecione um arquivo de vídeo.");
+  if (file.size > 100 * 1024 * 1024) throw new Error("O vídeo deve ter no máximo 100 MB.");
+  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
+  const path = `${coachId}/${exerciseKey(exerciseName)}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("exercise-videos").upload(path, file, { upsert: false, contentType: file.type });
+  if (error) throw error;
+  return `storage://exercise-videos/${path}`;
+}
+
+export async function resolveStoredVideoUrl(value: string): Promise<string | null> {
+  if (!value.startsWith("storage://exercise-videos/")) return value;
+  const path = value.slice("storage://exercise-videos/".length);
+  const { data, error } = await supabase.storage.from("exercise-videos").createSignedUrl(path, 3600);
+  return error ? null : data.signedUrl;
 }
 
 /** Remove o vínculo (volta a exibir apenas o guia em texto). */
