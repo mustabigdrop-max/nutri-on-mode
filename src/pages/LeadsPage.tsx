@@ -501,7 +501,10 @@ function LeadDetail({
     setScriptOpen(false);
 
     const now = new Date().toISOString();
-    const patch: Record<string, unknown> = { contacted_at: lead.contacted_at || now, last_followup_at: now };
+    const patch: { contacted_at: string; last_followup_at: string; status?: string } = {
+      contacted_at: lead.contacted_at || now,
+      last_followup_at: now,
+    };
     if (lead.status === "novo") patch.status = "contatado";
     const { data } = await supabase.from("mce_leads").update(patch).eq("id", lead.id).select().single();
     if (data) onChanged(data as unknown as Lead);
@@ -511,7 +514,12 @@ function LeadDetail({
 
   /** Registra resposta do lead / conversa agendada e ajusta o status. */
   async function markFollowup(patchIn: { replied?: boolean; scheduled_call_at?: string | null }) {
-    const patch: Record<string, unknown> = { ...patchIn };
+    const patch: {
+      replied?: boolean;
+      scheduled_call_at?: string | null;
+      status?: string;
+      last_followup_at?: string;
+    } = { ...patchIn };
     if (patchIn.replied === true || patchIn.scheduled_call_at) {
       if (lead.status === "novo" || lead.status === "contatado") patch.status = "em_negociacao";
     }
