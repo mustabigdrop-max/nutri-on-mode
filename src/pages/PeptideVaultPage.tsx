@@ -13,6 +13,8 @@ import {
   MessageCircle, BookOpen, Search, Shield, AlertTriangle,
   Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink, Save, Trash2
 } from "lucide-react";
+import NexusContentCreator from "@/components/nexus/NexusContentCreator";
+import NexusComoObter from "@/components/nexus/NexusComoObter";
 import { PeptideNutritionalStrategy } from "@/components/lab/PeptideNutritionalStrategy";
 import { PeptideReconstitutionCard } from "@/components/lab/PeptideReconstitutionCard";
 import { PeptideDisclaimer } from "@/components/lab/PeptideDisclaimer";
@@ -294,14 +296,14 @@ function EncyclopediaTab() {
           </div>
           <p className="text-sm text-gray-400">{selected.classe} — {selected.status}</p>
 
-          <Button
-            onClick={() =>
-              navigate(`/coach/social?tab=carrossel_nexus&tema=${encodeURIComponent(selected.name)}`)
-            }
-            className="w-full gap-2 bg-[#00D4AA] text-black hover:bg-[#00D4AA]/90"
-          >
-            <Sparkles className="w-4 h-4" /> Gerar carrossel científico
-          </Button>
+          <NexusContentCreator
+            nome={selected.name}
+            origem="PeptideVault"
+            compoundData={selected}
+            contexto={selected.mechanism}
+          />
+
+          <NexusComoObter nome={selected.name} origem="PeptideVault" compoundData={selected} />
 
           {[
             { title: "🔬 Descoberta", content: selected.discovery },

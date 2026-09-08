@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Sparkles, Dna, Flame } from "lucide-react";
+import NexusContentCreator from "@/components/nexus/NexusContentCreator";
+import NexusComoObter from "@/components/nexus/NexusComoObter";
 import {
   microbiotaItems,
   microbiotaStats,
@@ -12,8 +14,6 @@ import {
   MICROBIOTA_CATEGORIAS,
   MICROBIOTA_OBJETIVOS,
   MICROBIOTA_HOOKS,
-  MICROBIOTA_ANGULOS,
-  MICROBIOTA_FORMATOS,
   MICROBIOTA_DISCLAIMER,
   STATUS_COLOR,
   type MicrobiotaItem,
@@ -207,26 +207,7 @@ export default function MicrobiotaVaultPage() {
 
 function ItemDetail({ item, onBack }: { item: MicrobiotaItem; onBack: () => void }) {
   const navigate = useNavigate();
-  const [angulo, setAngulo] = useState("educativo");
   const color = STATUS_COLOR[item.status];
-
-  const gerar = (formato: string) => {
-    const anguloLabel = MICROBIOTA_ANGULOS.find((a) => a.id === angulo)?.label ?? "Educativo";
-    // Carrossel do NEXUS-BIO usa o template científico (só o nome do composto,
-    // a ficha completa é carregada no gerador). Reels/Stories seguem por tema.
-    if (formato === "carrossel") {
-      navigate(`/coach/social?tab=carrossel_nexus&tema=${encodeURIComponent(item.nome)}`);
-      return;
-    }
-    const tema =
-      angulo === "cross_vault"
-        ? `${item.nome} × peptídeos: comparação honesta (microbiota vs fármaco) — ${item.mecanismo_acao}`
-        : `${item.nome} (${item.classe}) — ângulo ${anguloLabel}. ${item.mecanismo_acao}${
-            item.dica_pratica ? ` Dica prática: ${item.dica_pratica}` : ""
-          }`;
-    const tab = formato === "reels" ? "reels" : "stories";
-    navigate(`/coach/social?tab=${tab}&tema=${encodeURIComponent(tema)}`);
-  };
 
   return (
     <ScrollArea className="h-full px-4">
@@ -249,45 +230,15 @@ function ItemDetail({ item, onBack }: { item: MicrobiotaItem; onBack: () => void
         </p>
 
         {/* Criar conteúdo */}
-        <Card className="border" style={{ borderColor: "#EF9F2740", backgroundColor: "#EF9F270A" }}>
-          <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-sm font-semibold text-[#EF9F27] flex items-center gap-2">
-              📲 Criar conteúdo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 space-y-3">
-            <div className="flex flex-wrap gap-1.5">
-              {MICROBIOTA_ANGULOS.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => setAngulo(a.id)}
-                  title={a.hint}
-                  className={`text-[10px] px-2 py-1 rounded-full border transition ${
-                    angulo === a.id
-                      ? "bg-[#EF9F27]/20 border-[#EF9F27]/60 text-[#EF9F27]"
-                      : "border-gray-700 text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {MICROBIOTA_FORMATOS.map((f) => (
-                <Button
-                  key={f.id}
-                  onClick={() => gerar(f.id)}
-                  className="gap-2 bg-[#EF9F27] text-black hover:bg-[#EF9F27]/90"
-                >
-                  <Sparkles className="w-4 h-4" /> {f.label}
-                </Button>
-              ))}
-            </div>
-            <p className="text-[10px] text-gray-500">
-              O ângulo Cross-Vault cruza este item com o PeptideVault (ex.: microbiota × semaglutida).
-            </p>
-          </CardContent>
-        </Card>
+        <NexusContentCreator
+          nome={item.nome}
+          origem="MicrobiotaVault"
+          compoundData={item}
+          contexto={item.mecanismo_acao}
+        />
+
+        <NexusComoObter nome={item.nome} origem="MicrobiotaVault" compoundData={item} />
+
 
         {[
           { title: "⚙️ Como funciona", content: item.mecanismo_acao },

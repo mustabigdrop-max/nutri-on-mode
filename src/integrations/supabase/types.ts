@@ -8406,6 +8406,36 @@ export type Database = {
         }
         Relationships: []
       }
+      nexus_como_obter: {
+        Row: {
+          composto: string
+          created_at: string
+          created_by: string | null
+          dados: Json
+          id: string
+          origem: string
+          updated_at: string
+        }
+        Insert: {
+          composto: string
+          created_at?: string
+          created_by?: string | null
+          dados?: Json
+          id?: string
+          origem?: string
+          updated_at?: string
+        }
+        Update: {
+          composto?: string
+          created_at?: string
+          created_by?: string | null
+          dados?: Json
+          id?: string
+          origem?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nexus_compounds: {
         Row: {
           analise_offlabel: string | null
