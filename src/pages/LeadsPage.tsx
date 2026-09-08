@@ -568,16 +568,32 @@ function LeadDetail({
         </button>
 
         {lead.whatsapp && (
-          <a
-            href={waLink(lead, contextMessage(lead))}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => logActivity("whatsapp_sent", "Mensagem enviada pelo WhatsApp")}
-            className="block text-center py-4 font-bold tracking-widest"
-            style={{ background: "#25D366", color: "#fff" }}
-          >
-            FALAR NO WHATSAPP
-          </a>
+          <>
+            <button
+              onClick={() => setScriptOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-4 font-bold tracking-widest"
+              style={{ background: "#25D366", color: "#fff" }}
+            >
+              <MessageCircle className="w-4 h-4" /> FALAR NO WHATSAPP
+            </button>
+
+            <LeadFollowupTracker
+              contactedAt={lead.contacted_at}
+              scheduledCallAt={lead.scheduled_call_at ?? null}
+              replied={lead.replied ?? null}
+              onShowFollowupScript={() => setScriptOpen(true)}
+              onMark={markFollowup}
+            />
+
+            <LeadScriptDialog
+              leadId={lead.id}
+              leadName={lead.name}
+              answersText={answersText}
+              open={scriptOpen}
+              onClose={() => setScriptOpen(false)}
+              onSendInitial={sendInitial}
+            />
+          </>
         )}
 
         <div className="border border-border bg-card p-4">
