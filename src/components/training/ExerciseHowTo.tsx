@@ -7,6 +7,7 @@ import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
 import { getVideoVerificado, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
 import { exerciseKey } from "@/lib/exerciseGuide";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
+import AnatomyMuscleMap from "@/components/social/AnatomyMuscleMap";
 
 const AMBER = "#EF9F27";
 const TEAL = "#5DCAA5";
@@ -199,7 +200,45 @@ function GuideView({ guide }: { guide: ExerciseGuide }) {
       )}
 
       {!!guide.musculos?.length && (
-        <Section title="Ativação muscular">
+        <Section title="Músculos ativados">
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ flexShrink: 0 }}>
+              <AnatomyMuscleMap
+                height={220}
+                activeZones={guide.musculos.filter((m) => m.tipo === "principal").map((m) => m.nome)}
+                secondaryZones={guide.musculos.filter((m) => m.tipo !== "principal").map((m) => m.nome)}
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 150, display: "grid", gap: 10 }}>
+              {(["principal", "secundario"] as const).map((tipo) => {
+                const lista = guide.musculos!.filter((m) =>
+                  tipo === "principal" ? m.tipo === "principal" : m.tipo !== "principal",
+                );
+                if (!lista.length) return null;
+                const color = tipo === "principal" ? AMBER : TEAL;
+                return (
+                  <div key={tipo}>
+                    <div style={{ fontSize: 10, letterSpacing: "0.08em", color, fontWeight: 700 }}>
+                      {tipo === "principal" ? "PRINCIPAL" : "SECUNDÁRIO"}
+                    </div>
+                    {lista.map((m, i) => (
+                      <div key={i} style={{ fontSize: 14, color: TEXT, marginTop: 3 }}>
+                        • {m.nome} <span style={{ color: DIM, fontSize: 12 }}>{m.ativacao}%</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           <div style={{ display: "grid", gap: 10 }}>
             {guide.musculos.map((m, i) => {
               const principal = m.tipo === "principal";

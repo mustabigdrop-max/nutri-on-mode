@@ -1,7 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { exerciseKey } from "@/lib/exerciseGuide";
 
-const API = "https://oss.exercisedb.dev/api/v1/exercises";
+/**
+ * Base da ExerciseDB. Para usar uma instância própria (self-hosted no Vercel),
+ * defina VITE_EXERCISEDB_API, ex.: https://nutrion-exercises.vercel.app/api/v1
+ */
+export const EXERCISEDB_BASE =
+  (import.meta.env.VITE_EXERCISEDB_API as string | undefined)?.replace(/\/+$/, "") ||
+  "https://oss.exercisedb.dev/api/v1";
+
+const API = `${EXERCISEDB_BASE}/exercises`;
 
 export interface ExerciseVideo {
   type: "video" | "gif";
