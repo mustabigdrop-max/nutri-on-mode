@@ -7,6 +7,8 @@ export interface ExerciseVideo {
   type: "video" | "gif";
   url: string;
   nameEn?: string | null;
+  /** true quando a demonstração veio da busca automática (sem aprovação do coach). */
+  auto?: boolean;
 }
 
 export interface VideoMappingRow {
