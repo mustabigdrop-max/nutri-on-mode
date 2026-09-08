@@ -39,22 +39,27 @@ const statusFrom = (raw?: string): NexusStatus => {
 
 const fallback = (tema: string, classe?: string, status?: string): NexusCarouselContent => ({
   composto: tema,
-  slide1_titulo: `O que a ciência realmente sabe sobre **${tema}**`,
+  slide1_gancho: `O que a ciência realmente sabe sobre ${tema}.`,
   slide1_classe: classe || "Composto",
   slide1_status: statusFrom(status),
-  slide2_oque: `${tema} é um composto estudado na literatura científica atual.`,
-  slide2_traducao: "Em linguagem simples: o que ele faz e o que ainda não sabemos.",
-  slide3_mecanismo: "Mecanismo de ação em revisão — gere novamente para o detalhamento completo.",
-  slide3_analogia: "Pense nele como um sinal que o corpo já usa, ajustado.",
-  slide4_beneficios: ["Gere novamente para trazer os achados dos estudos."],
-  slide5_riscos: ["Efeitos adversos e limitações precisam ser avaliados individualmente."],
+  slide2_ficha: { composto: tema, classe: classe || "Composto", nivel_evidencia: "PRELIMINAR" },
+  slide3_mecanismo: {
+    passos: ["Mecanismo de ação em revisão — gere novamente para o detalhamento completo."],
+    traducao_leiga: "Em resumo: gere novamente para a tradução em linguagem simples.",
+  },
+  slide4_beneficios: [{ numero: "—", desc: "Gere novamente para trazer os achados dos estudos." }],
+  slide5_riscos: [{ risco: "Efeitos adversos precisam ser avaliados individualmente." }],
   slide5_nao_indicado: "Gestantes, lactantes, menores de 18 anos e sem avaliação médica.",
-  slide7_evidencia: "PRELIMINAR",
-  slide7_estudos: [],
-  slide7_regulatorio: "Verifique o status regulatório atual junto a FDA e ANVISA.",
-  slide8_pratica: ["Converse com seu médico antes de considerar qualquer protocolo."],
-  slide9_resumo: { oque: "", funciona: "", beneficio_principal: "", risco_principal: "" },
+  slide7_faz_sentido: ["Acompanhamento profissional ativo."],
+  slide7_nao_faz_sentido: ["Uso por conta própria, sem avaliação."],
+  slide8_perguntas_medico: [
+    "Esse composto faz sentido pro meu caso específico?",
+    "Quais exames devo fazer antes de iniciar?",
+    "Qual o plano de saída quando eu parar?",
+  ],
+  slide9_resumo: { oque: "", beneficio: "", risco: "", evidencia: "PRELIMINAR", veredicto: "" },
 });
+
 
 /** Gerador de carrossel NEXUS-BIO — científico, 9 ou 10 slides, 1080x1350. */
 export default function NexusCarouselPanel({
@@ -93,8 +98,10 @@ export default function NexusCarouselPanel({
         ...fallback(tema.trim(), found?.classe, found?.status),
         ...result,
         composto: tema.trim(),
+        origem: found?.origem || "PeptideVault",
         slide1_status: statusFrom(result.slide1_status || found?.status),
         handle: handle || "diogo.mell0",
+
       };
       setImages(renderNexusCarousel(content));
       setLabels(nexusSlideLabels(content));

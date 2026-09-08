@@ -1,10 +1,13 @@
 /**
- * Template proprietário "NEXUS-BIO" — carrossel científico de 8 a 10 slides
- * em 4:5 (1080 x 1350). Usado SOMENTE por conteúdo originado do PeptideVault
- * e do MicrobiotaVault. Nada de pilares M / C / E aqui: o foco é ciência.
+ * Template proprietário "NEXUS-BIO" — carrossel científico de 10 slides em 4:5
+ * (1080 x 1350). Usado SOMENTE por conteúdo originado do PeptideVault e do
+ * MicrobiotaVault. Nada de pilares M / C / E aqui: o foco é ciência.
  *
- * Nos textos, trechos entre **asteriscos duplos** saem destacados na cor de
- * acento do slide.
+ * A paleta é EXATAMENTE a mesma do template MCE (feed coeso). O que muda é a
+ * estrutura (ficha técnica, números grandes, tabela comparativa, perguntas pro
+ * médico) e o conteúdo.
+ *
+ * Nos textos, trechos entre **asteriscos duplos** saem destacados no acento.
  */
 
 export const NEXUS_TPL = {
@@ -12,63 +15,75 @@ export const NEXUS_TPL = {
   ink: "#F5F0E8",
   muted: "#888888",
   soft: "#CCCCCC",
-  accent: "#00D4AA",
-  accentAlt: "#7C6BF0",
-  danger: "#EF4444",
-  warning: "#EAB308",
-  approved: "#22C55E",
-  research: "#3B82F6",
-  experimental: "#F97316",
+  accent: "#EF9F27",
+  accentAlt: "#AFA9EC",
+  green: "#5DCAA5",
   footerMuted: "#666666",
-  ctaSub: "#04352C",
-  ctaHandle: "#046B58",
+  ctaSub: "#412402",
+  ctaHandle: "#633806",
 } as const;
 
 export type NexusStatus = "APROVADO" | "PESQUISA" | "EXPERIMENTAL";
 export type NexusEvidencia = "FORTE" | "MODERADA" | "PRELIMINAR";
 
 export const NEXUS_STATUS_COLOR: Record<NexusStatus, string> = {
-  APROVADO: NEXUS_TPL.approved,
-  PESQUISA: NEXUS_TPL.research,
-  EXPERIMENTAL: NEXUS_TPL.experimental,
+  APROVADO: NEXUS_TPL.green,
+  PESQUISA: NEXUS_TPL.accent,
+  EXPERIMENTAL: NEXUS_TPL.accentAlt,
 };
 
-const EVID_COLOR: Record<NexusEvidencia, string> = {
-  FORTE: NEXUS_TPL.approved,
-  MODERADA: NEXUS_TPL.warning,
-  PRELIMINAR: NEXUS_TPL.experimental,
+const EVID_FILL: Record<NexusEvidencia, number> = { FORTE: 1, MODERADA: 0.62, PRELIMINAR: 0.32 };
+
+export type NexusFicha = {
+  composto?: string;
+  classe?: string;
+  meia_vida?: string;
+  via?: string;
+  aprovacao_fda?: string;
+  anvisa?: string;
+  fabricante?: string;
+  nivel_evidencia?: NexusEvidencia;
+  num_estudos?: string;
 };
+
+export type NexusBeneficio = { numero: string; desc: string; estudo?: string; n?: string };
+export type NexusRisco = { risco: string; contexto?: string };
+export type NexusLinhaTabela = { criterio: string; composto1: string; composto2: string };
 
 export type NexusCarouselContent = {
   composto: string;
-  slide1_titulo: string;
+  origem?: "PeptideVault" | "MicrobiotaVault";
+  slide1_gancho: string;
   slide1_classe: string;
   slide1_status: NexusStatus;
-  slide2_oque: string;
-  slide2_traducao: string;
-  slide3_mecanismo: string;
-  slide3_analogia: string;
-  slide4_beneficios: string[];
-  slide5_riscos: string[];
-  slide5_nao_indicado: string;
-  slide6_comparativo_com?: string;
-  slide6_comparativo?: { criterio: string; composto1: string; composto2: string }[];
-  slide7_evidencia: NexusEvidencia;
-  slide7_estudos: string[];
-  slide7_regulatorio: string;
-  slide8_pratica: string[];
-  slide9_resumo: { oque: string; funciona: string; beneficio_principal: string; risco_principal: string };
+  slide2_ficha: NexusFicha;
+  slide3_mecanismo: { passos: string[]; traducao_leiga: string };
+  slide4_beneficios: NexusBeneficio[];
+  slide5_riscos: NexusRisco[];
+  slide5_nao_indicado?: string;
+  slide6_comparativo_nome?: string;
+  slide6_tabela?: NexusLinhaTabela[];
+  slide7_faz_sentido: string[];
+  slide7_nao_faz_sentido: string[];
+  slide8_perguntas_medico: string[];
+  slide9_resumo: {
+    oque: string;
+    beneficio: string;
+    risco: string;
+    evidencia: NexusEvidencia;
+    custo?: string;
+    veredicto: string;
+  };
   legenda?: string;
   handle?: string;
 };
 
 export const NEXUS_CTA_SLIDE = {
-  tag: "PRÓXIMO PASSO",
-  titulo: "Quer entender se faz sentido no seu caso?",
-  subtitulo: "Salva esse post e manda pra alguém que precisa ver.",
-  caixa: "Diagnóstico gratuito — link na bio",
-  caixaSub: "14 perguntas · 4 minutos · resultado imediato",
-  disclaimer: "⚕️ Informação educacional. Consulte seu médico.",
+  titulo: "Só o nutriON traduz ciência de verdade.",
+  subtitulo: "Evidência real. Sem achismo.",
+  caixa: "DIAGNÓSTICO GRATUITO",
+  caixaSub: "Link na bio · 14 perguntas · 4 minutos",
+  disclaimer: "⚕️ Informação educacional. Não constitui prescrição. Consulte seu médico.",
 } as const;
 
 const S = 3; // 360px de referência → 1080px reais
@@ -80,7 +95,7 @@ const font = (weight: number, size: number) =>
 type Token = { text: string; hi: boolean };
 
 const tokenize = (text: string): Token[] =>
-  text
+  (text || "")
     .split(/(\*\*[^*]+\*\*)/g)
     .filter(Boolean)
     .map((part) =>
@@ -95,17 +110,18 @@ type RichOpts = {
   lineHeight: number;
   maxWidth: number;
   hiWeight?: number;
+  italic?: boolean;
   align?: "left" | "center";
 };
 
 const drawRich = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, o: RichOpts) => {
   const lh = px(o.size) * o.lineHeight;
   const words: Token[] = [];
-  for (const token of tokenize(text || "")) {
+  for (const token of tokenize(text)) {
     for (const word of token.text.split(/\s+/)) if (word) words.push({ text: word, hi: token.hi });
   }
   const styleFor = (hi: boolean) =>
-    `${hi ? o.hiWeight || o.weight : o.weight} ${px(o.size)}px Inter, system-ui, sans-serif`;
+    `${o.italic ? "italic " : ""}${hi ? o.hiWeight || o.weight : o.weight} ${px(o.size)}px Inter, system-ui, sans-serif`;
 
   const lines: Token[][] = [[]];
   let width = 0;
@@ -152,7 +168,7 @@ const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 
 const orb = (ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, color: string) => {
   ctx.save();
-  ctx.globalAlpha = 0.07;
+  ctx.globalAlpha = 0.06;
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -160,24 +176,33 @@ const orb = (ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: numb
   ctx.restore();
 };
 
-/** Grade científica sutil no fundo. */
-const grid = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-  ctx.save();
-  ctx.globalAlpha = 0.035;
-  ctx.strokeStyle = NEXUS_TPL.accent;
-  ctx.lineWidth = 1;
-  const step = px(30);
-  for (let gx = step; gx < w; gx += step) {
-    ctx.beginPath();
-    ctx.moveTo(gx, 0);
-    ctx.lineTo(gx, h);
-    ctx.stroke();
+/** Malha molecular: pontos conectados por linhas finas. Assinatura visual do NEXUS. */
+const molecule = (ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, seed = 1) => {
+  const pts: { x: number; y: number }[] = [];
+  const n = 9;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + seed;
+    const r = radius * (0.42 + ((Math.sin(i * 2.7 + seed) + 1) / 2) * 0.58);
+    pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
   }
-  for (let gy = step; gy < h; gy += step) {
+  ctx.save();
+  ctx.strokeStyle = `${NEXUS_TPL.accent}22`;
+  ctx.lineWidth = px(0.6);
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      const d = Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y);
+      if (d > radius * 0.9) continue;
+      ctx.beginPath();
+      ctx.moveTo(pts[i].x, pts[i].y);
+      ctx.lineTo(pts[j].x, pts[j].y);
+      ctx.stroke();
+    }
+  }
+  ctx.fillStyle = `${NEXUS_TPL.accent}40`;
+  for (const p of pts) {
     ctx.beginPath();
-    ctx.moveTo(0, gy);
-    ctx.lineTo(w, gy);
-    ctx.stroke();
+    ctx.arc(p.x, p.y, px(2.2), 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.restore();
 };
@@ -221,10 +246,9 @@ const pill = (
 /** Badge de status no canto superior direito, presente em todos os slides. */
 const statusBadge = (ctx: CanvasRenderingContext2D, w: number, status: NexusStatus, dark = false) => {
   const color = dark ? "#0A0A0A" : NEXUS_STATUS_COLOR[status] || NEXUS_TPL.accent;
-  const label = status;
   ctx.font = font(700, 8);
   const spacing = px(1.6);
-  const chars = [...label];
+  const chars = [...status];
   const textW = chars.reduce((sum, c) => sum + ctx.measureText(c).width + spacing, 0);
   const boxW = textW + px(22);
   const boxH = px(20);
@@ -250,21 +274,30 @@ const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: str
   const x = px(28);
   const y = h - px(30);
   ctx.textBaseline = "alphabetic";
-  ctx.font = font(700, 13);
+  ctx.font = font(700, 15);
   ctx.fillStyle = dark ? "#0A0A0A" : NEXUS_TPL.ink;
-  ctx.fillText("🧬 nutri", x, y);
-  const baseW = ctx.measureText("🧬 nutri").width;
-  ctx.font = `italic 700 ${px(13)}px Inter, system-ui, sans-serif`;
+  ctx.fillText("nutri", x, y);
+  const nutriW = ctx.measureText("nutri").width;
+  ctx.font = `italic 700 ${px(15)}px Inter, system-ui, sans-serif`;
   ctx.fillStyle = dark ? "#0A0A0A" : NEXUS_TPL.accent;
-  ctx.fillText("ON", x + baseW, y);
-  const onW = ctx.measureText("ON").width;
+  ctx.fillText("ON", x + nutriW, y);
+
   ctx.font = font(400, 9);
   ctx.fillStyle = dark ? NEXUS_TPL.ctaHandle : NEXUS_TPL.footerMuted;
-  ctx.fillText("  |  NEXUS-BIO", x + baseW + onW, y);
-
   ctx.textAlign = "right";
   ctx.fillText(handle, w - x, y);
   ctx.textAlign = "left";
+};
+
+/** Referência científica discreta no rodapé do slide. */
+const refLine = (ctx: CanvasRenderingContext2D, text: string, x: number, h: number, w: number) => {
+  if (!text) return;
+  ctx.font = `italic 400 ${px(9)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = NEXUS_TPL.footerMuted;
+  const max = w - x * 2;
+  let out = text;
+  while (ctx.measureText(out).width > max && out.length > 4) out = out.slice(0, -2);
+  ctx.fillText(out === text ? out : `${out}…`, x, h - px(58));
 };
 
 const canvasOf = (w: number, h: number) => {
@@ -276,51 +309,24 @@ const canvasOf = (w: number, h: number) => {
   return { canvas, ctx };
 };
 
-type SlideCtx = { w: number; h: number; handle: string; status: NexusStatus };
+type SlideCtx = { w: number; h: number; handle: string; status: NexusStatus; vault: string };
 
-const baseSlide = (s: SlideCtx, orbColor: string = NEXUS_TPL.accent) => {
+const baseSlide = (s: SlideCtx, seed = 1) => {
   const { canvas, ctx } = canvasOf(s.w, s.h);
   ctx.fillStyle = NEXUS_TPL.bg;
   ctx.fillRect(0, 0, s.w, s.h);
-  grid(ctx, s.w, s.h);
-  orb(ctx, s.w - px(30), s.h - px(60), px(140), orbColor);
+  orb(ctx, s.w - px(30), s.h - px(60), px(140), NEXUS_TPL.accent);
+  molecule(ctx, s.w - px(40), s.h - px(70), px(110), seed);
   statusBadge(ctx, s.w, s.status);
   return { canvas, ctx };
 };
 
-/** Lista com bullets coloridos. Retorna o Y final. */
-const bulletList = (
-  ctx: CanvasRenderingContext2D,
-  items: string[],
-  x: number,
-  y: number,
-  o: { color: string; maxWidth: number; size?: number; marker?: string },
-) => {
-  let cursor = y;
-  for (const item of items) {
-    ctx.font = font(900, o.size ?? 11);
-    ctx.fillStyle = o.color;
-    ctx.fillText(o.marker ?? "▸", x, cursor);
-    cursor = drawRich(ctx, item, x + px(18), cursor, {
-      size: o.size ?? 11,
-      weight: 400,
-      color: NEXUS_TPL.soft,
-      accent: o.color,
-      lineHeight: 1.7,
-      maxWidth: o.maxWidth - px(18),
-      hiWeight: 800,
-    });
-    cursor += px(10);
-  }
-  return cursor;
-};
-
-const sectionTitle = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string, w: number) => {
-  const end = drawRich(ctx, text, x, y, {
-    size: 24, weight: 900, color: NEXUS_TPL.ink, accent: color, lineHeight: 1.1, maxWidth: w - x * 2, hiWeight: 900,
+const sectionTitle = (ctx: CanvasRenderingContext2D, tag: string, x: number, y: number) => {
+  const end = pill(ctx, tag, x, y, {
+    bg: `${NEXUS_TPL.accent}15`,
+    color: NEXUS_TPL.accent,
+    border: `${NEXUS_TPL.accent}40`,
   });
-  ctx.fillStyle = color;
-  ctx.fillRect(x, end + px(6), px(40), px(2));
   return end + px(34);
 };
 
@@ -332,28 +338,39 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
   const status: NexusStatus = (["APROVADO", "PESQUISA", "EXPERIMENTAL"] as const).includes(content.slide1_status)
     ? content.slide1_status
     : "PESQUISA";
-  const s: SlideCtx = { w, h, handle, status };
+  const vault = content.origem === "MicrobiotaVault" ? "NEXUS-BIO | MICROBIOTAVAULT" : "NEXUS-BIO | PEPTIDEVAULT";
+  const s: SlideCtx = { w, h, handle, status, vault };
   const x = px(28);
   const maxW = w - x * 2;
   const out: string[] = [];
   const A = NEXUS_TPL.accent;
+  const P = NEXUS_TPL.accentAlt;
+  const G = NEXUS_TPL.green;
 
   // 1 — CAPA
   {
-    const { canvas, ctx } = baseSlide(s);
-    orb(ctx, px(10), px(60), px(150), NEXUS_TPL.accentAlt);
+    const { canvas, ctx } = canvasOf(w, h);
+    ctx.fillStyle = NEXUS_TPL.bg;
+    ctx.fillRect(0, 0, w, h);
+    orb(ctx, w - px(40), px(120), px(150), A);
+    molecule(ctx, w - px(50), px(130), px(130), 0.6);
+    orb(ctx, px(20), h - px(80), px(130), A);
+    molecule(ctx, px(30), h - px(90), px(110), 2.4);
+    statusBadge(ctx, w, status);
+
     let y = px(64);
-    y = pill(ctx, content.slide1_classe || "COMPOSTO", x, y, { bg: `${A}1F`, color: A, border: `${A}66` });
-    y += px(74);
-    ctx.font = font(900, 40);
-    ctx.fillStyle = A;
-    ctx.fillText("🧬", x, y - px(38));
+    y = pill(ctx, vault, x, y, { bg: A, color: NEXUS_TPL.bg });
+    y += px(90);
     y = drawRich(ctx, content.composto, x, y, {
-      size: 34, weight: 900, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.05, maxWidth: maxW, hiWeight: 900,
+      size: 32, weight: 900, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.05, maxWidth: maxW, hiWeight: 900,
     });
-    y += px(16);
-    drawRich(ctx, content.slide1_titulo, x, y, {
-      size: 15, weight: 300, color: NEXUS_TPL.soft, accent: A, lineHeight: 1.55, maxWidth: maxW, hiWeight: 700,
+    y += px(6);
+    ctx.font = font(300, 12);
+    ctx.fillStyle = A;
+    ctx.fillText(content.slide1_classe || "", x, y);
+    y += px(40);
+    drawRich(ctx, content.slide1_gancho, x, y, {
+      size: 18, weight: 300, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.45, maxWidth: maxW, hiWeight: 700,
     });
     ctx.font = font(500, 11);
     ctx.fillStyle = A;
@@ -362,236 +379,358 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     out.push(canvas.toDataURL("image/png"));
   }
 
-  // 2 — O QUE É
+  // 2 — FICHA TÉCNICA
   {
-    const { canvas, ctx } = baseSlide(s);
-    let y = px(112);
-    y = sectionTitle(ctx, "O QUE É", x, y, A, w);
-    y = drawRich(ctx, content.slide2_oque, x, y, {
-      size: 14, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.65, maxWidth: maxW, hiWeight: 800,
-    });
-    y += px(26);
-    const boxTop = y - px(18);
-    const boxEnd = drawRich(ctx, content.slide2_traducao, x + px(16), y + px(16), {
-      size: 12, weight: 300, color: NEXUS_TPL.soft, accent: A, lineHeight: 1.7, maxWidth: maxW - px(32), hiWeight: 700,
-    });
-    roundRect(ctx, x, boxTop, maxW, boxEnd - boxTop + px(4), px(10));
-    ctx.strokeStyle = `${NEXUS_TPL.accentAlt}59`;
-    ctx.lineWidth = px(1);
-    ctx.stroke();
-    ctx.font = font(700, 8);
-    ctx.fillStyle = NEXUS_TPL.accentAlt;
-    ctx.fillText("TRADUÇÃO", x + px(16), boxTop + px(14));
-    footer(ctx, w, h, handle);
-    out.push(canvas.toDataURL("image/png"));
-  }
+    const { canvas, ctx } = baseSlide(s, 1.2);
+    let y = px(100);
+    y = sectionTitle(ctx, "FICHA TÉCNICA", x, y);
+    const f = content.slide2_ficha || {};
+    const rows: [string, string][] = [
+      ["COMPOSTO", f.composto || content.composto],
+      ["CLASSE", f.classe || content.slide1_classe],
+      ["MEIA-VIDA", f.meia_vida || "—"],
+      ["VIA", f.via || "—"],
+      ["APROVAÇÃO FDA", f.aprovacao_fda || "—"],
+      ["ANVISA", f.anvisa || "—"],
+      ["FABRICANTE / FONTE", f.fabricante || "—"],
+    ].filter(([, v]) => v && v !== "—") as [string, string][];
 
-  // 3 — COMO FUNCIONA
-  {
-    const { canvas, ctx } = baseSlide(s, NEXUS_TPL.accentAlt);
-    let y = px(112);
-    y = sectionTitle(ctx, "COMO FUNCIONA", x, y, NEXUS_TPL.accentAlt, w);
-    y = drawRich(ctx, content.slide3_mecanismo, x, y, {
-      size: 13, weight: 400, color: NEXUS_TPL.ink, accent: NEXUS_TPL.accentAlt,
-      lineHeight: 1.7, maxWidth: maxW, hiWeight: 800,
-    });
-    y += px(34);
+    const cardTop = y;
+    let cy = y + px(26);
+    for (const [label, value] of rows) {
+      ctx.font = font(700, 8);
+      ctx.fillStyle = A;
+      ctx.fillText(label, x + px(18), cy);
+      const end = drawRich(ctx, value, x + px(150), cy, {
+        size: 13, weight: 500, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.35, maxWidth: maxW - px(170),
+      });
+      cy = Math.max(cy + px(26), end + px(8));
+    }
+
+    // Nível de evidência
+    const evid: NexusEvidencia = (["FORTE", "MODERADA", "PRELIMINAR"] as const).includes(
+      f.nivel_evidencia as NexusEvidencia,
+    )
+      ? (f.nivel_evidencia as NexusEvidencia)
+      : "PRELIMINAR";
+    cy += px(14);
     ctx.font = font(700, 8);
     ctx.fillStyle = A;
-    ctx.fillText("NA PRÁTICA, É COMO SE...", x, y);
-    y += px(24);
-    drawRich(ctx, content.slide3_analogia, x, y, {
-      size: 18, weight: 900, color: A, accent: A, lineHeight: 1.35, maxWidth: maxW,
-    });
-    footer(ctx, w, h, handle);
-    out.push(canvas.toDataURL("image/png"));
-  }
-
-  // 4 — BENEFÍCIOS
-  {
-    const { canvas, ctx } = baseSlide(s, NEXUS_TPL.approved);
-    let y = px(112);
-    y = sectionTitle(ctx, "O QUE A CIÊNCIA MOSTRA", x, y, NEXUS_TPL.approved, w);
-    bulletList(ctx, (content.slide4_beneficios || []).slice(0, 5), x, y, {
-      color: NEXUS_TPL.approved, maxWidth: maxW, size: 12, marker: "✓",
-    });
-    ctx.font = font(300, 9);
-    ctx.fillStyle = NEXUS_TPL.footerMuted;
-    ctx.fillText("Dados de estudos citados. Resultados variam entre indivíduos.", x, h - px(62));
-    footer(ctx, w, h, handle);
-    out.push(canvas.toDataURL("image/png"));
-  }
-
-  // 5 — O QUE NINGUÉM FALA
-  {
-    const { canvas, ctx } = baseSlide(s, NEXUS_TPL.danger);
-    let y = px(112);
-    y = sectionTitle(ctx, "O QUE NINGUÉM FALA", x, y, NEXUS_TPL.danger, w);
-    y = bulletList(ctx, (content.slide5_riscos || []).slice(0, 5), x, y, {
-      color: NEXUS_TPL.danger, maxWidth: maxW, size: 12, marker: "▲",
-    });
-    y += px(14);
-    const boxTop = y;
-    const boxEnd = drawRich(ctx, content.slide5_nao_indicado, x + px(16), y + px(34), {
-      size: 12, weight: 400, color: NEXUS_TPL.soft, accent: NEXUS_TPL.danger,
-      lineHeight: 1.6, maxWidth: maxW - px(32), hiWeight: 800,
-    });
-    roundRect(ctx, x, boxTop, maxW, boxEnd - boxTop + px(6), px(10));
-    ctx.fillStyle = `${NEXUS_TPL.danger}14`;
+    ctx.fillText("NÍVEL DE EVIDÊNCIA", x + px(18), cy);
+    cy += px(16);
+    const barW = maxW - px(36);
+    roundRect(ctx, x + px(18), cy, barW, px(8), px(4));
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
     ctx.fill();
-    ctx.strokeStyle = `${NEXUS_TPL.danger}59`;
+    roundRect(ctx, x + px(18), cy, barW * EVID_FILL[evid], px(8), px(4));
+    ctx.fillStyle = evid === "FORTE" ? G : evid === "MODERADA" ? A : P;
+    ctx.fill();
+    cy += px(28);
+    ctx.font = font(900, 16);
+    ctx.fillStyle = evid === "FORTE" ? G : evid === "MODERADA" ? A : P;
+    ctx.fillText(evid, x + px(18), cy);
+    if (f.num_estudos) {
+      ctx.font = font(300, 10);
+      ctx.fillStyle = NEXUS_TPL.muted;
+      ctx.fillText(f.num_estudos, x + px(18) + ctx.measureText(evid).width + px(60), cy);
+    }
+    cy += px(18);
+
+    roundRect(ctx, x, cardTop, maxW, cy - cardTop, px(14));
+    ctx.strokeStyle = `${A}20`;
     ctx.lineWidth = px(1);
     ctx.stroke();
-    ctx.font = font(700, 8);
-    ctx.fillStyle = NEXUS_TPL.danger;
-    ctx.fillText("NÃO É INDICADO PARA", x + px(16), boxTop + px(20));
+
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
 
-  // 6 — COMPARATIVO (opcional)
-  if (content.slide6_comparativo?.length && content.slide6_comparativo_com) {
-    const { canvas, ctx } = baseSlide(s, NEXUS_TPL.accentAlt);
-    let y = px(112);
-    y = sectionTitle(ctx, "COMPARATIVO", x, y, NEXUS_TPL.accentAlt, w);
-    const colW = (maxW - px(90)) / 2;
-    const c1X = x + px(90);
-    const c2X = c1X + colW + px(8);
-
-    ctx.font = font(700, 10);
-    ctx.fillStyle = A;
-    ctx.fillText(content.composto.slice(0, 16), c1X, y);
-    ctx.fillStyle = NEXUS_TPL.accentAlt;
-    ctx.fillText(content.slide6_comparativo_com.slice(0, 16), c2X, y);
-    y += px(18);
-
-    for (const row of content.slide6_comparativo.slice(0, 5)) {
-      const rowTop = y;
-      ctx.font = font(700, 9);
-      ctx.fillStyle = NEXUS_TPL.muted;
-      ctx.fillText(row.criterio.toUpperCase().slice(0, 14), x, y + px(14));
-      const e1 = drawRich(ctx, row.composto1, c1X, y + px(14), {
-        size: 11, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.5, maxWidth: colW - px(8),
+  // 3 — MECANISMO
+  {
+    const { canvas, ctx } = baseSlide(s, 2.1);
+    let y = px(100);
+    y = sectionTitle(ctx, "COMO FUNCIONA", x, y);
+    const passos = (content.slide3_mecanismo?.passos || []).slice(0, 4);
+    passos.forEach((passo, i) => {
+      const top = y;
+      ctx.font = font(900, 13);
+      ctx.fillStyle = A;
+      ctx.fillText(String(i + 1).padStart(2, "0"), x + px(16), top + px(26));
+      const end = drawRich(ctx, passo, x + px(48), top + px(26), {
+        size: 12, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.55, maxWidth: maxW - px(70), hiWeight: 800,
       });
-      const e2 = drawRich(ctx, row.composto2, c2X, y + px(14), {
-        size: 11, weight: 400, color: NEXUS_TPL.soft, accent: NEXUS_TPL.accentAlt, lineHeight: 1.5, maxWidth: colW - px(8),
-      });
-      y = Math.max(e1, e2) + px(10);
-      ctx.strokeStyle = "rgba(255,255,255,0.08)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x, y - px(4));
-      ctx.lineTo(w - x, y - px(4));
+      const boxH = Math.max(px(52), end - top);
+      roundRect(ctx, x, top, maxW, boxH, px(12));
+      ctx.fillStyle = `${A}0D`;
+      ctx.fill();
+      ctx.strokeStyle = `${A}26`;
+      ctx.lineWidth = px(1);
       ctx.stroke();
-      if (rowTop === y) y += px(20);
+      y = top + boxH;
+      if (i < passos.length - 1) {
+        ctx.strokeStyle = `${A}40`;
+        ctx.lineWidth = px(1.4);
+        ctx.beginPath();
+        ctx.moveTo(x + px(28), y + px(4));
+        ctx.lineTo(x + px(28), y + px(16));
+        ctx.stroke();
+        ctx.fillStyle = `${A}66`;
+        ctx.beginPath();
+        ctx.moveTo(x + px(24), y + px(14));
+        ctx.lineTo(x + px(32), y + px(14));
+        ctx.lineTo(x + px(28), y + px(21));
+        ctx.closePath();
+        ctx.fill();
+        y += px(26);
+      }
+    });
+
+    y += px(30);
+    const boxTop = y;
+    const boxEnd = drawRich(ctx, content.slide3_mecanismo?.traducao_leiga || "", x + px(16), y + px(34), {
+      size: 13, weight: 400, color: NEXUS_TPL.soft, accent: P, lineHeight: 1.6, maxWidth: maxW - px(32), hiWeight: 800,
+    });
+    roundRect(ctx, x, boxTop, maxW, boxEnd - boxTop + px(6), px(12));
+    ctx.strokeStyle = `${P}59`;
+    ctx.lineWidth = px(1);
+    ctx.stroke();
+    ctx.font = font(700, 8);
+    ctx.fillStyle = P;
+    ctx.fillText("EM RESUMO", x + px(16), boxTop + px(18));
+
+    footer(ctx, w, h, handle);
+    out.push(canvas.toDataURL("image/png"));
+  }
+
+  // 4 — BENEFÍCIOS COM DADOS
+  {
+    const { canvas, ctx } = baseSlide(s, 3.3);
+    let y = px(100);
+    y = sectionTitle(ctx, "O QUE A CIÊNCIA MOSTRA", x, y);
+    for (const b of (content.slide4_beneficios || []).slice(0, 4)) {
+      const top = y;
+      ctx.font = font(900, 28);
+      ctx.fillStyle = A;
+      ctx.fillText(b.numero || "•", x + px(18), top + px(44));
+      let cy = drawRich(ctx, b.desc || "", x + px(18), top + px(66), {
+        size: 11, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.5, maxWidth: maxW - px(36), hiWeight: 800,
+      });
+      const fonte = [b.estudo, b.n].filter(Boolean).join(" · ");
+      if (fonte) {
+        ctx.font = `italic 400 ${px(9)}px Inter, system-ui, sans-serif`;
+        ctx.fillStyle = NEXUS_TPL.footerMuted;
+        ctx.fillText(fonte.slice(0, 72), x + px(18), cy + px(6));
+        cy += px(14);
+      }
+      const boxH = cy - top + px(8);
+      roundRect(ctx, x, top, maxW, boxH, px(12));
+      ctx.fillStyle = `${A}0A`;
+      ctx.fill();
+      ctx.strokeStyle = `${A}26`;
+      ctx.lineWidth = px(1);
+      ctx.stroke();
+      y = top + boxH + px(14);
+    }
+    refLine(ctx, "Dados dos estudos citados. Resultados variam entre indivíduos.", x, h, w);
+    footer(ctx, w, h, handle);
+    out.push(canvas.toDataURL("image/png"));
+  }
+
+  // 5 — O OUTRO LADO
+  {
+    const { canvas, ctx } = baseSlide(s, 4.5);
+    let y = px(100);
+    y = sectionTitle(ctx, "O OUTRO LADO", x, y);
+    for (const r of (content.slide5_riscos || []).slice(0, 5)) {
+      ctx.font = font(900, 12);
+      ctx.fillStyle = A;
+      ctx.fillText("✕", x, y);
+      y = drawRich(ctx, r.risco || "", x + px(20), y, {
+        size: 12, weight: 500, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.5, maxWidth: maxW - px(20), hiWeight: 800,
+      });
+      if (r.contexto) {
+        y = drawRich(ctx, `→ ${r.contexto}`, x + px(20), y + px(4), {
+          size: 10, weight: 300, color: NEXUS_TPL.muted, accent: NEXUS_TPL.muted,
+          lineHeight: 1.6, maxWidth: maxW - px(20),
+        });
+      }
+      y += px(16);
+    }
+    if (content.slide5_nao_indicado) {
+      y += px(6);
+      const boxTop = y;
+      const boxEnd = drawRich(ctx, content.slide5_nao_indicado, x + px(16), y + px(34), {
+        size: 11, weight: 400, color: NEXUS_TPL.soft, accent: A, lineHeight: 1.6, maxWidth: maxW - px(32), hiWeight: 800,
+      });
+      roundRect(ctx, x, boxTop, maxW, boxEnd - boxTop + px(6), px(12));
+      ctx.fillStyle = `${A}0D`;
+      ctx.fill();
+      ctx.strokeStyle = `${A}40`;
+      ctx.lineWidth = px(1);
+      ctx.stroke();
+      ctx.font = font(700, 8);
+      ctx.fillStyle = A;
+      ctx.fillText("NÃO É INDICADO PARA", x + px(16), boxTop + px(18));
     }
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
 
-  // 7 — EVIDÊNCIA CIENTÍFICA
-  {
-    const { canvas, ctx } = baseSlide(s);
-    const evid: NexusEvidencia = (["FORTE", "MODERADA", "PRELIMINAR"] as const).includes(content.slide7_evidencia)
-      ? content.slide7_evidencia
-      : "PRELIMINAR";
-    const evColor = EVID_COLOR[evid];
-    let y = px(112);
-    y = sectionTitle(ctx, "EVIDÊNCIA CIENTÍFICA", x, y, A, w);
-    ctx.font = font(300, 10);
-    ctx.fillStyle = NEXUS_TPL.muted;
-    ctx.fillText("NÍVEL DE EVIDÊNCIA", x, y);
-    y += px(38);
-    ctx.font = font(900, 30);
-    ctx.fillStyle = evColor;
-    ctx.fillText(evid, x, y);
-    y += px(20);
-    const barW = maxW;
-    const fill = evid === "FORTE" ? 1 : evid === "MODERADA" ? 0.62 : 0.32;
-    roundRect(ctx, x, y, barW, px(6), px(3));
-    ctx.fillStyle = "rgba(255,255,255,0.10)";
-    ctx.fill();
-    roundRect(ctx, x, y, barW * fill, px(6), px(3));
-    ctx.fillStyle = evColor;
-    ctx.fill();
-    y += px(40);
+  // 6 — COMPARATIVO (opcional)
+  if (content.slide6_tabela?.length && content.slide6_comparativo_nome) {
+    const { canvas, ctx } = baseSlide(s, 5.2);
+    let y = px(100);
+    y = sectionTitle(ctx, "COMPARATIVO", x, y);
+    const labelW = px(84);
+    const colW = (maxW - labelW) / 2;
+    const c1X = x + labelW;
+    const c2X = c1X + colW;
 
-    ctx.font = font(700, 9);
-    ctx.fillStyle = NEXUS_TPL.accentAlt;
-    ctx.fillText("PRINCIPAIS ESTUDOS", x, y);
-    y += px(22);
-    y = bulletList(ctx, (content.slide7_estudos || []).slice(0, 4), x, y, {
-      color: NEXUS_TPL.accentAlt, maxWidth: maxW, size: 11, marker: "📄",
-    });
+    const headH = px(34);
+    roundRect(ctx, x, y, maxW, headH, px(8));
+    ctx.fillStyle = `${A}15`;
+    ctx.fill();
+    ctx.font = font(700, 10);
+    ctx.fillStyle = A;
+    ctx.fillText(content.composto.slice(0, 18), c1X + px(10), y + px(21));
+    ctx.fillStyle = P;
+    ctx.fillText(content.slide6_comparativo_nome.slice(0, 18), c2X + px(10), y + px(21));
+    y += headH;
 
-    y += px(10);
-    ctx.font = font(700, 9);
-    ctx.fillStyle = NEXUS_TPL.muted;
-    ctx.fillText("STATUS REGULATÓRIO", x, y);
-    y += px(20);
-    drawRich(ctx, content.slide7_regulatorio, x, y, {
-      size: 12, weight: 400, color: NEXUS_TPL.soft, accent: A, lineHeight: 1.6, maxWidth: maxW, hiWeight: 800,
-    });
+    for (const row of content.slide6_tabela.slice(0, 7)) {
+      const top = y;
+      ctx.font = font(700, 9);
+      ctx.fillStyle = NEXUS_TPL.muted;
+      ctx.fillText((row.criterio || "").toUpperCase().slice(0, 12), x + px(4), top + px(22));
+      const e1 = drawRich(ctx, row.composto1 || "—", c1X + px(10), top + px(22), {
+        size: 11, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.45, maxWidth: colW - px(16),
+      });
+      const e2 = drawRich(ctx, row.composto2 || "—", c2X + px(10), top + px(22), {
+        size: 11, weight: 400, color: NEXUS_TPL.soft, accent: P, lineHeight: 1.45, maxWidth: colW - px(16),
+      });
+      y = Math.max(top + px(36), Math.max(e1, e2) + px(10));
+      ctx.strokeStyle = `${A}10`;
+      ctx.lineWidth = px(1);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(w - x, y);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = `${A}20`;
+    ctx.lineWidth = px(1);
+    ctx.beginPath();
+    ctx.moveTo(c1X, px(134));
+    ctx.lineTo(c1X, y);
+    ctx.moveTo(c2X, px(134));
+    ctx.lineTo(c2X, y);
+    ctx.stroke();
+    refLine(ctx, "Comparação baseada em dados publicados de cada composto.", x, h, w);
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
 
-  // 8 — NA PRÁTICA
+  // 7 — PRA QUEM FAZ SENTIDO
   {
-    const { canvas, ctx } = baseSlide(s);
-    let y = px(112);
-    y = sectionTitle(ctx, "NA PRÁTICA", x, y, A, w);
-    y = bulletList(ctx, (content.slide8_pratica || []).slice(0, 4), x, y, {
-      color: A, maxWidth: maxW, size: 12, marker: "→",
+    const { canvas, ctx } = baseSlide(s, 6.1);
+    let y = px(100);
+    y = sectionTitle(ctx, "NA PRÁTICA", x, y);
+
+    const block = (titulo: string, itens: string[], color: string, marker: string, startY: number) => {
+      let cy = startY;
+      ctx.font = font(700, 10);
+      ctx.fillStyle = color;
+      ctx.fillText(titulo, x, cy);
+      cy += px(26);
+      for (const item of itens.slice(0, 4)) {
+        ctx.font = font(900, 10);
+        ctx.fillStyle = color;
+        ctx.fillText(marker, x, cy);
+        cy = drawRich(ctx, item, x + px(18), cy, {
+          size: 11, weight: 400, color: NEXUS_TPL.ink, accent: color,
+          lineHeight: 1.6, maxWidth: maxW - px(18), hiWeight: 800,
+        });
+        cy += px(10);
+      }
+      return cy;
+    };
+
+    y = block("PODE FAZER SENTIDO SE", content.slide7_faz_sentido || [], G, "✓", y);
+    y += px(24);
+    block("NÃO FAZ SENTIDO SE", content.slide7_nao_faz_sentido || [], A, "✕", y);
+    footer(ctx, w, h, handle);
+    out.push(canvas.toDataURL("image/png"));
+  }
+
+  // 8 — PERGUNTAS PRO MÉDICO
+  {
+    const { canvas, ctx } = baseSlide(s, 7.4);
+    let y = px(100);
+    y = sectionTitle(ctx, "LEVE PRO SEU MÉDICO", x, y);
+    (content.slide8_perguntas_medico || []).slice(0, 5).forEach((q, i) => {
+      const top = y;
+      ctx.font = font(900, 14);
+      ctx.fillStyle = A;
+      ctx.fillText(String(i + 1), x + px(16), top + px(30));
+      const end = drawRich(ctx, `“${q}”`, x + px(40), top + px(28), {
+        size: 12, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.55, maxWidth: maxW - px(60), hiWeight: 800,
+      });
+      const boxH = Math.max(px(52), end - top + px(6));
+      roundRect(ctx, x, top, maxW, boxH, px(12));
+      ctx.strokeStyle = `${A}26`;
+      ctx.lineWidth = px(1);
+      ctx.stroke();
+      y = top + boxH + px(12);
     });
-    y += px(18);
-    const boxTop = y;
-    const boxEnd = drawRich(
-      ctx,
-      "Qualquer protocolo precisa de **acompanhamento profissional integrado** — avaliação antes, monitoramento durante.",
-      x + px(16),
-      y + px(24),
-      { size: 11, weight: 300, color: NEXUS_TPL.muted, accent: A, lineHeight: 1.7, maxWidth: maxW - px(32), hiWeight: 700 },
-    );
-    roundRect(ctx, x, boxTop, maxW, boxEnd - boxTop + px(4), px(10));
-    ctx.strokeStyle = `${A}40`;
-    ctx.lineWidth = px(1);
-    ctx.stroke();
+    refLine(ctx, "Salva esse slide e leva na consulta.", x, h, w);
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
 
   // 9 — RESUMO VISUAL
   {
-    const { canvas, ctx } = baseSlide(s, NEXUS_TPL.accentAlt);
-    let y = px(112);
-    y = sectionTitle(ctx, "RESUMO", x, y, A, w);
-    const rows: { label: string; value: string; color: string }[] = [
-      { label: "O QUE É", value: content.slide9_resumo?.oque || content.slide2_oque, color: A },
-      { label: "COMO FUNCIONA", value: content.slide9_resumo?.funciona || content.slide3_analogia, color: NEXUS_TPL.accentAlt },
-      { label: "BENEFÍCIO PRINCIPAL", value: content.slide9_resumo?.beneficio_principal || (content.slide4_beneficios || [])[0] || "", color: NEXUS_TPL.approved },
-      { label: "RISCO PRINCIPAL", value: content.slide9_resumo?.risco_principal || (content.slide5_riscos || [])[0] || "", color: NEXUS_TPL.danger },
-    ];
-    for (const row of rows) {
-      const top = y;
+    const { canvas, ctx } = baseSlide(s, 8.8);
+    let y = px(100);
+    y = sectionTitle(ctx, "RESUMO", x, y);
+    const r = content.slide9_resumo || ({} as NexusCarouselContent["slide9_resumo"]);
+    const cardTop = y;
+    let cy = y + px(34);
+
+    ctx.font = font(900, 18);
+    ctx.fillStyle = NEXUS_TPL.ink;
+    ctx.fillText(content.composto.slice(0, 26).toUpperCase(), x + px(18), cy);
+    cy += px(30);
+
+    const line = (label: string, value: string, color: string) => {
+      if (!value) return;
       ctx.font = font(700, 8);
-      ctx.fillStyle = row.color;
-      ctx.fillText(row.label, x + px(16), y + px(20));
-      const end = drawRich(ctx, row.value, x + px(16), y + px(42), {
-        size: 12, weight: 400, color: NEXUS_TPL.ink, accent: row.color,
-        lineHeight: 1.55, maxWidth: maxW - px(32), hiWeight: 800,
+      ctx.fillStyle = color;
+      ctx.fillText(label, x + px(18), cy);
+      cy = drawRich(ctx, value, x + px(18), cy + px(18), {
+        size: 12, weight: 400, color: NEXUS_TPL.ink, accent: color,
+        lineHeight: 1.5, maxWidth: maxW - px(36), hiWeight: 800,
       });
-      const boxH = end - top + px(2);
-      roundRect(ctx, x, top, maxW, boxH, px(10));
-      ctx.fillStyle = `${row.color}12`;
-      ctx.fill();
-      ctx.strokeStyle = `${row.color}3D`;
-      ctx.lineWidth = px(1);
-      ctx.stroke();
-      ctx.fillStyle = row.color;
-      ctx.fillRect(x, top + px(10), px(3), boxH - px(20));
-      y = top + boxH + px(14);
-    }
+      cy += px(16);
+    };
+
+    line("O QUE É", r.oque, A);
+    line("BENEFÍCIO", r.beneficio, G);
+    line("RISCO", r.risco, A);
+    line("EVIDÊNCIA", r.evidencia || "PRELIMINAR", P);
+    if (r.custo) line("CUSTO", r.custo, NEXUS_TPL.muted);
+
+    cy += px(4);
+    const vTop = cy;
+    const vEnd = drawRich(ctx, r.veredicto || "", x + px(30), cy + px(26), {
+      size: 14, weight: 700, color: A, accent: A, lineHeight: 1.45, maxWidth: maxW - px(60),
+    });
+    ctx.fillStyle = A;
+    ctx.fillRect(x + px(18), vTop + px(10), px(3), vEnd - vTop - px(16));
+    cy = vEnd + px(14);
+
+    roundRect(ctx, x, cardTop, maxW, cy - cardTop, px(14));
+    ctx.strokeStyle = `${A}26`;
+    ctx.lineWidth = px(1);
+    ctx.stroke();
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -604,8 +743,8 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     orb(ctx, w - px(30), h - px(40), px(130), "#0A0A0A");
     statusBadge(ctx, w, status, true);
     let y = px(64);
-    y = pill(ctx, NEXUS_CTA_SLIDE.tag, x, y, { bg: NEXUS_TPL.bg, color: A });
-    y += px(60);
+    y = pill(ctx, vault, x, y, { bg: NEXUS_TPL.bg, color: A });
+    y += px(70);
     y = drawRich(ctx, NEXUS_CTA_SLIDE.titulo, x, y, {
       size: 26, weight: 900, color: NEXUS_TPL.bg, accent: NEXUS_TPL.bg, lineHeight: 1.12, maxWidth: maxW,
     });
@@ -628,7 +767,11 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
 
     ctx.font = font(400, 10);
     ctx.fillStyle = NEXUS_TPL.ctaHandle;
-    ctx.fillText(NEXUS_CTA_SLIDE.disclaimer, x, h - px(62));
+    const disc = NEXUS_CTA_SLIDE.disclaimer;
+    drawRich(ctx, disc, x, h - px(74), {
+      size: 10, weight: 400, color: NEXUS_TPL.ctaHandle, accent: NEXUS_TPL.ctaHandle,
+      lineHeight: 1.45, maxWidth: maxW,
+    });
 
     footer(ctx, w, h, handle, true);
     out.push(canvas.toDataURL("image/png"));
@@ -639,9 +782,9 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
 
 /** Rótulos dos slides gerados, na mesma ordem do array de imagens. */
 export const nexusSlideLabels = (content: NexusCarouselContent): string[] => {
-  const base = ["CAPA", "O QUE É", "MECANISMO", "BENEFÍCIOS", "RISCOS"];
-  if (content.slide6_comparativo?.length && content.slide6_comparativo_com) base.push("COMPARATIVO");
-  return [...base, "EVIDÊNCIA", "NA PRÁTICA", "RESUMO", "CTA"];
+  const base = ["CAPA", "FICHA", "MECANISMO", "BENEFÍCIOS", "RISCOS"];
+  if (content.slide6_tabela?.length && content.slide6_comparativo_nome) base.push("COMPARATIVO");
+  return [...base, "PRA QUEM", "PERGUNTAS", "RESUMO", "CTA"];
 };
 
 /** Escolhe o template certo pela origem do conteúdo. Nunca misturar. */
