@@ -52,6 +52,14 @@ export default function PeptideVaultPage() {
           </h1>
           <p className="text-xs text-gray-500">Enciclopédia viva de peptídeos </p>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/microbiota-vault")}
+          className="ml-auto text-[11px] text-[#4ade80]"
+        >
+          🦠 MicrobiotaVault
+        </Button>
       </div>
 
       {/* Content */}
