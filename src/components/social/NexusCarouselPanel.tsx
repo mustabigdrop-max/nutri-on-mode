@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadMany } from "@/lib/socialImageKit";
+import { cleanCaption } from "@/lib/captionText";
 import { peptides } from "@/data/peptideVaultData";
 import { microbiotaItems } from "@/data/microbiotaVaultData";
 import {
@@ -125,7 +126,7 @@ export default function NexusCarouselPanel({
       };
       setImages(renderNexusCarousel(content));
       setLabels(nexusSlideLabels(content));
-      setLegenda(content.legenda || "");
+      setLegenda(cleanCaption(content.legenda));
       setActive(0);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar agora.");
