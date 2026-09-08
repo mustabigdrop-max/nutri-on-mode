@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { microbiotaItems } from "@/data/microbiotaVaultData";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -364,6 +366,9 @@ function DailyCoach({
           {new Date().toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "short" }).toUpperCase()}
         </span>
       </div>
+
+      {/* Sugestão da MicrobiotaVault */}
+      <MicrobiotaSuggestion />
 
       {/* Actions */}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -975,6 +980,27 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function MicrobiotaSuggestion() {
+  const navigate = useNavigate();
+  const item = microbiotaItems[new Date().getDate() % microbiotaItems.length];
+  const tema = `${item.nome} (${item.classe}) — ângulo educativo. ${item.mecanismo_acao}`;
+  return (
+    <div style={{ background: C.s2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px", marginBottom: 10 }}>
+      <div style={{ fontFamily: F.m, fontSize: 8, color: C.cyan, letterSpacing: 2 }}>CONTEÚDO SUGERIDO DA MICROBIOTAVAULT</div>
+      <div style={{ fontFamily: F.t, fontSize: 13, fontWeight: 700, color: C.white, marginTop: 4 }}>{item.nome}</div>
+      <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, marginTop: 2 }}>
+        Ângulo: EDUCATIVO · Formato: CARROSSEL · {item.categoria}
+      </div>
+      <button
+        onClick={() => navigate(`/coach/social?tab=carrossel_mce&tema=${encodeURIComponent(tema)}`)}
+        style={{ marginTop: 8, fontFamily: F.m, fontSize: 10, padding: "6px 10px", borderRadius: 6, border: `1px solid ${C.cyan}55`, background: "transparent", color: C.cyan, cursor: "pointer" }}
+      >
+        ✦ GERAR CARROSSEL
+      </button>
     </div>
   );
 }
