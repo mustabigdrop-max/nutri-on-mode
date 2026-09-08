@@ -348,19 +348,40 @@ export function ExerciseHowTo({
   muscleTarget,
   tempo,
   dayLabel,
+  coachMode,
+  coachId,
 }: {
   exerciseName: string;
   muscleTarget?: string | null;
   tempo?: string | null;
   dayLabel?: string;
+  coachMode?: boolean;
+  coachId?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const [asking, setAsking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guide, setGuide] = useState<ExerciseGuide | null>(null);
-  const [gif, setGif] = useState<{ gifUrl: string; nomeEN: string } | null>(null);
-  const [gifTried, setGifTried] = useState(false);
+  const [video, setVideo] = useState<ExerciseVideo | null>(null);
+  const [videoTried, setVideoTried] = useState(false);
+  const [mapping, setMapping] = useState<VideoMappingRow | null>(null);
+  const [linking, setLinking] = useState(false);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
+
+  useEffect(() => {
+    if (!coachMode || !coachId) return;
+    let alive = true;
+    listarMapeamentos(coachId, [exerciseKey(exerciseName)])
+      .then((m) => {
+        if (!alive) return;
+        const row = m[exerciseKey(exerciseName)] || null;
+        setMapping(row);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [coachMode, coachId, exerciseName]);
 
   const toggle = async () => {
     if (open) {
@@ -368,9 +389,11 @@ export function ExerciseHowTo({
       return;
     }
     setOpen(true);
-    if (!gif && !gifTried) {
-      setGifTried(true);
-      buscarGifExercicio(exerciseName).then((g) => g && setGif(g)).catch(() => {});
+    if (!video && !videoTried) {
+      setVideoTried(true);
+      getVideoVerificado(exerciseName, coachMode ? coachId : undefined)
+        .then((v) => v && setVideo(v))
+        .catch(() => {});
     }
     if (!guide && !loading) {
       setLoading(true);
