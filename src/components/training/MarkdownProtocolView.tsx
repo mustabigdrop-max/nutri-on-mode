@@ -344,7 +344,7 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
                     <>
                       <SectionLabel text="Aquecimento" />
                       {warmup.map((ex, i) => (
-                        <ExerciseRow key={`w-${i}`} ex={ex} index={i} dayLabel={dayLabel} showGuide={false} />
+                        <ExerciseRow key={`w-${i}`} ex={ex} index={i} dayLabel={dayLabel} />
                       ))}
                       <div style={{ height: 10 }} />
                     </>
