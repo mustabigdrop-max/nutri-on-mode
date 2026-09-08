@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import MceRadar from "@/components/mce/MceRadar";
+import LeadScriptDialog from "@/components/mce/LeadScriptDialog";
+import LeadFollowupTracker from "@/components/mce/LeadFollowupTracker";
 import { PILLAR_META, QUESTIONS, bioLink, insightFor, levelFor, weakestPillar, type DiagPillar } from "@/data/mceDiagnostico";
 
 interface Lead {
