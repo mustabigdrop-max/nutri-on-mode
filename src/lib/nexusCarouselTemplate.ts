@@ -502,38 +502,44 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     out.push(canvas.toDataURL("image/png"));
   }
 
-  // 4 — BENEFÍCIOS COM DADOS
+  // 4 — BENEFÍCIOS COM DADOS (máx. 2 por slide)
   {
-    const { canvas, ctx } = baseSlide(s, 3.3);
-    let y = px(100);
-    y = sectionTitle(ctx, "O QUE A CIÊNCIA MOSTRA", x, y);
-    for (const b of (content.slide4_beneficios || []).slice(0, 4)) {
-      const top = y;
-      ctx.font = font(900, 28);
-      ctx.fillStyle = A;
-      ctx.fillText(b.numero || "•", x + px(18), top + px(44));
-      let cy = drawRich(ctx, b.desc || "", x + px(18), top + px(66), {
-        size: 11, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.5, maxWidth: maxW - px(36), hiWeight: 800,
-      });
-      const fonte = [b.estudo, b.n].filter(Boolean).join(" · ");
-      if (fonte) {
-        ctx.font = `italic 400 ${px(9)}px Inter, system-ui, sans-serif`;
-        ctx.fillStyle = NEXUS_TPL.footerMuted;
-        ctx.fillText(fonte.slice(0, 72), x + px(18), cy + px(6));
-        cy += px(14);
+    const todos = (content.slide4_beneficios || []).slice(0, 4);
+    const grupos: NexusBeneficio[][] = [];
+    for (let i = 0; i < todos.length; i += 2) grupos.push(todos.slice(i, i + 2));
+    if (!grupos.length) grupos.push([]);
+    grupos.forEach((grupo, gi) => {
+      const { canvas, ctx } = baseSlide(s, 3.3);
+      let y = px(100);
+      y = sectionTitle(ctx, gi === 0 ? "O QUE A CIÊNCIA MOSTRA" : "O QUE A CIÊNCIA MOSTRA (2)", x, y);
+      for (const b of grupo) {
+        const top = y;
+        ctx.font = font(900, 28);
+        ctx.fillStyle = A;
+        ctx.fillText(b.numero || "•", x + px(18), top + px(44));
+        let cy = drawRich(ctx, b.desc || "", x + px(18), top + px(66), {
+          size: 11, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.5, maxWidth: maxW - px(36), hiWeight: 800,
+        });
+        const fonte = [b.estudo, b.n].filter(Boolean).join(" · ");
+        if (fonte) {
+          ctx.font = `italic 400 ${px(9)}px Inter, system-ui, sans-serif`;
+          ctx.fillStyle = NEXUS_TPL.footerMuted;
+          ctx.fillText(fonte.slice(0, 72), x + px(18), cy + px(6));
+          cy += px(14);
+        }
+        const boxH = cy - top + px(8);
+        roundRect(ctx, x, top, maxW, boxH, px(12));
+        ctx.fillStyle = `${A}0A`;
+        ctx.fill();
+        ctx.strokeStyle = `${A}26`;
+        ctx.lineWidth = px(1);
+        ctx.stroke();
+        y = top + boxH + px(14);
       }
-      const boxH = cy - top + px(8);
-      roundRect(ctx, x, top, maxW, boxH, px(12));
-      ctx.fillStyle = `${A}0A`;
-      ctx.fill();
-      ctx.strokeStyle = `${A}26`;
-      ctx.lineWidth = px(1);
-      ctx.stroke();
-      y = top + boxH + px(14);
-    }
-    refLine(ctx, "Dados dos estudos citados. Resultados variam entre indivíduos.", x, h, w);
-    footer(ctx, w, h, handle);
-    out.push(canvas.toDataURL("image/png"));
+      refLine(ctx, "Dados dos estudos citados. Resultados variam entre indivíduos.", x, h, w);
+      footer(ctx, w, h, handle);
+      out.push(canvas.toDataURL("image/png"));
+    });
   }
 
   // 5 — O OUTRO LADO
@@ -541,7 +547,8 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     const { canvas, ctx } = baseSlide(s, 4.5);
     let y = px(100);
     y = sectionTitle(ctx, "O OUTRO LADO", x, y);
-    for (const r of (content.slide5_riscos || []).slice(0, 5)) {
+    for (const r of (content.slide5_riscos || []).slice(0, 4)) {
+
       ctx.font = font(900, 12);
       ctx.fillStyle = A;
       ctx.fillText("✕", x, y);
