@@ -212,13 +212,19 @@ function ItemDetail({ item, onBack }: { item: MicrobiotaItem; onBack: () => void
 
   const gerar = (formato: string) => {
     const anguloLabel = MICROBIOTA_ANGULOS.find((a) => a.id === angulo)?.label ?? "Educativo";
+    // Carrossel do NEXUS-BIO usa o template científico (só o nome do composto,
+    // a ficha completa é carregada no gerador). Reels/Stories seguem por tema.
+    if (formato === "carrossel") {
+      navigate(`/coach/social?tab=carrossel_nexus&tema=${encodeURIComponent(item.nome)}`);
+      return;
+    }
     const tema =
       angulo === "cross_vault"
         ? `${item.nome} × peptídeos: comparação honesta (microbiota vs fármaco) — ${item.mecanismo_acao}`
         : `${item.nome} (${item.classe}) — ângulo ${anguloLabel}. ${item.mecanismo_acao}${
             item.dica_pratica ? ` Dica prática: ${item.dica_pratica}` : ""
-          }${item.conexao_mce ? ` Conexão MCE: ${item.conexao_mce}` : ""}`;
-    const tab = formato === "carrossel" ? "carrossel_mce" : formato === "reels" ? "reels" : "stories";
+          }`;
+    const tab = formato === "reels" ? "reels" : "stories";
     navigate(`/coach/social?tab=${tab}&tema=${encodeURIComponent(tema)}`);
   };
 

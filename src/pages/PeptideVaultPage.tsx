@@ -296,11 +296,11 @@ function EncyclopediaTab() {
 
           <Button
             onClick={() =>
-              navigate(`/coach/social?tab=carrossel_mce&tema=${encodeURIComponent(selected.name)}`)
+              navigate(`/coach/social?tab=carrossel_nexus&tema=${encodeURIComponent(selected.name)}`)
             }
-            className="w-full gap-2 bg-[#EF9F27] text-black hover:bg-[#EF9F27]/90"
+            className="w-full gap-2 bg-[#00D4AA] text-black hover:bg-[#00D4AA]/90"
           >
-            <Sparkles className="w-4 h-4" /> Gerar carrossel educacional
+            <Sparkles className="w-4 h-4" /> Gerar carrossel científico
           </Button>
 
           {[
