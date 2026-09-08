@@ -5093,6 +5093,33 @@ export type Database = {
           },
         ]
       }
+      exercise_guides: {
+        Row: {
+          created_at: string
+          exercise_key: string
+          exercise_name: string
+          guide: Json
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_key: string
+          exercise_name: string
+          guide: Json
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          exercise_key?: string
+          exercise_name?: string
+          guide?: Json
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exercise_library: {
         Row: {
           coach_id: string
@@ -5129,6 +5156,48 @@ export type Database = {
           source?: string | null
           times_used?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      exercise_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          coach_user_id: string | null
+          created_at: string
+          day_label: string | null
+          exercise_name: string
+          id: string
+          question: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          coach_user_id?: string | null
+          created_at?: string
+          day_label?: string | null
+          exercise_name: string
+          id?: string
+          question: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          coach_user_id?: string | null
+          created_at?: string
+          day_label?: string | null
+          exercise_name?: string
+          id?: string
+          question?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

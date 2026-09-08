@@ -63,6 +63,7 @@ import { buildSystemPrescription, recommendSystem } from "@/data/recommendSystem
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import SmartWarmup from "@/components/training/SmartWarmup";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
+import { ExerciseQuestionsInbox } from "@/components/training/ExerciseQuestionsInbox";
 import { parseProtocolText } from "@/lib/parseProtocolText";
 import {
   TrackerProvider,
@@ -3143,6 +3144,7 @@ function AnalysisSection({ userId }: { userId?: string }) {
   return (
     <div className="space-y-4 mt-3">
       <TrainingReadinessSection />
+      <ExerciseQuestionsInbox />
       <VolumeLandmarksSection userId={userId} />
     </div>
   );

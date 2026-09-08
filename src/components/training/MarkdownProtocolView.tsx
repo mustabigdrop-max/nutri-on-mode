@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
 import { parseProtocolToDays, type ParsedDay, type ParsedExercise } from "@/lib/parseProtocolMarkdown";
+import { ExerciseHowTo } from "@/components/training/ExerciseHowTo";
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
@@ -123,7 +124,17 @@ function SectionLabel({ text }: { text: string }) {
   );
 }
 
-function ExerciseRow({ ex, index }: { ex: ParsedExercise; index: number }) {
+function ExerciseRow({
+  ex,
+  index,
+  dayLabel,
+  showGuide,
+}: {
+  ex: ParsedExercise;
+  index: number;
+  dayLabel?: string;
+  showGuide?: boolean;
+}) {
   return (
     <div
       style={{
@@ -182,6 +193,14 @@ function ExerciseRow({ ex, index }: { ex: ParsedExercise; index: number }) {
             {ex.notes}
           </p>
         )}
+        {showGuide !== false && ex.name && (
+          <ExerciseHowTo
+            exerciseName={ex.name}
+            muscleTarget={ex.muscle_target}
+            tempo={ex.tempo}
+            dayLabel={dayLabel}
+          />
+        )}
       </div>
     </div>
   );
@@ -189,6 +208,7 @@ function ExerciseRow({ ex, index }: { ex: ParsedExercise; index: number }) {
 
 function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(!!defaultOpen);
+  const dayLabel = `D${day.day_number}${day.session_title ? ` · ${day.session_title}` : ""}`;
   const exercises = day.exercises || [];
   const warmup = day.warmup || [];
   const hasExercises = exercises.length > 0 || warmup.length > 0;
@@ -324,7 +344,7 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
                     <>
                       <SectionLabel text="Aquecimento" />
                       {warmup.map((ex, i) => (
-                        <ExerciseRow key={`w-${i}`} ex={ex} index={i} />
+                        <ExerciseRow key={`w-${i}`} ex={ex} index={i} dayLabel={dayLabel} showGuide={false} />
                       ))}
                       <div style={{ height: 10 }} />
                     </>
@@ -333,7 +353,7 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
                     <>
                       {warmup.length > 0 && <SectionLabel text="Exercícios" />}
                       {exercises.map((ex, i) => (
-                        <ExerciseRow key={`e-${i}`} ex={ex} index={i} />
+                        <ExerciseRow key={`e-${i}`} ex={ex} index={i} dayLabel={dayLabel} />
                       ))}
                     </>
                   )}
