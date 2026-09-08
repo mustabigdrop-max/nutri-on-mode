@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, AlertTriangle, Video } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Video, Check, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { exerciseKey } from "@/lib/exerciseGuide";
-import { listarMapeamentos, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import {
+  listarMapeamentos,
+  buscarSugestoes,
+  salvarMapeamento,
+  termoSugerido,
+  type ExerciseSuggestion,
+  type VideoMappingRow,
+} from "@/lib/exerciseVideoMap";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 
 const AMBER = "#EF9F27";
