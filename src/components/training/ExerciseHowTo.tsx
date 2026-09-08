@@ -433,6 +433,39 @@ export function ExerciseHowTo({
         </ActionButton>
       </div>
 
+      {coachMode && coachId && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+          <span style={{ fontSize: 11, color: mapping ? TEAL : "#f0b429" }}>
+            {mapping
+              ? `Vídeo vinculado${mapping.custom_video_url ? " (seu vídeo)" : mapping.exercise_name_en ? ` · ${mapping.exercise_name_en}` : ""}`
+              : "Vídeo não vinculado"}
+          </span>
+          <ActionButton onClick={() => setLinking(true)} color={mapping ? DIM : AMBER}>
+            {mapping ? "Trocar vídeo" : "Vincular vídeo"}
+          </ActionButton>
+        </div>
+      )}
+
+      {linking && coachId && (
+        <ExerciseVideoLinker
+          exerciseName={exerciseName}
+          coachId={coachId}
+          current={mapping}
+          onSaved={(row) => {
+            setMapping(row);
+            setVideo(
+              row?.custom_video_url
+                ? { type: "video", url: row.custom_video_url, nameEn: row.exercise_name_en }
+                : row?.gif_url
+                  ? { type: "gif", url: row.gif_url, nameEn: row.exercise_name_en }
+                  : null,
+            );
+          }}
+          onClose={() => setLinking(false)}
+        />
+      )}
+
+
       <AnimatePresence initial={false}>
         {asking && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
