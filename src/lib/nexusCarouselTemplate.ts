@@ -666,22 +666,27 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     const { canvas, ctx } = baseSlide(s, 7.4);
     let y = px(100);
     y = sectionTitle(ctx, "LEVE PRO SEU MÉDICO", x, y);
-    (content.slide8_perguntas_medico || []).slice(0, 5).forEach((q, i) => {
+    (content.slide8_perguntas_medico || []).slice(0, 4).forEach((q, i) => {
       const top = y;
-      ctx.font = font(900, 14);
-      ctx.fillStyle = A;
-      ctx.fillText(String(i + 1), x + px(16), top + px(30));
-      const end = drawRich(ctx, `“${q}”`, x + px(40), top + px(28), {
-        size: 12, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.55, maxWidth: maxW - px(60), hiWeight: 800,
+      const end = drawRich(ctx, `“${q}”`, x + px(46), top + px(30), {
+        size: 12, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.55, maxWidth: maxW - px(66), hiWeight: 800,
       });
-      const boxH = Math.max(px(52), end - top + px(6));
+      const boxH = Math.max(px(58), end - top + px(8));
       roundRect(ctx, x, top, maxW, boxH, px(12));
+      ctx.fillStyle = "rgba(255,255,255,0.03)";
+      ctx.fill();
       ctx.strokeStyle = `${A}26`;
       ctx.lineWidth = px(1);
       ctx.stroke();
-      y = top + boxH + px(12);
+      ctx.font = font(900, 14);
+      ctx.fillStyle = A;
+      ctx.fillText(String(i + 1), x + px(18), top + px(32));
+      y = top + boxH + px(14);
     });
-    refLine(ctx, "Salva esse slide e leva na consulta.", x, h, w);
+    ctx.font = font(400, 10);
+    ctx.fillStyle = NEXUS_TPL.muted;
+    ctx.fillText("Salva esse slide e leva na consulta.", x, h - px(58));
+
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
