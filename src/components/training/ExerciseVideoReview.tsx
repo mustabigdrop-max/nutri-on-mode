@@ -35,6 +35,8 @@ export function ExerciseVideoReview({
   const [map, setMap] = useState<Record<string, VideoMappingRow>>({});
   const [queue, setQueue] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [sugestoes, setSugestoes] = useState<Record<string, ExerciseSuggestion | null>>({});
+  const [aprovando, setAprovando] = useState<string | null>(null);
 
   const carregar = () => {
     if (!coachId || !nomes.length) return;
