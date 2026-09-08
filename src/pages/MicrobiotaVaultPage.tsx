@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Sparkles, Dna, Flame } from "lucide-react";
+import NexusContentCreator from "@/components/nexus/NexusContentCreator";
+import NexusComoObter from "@/components/nexus/NexusComoObter";
 import {
   microbiotaItems,
   microbiotaStats,
@@ -12,8 +14,6 @@ import {
   MICROBIOTA_CATEGORIAS,
   MICROBIOTA_OBJETIVOS,
   MICROBIOTA_HOOKS,
-  MICROBIOTA_ANGULOS,
-  MICROBIOTA_FORMATOS,
   MICROBIOTA_DISCLAIMER,
   STATUS_COLOR,
   type MicrobiotaItem,
@@ -207,26 +207,7 @@ export default function MicrobiotaVaultPage() {
 
 function ItemDetail({ item, onBack }: { item: MicrobiotaItem; onBack: () => void }) {
   const navigate = useNavigate();
-  const [angulo, setAngulo] = useState("educativo");
   const color = STATUS_COLOR[item.status];
-
-  const gerar = (formato: string) => {
-    const anguloLabel = MICROBIOTA_ANGULOS.find((a) => a.id === angulo)?.label ?? "Educativo";
-    // Carrossel do NEXUS-BIO usa o template científico (só o nome do composto,
-    // a ficha completa é carregada no gerador). Reels/Stories seguem por tema.
-    if (formato === "carrossel") {
-      navigate(`/coach/social?tab=carrossel_nexus&tema=${encodeURIComponent(item.nome)}`);
-      return;
-    }
-    const tema =
-      angulo === "cross_vault"
-        ? `${item.nome} × peptídeos: comparação honesta (microbiota vs fármaco) — ${item.mecanismo_acao}`
-        : `${item.nome} (${item.classe}) — ângulo ${anguloLabel}. ${item.mecanismo_acao}${
-            item.dica_pratica ? ` Dica prática: ${item.dica_pratica}` : ""
-          }`;
-    const tab = formato === "reels" ? "reels" : "stories";
-    navigate(`/coach/social?tab=${tab}&tema=${encodeURIComponent(tema)}`);
-  };
 
   return (
     <ScrollArea className="h-full px-4">
