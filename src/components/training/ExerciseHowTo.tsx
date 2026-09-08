@@ -68,7 +68,7 @@ function ActionButton({
   );
 }
 
-function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
+function VideoCard({ video, exerciseName }: { video: ExerciseVideo; exerciseName: string }) {
   return (
     <div
       style={{
@@ -93,18 +93,29 @@ function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
       >
         Vídeo do movimento
       </div>
-      <img
-        src={gif.gifUrl}
-        alt={`Demonstração animada do exercício ${gif.nomeEN}`}
-        loading="lazy"
-        style={{
-          width: "100%",
-          maxWidth: 260,
-          borderRadius: 8,
-          background: "#fff",
-          display: "inline-block",
-        }}
-      />
+      {video.type === "video" ? (
+        <video
+          src={video.url}
+          controls
+          loop
+          muted
+          playsInline
+          style={{ width: "100%", maxWidth: 320, borderRadius: 8, display: "inline-block" }}
+        />
+      ) : (
+        <img
+          src={video.url}
+          alt={`Demonstração animada do exercício ${video.nameEn || exerciseName}`}
+          loading="lazy"
+          style={{
+            width: "100%",
+            maxWidth: 260,
+            borderRadius: 8,
+            background: "#fff",
+            display: "inline-block",
+          }}
+        />
+      )}
       <div style={{ fontSize: 11, color: DIM, marginTop: 6 }}>
         Assista 2–3 repetições antes de começar a sua série.
       </div>
@@ -112,10 +123,9 @@ function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
   );
 }
 
-function GuideView({ guide, gif }: { guide: ExerciseGuide; gif: { gifUrl: string; nomeEN: string } | null }) {
+function GuideView({ guide }: { guide: ExerciseGuide }) {
   return (
     <div>
-      {gif && <GifCard gif={gif} />}
 
 
       {(guide.aparelho || guide.ajuste || guide.pegada) && (
