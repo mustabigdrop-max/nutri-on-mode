@@ -256,6 +256,7 @@ function OracleTab({ userId }: { userId?: string }) {
 
 /* ==================== ENCYCLOPEDIA TAB ==================== */
 function EncyclopediaTab() {
+  const navigate = useNavigate();
   const [selected, setSelected] = useState<Peptide | null>(null);
   const [catFilter, setCatFilter] = useState("Todos");
   const [tagFilter, setTagFilter] = useState("todos");
@@ -284,6 +285,15 @@ function EncyclopediaTab() {
             </Badge>
           </div>
           <p className="text-sm text-gray-400">{selected.classe} — {selected.status}</p>
+
+          <Button
+            onClick={() =>
+              navigate(`/coach/social?tab=carrossel_mce&tema=${encodeURIComponent(selected.name)}`)
+            }
+            className="w-full gap-2 bg-[#EF9F27] text-black hover:bg-[#EF9F27]/90"
+          >
+            <Sparkles className="w-4 h-4" /> Gerar carrossel educacional
+          </Button>
 
           {[
             { title: "🔬 Descoberta", content: selected.discovery },
