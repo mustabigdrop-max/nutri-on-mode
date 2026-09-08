@@ -61,7 +61,7 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "grid_architect" | "bio_optimizer" | "pinned_strategy" | "profile_audit"
   | "conversion_bridge" | "cta_intelligence" | "collab_finder"
   | "studio_subtitles" | "studio_versions" | "studio_vision" | "video_content" | "video_overlay" | "video_breakdown"
-  | "breakdown_caption" | "mce_carousel" | "nexus_carousel" | "mito_metodo" | "viral_kit" | "interaction_pack" | "story_frames" | "dm_scripts"
+  | "breakdown_caption" | "mce_carousel" | "nexus_carousel" | "nexus_reels" | "nexus_stories" | "nexus_como_obter" | "mito_metodo" | "viral_kit" | "interaction_pack" | "story_frames" | "dm_scripts"
   | "daily_brief" | "content_score" | "daily_signal";
 
 const SCHEMAS: Record<Mode, string> = {
