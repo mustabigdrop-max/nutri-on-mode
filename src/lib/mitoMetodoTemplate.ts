@@ -4,6 +4,8 @@
  * alternativa prática e CTA fixo. Sem emoji.
  */
 
+import { drawSlideFooter } from "@/lib/slideBase";
+
 export const MM_TPL = {
   bg: "#0A0A0A",
   ink: "#F5F0E8",
@@ -114,22 +116,14 @@ const badge = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number
   return y + h;
 };
 
-const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) => {
-  const x = px(28);
-  const y = h - px(30);
-  ctx.font = font(700, 15);
-  ctx.fillStyle = dark ? "#0A0A0A" : MM_TPL.ink;
-  ctx.fillText("nutri", x, y);
-  const nw = ctx.measureText("nutri").width;
-  ctx.font = font(700, 15, true);
-  ctx.fillStyle = dark ? "#0A0A0A" : MM_TPL.gold;
-  ctx.fillText("ON", x + nw, y);
-  ctx.font = font(400, 9);
-  ctx.fillStyle = dark ? MM_TPL.ctaHandle : "#666666";
-  ctx.textAlign = "right";
-  ctx.fillText(handle, w - x, y);
-  ctx.textAlign = "left";
-};
+/** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
+const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
+  drawSlideFooter(ctx, w, h, handle, {
+    ink: dark ? "#0A0A0A" : MM_TPL.ink,
+    accent: dark ? "#0A0A0A" : MM_TPL.gold,
+    handleColor: dark ? MM_TPL.ctaHandle : "#666666",
+    scale: S,
+  });
 
 /** Renderiza os 8 slides do template MITO OU MÉTODO em 1080x1350. */
 export const renderMitoMetodo = (content: MitoMetodoContent, w = 1080, h = 1350): string[] => {
