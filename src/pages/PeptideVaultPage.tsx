@@ -209,6 +209,7 @@ function OracleTab({ userId }: { userId?: string }) {
                   {m.role === "assistant" ? (
                     <div className="prose prose-sm prose-invert max-w-none">
                       <ReactMarkdown>{m.content}</ReactMarkdown>
+                    <PeptideDisclaimer />
                     </div>
                   ) : m.content}
                 </div>
@@ -545,6 +546,7 @@ function ResearchTab({ userId }: { userId?: string }) {
               <CardContent className="p-4">
                 <div className="prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{result}</ReactMarkdown>
+                    <PeptideDisclaimer />
                 </div>
                 {citations.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-gray-800 space-y-1">

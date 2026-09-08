@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { PeptideDisclaimer } from "@/components/lab/PeptideDisclaimer";
 import { Loader2, Search, Bookmark, Download, ExternalLink, Database, Upload, X, FileText, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -314,6 +315,7 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
               [&_code]:bg-[#7c3aed]/10 [&_code]:text-[#06b6d4] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs
               [&_blockquote]:border-l-[#7c3aed] [&_blockquote]:bg-[#7c3aed]/5">
               <ReactMarkdown>{result.answer}</ReactMarkdown>
+                    <PeptideDisclaimer />
             </div>
           </div>
 
