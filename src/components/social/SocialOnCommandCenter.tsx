@@ -67,7 +67,10 @@ interface ReadyContent {
 
 const readyText = (r: ReadyContent) => {
   if (r.story) return storyScriptText(r.story);
-  return [r.hook, "", r.caption, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
+  const tags = r.viral?.hashtags ? achatarHashtags(r.viral.hashtags) : (r.hashtags ?? []).join(" ");
+  return [r.chosenHook || r.hook, "", r.caption, r.viral?.cta_caption || "", "", tags]
+    .filter((s) => s !== undefined)
+    .join("\n");
 };
 
 const copyReady = (r: ReadyContent) => {
@@ -490,6 +493,43 @@ function DailyCoach({
                     <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
                       {readyText(ready[i])}
                     </div>
+
+                    {!!ready[i].viral?.hooks?.length && (
+                      <HookChooser
+                        hooks={ready[i].viral!.hooks as HookOption[]}
+                        selected={ready[i].chosenHook}
+                        onSelect={(h) => setReady((p) => ({ ...p, [i]: { ...p[i], chosenHook: h.texto } }))}
+                      />
+                    )}
+                    {kind === "ROTEIRO_REELS" && !!ready[i].viral?.cortes?.length && (
+                      <ScreenTextTimeline cortes={ready[i].viral!.cortes!} />
+                    )}
+                    {ready[i].viral && <ViralExtras kit={ready[i].viral!} />}
+
+                    {(() => {
+                      const a = analisarViralidade(readyText(ready[i]), {
+                        formato: kind === "ROTEIRO_REELS" ? "reels" : "carousel",
+                        slides: ready[i].slideImages?.length,
+                        temTextoTela: !!ready[i].viral?.cortes?.length,
+                      });
+                      const cor = a.nivel === "VIRAL" ? C.green : a.nivel === "BOM" ? C.gold : C.orange;
+                      return (
+                        <div style={{ marginTop: 10, background: `${cor}08`, border: `1px solid ${cor}30`, borderRadius: 8, padding: "8px 10px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontFamily: F.t, fontSize: 16, fontWeight: 700, color: cor }}>{a.score}/100</span>
+                            <span style={{ fontFamily: F.m, fontSize: 9, color: cor, letterSpacing: 1 }}>
+                              {a.nivel}{a.nivel === "VIRAL" ? " 🔥" : ""}
+                            </span>
+                          </div>
+                          <div style={{ height: 4, background: C.s2, borderRadius: 2, marginTop: 5 }}>
+                            <div style={{ height: "100%", width: `${a.score}%`, background: cor, borderRadius: 2 }} />
+                          </div>
+                          {a.melhorias.slice(0, 3).map((m) => (
+                            <div key={m} style={{ fontFamily: F.b, fontSize: 10, color: C.text, marginTop: 4 }}>⚠️ {m}</div>
+                          ))}
+                        </div>
+                      );
+                    })()}
                     <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                       <button
                         type="button"
