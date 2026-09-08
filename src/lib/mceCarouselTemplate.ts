@@ -7,7 +7,7 @@
  * acento do slide.
  */
 
-import { drawSlideFooter } from "@/lib/slideBase";
+import { beginSlideContent, drawSlideFooter, slideContentBottom } from "@/lib/slideBase";
 
 export const MCE_TPL = {
   bg: "#0A0A0A",
@@ -184,6 +184,7 @@ const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: str
     ink: dark ? "#0A0A0A" : MCE_TPL.ink,
     accent: dark ? "#0A0A0A" : MCE_TPL.gold,
     handleColor: dark ? MCE_TPL.ctaHandle : MCE_TPL.footerMuted,
+    background: dark ? MCE_TPL.gold : MCE_TPL.bg,
     scale: S,
   });
 
@@ -193,6 +194,7 @@ const canvasOf = (w: number, h: number) => {
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
   ctx.textBaseline = "alphabetic";
+  beginSlideContent(ctx, w, h);
   return { canvas, ctx };
 };
 
@@ -286,7 +288,7 @@ export const renderMceCarousel = (content: MceCarouselContent, w = 1080, h = 135
     });
     ctx.font = font(500, 11);
     ctx.fillStyle = MCE_TPL.gold;
-    ctx.fillText("ARRASTA PRA ENTENDER ▸", x, h - px(62));
+    ctx.fillText("ARRASTA PRA ENTENDER ▸", x, slideContentBottom(h) - px(8));
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }

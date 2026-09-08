@@ -4,7 +4,7 @@
  * alternativa prática e CTA fixo. Sem emoji.
  */
 
-import { drawSlideFooter } from "@/lib/slideBase";
+import { beginSlideContent, drawSlideFooter, slideContentBottom } from "@/lib/slideBase";
 
 export const MM_TPL = {
   bg: "#0A0A0A",
@@ -42,6 +42,7 @@ const canvasOf = (w: number, h: number) => {
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
   ctx.textBaseline = "alphabetic";
+  beginSlideContent(ctx, w, h);
   return { canvas, ctx };
 };
 
@@ -122,6 +123,7 @@ const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: str
     ink: dark ? "#0A0A0A" : MM_TPL.ink,
     accent: dark ? "#0A0A0A" : MM_TPL.gold,
     handleColor: dark ? MM_TPL.ctaHandle : "#666666",
+    background: dark ? MM_TPL.gold : MM_TPL.bg,
     scale: S,
   });
 
@@ -153,7 +155,7 @@ export const renderMitoMetodo = (content: MitoMetodoContent, w = 1080, h = 1350)
     ctx.fillText("VEREDITO NO ÚLTIMO SLIDE", x, y);
     ctx.font = font(500, 11);
     ctx.fillStyle = MM_TPL.gold;
-    ctx.fillText("ARRASTA PRA VER A EVIDÊNCIA ▸", x, h - px(62));
+    ctx.fillText("ARRASTA PRA VER A EVIDÊNCIA ▸", x, slideContentBottom(h) - px(8));
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
