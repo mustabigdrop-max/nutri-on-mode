@@ -370,8 +370,26 @@ function DailyCoach({
         </span>
       </div>
 
+      {/* Postar com minha foto — gera o dia inteiro a partir de 1 foto */}
+      {photoDay ? (
+        <div style={{ marginBottom: 12 }}>
+          <PhotoDayStudio tema={planItems[0]?.title} handle={SOCIAL_BRAND.handle} onClose={() => setPhotoDay(false)} />
+        </div>
+      ) : (
+        <button
+          onClick={() => setPhotoDay(true)}
+          style={{
+            width: "100%", height: 60, marginBottom: 12, background: "#EF9F27", color: "#0A0A0A",
+            border: "none", borderRadius: 12, fontFamily: F.t, fontWeight: 700, fontSize: 17, cursor: "pointer",
+          }}
+        >
+          📸 POSTAR COM MINHA FOTO
+        </button>
+      )}
+
       {/* Sugestão da MicrobiotaVault */}
       <MicrobiotaSuggestion />
+
 
       {/* Actions */}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
