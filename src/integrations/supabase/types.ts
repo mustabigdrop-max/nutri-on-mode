@@ -6629,6 +6629,8 @@ export type Database = {
           name: string
           notes: string | null
           referrer: string | null
+          replied: boolean | null
+          scheduled_call_at: string | null
           score_comportamento: number
           score_execucao: number
           score_mentalidade: number
@@ -6655,6 +6657,8 @@ export type Database = {
           name: string
           notes?: string | null
           referrer?: string | null
+          replied?: boolean | null
+          scheduled_call_at?: string | null
           score_comportamento?: number
           score_execucao?: number
           score_mentalidade?: number
@@ -6681,6 +6685,8 @@ export type Database = {
           name?: string
           notes?: string | null
           referrer?: string | null
+          replied?: boolean | null
+          scheduled_call_at?: string | null
           score_comportamento?: number
           score_execucao?: number
           score_mentalidade?: number
