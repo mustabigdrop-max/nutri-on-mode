@@ -394,7 +394,9 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
       ["VIA", f.via || "—"],
       ["APROVAÇÃO FDA", f.aprovacao_fda || "—"],
       ["ANVISA", f.anvisa || "—"],
+      ["DOSE ESTUDADA", f.dose_estudada || "—"],
       ["FABRICANTE / FONTE", f.fabricante || "—"],
+
     ].filter(([, v]) => v && v !== "—") as [string, string][];
 
     const cardTop = y;
