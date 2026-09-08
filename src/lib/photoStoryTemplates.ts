@@ -30,6 +30,8 @@ export const PHOTO_TEMPLATES: { id: PhotoTemplate; label: string; hint: string }
 
 export type StoryTexts = {
   frase?: string;
+  /** Linha menor abaixo da frase (usada pelo "Postar com minha foto"). */
+  subtexto?: string;
   dado?: { numero?: string; descricao?: string; fonte?: string };
   rotina?: { hora?: string; dia?: string; nome?: string; detalhes?: string; frase?: string };
   cta?: { pergunta?: string };
@@ -122,7 +124,7 @@ function drawFooter(ctx: CanvasRenderingContext2D, handle: string) {
   ctx.fillText(`@${handle.replace(/^@/, "")}`, 60, H - 50);
 }
 
-function templateFrase(ctx: CanvasRenderingContext2D, texto: string) {
+function templateFrase(ctx: CanvasRenderingContext2D, texto: string, subtexto?: string) {
   const y = H * 0.62;
   ctx.font = font(900, 90);
   ctx.fillStyle = STORY_TPL.gold;
@@ -132,7 +134,13 @@ function templateFrase(ctx: CanvasRenderingContext2D, texto: string) {
 
   ctx.font = font(700, 42);
   ctx.fillStyle = STORY_TPL.ink;
-  wrapText(ctx, texto, 70, y + 60, 940, 54);
+  const lastY = wrapText(ctx, texto, 70, y + 60, 940, 54);
+
+  if (subtexto) {
+    ctx.font = font(400, 26);
+    ctx.fillStyle = STORY_TPL.muted;
+    wrapText(ctx, subtexto, 70, lastY + 56, 940, 34);
+  }
 }
 
 function templateDado(ctx: CanvasRenderingContext2D, d: NonNullable<StoryTexts["dado"]>) {
@@ -265,7 +273,7 @@ export function renderPhotoStory(
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
 
-  if (template === "FRASE") templateFrase(ctx, texts.frase || "");
+  if (template === "FRASE") templateFrase(ctx, texts.frase || "", texts.subtexto);
   else if (template === "DADO") templateDado(ctx, texts.dado || {});
   else if (template === "ROTINA") templateRotina(ctx, texts.rotina || {});
   else if (template === "CTA") templateCta(ctx, texts.cta?.pergunta || "Qual pilar te trava?");
