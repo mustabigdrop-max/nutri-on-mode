@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,8 +8,10 @@ import { renderSlide, downloadMany, SOCIAL_BRAND, monogramFromHandle } from "@/l
 import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import { renderStoryFrames, type StoryScript } from "@/lib/storyFrameTemplate";
+import { renderMitoMetodo, type MitoMetodoContent } from "@/lib/mitoMetodoTemplate";
+import { montarPlanoDeHoje, totalMinutos, ICONE_DO_DIA, LEGENDA_SERIES } from "@/lib/socialWeeklyPlan";
 import {
-  detectarTipoConteudo, CONTENT_TYPE_LABEL, usesMedia, isPostType, type PlanContentType,
+  detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
 } from "@/lib/socialContentTypes";
 import {
   InteractionPackCard, DmScriptsCard, StoryFramesCard, storyScriptText,
@@ -34,7 +36,7 @@ const callSocialAI = async (body: Record<string, unknown>) => {
 // ═══════════════════════════════════════════════════
 // DAILY AI COACH
 // ═══════════════════════════════════════════════════
-interface BriefAction { type?: string; title?: string; detail?: string; urgency?: string; time?: string }
+interface BriefAction { type?: string; title?: string; detail?: string; urgency?: string; time?: string; icon?: string; minutes?: number }
 interface Brief {
   greeting?: string;
   actions?: BriefAction[];
@@ -82,9 +84,21 @@ function DailyCoach({
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const coverFileRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
+  /** Plano do dia montado pelo calendário semanal por série (rotaciona as 6 séries). */
+  const planItems = useMemo<BriefAction[]>(
+    () =>
+      montarPlanoDeHoje().map((p) => ({
+        type: "criar", title: p.title, detail: p.detail,
+        urgency: p.urgency, time: p.time, icon: p.icon, minutes: p.minutes,
+      })),
+    [],
+  );
+  const totalMin = totalMinutos(planItems.map((a) => ({ minutes: a.minutes || 0 })));
+  const feitos = Object.keys(ready).length;
+
   /** Tema do post mais recente antes deste item — contexto do pack de interação. */
   const previousPostTopic = (i: number) => {
-    const actions = brief?.actions || [];
+    const actions = planItems;
     for (let k = i - 1; k >= 0; k--) {
       if (isPostType(detectarTipoConteudo({ title: actions[k]?.title, detail: actions[k]?.detail }))) {
         return [actions[k]?.title, actions[k]?.detail].filter(Boolean).join(" — ");
@@ -118,6 +132,21 @@ function DailyCoach({
         const story = { tema: action.title, ...(r as StoryScript) } as StoryScript;
         const slideImages = renderStoryFrames(story, identity.handle || "diogo.mell0");
         setReady((p) => ({ ...p, [i]: { kind, story, slideImages } }));
+        return;
+      }
+      if (kind === "MITO_METODO") {
+        const r = await callSocialAI({ mode: "mito_metodo", topic, ...identity });
+        const content = { ...(r as MitoMetodoContent), handle: identity.handle || "diogo.mell0" };
+        setReady((p) => ({
+          ...p,
+          [i]: {
+            kind,
+            hook: content.crenca,
+            caption: (r as ReadyContent)?.caption,
+            hashtags: (r as ReadyContent)?.hashtags,
+            slideImages: renderMitoMetodo(content),
+          },
+        }));
         return;
       }
       if (kind === "CARROSSEL_MCE") {
@@ -228,7 +257,7 @@ function DailyCoach({
   const downloadReady = async (i: number) => {
     const r = ready[i];
     if (!r?.slideImages?.length) return;
-    const prefix = r.kind === "CARROSSEL_MCE" ? "mce-educacional" : `post-${i + 1}`;
+    const prefix = r.kind === "CARROSSEL_MCE" ? "mce-educacional" : r.kind === "MITO_METODO" ? "mito-ou-metodo" : `post-${i + 1}`;
     const n = await downloadMany(r.slideImages.map((url, idx) => ({ url, filename: `${prefix}-slide-${idx + 1}.png` })));
     if (n) toast.success(`${n} imagens baixadas!`); else toast.error("Não consegui baixar as imagens");
   };
@@ -275,7 +304,6 @@ function DailyCoach({
     );
   }
 
-  if (!brief) return null;
 
   return (
     <div style={{ background: C.s1, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
@@ -285,7 +313,7 @@ function DailyCoach({
           <span style={{ fontSize: 20 }}>🧠</span>
           <div>
             <div style={{ fontFamily: F.m, fontSize: 8, color: C.cyan, letterSpacing: 2 }}>PLANO DE HOJE</div>
-            <div style={{ fontFamily: F.t, fontSize: 16, fontWeight: 700, color: C.white }}>{brief.greeting}</div>
+            <div style={{ fontFamily: F.t, fontSize: 16, fontWeight: 700, color: C.white }}>{brief?.greeting || "Bora executar o plano de hoje."}</div>
           </div>
         </div>
         <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>
@@ -295,14 +323,15 @@ function DailyCoach({
 
       {/* Actions */}
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {(brief.actions || []).map((action, i) => {
+        {planItems.map((action, i) => {
           const urgencyColors: Record<string, string> = { alta: C.orange, "média": C.cyan, baixa: C.muted };
           const typeIcons: Record<string, string> = { postar: "📤", responder: "💬", reciclar: "♻️", engajar: "⚡", analisar: "📊", criar: "✦" };
           const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
-          const showMedia = usesMedia(kind);
+          const showMedia = usesMedia(kind, action.title);
+          const minutes = action.minutes || CONTENT_TYPE_MINUTES[kind];
           return (
             <div key={i} style={{ display: "flex", gap: 10, background: C.s2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px" }}>
-              <span style={{ fontSize: 16 }}>{typeIcons[action.type || ""] || "📌"}</span>
+              <span style={{ fontSize: 16 }}>{action.icon || typeIcons[action.type || ""] || "📌"}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2, flexWrap: "wrap" }}>
                   <span style={{ fontFamily: F.t, fontSize: 13, fontWeight: 700, color: C.white }}>{action.title}</span>
@@ -311,9 +340,10 @@ function DailyCoach({
                   </span>
                 </div>
                 <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.4 }}>{action.detail}</div>
-                {action.time && (
-                  <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, marginTop: 3 }}>⏰ {action.time}</div>
-                )}
+                <div style={{ display: "flex", gap: 10, marginTop: 3 }}>
+                  {action.time && <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>⏰ {action.time}</span>}
+                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>⏱️ ~{minutes}min</span>
+                </div>
 
                 {action.type !== "analisar" && !ready[i] && (
                   <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
@@ -462,8 +492,16 @@ function DailyCoach({
         })}
       </div>
 
+      {/* Total do dia */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
+        <span style={{ fontFamily: F.m, fontSize: 10, color: feitos >= planItems.length ? C.green : C.muted }}>
+          ✅ {feitos}/{planItems.length} completos
+        </span>
+        <span style={{ fontFamily: F.m, fontSize: 10, color: C.gold }}>⏱️ Total: ~{totalMin}min</span>
+      </div>
+
       {/* Insight */}
-      {brief.insight && (
+      {brief?.insight && (
         <div style={{ marginTop: 12, background: `${C.cyan}08`, borderLeft: `2px solid ${C.cyan}`, padding: "8px 12px", display: "flex", gap: 8 }}>
           <span>💡</span>
           <span style={{ fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{brief.insight}</span>
@@ -647,12 +685,17 @@ function WeekChart({ posted }: { posted: boolean[] }) {
               border: `1px solid ${posted[i] ? `${C.green}30` : i <= todayIdx && !posted[i] ? `${C.red}20` : C.border}`,
               borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4,
             }}>
-              {posted[i] ? <span style={{ color: C.green, fontSize: 12 }}>✓</span>
-                : i <= todayIdx ? <span style={{ color: C.red, fontSize: 10, opacity: 0.5 }}>✗</span>
-                : <span style={{ color: C.dim, fontSize: 10 }}>·</span>}
+              {posted[i] ? <span style={{ fontSize: 14 }}>{ICONE_DO_DIA(i)}</span>
+                : i <= todayIdx ? <span style={{ fontSize: 13, opacity: 0.35, filter: "grayscale(1)" }}>{ICONE_DO_DIA(i)}</span>
+                : <span style={{ fontSize: 12, opacity: 0.2, filter: "grayscale(1)" }}>{ICONE_DO_DIA(i)}</span>}
             </div>
             <span style={{ fontFamily: F.m, fontSize: 8, color: i === todayIdx ? C.cyan : C.dim }}>{d}</span>
           </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+        {LEGENDA_SERIES.map((s) => (
+          <span key={s.id} style={{ fontFamily: F.m, fontSize: 8, color: C.dim }}>{s.icon} {s.nome}</span>
         ))}
       </div>
     </div>
@@ -780,6 +823,20 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
             <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
               <span style={{ fontSize: 14 }}>{a.icon}</span>
               <span style={{ flex: 1, fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{a.text}</span>
+              {(() => {
+                const t = (a.text || "").toLowerCase();
+                const act = t.includes("métric") || t.includes("metric") || t.includes("alcance") || t.includes("engajamento")
+                  ? { label: "Ver métricas", tool: "intelligence" }
+                  : t.includes("story") || t.includes("venda") || t.includes("oferta")
+                  ? { label: "Gerar Story CTA", tool: "calendario" }
+                  : { label: "Criar post", tool: "studio" };
+                return (
+                  <button type="button" onClick={() => onOpenTool?.(act.tool)} style={{
+                    padding: "3px 8px", background: "transparent", border: `1px solid ${C.cyan}40`, borderRadius: 5,
+                    cursor: "pointer", fontFamily: F.m, fontSize: 9, color: C.cyan, flexShrink: 0,
+                  }}>{act.label}</button>
+                );
+              })()}
               <span style={{ width: 6, height: 6, borderRadius: 3, background: alertColors[a.color_hint || ""] || C.cyan, marginTop: 5, flexShrink: 0 }} />
             </div>
           ))}
