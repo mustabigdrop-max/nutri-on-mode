@@ -341,6 +341,8 @@ export function ExerciseHowTo({
   const [asking, setAsking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guide, setGuide] = useState<ExerciseGuide | null>(null);
+  const [gif, setGif] = useState<{ gifUrl: string; nomeEN: string } | null>(null);
+  const [gifTried, setGifTried] = useState(false);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
 
   const toggle = async () => {
@@ -349,6 +351,10 @@ export function ExerciseHowTo({
       return;
     }
     setOpen(true);
+    if (!gif && !gifTried) {
+      setGifTried(true);
+      buscarGifExercicio(exerciseName).then((g) => g && setGif(g)).catch(() => {});
+    }
     if (!guide && !loading) {
       setLoading(true);
       try {
@@ -405,7 +411,7 @@ export function ExerciseHowTo({
                   Montando o guia deste exercício...
                 </div>
               )}
-              {guide && <GuideView guide={guide} />}
+              {guide && <GuideView guide={guide} gif={gif} />}
               {answers.map((a, i) => (
                 <div
                   key={i}
