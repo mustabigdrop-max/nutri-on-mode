@@ -122,8 +122,8 @@ const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: str
   drawSlideFooter(ctx, w, h, handle, {
     ink: MM_TPL.ink,
     accent: MM_TPL.gold,
-    handleColor: dark ? MM_TPL.ctaHandle : "#666666",
-    background: dark ? MM_TPL.gold : MM_TPL.bg,
+    handleColor: "#666666",
+    background: MM_TPL.bg,
     scale: S,
   });
 

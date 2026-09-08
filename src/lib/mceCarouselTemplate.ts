@@ -183,8 +183,8 @@ const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: str
   drawSlideFooter(ctx, w, h, handle, {
     ink: MCE_TPL.ink,
     accent: MCE_TPL.gold,
-    handleColor: dark ? MCE_TPL.ctaHandle : MCE_TPL.footerMuted,
-    background: dark ? MCE_TPL.gold : MCE_TPL.bg,
+    handleColor: MCE_TPL.footerMuted,
+    background: MCE_TPL.bg,
     scale: S,
   });
 

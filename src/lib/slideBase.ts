@@ -52,6 +52,12 @@ export const beginSlideContent = (ctx: CanvasRenderingContext2D, w: number, h: n
   ctx.beginPath();
   ctx.rect(0, 0, w, slideContentBottom(h));
   ctx.clip();
+  // Os templates foram originalmente desenhados ocupando quase toda a altura.
+  // Compactamos a camada de conteúdo, sem alterar o rodapé, para preservar
+  // títulos, cards e listas completos dentro da nova área segura.
+  const scale = slideContentBottom(h) / h;
+  ctx.translate((w - w * scale) / 2, 0);
+  ctx.scale(scale, scale);
 };
 
 export type SlideFooterOpts = {
@@ -85,13 +91,14 @@ export const drawSlideFooter = (
   // própria, equivalente a position:absolute; bottom:20px; z-index:15.
   ctx.restore();
   ctx.save();
+  const footerBackground = "#0A0A0A";
   const fadeTop = h - SLIDE_FOOTER_H - 30;
   const gradient = ctx.createLinearGradient(0, fadeTop, 0, h - SLIDE_FOOTER_H);
   gradient.addColorStop(0, "rgba(10,10,10,0)");
-  gradient.addColorStop(1, o.background);
+  gradient.addColorStop(1, footerBackground);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, fadeTop, w, 30);
-  ctx.fillStyle = o.background;
+  ctx.fillStyle = footerBackground;
   ctx.fillRect(0, h - SLIDE_FOOTER_H, w, SLIDE_FOOTER_H);
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";

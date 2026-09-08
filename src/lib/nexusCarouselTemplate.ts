@@ -290,8 +290,8 @@ const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: str
   drawSlideFooter(ctx, w, h, handle, {
     ink: NEXUS_TPL.ink,
     accent: NEXUS_TPL.accent,
-    handleColor: dark ? NEXUS_TPL.ctaHandle : NEXUS_TPL.footerMuted,
-    background: dark ? NEXUS_TPL.accent : NEXUS_TPL.bg,
+    handleColor: NEXUS_TPL.footerMuted,
+    background: NEXUS_TPL.bg,
     scale: S,
   });
 
