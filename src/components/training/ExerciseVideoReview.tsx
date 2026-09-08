@@ -39,7 +39,7 @@ export function ExerciseVideoReview({
 
   if (!coachId || !nomes.length) return null;
 
-  const pendentes = nomes.filter((n) => !map[exerciseKey(n)]);
+  const pendentes = nomes.filter((n) => !map[exerciseKey(n)]?.gif_verified);
   const vinculados = nomes.length - pendentes.length;
   const atual = queue[0];
 
@@ -79,16 +79,17 @@ export function ExerciseVideoReview({
         <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
           {nomes.map((n) => {
             const m = map[exerciseKey(n)];
+            const verificado = m?.gif_verified === true;
             return (
               <div key={n} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: TEXT }}>
-                {m ? (
+                {verificado ? (
                   <CheckCircle2 style={{ width: 14, height: 14, color: TEAL, flexShrink: 0 }} />
                 ) : (
                   <AlertTriangle style={{ width: 14, height: 14, color: AMBER, flexShrink: 0 }} />
                 )}
                 <span style={{ flex: 1, minWidth: 0 }}>{n}</span>
                 <span style={{ fontSize: 11, color: DIM }}>
-                  {m ? (m.custom_video_url ? "seu vídeo" : m.exercise_name_en || "vinculado") : "—"}
+                  {verificado ? (m.custom_video_url ? "seu vídeo · verificado" : `${m.exercise_name_en || "GIF"} · verificado`) : "revisar"}
                 </span>
                 <button
                   type="button"
@@ -99,12 +100,12 @@ export function ExerciseVideoReview({
                     borderRadius: 6,
                     border: `1px solid ${BORDER}`,
                     background: "transparent",
-                    color: m ? DIM : AMBER,
+                    color: verificado ? DIM : AMBER,
                     fontSize: 11,
                     cursor: "pointer",
                   }}
                 >
-                  {m ? "Trocar" : "Vincular"}
+                  {verificado ? "Trocar" : "Revisar"}
                 </button>
               </div>
             );
@@ -126,11 +127,11 @@ export function ExerciseVideoReview({
                 cursor: "pointer",
               }}
             >
-              Vincular pendentes ({pendentes.length})
+              Revisar pendentes ({pendentes.length})
             </button>
           )}
           <div style={{ fontSize: 11, color: DIM, marginTop: 2 }}>
-            Exercício sem vídeo aprovado aparece para o cliente apenas com o guia em texto.
+            O cliente só vê GIFs verificados. Os demais aparecem apenas com o guia em texto.
           </div>
         </div>
       )}
@@ -140,9 +141,12 @@ export function ExerciseVideoReview({
           exerciseName={atual}
           coachId={coachId}
           current={map[exerciseKey(atual)] || null}
-          onSaved={(row) => {
-            if (row) setMap((prev) => ({ ...prev, [exerciseKey(atual)]: row }));
-          }}
+          onSaved={(row) => setMap((prev) => {
+            const next = { ...prev };
+            if (row) next[exerciseKey(atual)] = row;
+            else delete next[exerciseKey(atual)];
+            return next;
+          })}
           onClose={() => setQueue((q) => q.slice(1))}
         />
       )}
