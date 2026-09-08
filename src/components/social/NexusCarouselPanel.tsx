@@ -98,8 +98,10 @@ export default function NexusCarouselPanel({
         ...fallback(tema.trim(), found?.classe, found?.status),
         ...result,
         composto: tema.trim(),
+        origem: found?.origem || "PeptideVault",
         slide1_status: statusFrom(result.slide1_status || found?.status),
         handle: handle || "diogo.mell0",
+
       };
       setImages(renderNexusCarousel(content));
       setLabels(nexusSlideLabels(content));
