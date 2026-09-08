@@ -4,7 +4,7 @@ import { Play, X, MessageCircle, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
-import { getVideoVerificado, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
+import { getVideoVerificado, buscarVideoAutomatico, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
 import { exerciseKey } from "@/lib/exerciseGuide";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
 
@@ -91,7 +91,7 @@ function VideoCard({ video, exerciseName }: { video: ExerciseVideo; exerciseName
           textAlign: "left",
         }}
       >
-        Vídeo do movimento
+        {video.auto ? "Demonstração do movimento" : "Vídeo do movimento"}
       </div>
       {video.type === "video" ? (
         <video
@@ -392,7 +392,14 @@ export function ExerciseHowTo({
     if (!video && !videoTried) {
       setVideoTried(true);
       getVideoVerificado(exerciseName, coachMode ? coachId : undefined)
-        .then((v) => v && setVideo(v))
+        .then(async (v) => {
+          if (v) {
+            setVideo(v);
+            return;
+          }
+          const auto = await buscarVideoAutomatico(exerciseName);
+          if (auto) setVideo(auto);
+        })
         .catch(() => {});
     }
     if (!guide && !loading) {

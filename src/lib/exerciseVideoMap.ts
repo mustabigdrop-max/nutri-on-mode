@@ -7,6 +7,8 @@ export interface ExerciseVideo {
   type: "video" | "gif";
   url: string;
   nameEn?: string | null;
+  /** true quando a demonstração veio da busca automática (sem aprovação do coach). */
+  auto?: boolean;
 }
 
 export interface VideoMappingRow {
@@ -238,4 +240,128 @@ export async function removerMapeamento(coachId: string, exerciseName: string) {
     .eq("coach_id", coachId)
     .eq("exercise_key", key);
   if (error) throw error;
+}
+
+/* ------------------------------------------------------------------ */
+/* Busca automática com verificação de confiança                       */
+/* ------------------------------------------------------------------ */
+
+/** Termos extras de aquecimento, mobilidade, ativação e peso corporal. */
+const TRADUCOES_EXTRA: Record<string, string> = {
+  "mobilidade de quadril": "hip circles",
+  "mobilidade de ombro": "shoulder circles",
+  "mobilidade de tornozelo": "ankle circles",
+  "circunducao de ombros": "shoulder circles",
+  "rotacao de ombros": "shoulder circles",
+  "gato camelo": "cat cow stretch",
+  "cachorro olhando para baixo": "downward dog",
+  "ponte de gluteo": "glute bridge",
+  "ativacao de gluteo": "glute bridge",
+  "ativacao de gluteo com elastico": "band glute bridge",
+  "caminhada lateral com elastico": "band lateral walk",
+  "abducao de quadril com elastico": "band hip abduction",
+  "concha": "clam",
+  "bird dog": "bird dog",
+  "dead bug": "dead bug",
+  "polichinelo": "jumping jack",
+  "corrida estacionaria": "run",
+  "elevacao de joelhos": "high knee against wall",
+  "agachamento livre sem peso": "bodyweight squat",
+  "agachamento com peso corporal": "bodyweight squat",
+  "afundo alternado": "lunge",
+  "avanco": "lunge",
+  "alongamento de isquiotibiais": "standing hamstring stretch",
+  "alongamento de quadriceps": "standing quadriceps stretch",
+  "alongamento de peitoral": "chest stretch",
+  "alongamento de panturrilha": "calf stretch",
+  "rotacao externa com elastico": "band external rotation",
+  "remada com elastico sentado": "resistance band seated row",
+  "puxada com elastico": "band lat pulldown",
+  "abducao de ombro com elastico": "band shoulder lateral raise",
+  "escalador": "mountain climber",
+  "burpee": "burpee",
+  "esteira": "walking on treadmill",
+  "bicicleta ergometrica": "stationary bike",
+  "eliptico": "elliptical machine",
+  "remo ergometro": "rowing machine",
+};
+
+function tokens(s: string): string[] {
+  return plain(s).split(" ").filter((t) => t.length > 2);
+}
+
+const EQUIP_PT: Record<string, string[]> = {
+  halter: ["dumbbell"],
+  halteres: ["dumbbell"],
+  barra: ["barbell", "ez barbell", "olympic barbell"],
+  maquina: ["leverage machine", "sled machine", "smith machine"],
+  polia: ["cable"],
+  cabo: ["cable"],
+  elastico: ["band", "resistance band"],
+  smith: ["smith machine"],
+  kettlebell: ["kettlebell"],
+  livre: ["body weight", "barbell"],
+};
+
+/** Pontua o quanto um resultado da biblioteca corresponde ao exercício pedido. */
+function pontuar(alvoEn: string, nomePT: string, item: ExerciseSuggestion): number {
+  const alvo = tokens(alvoEn);
+  const nome = plain(item.nome);
+  const nomeTokens = tokens(item.nome);
+  if (!alvo.length) return 0;
+
+  const cobertos = alvo.filter((t) => nome.includes(t)).length;
+  let score = (cobertos / alvo.length) * 100;
+  if (plain(alvoEn) === nome) score += 40;
+  // penaliza resultados muito mais longos (movimentos diferentes)
+  score -= Math.max(0, nomeTokens.length - alvo.length) * 6;
+
+  // equipamento citado em português precisa bater
+  const base = plain(nomePT);
+  const equip = plain(item.equipamento || "");
+  for (const [pt, ens] of Object.entries(EQUIP_PT)) {
+    if (base.includes(pt)) {
+      score += ens.some((e) => equip.includes(e)) ? 15 : -25;
+    }
+  }
+  // unilateral / lateral precisa bater
+  for (const marca of ["lateral", "unilateral", "inclinad", "declinad"]) {
+    const pedido = base.includes(marca);
+    const tem = nome.includes(marca.slice(0, 6));
+    if (pedido && !tem) score -= 20;
+  }
+  return score;
+}
+
+/**
+ * Demonstração automática de alta confiança (aquecimento e exercícios).
+ * Só devolve quando o movimento realmente corresponde; caso contrário, null.
+ */
+export async function buscarVideoAutomatico(nomePT: string): Promise<ExerciseVideo | null> {
+  const base = plain(nomePT);
+  if (!base) return null;
+  let alvo = TRADUCOES_EXTRA[base] || "";
+  if (!alvo) {
+    for (const chave of Object.keys(TRADUCOES_EXTRA)) {
+      if (base.includes(chave) && chave.length > alvo.length) alvo = TRADUCOES_EXTRA[chave];
+    }
+  }
+  if (!alvo) alvo = termoSugerido(nomePT);
+  if (!alvo) return null;
+
+  const candidatos = await buscarSugestoes(alvo);
+  if (!candidatos.length) return null;
+
+  let melhor: ExerciseSuggestion | null = null;
+  let melhorScore = -Infinity;
+  for (const c of candidatos) {
+    const s = pontuar(alvo, nomePT, c);
+    if (s > melhorScore) {
+      melhorScore = s;
+      melhor = c;
+    }
+  }
+  // limiar de confiança: abaixo disso, é melhor não mostrar vídeo nenhum
+  if (!melhor || melhorScore < 85) return null;
+  return { type: "gif", url: melhor.gifUrl, nameEn: melhor.nome, auto: true };
 }
