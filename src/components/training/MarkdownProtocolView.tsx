@@ -352,6 +352,7 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
                 background: "rgba(255,255,255,0.03)",
               }}
             >
+              <DayVideoReview day={day} dayLabel={dayLabel} />
               {hasExercises ? (
                 <>
                   {warmup.length > 0 && (
