@@ -97,6 +97,7 @@ const AdminPartnersPage = lazy(() => import("./pages/AdminPartnersPage"));
 const PartnerDashboardPage = lazy(() => import("./pages/PartnerDashboardPage"));
 const PartnerBlockedPage = lazy(() => import("./pages/PartnerBlockedPage"));
 const PeptideVaultPage = lazy(() => import("./pages/PeptideVaultPage"));
+const MicrobiotaVaultPage = lazy(() => import("./pages/MicrobiotaVaultPage"));
 const TrainingPage = lazy(() => import("./pages/TrainingPage"));
 const RunOnPage = lazy(() => import("./pages/RunOnPage"));
 const ChallengeLayout = lazy(() => import("./components/challenge/ChallengeLayout"));
@@ -293,6 +294,7 @@ const App = () => (
             <Route path="/partner" element={<ProtectedRoute><PartnerDashboardPage /></ProtectedRoute>} />
             <Route path="/blocked" element={<PartnerBlockedPage />} />
             <Route path="/peptide-vault" element={<ProtectedRoute><PeptideVaultPage /></ProtectedRoute>} />
+            <Route path="/microbiota-vault" element={<ProtectedRoute><MicrobiotaVaultPage /></ProtectedRoute>} />
             {/* Training & Science */}
             <Route path="/training" element={<CoachToolRoute><ProtectedRoute><TrainingPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/runon" element={<CoachToolRoute><ProtectedRoute><RunOnPage /></ProtectedRoute></CoachToolRoute>} />
