@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Download, Loader2, Sparkles } from "lucide-react";
+import { Clock, Download, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadMany } from "@/lib/socialImageKit";
+import { melhorHorario } from "@/lib/socialViral";
 import { renderMceCarousel, MCE_CTA_SLIDE, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 
 const SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
@@ -27,6 +28,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [active, setActive] = useState(0);
+  const horarioHoje = melhorHorario("CARROSSEL_MCE");
 
   const generate = async () => {
     if (!tema.trim()) return toast.error("Escreva o tema do carrossel.");
@@ -105,6 +107,22 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
             >
               <Download className="h-4 w-4" /> Baixar os 7 slides
             </Button>
+          </div>
+          <div className="rounded-xl border p-4" style={{ borderColor: "#5DCAA533", background: "#5DCAA50A" }}>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" style={{ color: "#5DCAA5" }} />
+              <p className="text-sm font-semibold tracking-wide">MELHORES HORÁRIOS PARA POSTAR</p>
+            </div>
+            <p className="mt-2 text-sm">
+              Hoje: <strong style={{ color: "#5DCAA5" }}>{horarioHoje.hora}</strong>{" "}
+              <span className="text-muted-foreground">— {horarioHoje.motivo}</span>
+            </p>
+            <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+              <li>Carrossel educativo: <strong>12h30</strong> (dia útil) · <strong>10h30</strong> (fim de semana)</li>
+              <li>Janela alternativa de salvamento: <strong>20h-22h</strong> — conteúdo de referência é salvo à noite</li>
+              <li>Stories chamando o carrossel: <strong>08h-09h</strong>, <strong>12h-13h</strong> e <strong>21h-22h</strong></li>
+              <li>Comentário fixo com o link do Diagnóstico: <strong>até 5 min</strong> depois de publicar</li>
+            </ul>
           </div>
           <p className="text-center text-[11px] text-muted-foreground">
             Slide 7 fixo: {MCE_CTA_SLIDE.titulo} — {MCE_CTA_SLIDE.caixa}.
