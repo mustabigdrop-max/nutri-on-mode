@@ -42,6 +42,8 @@ export type NexusFicha = {
   aprovacao_fda?: string;
   anvisa?: string;
   fabricante?: string;
+  dose_estudada?: string;
+
   nivel_evidencia?: NexusEvidencia;
   num_estudos?: string;
 };
