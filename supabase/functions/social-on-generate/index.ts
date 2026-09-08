@@ -309,13 +309,15 @@ REGRAS:
 - Só preencha o comparativo quando existir comparação honesta com composto/abordagem da mesma classe; caso contrário devolva string vazia e array vazio.
 - Os textos são desenhados em imagem: respeite os limites de caracteres do schema.
 - Nunca use "IA", "AI" ou "inteligência artificial".
-REGRAS DE TAMANHO:
+LIMITES RÍGIDOS POR SLIDE (o excedente vira slide adicional, NUNCA corte conteúdo no meio):
 - slide1_gancho: MÁXIMO 80 caracteres (2 linhas).
 - slide2_ficha: TODOS os campos preenchidos, incluindo dose_estudada e fabricante/fonte.
-- slide4_beneficios: MÁXIMO 4 benefícios no total (serão exibidos 2 por slide).
-- slide5_riscos: MÁXIMO 4 riscos.
-- slide8_perguntas_medico: MÁXIMO 4 perguntas.
-- slide9_resumo: MÁXIMO 6 linhas no total.
+- MECANISMO: MÁXIMO 3 passos, cada passo com no MÁXIMO 15 palavras.
+- BENEFÍCIOS: MÁXIMO 2 por slide (até 4 no total — o excedente gera o slide BENEFÍCIOS 2).
+- RISCOS: MÁXIMO 3 por slide (até 6 no total — o excedente gera o slide RISCOS 2).
+- PERGUNTAS: MÁXIMO 3 por slide (até 6 no total — o excedente gera o slide PERGUNTAS 2).
+- RESUMO: MÁXIMO 5 linhas, cada uma com 1 frase curta.
+- Se precisar de mais espaço, prefira criar slide adicional a espremer ou cortar texto.
 REGRAS DE CONTEÚDO:
 - Use os dados REAIS da ficha do PeptideVault/MicrobiotaVault e do Lab enviados acima (mecanismo, benefícios, efeitos colaterais, evidência, doses). Não invente nada que os contradiga.
 - Complemente com conhecimento científico consolidado apenas onde a ficha não tiver o dado.
