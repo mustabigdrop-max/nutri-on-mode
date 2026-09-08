@@ -249,45 +249,15 @@ function ItemDetail({ item, onBack }: { item: MicrobiotaItem; onBack: () => void
         </p>
 
         {/* Criar conteúdo */}
-        <Card className="border" style={{ borderColor: "#EF9F2740", backgroundColor: "#EF9F270A" }}>
-          <CardHeader className="pb-2 pt-4 px-4">
-            <CardTitle className="text-sm font-semibold text-[#EF9F27] flex items-center gap-2">
-              📲 Criar conteúdo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 space-y-3">
-            <div className="flex flex-wrap gap-1.5">
-              {MICROBIOTA_ANGULOS.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => setAngulo(a.id)}
-                  title={a.hint}
-                  className={`text-[10px] px-2 py-1 rounded-full border transition ${
-                    angulo === a.id
-                      ? "bg-[#EF9F27]/20 border-[#EF9F27]/60 text-[#EF9F27]"
-                      : "border-gray-700 text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {MICROBIOTA_FORMATOS.map((f) => (
-                <Button
-                  key={f.id}
-                  onClick={() => gerar(f.id)}
-                  className="gap-2 bg-[#EF9F27] text-black hover:bg-[#EF9F27]/90"
-                >
-                  <Sparkles className="w-4 h-4" /> {f.label}
-                </Button>
-              ))}
-            </div>
-            <p className="text-[10px] text-gray-500">
-              O ângulo Cross-Vault cruza este item com o PeptideVault (ex.: microbiota × semaglutida).
-            </p>
-          </CardContent>
-        </Card>
+        <NexusContentCreator
+          nome={item.nome}
+          origem="MicrobiotaVault"
+          compoundData={item}
+          contexto={item.mecanismo_acao}
+        />
+
+        <NexusComoObter nome={item.nome} origem="MicrobiotaVault" compoundData={item} />
+
 
         {[
           { title: "⚙️ Como funciona", content: item.mecanismo_acao },
