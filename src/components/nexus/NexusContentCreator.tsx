@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, Film, Layers, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { cleanCaption } from "@/lib/captionText";
 
 const AMBER = "#EF9F27";
 
@@ -243,13 +244,13 @@ export default function NexusContentCreator({
             )}
             {reels.legenda && (
               <p className="whitespace-pre-wrap rounded-lg border border-gray-800 p-2 text-[11px] text-gray-400">
-                {reels.legenda}
+                {cleanCaption(reels.legenda)}
               </p>
             )}
             <div className="flex flex-wrap gap-2">
               <CopyBtn text={roteiroTexto} label="Copiar roteiro completo" />
               <CopyBtn text={textosTela} label="Só textos de tela (CapCut)" />
-              {reels.legenda && <CopyBtn text={reels.legenda} label="Copiar legenda" />}
+              {reels.legenda && <CopyBtn text={cleanCaption(reels.legenda)} label="Copiar legenda" />}
             </div>
           </div>
         )}
