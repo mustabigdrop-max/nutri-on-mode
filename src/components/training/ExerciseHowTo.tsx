@@ -4,6 +4,7 @@ import { Play, X, MessageCircle, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
+import { buscarGifExercicio } from "@/lib/exerciseGif";
 
 const AMBER = "#EF9F27";
 const TEAL = "#5DCAA5";
@@ -65,9 +66,56 @@ function ActionButton({
   );
 }
 
-function GuideView({ guide }: { guide: ExerciseGuide }) {
+function GifCard({ gif }: { gif: { gifUrl: string; nomeEN: string } }) {
+  return (
+    <div
+      style={{
+        marginTop: 8,
+        background: CARD,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 8,
+        padding: 12,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 10,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: TEAL,
+          fontWeight: 700,
+          marginBottom: 8,
+          textAlign: "left",
+        }}
+      >
+        Vídeo do movimento
+      </div>
+      <img
+        src={gif.gifUrl}
+        alt={`Demonstração animada do exercício ${gif.nomeEN}`}
+        loading="lazy"
+        style={{
+          width: "100%",
+          maxWidth: 260,
+          borderRadius: 8,
+          background: "#fff",
+          display: "inline-block",
+        }}
+      />
+      <div style={{ fontSize: 11, color: DIM, marginTop: 6 }}>
+        Assista 2–3 repetições antes de começar a sua série.
+      </div>
+    </div>
+  );
+}
+
+function GuideView({ guide, gif }: { guide: ExerciseGuide; gif: { gifUrl: string; nomeEN: string } | null }) {
   return (
     <div>
+      {gif && <GifCard gif={gif} />}
+
+
       {(guide.aparelho || guide.ajuste || guide.pegada) && (
         <Section title="Preparação">
           <div style={{ display: "grid", gap: 8 }}>
@@ -298,6 +346,8 @@ export function ExerciseHowTo({
   const [asking, setAsking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guide, setGuide] = useState<ExerciseGuide | null>(null);
+  const [gif, setGif] = useState<{ gifUrl: string; nomeEN: string } | null>(null);
+  const [gifTried, setGifTried] = useState(false);
   const [answers, setAnswers] = useState<{ question: string; answer: string }[]>([]);
 
   const toggle = async () => {
@@ -306,6 +356,10 @@ export function ExerciseHowTo({
       return;
     }
     setOpen(true);
+    if (!gif && !gifTried) {
+      setGifTried(true);
+      buscarGifExercicio(exerciseName).then((g) => g && setGif(g)).catch(() => {});
+    }
     if (!guide && !loading) {
       setLoading(true);
       try {
@@ -362,7 +416,8 @@ export function ExerciseHowTo({
                   Montando o guia deste exercício...
                 </div>
               )}
-              {guide && <GuideView guide={guide} />}
+              {guide && <GuideView guide={guide} gif={gif} />}
+              {!guide && gif && <GifCard gif={gif} />}
               {answers.map((a, i) => (
                 <div
                   key={i}
