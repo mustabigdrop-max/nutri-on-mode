@@ -289,18 +289,21 @@ serve(async (req) => {
         ? `TEMPLATE FIXO "NEXUS-BIO" — carrossel CIENTÍFICO sobre o composto informado (origem: PeptideVault ou MicrobiotaVault).
 Dados estruturados do composto (use como fonte primária, não invente nada que os contradiga): ${body?.compoundData ? (typeof body.compoundData === "string" ? body.compoundData : JSON.stringify(body.compoundData)) : "sem ficha estruturada — use apenas conhecimento científico consolidado"}
 REGRAS:
+- Estrutura de 10 slides: capa, ficha técnica, mecanismo, benefícios com dados, riscos, comparativo, pra quem faz sentido, perguntas pro médico, resumo, CTA.
 - 90% CIÊNCIA, 10% contexto prático.
 - NÃO force o método MCE. NUNCA mencione Mentalidade, Comportamento, Execução, mindset ou coaching nos slides.
-- Cite estudos reais com nome e ano; se não tiver certeza do estudo, descreva o achado sem inventar referência.
-- Inclua números concretos quando existirem; sem exagero e sem promessa de resultado.
-- Riscos com o MESMO peso dos benefícios: honesto, não alarmista.
-- Linguagem acessível respeitando a ciência. Tom: educador que traduz ciência, não vendedor.
-- Se o composto for EXPERIMENTAL, deixe CLARO que não tem aprovação regulatória.
+- Cite estudos reais com nome, autor e ano, e o tamanho da amostra; se não tiver certeza da referência, descreva o achado sem inventar estudo.
+- Sempre números concretos nos benefícios (porcentagem, redução, dose); sem exagero e sem promessa de resultado.
+- Riscos com o MESMO peso dos benefícios: honesto, não alarmista, com contexto prático em cada um.
+- As 5 perguntas pro médico são o slide mais salvável: específicas, na primeira pessoa, úteis numa consulta real.
+- Linguagem acessível respeitando a ciência. Tom: professor de faculdade explicando no bar, não palestrante de palco.
+- NÃO recomendar uso: apenas informar. Se o composto for EXPERIMENTAL, deixe CLARO que não tem aprovação regulatória.
 - Marque no máximo 3 palavras por texto entre **asteriscos duplos** para destaque de cor.
 - Sem emoji e sem hashtag dentro dos slides (emoji e hashtag só na legenda).
-- Só preencha o comparativo quando existir comparação honesta com composto da mesma classe; caso contrário devolva string vazia e array vazio.
+- Só preencha o comparativo quando existir comparação honesta com composto/abordagem da mesma classe; caso contrário devolva string vazia e array vazio.
 - Os textos são desenhados em imagem: respeite os limites de caracteres do schema.
 - Nunca use "IA", "AI" ou "inteligência artificial".`
+
         : "",
       body?.mode === "mito_metodo"
         ? `TEMPLATE FIXO "MITO OU MÉTODO" — carrossel de 8 slides sobre a crença informada:
