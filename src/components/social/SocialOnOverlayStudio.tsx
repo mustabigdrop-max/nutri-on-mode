@@ -55,12 +55,15 @@ function drawOverlay(
   data: OverlayData, anchor: { cx: number; cy: number; scale: number },
   time: number, phase: number, active: MovementPhase | null,
 ) {
-  const { cx, cy, scale } = anchor;
+  const { scale } = anchor;
   const U = Math.max(1, h / 720);
   ctx.save();
   ctx.scale(U, U);
   const W = w / U;
   const H = h / U;
+  // Anchor arrives in raw canvas pixels; convert to unit space so markers survive the bounds guard on HD videos.
+  const cx = anchor.cx / U;
+  const cy = anchor.cy / U;
   const bodyH = H * scale;
   const pulse = Math.sin(time * 3) * 0.5 + 0.5;
 

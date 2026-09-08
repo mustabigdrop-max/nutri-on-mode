@@ -530,7 +530,7 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
       )}
 
       {/* PLAYER */}
-      {stage === "player" && videoSrc && (
+      {(stage === "player" || stage === "record") && videoSrc && (
         <div style={{ ...box, display: "grid", gap: 10 }}>
           <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#000" }}>
             <video ref={playerRef} src={videoSrc} playsInline style={{ width: "100%", display: "block", maxHeight: "70vh" }}
@@ -555,7 +555,9 @@ export default function SocialOnBreakdownStudio({ handle = "@diogo.mell0" }: { h
               <button onClick={resumePlay} style={{ ...btn, width: "auto", flex: 1 }}>CONTINUAR ▶</button>
             )}
           </div>
-          <button onClick={() => setStage("record")} style={{ ...btn, background: T.gold, color: "#000" }}>🎥 GRAVAR TELA PARA REELS</button>
+          {stage === "player" && (
+            <button onClick={() => setStage("record")} style={{ ...btn, background: T.gold, color: "#000" }}>🎥 GRAVAR TELA PARA REELS</button>
+          )}
           {saving && <div style={{ fontFamily: "monospace", fontSize: 9, color: T.muted, textAlign: "center" }}>SALVANDO ANÁLISE...</div>}
           <div style={{ fontSize: 11, color: T.muted, background: T.s2, borderRadius: 6, padding: "10px 12px", lineHeight: 1.6 }}>
             📱 Como postar: dê play → grave a tela do celular → o vídeo congela nos momentos marcados com a análise completa → corte o início da gravação → poste como Reels com a legenda do gerador de conteúdo.
