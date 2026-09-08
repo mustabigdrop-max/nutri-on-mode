@@ -645,11 +645,13 @@ export function MarkdownProtocolView({
   }
 
   return (
-    <div>
-      {parsed.intro && <IntroCard text={parsed.intro} />}
-      {parsed.days.map((day, i) => (
-        <DayCard key={i} day={day} defaultOpen={i === 0} />
-      ))}
-    </div>
+    <CoachVideoCtx.Provider value={{ coachMode: !!coachMode, coachId }}>
+      <div>
+        {parsed.intro && <IntroCard text={parsed.intro} />}
+        {parsed.days.map((day, i) => (
+          <DayCard key={i} day={day} defaultOpen={i === 0} />
+        ))}
+      </div>
+    </CoachVideoCtx.Provider>
   );
 }
