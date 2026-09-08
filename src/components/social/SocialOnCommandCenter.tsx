@@ -624,6 +624,11 @@ function ContentScore() {
     setLoading(false);
   };
 
+  const local: ViralAnalise | null = text.trim().length > 10
+    ? analisarViralidade(text, { formato: format as "reels" | "carousel" | "feed" | "stories" })
+    : null;
+  const localColor = local ? (local.nivel === "VIRAL" ? C.green : local.nivel === "BOM" ? C.gold : C.orange) : C.muted;
+
   const verdictColors: Record<string, string> = { PUBLICAR: C.green, OTIMIZAR: C.gold, REFAZER: C.red };
   const scoreColor = (s?: number) => (s ?? 0) >= 75 ? C.green : (s ?? 0) >= 50 ? C.gold : (s ?? 0) >= 25 ? C.orange : C.red;
 
@@ -662,6 +667,42 @@ function ContentScore() {
         }}>{loading ? "..." : "TESTAR"}</button>
       </div>
       {err && <div style={{ fontFamily: F.m, fontSize: 9, color: C.red, marginTop: 6 }}>{err}</div>}
+
+      {local && (
+        <div style={{ marginTop: 10, background: `${localColor}08`, border: `1px solid ${localColor}30`, borderRadius: 8, padding: "10px 12px" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontFamily: F.t, fontSize: 22, fontWeight: 700, color: localColor }}>{local.score}</span>
+            <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>/ 100 ·</span>
+            <span style={{ fontFamily: F.m, fontSize: 10, color: localColor, letterSpacing: 1 }}>
+              {local.nivel}{local.nivel === "VIRAL" ? " 🔥" : ""}
+            </span>
+          </div>
+          <div style={{ height: 5, background: C.s3, borderRadius: 3, marginTop: 6 }}>
+            <div style={{ height: "100%", width: `${local.score}%`, background: localColor, borderRadius: 3, transition: "width .5s" }} />
+          </div>
+          <div style={{ marginTop: 8 }}>
+            {local.checks.filter((c) => c.ok).slice(0, 3).map((c) => (
+              <div key={c.label} style={{ fontFamily: F.b, fontSize: 10, color: C.text, marginTop: 2 }}>✅ {c.label}</div>
+            ))}
+            {local.melhorias.slice(0, 3).map((m) => (
+              <div key={m} style={{ fontFamily: F.b, fontSize: 10, color: C.text, marginTop: 2 }}>⚠️ {m}</div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            <button type="button" onClick={analyze} disabled={loading} style={{
+              flex: 1, padding: "6px 0", background: "transparent", border: `1px solid ${C.cyan}40`, borderRadius: 6,
+              cursor: "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: C.cyan,
+            }}>🔄 MELHORAR</button>
+            <span style={{
+              flex: 1, textAlign: "center", padding: "6px 0", borderRadius: 6, fontFamily: F.t, fontSize: 11,
+              fontWeight: 700, color: local.score >= 80 ? "#02150E" : C.bg,
+              background: local.score >= 80 ? C.green : local.score >= 60 ? C.gold : C.orange,
+            }}>
+              {local.score >= 80 ? "🔥 PRONTO PRA VIRALIZAR" : local.score >= 60 ? "PODE POSTAR" : "SCORE BAIXO — MELHORAR?"}
+            </span>
+          </div>
+        </div>
+      )}
 
       {score && (
         <div style={{ marginTop: 10 }}>
