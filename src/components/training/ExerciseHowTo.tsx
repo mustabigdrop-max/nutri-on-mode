@@ -7,6 +7,7 @@ import { loadExerciseGuide, type ExerciseGuide } from "@/lib/exerciseGuide";
 import { getVideoVerificado, listarMapeamentos, type ExerciseVideo, type VideoMappingRow } from "@/lib/exerciseVideoMap";
 import { exerciseKey } from "@/lib/exerciseGuide";
 import { ExerciseVideoLinker } from "@/components/training/ExerciseVideoLinker";
+import AnatomyMuscleMap from "@/components/social/AnatomyMuscleMap";
 
 const AMBER = "#EF9F27";
 const TEAL = "#5DCAA5";
