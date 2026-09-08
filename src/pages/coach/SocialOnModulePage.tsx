@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -120,8 +120,11 @@ const SocialOnModulePage = () => {
   const { user } = useAuth();
   const uid = user?.id ?? "";
 
-  const [tab, setTab] = useState("um_toque");
-  const [view, setView] = useState<"hub" | "tool">("hub");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const initialTema = searchParams.get("tema") || "";
+  const [tab, setTab] = useState(initialTab || "um_toque");
+  const [view, setView] = useState<"hub" | "tool">(initialTab ? "tool" : "hub");
   const goTab = (t: string) => { setTab(t); setView("tool"); };
   const [loading, setLoading] = useState(true);
 
@@ -1087,7 +1090,7 @@ const SocialOnModulePage = () => {
             <SocialOnOverlayStudio />
           </TabsContent>
           <TabsContent value="carrossel_mce" className="mt-4">
-            <MceCarouselPanel handle={handle} />
+            <MceCarouselPanel handle={handle} initialTema={initialTema} />
           </TabsContent>
           <TabsContent value="pacote_dia" className="mt-4">
             <ContentPackTodayPanel />

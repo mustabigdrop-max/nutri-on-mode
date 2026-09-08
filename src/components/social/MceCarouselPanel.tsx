@@ -22,8 +22,8 @@ const fallback = (tema: string): Omit<MceCarouselContent, "handle"> => ({
 });
 
 /** Gerador de carrossel MCE Educacional — 7 slides fixos, 1080x1350. */
-export default function MceCarouselPanel({ handle }: { handle?: string | null }) {
-  const [tema, setTema] = useState("");
+export default function MceCarouselPanel({ handle, initialTema }: { handle?: string | null; initialTema?: string }) {
+  const [tema, setTema] = useState(initialTema || "");
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [active, setActive] = useState(0);
