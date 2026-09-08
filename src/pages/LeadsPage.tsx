@@ -410,15 +410,13 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
           {new Date(lead.created_at).toLocaleDateString("pt-BR")}
         </span>
         {lead.whatsapp && (
-          <a
-            href={waLink(lead, contextMessage(lead))}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            onClick={onOpen}
             className="text-[10px] font-mono tracking-widest px-3 py-2 flex items-center gap-1"
             style={{ background: "#25D366", color: "#fff" }}
           >
             <MessageCircle className="w-3 h-3" /> WHATSAPP
-          </a>
+          </button>
         )}
         <button onClick={onOpen} className="text-[10px] font-mono tracking-widest px-3 py-2 border border-border">
           DETALHES
