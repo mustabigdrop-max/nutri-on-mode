@@ -7,7 +7,7 @@
  * acento do slide.
  */
 
-import { drawSlideFooter, slideContentBottom } from "@/lib/slideBase";
+import { drawSlideFooter } from "@/lib/slideBase";
 
 export const MCE_TPL = {
   bg: "#0A0A0A",
