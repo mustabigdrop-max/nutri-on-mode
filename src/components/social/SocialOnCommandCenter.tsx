@@ -13,6 +13,11 @@ import { montarPlanoDeHoje, totalMinutos, ICONE_DO_DIA, LEGENDA_SERIES } from "@
 import {
   detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
 } from "@/lib/socialContentTypes";
+import { HookChooser, ScreenTextTimeline, ViralExtras } from "@/components/social/ViralKitPanel";
+import {
+  analisarViralidade, melhorHorario, CTA_POR_TIPO, gerarHashtags, achatarHashtags,
+  type ViralKit, type HookOption, type ViralAnalise,
+} from "@/lib/socialViral";
 import {
   InteractionPackCard, DmScriptsCard, StoryFramesCard, storyScriptText,
   type InteractionPack, type DmScripts,
@@ -54,13 +59,18 @@ interface ReadyContent {
   // outputs por tipo de item do plano
   kind?: PlanContentType;
   pack?: InteractionPack;
+  viral?: ViralKit;
+  chosenHook?: string;
   dm?: DmScripts;
   story?: StoryScript;
 }
 
 const readyText = (r: ReadyContent) => {
   if (r.story) return storyScriptText(r.story);
-  return [r.hook, "", r.caption, "", (r.hashtags ?? []).join(" ")].filter((s) => s !== undefined).join("\n");
+  const tags = r.viral?.hashtags ? achatarHashtags(r.viral.hashtags) : (r.hashtags ?? []).join(" ");
+  return [r.chosenHook || r.hook, "", r.caption, r.viral?.cta_caption || "", "", tags]
+    .filter((s) => s !== undefined)
+    .join("\n");
 };
 
 const copyReady = (r: ReadyContent) => {
@@ -107,11 +117,44 @@ function DailyCoach({
     return "";
   };
 
+  /** Kit de viralização (hooks, texto de tela, CTA, self-comment, hashtags). */
+  const fetchViralKit = async (kind: PlanContentType, topic: string): Promise<ViralKit | undefined> => {
+    if (!isPostType(kind) && kind !== "STORY_CTA") return undefined;
+    const fallbackCta = CTA_POR_TIPO[kind];
+    try {
+      const r = (await callSocialAI({
+        mode: "viral_kit",
+        topic,
+        format: kind === "ROTEIRO_REELS" ? "reels" : "carrossel",
+        ...identity,
+      })) as ViralKit;
+      return {
+        ...r,
+        cta_post: r?.cta_post || fallbackCta.no_post,
+        cta_caption: r?.cta_caption || fallbackCta.no_caption,
+        self_comment: r?.self_comment || fallbackCta.self_comment,
+        hashtags: r?.hashtags?.alcance?.length ? r.hashtags : gerarHashtags(topic),
+      };
+    } catch {
+      return {
+        cta_post: fallbackCta.no_post,
+        cta_caption: fallbackCta.no_caption,
+        self_comment: fallbackCta.self_comment,
+        hashtags: gerarHashtags(topic),
+      };
+    }
+  };
+
   /** Gera o carrossel de cards; se `coverFile` vier, a capa usa sua foto real de fundo em vez do gradiente puro. */
   const generateReady = async (i: number, action: BriefAction, coverFile?: File) => {
     const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
     const topic = [action.title, action.detail].filter(Boolean).join(" — ");
     setGenerating(i);
+    const viralPromise = fetchViralKit(kind, topic);
+    const attachViral = async () => {
+      const viral = await viralPromise;
+      if (viral) setReady((p) => (p[i] ? { ...p, [i]: { ...p[i], viral } } : p));
+    };
     try {
       if (kind === "PACK_INTERACAO") {
         const r = await callSocialAI({ mode: "interaction_pack", topic, postContext: previousPostTopic(i), ...identity });
@@ -207,6 +250,7 @@ function DailyCoach({
       toast.error(e instanceof Error ? e.message : "Não consegui gerar o conteúdo");
     } finally {
       setGenerating(null);
+      void attachViral();
     }
   };
 
@@ -329,6 +373,7 @@ function DailyCoach({
           const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
           const showMedia = usesMedia(kind, action.title);
           const minutes = action.minutes || CONTENT_TYPE_MINUTES[kind];
+          const horario = melhorHorario(kind);
           return (
             <div key={i} style={{ display: "flex", gap: 10, background: C.s2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 12px" }}>
               <span style={{ fontSize: 16 }}>{action.icon || typeIcons[action.type || ""] || "📌"}</span>
@@ -341,7 +386,7 @@ function DailyCoach({
                 </div>
                 <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.4 }}>{action.detail}</div>
                 <div style={{ display: "flex", gap: 10, marginTop: 3 }}>
-                  {action.time && <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>⏰ {action.time}</span>}
+                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>⏰ {horario.hora} — {horario.motivo}</span>
                   <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>⏱️ ~{minutes}min</span>
                 </div>
 
@@ -448,6 +493,43 @@ function DailyCoach({
                     <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
                       {readyText(ready[i])}
                     </div>
+
+                    {!!ready[i].viral?.hooks?.length && (
+                      <HookChooser
+                        hooks={ready[i].viral!.hooks as HookOption[]}
+                        selected={ready[i].chosenHook}
+                        onSelect={(h) => setReady((p) => ({ ...p, [i]: { ...p[i], chosenHook: h.texto } }))}
+                      />
+                    )}
+                    {kind === "ROTEIRO_REELS" && !!ready[i].viral?.cortes?.length && (
+                      <ScreenTextTimeline cortes={ready[i].viral!.cortes!} />
+                    )}
+                    {ready[i].viral && <ViralExtras kit={ready[i].viral!} />}
+
+                    {(() => {
+                      const a = analisarViralidade(readyText(ready[i]), {
+                        formato: kind === "ROTEIRO_REELS" ? "reels" : "carousel",
+                        slides: ready[i].slideImages?.length,
+                        temTextoTela: !!ready[i].viral?.cortes?.length,
+                      });
+                      const cor = a.nivel === "VIRAL" ? C.green : a.nivel === "BOM" ? C.gold : C.orange;
+                      return (
+                        <div style={{ marginTop: 10, background: `${cor}08`, border: `1px solid ${cor}30`, borderRadius: 8, padding: "8px 10px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontFamily: F.t, fontSize: 16, fontWeight: 700, color: cor }}>{a.score}/100</span>
+                            <span style={{ fontFamily: F.m, fontSize: 9, color: cor, letterSpacing: 1 }}>
+                              {a.nivel}{a.nivel === "VIRAL" ? " 🔥" : ""}
+                            </span>
+                          </div>
+                          <div style={{ height: 4, background: C.s2, borderRadius: 2, marginTop: 5 }}>
+                            <div style={{ height: "100%", width: `${a.score}%`, background: cor, borderRadius: 2 }} />
+                          </div>
+                          {a.melhorias.slice(0, 3).map((m) => (
+                            <div key={m} style={{ fontFamily: F.b, fontSize: 10, color: C.text, marginTop: 4 }}>⚠️ {m}</div>
+                          ))}
+                        </div>
+                      );
+                    })()}
                     <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                       <button
                         type="button"
@@ -542,6 +624,11 @@ function ContentScore() {
     setLoading(false);
   };
 
+  const local: ViralAnalise | null = text.trim().length > 10
+    ? analisarViralidade(text, { formato: format as "reels" | "carousel" | "feed" | "stories" })
+    : null;
+  const localColor = local ? (local.nivel === "VIRAL" ? C.green : local.nivel === "BOM" ? C.gold : C.orange) : C.muted;
+
   const verdictColors: Record<string, string> = { PUBLICAR: C.green, OTIMIZAR: C.gold, REFAZER: C.red };
   const scoreColor = (s?: number) => (s ?? 0) >= 75 ? C.green : (s ?? 0) >= 50 ? C.gold : (s ?? 0) >= 25 ? C.orange : C.red;
 
@@ -580,6 +667,42 @@ function ContentScore() {
         }}>{loading ? "..." : "TESTAR"}</button>
       </div>
       {err && <div style={{ fontFamily: F.m, fontSize: 9, color: C.red, marginTop: 6 }}>{err}</div>}
+
+      {local && (
+        <div style={{ marginTop: 10, background: `${localColor}08`, border: `1px solid ${localColor}30`, borderRadius: 8, padding: "10px 12px" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontFamily: F.t, fontSize: 22, fontWeight: 700, color: localColor }}>{local.score}</span>
+            <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>/ 100 ·</span>
+            <span style={{ fontFamily: F.m, fontSize: 10, color: localColor, letterSpacing: 1 }}>
+              {local.nivel}{local.nivel === "VIRAL" ? " 🔥" : ""}
+            </span>
+          </div>
+          <div style={{ height: 5, background: C.s3, borderRadius: 3, marginTop: 6 }}>
+            <div style={{ height: "100%", width: `${local.score}%`, background: localColor, borderRadius: 3, transition: "width .5s" }} />
+          </div>
+          <div style={{ marginTop: 8 }}>
+            {local.checks.filter((c) => c.ok).slice(0, 3).map((c) => (
+              <div key={c.label} style={{ fontFamily: F.b, fontSize: 10, color: C.text, marginTop: 2 }}>✅ {c.label}</div>
+            ))}
+            {local.melhorias.slice(0, 3).map((m) => (
+              <div key={m} style={{ fontFamily: F.b, fontSize: 10, color: C.text, marginTop: 2 }}>⚠️ {m}</div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            <button type="button" onClick={analyze} disabled={loading} style={{
+              flex: 1, padding: "6px 0", background: "transparent", border: `1px solid ${C.cyan}40`, borderRadius: 6,
+              cursor: "pointer", fontFamily: F.t, fontSize: 11, fontWeight: 700, color: C.cyan,
+            }}>🔄 MELHORAR</button>
+            <span style={{
+              flex: 1, textAlign: "center", padding: "6px 0", borderRadius: 6, fontFamily: F.t, fontSize: 11,
+              fontWeight: 700, color: local.score >= 80 ? "#02150E" : C.bg,
+              background: local.score >= 80 ? C.green : local.score >= 60 ? C.gold : C.orange,
+            }}>
+              {local.score >= 80 ? "🔥 PRONTO PRA VIRALIZAR" : local.score >= 60 ? "PODE POSTAR" : "SCORE BAIXO — MELHORAR?"}
+            </span>
+          </div>
+        </div>
+      )}
 
       {score && (
         <div style={{ marginTop: 10 }}>
