@@ -70,7 +70,11 @@ serve(async (req) => {
     };
     const gap = Object.entries(scores).sort((a, b) => a[1] - b[1])[0];
 
-    const respostas = (lead.answers as { pillar: string; question_index: number; score: number; question?: string; answer?: string }[] | null) || [];
+    // O texto legível das perguntas/respostas vive no frontend (data/mceDiagnostico),
+    // então o cliente envia answers_text já resolvido; o JSON cru é fallback.
+    const respostas = Array.isArray(answers_text) && answers_text.length
+      ? answers_text
+      : (lead.answers as unknown[] | null) || [];
 
     const ctx = `Dados do lead:
 - Nome: ${lead.name}
