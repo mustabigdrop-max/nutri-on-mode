@@ -28,6 +28,8 @@ interface Lead {
   followup_count: number | null;
   utm_source: string | null;
   utm_campaign: string | null;
+  replied?: boolean | null;
+  scheduled_call_at?: string | null;
 }
 
 interface Activity {
