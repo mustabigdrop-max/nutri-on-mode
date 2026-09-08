@@ -4,7 +4,7 @@
  * alternativa prática e CTA fixo. Sem emoji.
  */
 
-import { drawSlideFooter } from "@/lib/slideBase";
+import { beginSlideContent, drawSlideFooter, slideContentBottom } from "@/lib/slideBase";
 
 export const MM_TPL = {
   bg: "#0A0A0A",
@@ -42,6 +42,7 @@ const canvasOf = (w: number, h: number) => {
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
   ctx.textBaseline = "alphabetic";
+  beginSlideContent(ctx, w, h);
   return { canvas, ctx };
 };
 
@@ -119,9 +120,10 @@ const badge = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number
 /** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
 const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
   drawSlideFooter(ctx, w, h, handle, {
-    ink: dark ? "#0A0A0A" : MM_TPL.ink,
-    accent: dark ? "#0A0A0A" : MM_TPL.gold,
-    handleColor: dark ? MM_TPL.ctaHandle : "#666666",
+    ink: MM_TPL.ink,
+    accent: MM_TPL.gold,
+    handleColor: "#666666",
+    background: MM_TPL.bg,
     scale: S,
   });
 
@@ -153,7 +155,7 @@ export const renderMitoMetodo = (content: MitoMetodoContent, w = 1080, h = 1350)
     ctx.fillText("VEREDITO NO ÚLTIMO SLIDE", x, y);
     ctx.font = font(500, 11);
     ctx.fillStyle = MM_TPL.gold;
-    ctx.fillText("ARRASTA PRA VER A EVIDÊNCIA ▸", x, h - px(62));
+    ctx.fillText("ARRASTA PRA VER A EVIDÊNCIA ▸", x, slideContentBottom(h) - px(8));
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }

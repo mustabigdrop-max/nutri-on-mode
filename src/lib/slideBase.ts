@@ -4,7 +4,8 @@
  *
  * Regra única e inegociável:
  *   - o rodapé ocupa a faixa fixa de 100px na base do slide;
- *   - o conteúdo NUNCA pode invadir essa faixa (área útil = altura - 100px).
+ *   - o conteúdo para 80px antes do rodapé;
+ *   - o conteúdo NUNCA pode invadir a assinatura.
  *
  * Equivalente ao JSX:
  *   <div class="slide">
@@ -17,11 +18,13 @@ export const SLIDE_W = 1080;
 export const SLIDE_H = 1350;
 /** Faixa reservada ao rodapé, em pixels reais do canvas. */
 export const SLIDE_FOOTER_H = 100;
+/** Respiro obrigatório entre o último conteúdo e o rodapé. */
+export const SLIDE_CONTENT_BOTTOM_PAD = 80;
 /** Margem lateral padrão de todos os slides. */
 export const SLIDE_PAD_X = 84;
 
 /** Limite inferior da área de conteúdo — nada pode ser desenhado abaixo disso. */
-export const slideContentBottom = (h: number = SLIDE_H) => h - SLIDE_FOOTER_H;
+export const slideContentBottom = (h: number = SLIDE_H) => h - SLIDE_FOOTER_H - SLIDE_CONTENT_BOTTOM_PAD;
 
 /** Espaço vertical disponível a partir de um Y qualquer. */
 export const slideRoomLeft = (y: number, h: number = SLIDE_H) => Math.max(0, slideContentBottom(h) - y);
@@ -40,6 +43,23 @@ export const createSlideCanvas = (w: number = SLIDE_W, h: number = SLIDE_H, bg =
   return { canvas, ctx };
 };
 
+/**
+ * Equivalente Canvas de `.slide-content { bottom: 100px; padding-bottom: 80px; overflow: hidden }`.
+ * O `restore` correspondente é executado por `drawSlideFooter` antes do rodapé.
+ */
+export const beginSlideContent = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, w, slideContentBottom(h));
+  ctx.clip();
+  // Os templates foram originalmente desenhados ocupando quase toda a altura.
+  // Compactamos a camada de conteúdo, sem alterar o rodapé, para preservar
+  // títulos, cards e listas completos dentro da nova área segura.
+  const scale = slideContentBottom(h) / h;
+  ctx.translate((w - w * scale) / 2, 0);
+  ctx.scale(scale, scale);
+};
+
 export type SlideFooterOpts = {
   /** cor do "nutri" */
   ink: string;
@@ -47,6 +67,8 @@ export type SlideFooterOpts = {
   accent: string;
   /** cor do @handle */
   handleColor: string;
+  /** fundo real do slide, usado para proteger a faixa do rodapé */
+  background: string;
   /** escala do template (1 unidade de design = `scale` px reais) */
   scale?: number;
 };
@@ -63,9 +85,21 @@ export const drawSlideFooter = (
   o: SlideFooterOpts,
 ) => {
   const s = o.scale ?? 3;
-  const x = 28 * s;
-  const baseline = h - SLIDE_FOOTER_H + 60; // centro vertical da faixa do rodapé
+  const x = 45;
+  const baseline = h - 20;
+  // Encerra o recorte da área de conteúdo. O rodapé passa a ocupar uma camada
+  // própria, equivalente a position:absolute; bottom:20px; z-index:15.
+  ctx.restore();
   ctx.save();
+  const footerBackground = "#0A0A0A";
+  const fadeTop = h - SLIDE_FOOTER_H - 30;
+  const gradient = ctx.createLinearGradient(0, fadeTop, 0, h - SLIDE_FOOTER_H);
+  gradient.addColorStop(0, "rgba(10,10,10,0)");
+  gradient.addColorStop(1, footerBackground);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, fadeTop, w, 30);
+  ctx.fillStyle = footerBackground;
+  ctx.fillRect(0, h - SLIDE_FOOTER_H, w, SLIDE_FOOTER_H);
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
   ctx.font = `700 ${15 * s}px Inter, system-ui, sans-serif`;

@@ -10,7 +10,7 @@
  * Nos textos, trechos entre **asteriscos duplos** saem destacados no acento.
  */
 
-import { chunk, drawSlideFooter, limitWords } from "@/lib/slideBase";
+import { beginSlideContent, chunk, drawSlideFooter, limitWords, slideContentBottom } from "@/lib/slideBase";
 
 export const NEXUS_TPL = {
   bg: "#0A0A0A",
@@ -288,9 +288,10 @@ const statusBadge = (ctx: CanvasRenderingContext2D, w: number, status: NexusStat
 /** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
 const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
   drawSlideFooter(ctx, w, h, handle, {
-    ink: dark ? "#0A0A0A" : NEXUS_TPL.ink,
-    accent: dark ? "#0A0A0A" : NEXUS_TPL.accent,
-    handleColor: dark ? NEXUS_TPL.ctaHandle : NEXUS_TPL.footerMuted,
+    ink: NEXUS_TPL.ink,
+    accent: NEXUS_TPL.accent,
+    handleColor: NEXUS_TPL.footerMuted,
+    background: NEXUS_TPL.bg,
     scale: S,
   });
 
@@ -302,7 +303,7 @@ const refLine = (ctx: CanvasRenderingContext2D, text: string, x: number, h: numb
   const max = w - x * 2;
   let out = text;
   while (ctx.measureText(out).width > max && out.length > 4) out = out.slice(0, -2);
-  ctx.fillText(out === text ? out : `${out}…`, x, h - px(58));
+  ctx.fillText(out === text ? out : `${out}…`, x, slideContentBottom(h) - px(8));
 };
 
 const canvasOf = (w: number, h: number) => {
@@ -311,6 +312,7 @@ const canvasOf = (w: number, h: number) => {
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
   ctx.textBaseline = "alphabetic";
+  beginSlideContent(ctx, w, h);
   return { canvas, ctx };
 };
 
@@ -379,7 +381,7 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     });
     ctx.font = font(500, 11);
     ctx.fillStyle = A;
-    ctx.fillText("ARRASTA PRA CIÊNCIA ▸", x, h - px(62));
+    ctx.fillText("ARRASTA PRA CIÊNCIA ▸", x, slideContentBottom(h) - px(8));
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -494,17 +496,13 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
 
     y += px(30);
     const boxTop = y;
-    const boxEnd = drawRich(ctx, content.slide3_mecanismo?.traducao_leiga || "", x + px(16), y + px(34), {
+    const boxEnd = drawRich(ctx, content.slide3_mecanismo?.traducao_leiga || "", x + px(16), y + px(22), {
       size: 13, weight: 400, color: NEXUS_TPL.soft, accent: P, lineHeight: 1.6, maxWidth: maxW - px(32), hiWeight: 800,
     });
     roundRect(ctx, x, boxTop, maxW, boxEnd - boxTop + px(6), px(12));
     ctx.strokeStyle = `${P}59`;
     ctx.lineWidth = px(1);
     ctx.stroke();
-    ctx.font = font(700, 8);
-    ctx.fillStyle = P;
-    ctx.fillText("EM RESUMO", x + px(16), boxTop + px(18));
-
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -702,7 +700,7 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     });
     ctx.font = font(400, 10);
     ctx.fillStyle = NEXUS_TPL.muted;
-    ctx.fillText("Salva esse slide e leva na consulta.", x, h - px(58));
+    ctx.fillText("Salva esse slide e leva na consulta.", x, slideContentBottom(h) - px(8));
 
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
