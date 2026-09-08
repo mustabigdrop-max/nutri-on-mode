@@ -78,20 +78,40 @@ export default function NexusCarouselPanel({
 
   const match = useMemo(() => findCompound(tema), [tema]);
 
+  /** Busca dados extras no Lab (nexus_compounds e protocolos) — complementam a ficha. */
+  const fetchLabData = async (nome: string) => {
+    const [comp, prot] = await Promise.all([
+      supabase
+        .from("nexus_compounds")
+        .select(
+          "nome, classe, familia_farmacologica, status_regulatorio, mecanismo_acao, nivel_evidencia, estudos_chave, lacunas_evidencia, aplicacoes_clinicas, uso_performance, protocolos, sinergias, perfil_seguranca, briefing_rapido",
+        )
+        .ilike("nome", `%${nome}%`)
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("lab_protocols").select("titulo, conteudo, fontes").ilike("titulo", `%${nome}%`).limit(2),
+    ]);
+    const lab = { composto: comp.data || null, protocolos: prot.data || [] };
+    return comp.data || (prot.data && prot.data.length) ? lab : null;
+  };
+
   const generate = async () => {
     if (!tema.trim()) return toast.error("Escreva o nome do composto.");
     setLoading(true);
     try {
       const found = findCompound(tema);
+      const labData = await fetchLabData(tema.trim()).catch(() => null);
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
         body: {
           mode: "nexus_carousel",
           topic: tema.trim(),
           origem: found?.origem || "PeptideVault",
           compoundData: found?.data || null,
+          labData,
           handle,
         },
       });
+
       if (error) throw error;
       const result = (data?.result || {}) as Partial<NexusCarouselContent>;
       const content: NexusCarouselContent = {
