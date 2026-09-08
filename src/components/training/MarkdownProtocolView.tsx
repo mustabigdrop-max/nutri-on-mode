@@ -586,10 +586,18 @@ function FallbackCard({
 export function MarkdownProtocolView({
   content,
   title,
+  coachMode,
 }: {
   content: any;
   title?: string;
+  coachMode?: boolean;
 }) {
+  const [coachId, setCoachId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!coachMode) return;
+    supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
+  }, [coachMode]);
+
   // Strings JSON são normalizadas antes da renderização. Objetos estruturados
   // são aceitos porque parseProtocolToDays já converte training_days em cards.
   const isJsonLike = (v: any) => {
