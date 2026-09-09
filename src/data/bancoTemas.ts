@@ -212,12 +212,98 @@ export const filtrarTemasDisponiveis = <T extends { titulo: string }>(temas: T[]
     return dias === null || dias > DIAS_BLOQUEIO;
   });
 
-/** Sugestões do dia: rotação da semana, potencial alto primeiro, sem repetir em 30 dias. */
-export function sugestoesDoDia(postados: TemaPostado[], data = new Date(), limite = 4): TemaComCategoria[] {
+/** Foco do treino do dia, usado pra contextualizar as sugestões de conteúdo. */
+export type FocoTreino = "costas" | "pernas" | "peito" | "ombros" | "bracos" | "descanso";
+
+export const FOCO_LABEL: Record<FocoTreino, string> = {
+  costas: "Costas",
+  pernas: "Pernas",
+  peito: "Peito",
+  ombros: "Ombros",
+  bracos: "Braços",
+  descanso: "Off / Descanso",
+};
+
+const normTema = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+/** Palavras que indicam cada foco no nome do treino/grupos/exercícios. */
+const SINAIS_FOCO: Record<Exclude<FocoTreino, "descanso">, string[]> = {
+  costas: ["pull", "costa", "dorsal", "remada", "puxada", "barra fixa", "pulley", "lat", "trapézio", "trapezio", "lombar"],
+  pernas: ["leg", "perna", "quadric", "posterior", "agach", "leg press", "cadeira", "mesa flexora", "panturrilha", "gluteo", "stiff"],
+  peito: ["push", "peito", "supino", "crucifixo", "peck", "chest", "cross"],
+  ombros: ["ombro", "deltoide", "desenvolvimento", "elevacao lateral", "shoulder"],
+  bracos: ["bicep", "tricep", "braco", "rosca", "french", "testa", "corda"],
+};
+
+const SINAIS_DESCANSO = ["off", "descanso", "rest", "recuperacao", "recuperação", "livre"];
+
+/** Detecta o foco a partir do treino sincronizado do TrainingON. */
+export function focoDoTreino(
+  treino: { nomeTreino: string; grupos: string[]; agenda?: { tipo?: string } } | null,
+): FocoTreino | null {
+  if (!treino) return null;
+  const texto = normTema([treino.agenda?.tipo, treino.nomeTreino, ...(treino.grupos || [])].filter(Boolean).join(" "));
+  if (SINAIS_DESCANSO.some((s) => texto.includes(normTema(s)))) return "descanso";
+  // Conta sinais por foco; ganha o foco com mais evidências.
+  let melhor: Exclude<FocoTreino, "descanso"> | null = null;
+  let melhorScore = 0;
+  (Object.keys(SINAIS_FOCO) as Exclude<FocoTreino, "descanso">[]).forEach((foco) => {
+    const score = SINAIS_FOCO[foco].filter((s) => texto.includes(normTema(s))).length;
+    if (score > melhorScore) {
+      melhorScore = score;
+      melhor = foco;
+    }
+  });
+  return melhor;
+}
+
+/** Palavras que ligam um tema do banco a um foco muscular. */
+const TEMA_DO_FOCO: Record<Exclude<FocoTreino, "descanso">, string[]> = {
+  costas: ["costa", "dorsal", "remada", "puxada", "pegada"],
+  pernas: ["perna", "joelho", "agach", "coxa", "panturrilha", "posterior"],
+  peito: ["peito", "supino", "crucifixo", "peck"],
+  ombros: ["ombro", "deltoide", "desenvolvimento", "elevacao lateral"],
+  bracos: ["bicep", "tricep", "braco", "rosca", "manga"],
+};
+
+/** Tema fala do foco muscular do dia? */
+export const temaDoFoco = (t: TemaComCategoria, foco: FocoTreino): boolean => {
+  if (foco === "descanso") return t.categoria === "LIFESTYLE" || t.categoria === "CIENCIA_GERAL";
+  const texto = normTema(`${t.titulo} ${t.subtitulo}`);
+  return t.categoria === "TREINO" && TEMA_DO_FOCO[foco].some((s) => texto.includes(s));
+};
+
+/**
+ * Sugestões do dia: o treino do dia manda no contexto.
+ * Pull → temas de costas. Legs → pernas. Off → lifestyle/ciência.
+ * Depois completa com a rotação semanal, potencial alto primeiro, sem repetir em 30 dias.
+ */
+export function sugestoesDoDia(
+  postados: TemaPostado[],
+  data = new Date(),
+  limite = 4,
+  foco?: FocoTreino | null,
+): TemaComCategoria[] {
   const rotacao = ROTACAO_SEMANAL[data.getDay()];
-  const doDia = todosOsTemas().filter((t) => rotacao.categorias.includes(t.categoria));
-  const disponiveis = filtrarTemasDisponiveis(doDia, postados);
-  const base = disponiveis.length ? disponiveis : filtrarTemasDisponiveis(todosOsTemas(), postados);
+  const todos = todosOsTemas();
+  const disponiveis = filtrarTemasDisponiveis(todos, postados);
+
+  if (foco) {
+    const doFoco = disponiveis.filter((t) => temaDoFoco(t, foco));
+    const doDia = disponiveis.filter(
+      (t) => !temaDoFoco(t, foco) && rotacao.categorias.includes(t.categoria),
+    );
+    const ordenado = [
+      ...[...doFoco].sort((a, b) => b.potencial - a.potencial),
+      ...[...doDia].sort((a, b) => b.potencial - a.potencial),
+    ];
+    const base = ordenado.length ? ordenado : disponiveis;
+    return base.slice(0, limite);
+  }
+
+  const doDia = disponiveis.filter((t) => rotacao.categorias.includes(t.categoria));
+  const base = doDia.length ? doDia : disponiveis;
   return [...base].sort((a, b) => b.potencial - a.potencial).slice(0, limite);
 }
 
