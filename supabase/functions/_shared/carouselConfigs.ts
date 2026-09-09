@@ -9,6 +9,7 @@ export type TipoCarrossel =
   | "MCE"
   | "NEXUS_PEPTIDEO"
   | "NEXUS_MICROBIOTA"
+  | "NEXUS_ESTEROIDE"
   | "RESULTADO_PROTOCOLO"
   | "REFEICAO"
   | "NUTRION_FEATURE"
@@ -184,10 +185,39 @@ Máximo 600 caracteres. SEM hashtags.`,
   proibidos: ["peptídeo", "peptideo", "microbiota", "cepa"],
 };
 
+
+const CONFIG_NEXUS_ESTEROIDE: CarrosselConfig = {
+  prompt_legenda: `Gere legenda EDUCATIVA e de REDUÇÃO DE DANOS sobre: {tema}.
+Estrutura: composto + classe → o que a ciência mostra em 1 frase com dado → tese "menos é mais" com número (ganho logarítmico x colateral linear) → risco principal com o MESMO peso do benefício → exames obrigatórios → disclaimer.
+Tom: educador científico. NÃO promover uso. NÃO demonizar. NÃO glamourizar.
+NUNCA recomendar dose, protocolo, ciclo ou combinação.
+NÃO mencionar MCE, Mentalidade, Comportamento ou Execução.
+Máximo 600 caracteres. SEM hashtags. SEM markdown.`,
+  prompt_self_comment: `Pergunta educativa sobre monitoramento ou sobre a curva dose-resposta. Ex: "Você sabia que dobrar a dose não dobra o ganho?" ou "Quem usa e nunca fez hemograma, comenta aí." NÃO recomendar uso nem dose.`,
+  hashtags_top5: ["#reducaodedanos", "#nutrion", "#ciencia", "#hormonios", "#saudemasculina"],
+  hashtags_15: [
+    "#reducaodedanos", "#nutrion", "#nexusbio",
+    "#ciencia", "#hormonios", "#saudemasculina",
+    "#endocrinologia", "#exameslaboratoriais", "#educacaoemsaude",
+    "#testosterona", "#evidencia", "#saudecardiovascular",
+    "#atleta", "#performance", "#medicinaesportiva",
+  ],
+  cta: "Diagnóstico gratuito — link na bio",
+  cta_save: "Salva esse — informação antes de decisão.",
+  disclaimer:
+    "⚕️ Conteúdo estritamente educacional baseado em literatura científica. Esteroides anabolizantes são substâncias controladas no Brasil (Portaria 344/98 ANVISA). O uso sem prescrição médica é ilegal. Este conteúdo NÃO constitui recomendação de uso, dosagem ou protocolo. Consulte um endocrinologista.",
+  tema_emojis: "💉🔬📉",
+  proibidos: [
+    "mce", "mentalidade", "comportamento", "execução", "execucao",
+    "microbiota", "cepa", "recomendo", "sugiro a dose", "ciclo ideal",
+  ],
+};
+
 export const CARROSSEL_CONFIGS: Record<TipoCarrossel, CarrosselConfig> = {
   MCE: CONFIG_MCE,
   NEXUS_PEPTIDEO: CONFIG_NEXUS_PEPTIDEO,
   NEXUS_MICROBIOTA: CONFIG_NEXUS_MICROBIOTA,
+  NEXUS_ESTEROIDE: CONFIG_NEXUS_ESTEROIDE,
   RESULTADO_PROTOCOLO: CONFIG_RESULTADO,
   REFEICAO: CONFIG_REFEICAO,
   NUTRION_FEATURE: CONFIG_NUTRION,
@@ -201,6 +231,7 @@ const TOM_POR_TIPO: Record<TipoCarrossel, string> = {
   MCE: "coach",
   NEXUS_PEPTIDEO: "educador científico",
   NEXUS_MICROBIOTA: "educador científico",
+  NEXUS_ESTEROIDE: "educador científico de redução de danos",
   RESULTADO_PROTOCOLO: "atleta mostrando o próprio resultado",
   REFEICAO: "prático",
   NUTRION_FEATURE: "fundador",

@@ -56,7 +56,7 @@ export type NexusLinhaTabela = { criterio: string; composto1: string; composto2:
 
 export type NexusCarouselContent = {
   composto: string;
-  origem?: "PeptideVault" | "MicrobiotaVault";
+  origem?: "PeptideVault" | "MicrobiotaVault" | "SteroidVault";
   slide1_gancho: string;
   slide1_classe: string;
   slide1_status: NexusStatus;
@@ -345,7 +345,12 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
   const status: NexusStatus = (["APROVADO", "PESQUISA", "EXPERIMENTAL"] as const).includes(content.slide1_status)
     ? content.slide1_status
     : "PESQUISA";
-  const vault = content.origem === "MicrobiotaVault" ? "NEXUS-BIO | MICROBIOTAVAULT" : "NEXUS-BIO | PEPTIDEVAULT";
+  const vault =
+    content.origem === "MicrobiotaVault"
+      ? "NEXUS-BIO | MICROBIOTAVAULT"
+      : content.origem === "SteroidVault"
+        ? "NEXUS-BIO | STEROIDVAULT"
+        : "NEXUS-BIO | PEPTIDEVAULT";
   const s: SlideCtx = { w, h, handle, status, vault };
   const x = px(28);
   const maxW = w - x * 2;

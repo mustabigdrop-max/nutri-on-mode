@@ -111,6 +111,12 @@ const LabPage = () => {
                 <Bug className="w-3.5 h-3.5" /> MicrobiotaVault
               </button>
               <button
+                onClick={() => navigate("/steroid-vault")}
+                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors font-medium"
+              >
+                <Syringe className="w-3.5 h-3.5" /> SteroidVault
+              </button>
+              <button
                 onClick={() => navigate("/dr-nexus")}
                 className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors font-medium"
               >
