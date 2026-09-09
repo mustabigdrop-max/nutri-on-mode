@@ -185,24 +185,29 @@ function DailyCoach({
         return;
       }
       if (kind === "MITO_METODO") {
-        const r = await callSocialAI({ mode: "mito_metodo", topic, ...identity });
+        const [r, pos] = await Promise.all([
+          callSocialAI({ mode: "mito_metodo", topic, ...identity }),
+          fetchPosSlides("MITO_METODO", topic),
+        ]);
         const content = { ...(r as MitoMetodoContent), handle: identity.handle || "diogo.mell0" };
         setReady((p) => ({
           ...p,
           [i]: {
             kind,
             hook: content.crenca,
-            caption: (r as ReadyContent)?.caption,
-            hashtags: (r as ReadyContent)?.hashtags,
+            caption: pos?.legenda || (r as ReadyContent)?.caption,
+            hashtags: pos?.hashtags_15 || (r as ReadyContent)?.hashtags,
+            self_comment: pos?.self_comment,
             slideImages: renderMitoMetodo(content),
           },
         }));
         return;
       }
       if (kind === "CARROSSEL_MCE") {
-        const [content, pkg] = await Promise.all([
+        const [content, pkg, pos] = await Promise.all([
           callSocialAI({ mode: "mce_carousel", topic, ...identity }),
           callSocialAI({ mode: "post_package", format: "carrossel", topic, ...identity }),
+          fetchPosSlides("MCE", topic),
         ]);
         const safe = { ...(content as MceCarouselContent), tema: topic, handle: identity.handle || "diogo.mell0" };
         setReady((p) => ({
@@ -210,9 +215,9 @@ function DailyCoach({
           [i]: {
             kind,
             hook: (pkg as ReadyContent)?.hook,
-            caption: (pkg as ReadyContent)?.caption,
-            hashtags: (pkg as ReadyContent)?.hashtags,
-            self_comment: (pkg as ReadyContent)?.self_comment,
+            caption: pos?.legenda || (pkg as ReadyContent)?.caption,
+            hashtags: pos?.hashtags_15 || (pkg as ReadyContent)?.hashtags,
+            self_comment: pos?.self_comment || (pkg as ReadyContent)?.self_comment,
             slideImages: renderMceCarousel(safe),
           },
         }));
