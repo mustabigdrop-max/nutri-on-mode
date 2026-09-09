@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Copy, Download, FlaskConical, Loader2 } from "lucide-react";
+import { Copy, FlaskConical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
