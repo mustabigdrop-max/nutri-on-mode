@@ -109,12 +109,30 @@ export async function getDadosTreino(focoId: FocoResultado): Promise<DadosTreino
 
   // Nutrição do dia (best-effort — só entra se o dado realmente existir).
   const hoje = new Date().toISOString().slice(0, 10);
+  const trintaDias = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
   const { data: nutri } = await supabase
     .from("daily_nutrition_protocol")
-    .select("calorias_meta, treino_tipo")
+    .select("calorias_meta, treino_tipo, proteina_meta, carb_meta")
     .eq("user_id", uid)
     .eq("data", hoje)
     .maybeSingle();
+
+  // Ajuste do NutrySync = meta de hoje menos o dia mais leve (descanso) do último mês.
+  const { data: historico } = await supabase
+    .from("daily_nutrition_protocol")
+    .select("calorias_meta")
+    .eq("user_id", uid)
+    .gte("data", trintaDias)
+    .not("calorias_meta", "is", null);
+
+  const baseline = (historico || [])
+    .map((h) => h.calorias_meta as number)
+    .filter((v) => typeof v === "number" && v > 0)
+    .sort((a, b) => a - b)[0];
+  const ajuste =
+    nutri?.calorias_meta && baseline && nutri.calorias_meta - baseline > 0
+      ? nutri.calorias_meta - baseline
+      : undefined;
 
   return {
     focoId,
