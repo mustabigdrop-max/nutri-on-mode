@@ -306,7 +306,7 @@ serve(async (req) => {
 - Textos curtos: eles são desenhados em imagem, então respeite os limites de palavras do schema.`
         : "",
       body?.mode === "nexus_carousel"
-        ? `TEMPLATE FIXO "NEXUS-BIO" — carrossel CIENTÍFICO sobre o composto informado (origem: PeptideVault ou MicrobiotaVault).
+        ? `TEMPLATE FIXO "NEXUS-BIO" — carrossel CIENTÍFICO sobre o composto informado (origem: PeptideVault, MicrobiotaVault ou SteroidVault).
 Dados extras do Lab (complementam, não substituem a ficha): ${body?.labData ? JSON.stringify(body.labData) : "sem dados do Lab"}
 Dados estruturados do composto (use como fonte primária, não invente nada que os contradiga): ${body?.compoundData ? (typeof body.compoundData === "string" ? body.compoundData : JSON.stringify(body.compoundData)) : "sem ficha estruturada — use apenas conhecimento científico consolidado"}
 REGRAS:
@@ -337,7 +337,16 @@ REGRAS DE CONTEÚDO:
 - Use os dados REAIS da ficha do PeptideVault/MicrobiotaVault e do Lab enviados acima (mecanismo, benefícios, efeitos colaterais, evidência, doses). Não invente nada que os contradiga.
 - Complemente com conhecimento científico consolidado apenas onde a ficha não tiver o dado.
 - Cite ESTUDOS REAIS com autor, ano e número de pacientes.
-- Dose estudada é OBRIGATÓRIA na ficha técnica.`
+- Dose estudada é OBRIGATÓRIA na ficha técnica.
+${body?.origem === "SteroidVault" ? `
+REGRAS ESPECÍFICAS STEROIDVAULT (esteroides, SARMs e PEDs) — EDUCACIONAL E REDUÇÃO DE DANOS:
+- NÃO promova o uso e NÃO demonize: informe com ciência.
+- NUNCA recomende dose, ciclo, empilhamento ou protocolo de recuperação. Só descreva o que a literatura documenta, sempre com essa moldura.
+- Sempre traga a tese "menos é mais": o ganho de massa cresce de forma decrescente enquanto os efeitos colaterais escalam com a dose (Bhasin et al., 2001: 125mg/sem +3,4kg; 300mg/sem +5,2kg; 600mg/sem +7,9kg em 20 semanas).
+- Riscos com o MESMO peso dos benefícios, incluindo cardíacos, lipídicos, hematócrito, supressão hormonal, tendíneos, hepáticos e renais.
+- Cite o status regulatório: substâncias controladas no Brasil pela Portaria 344/98 da ANVISA; uso sem prescrição é ilegal.
+- O último slide (CTA) precisa conter o disclaimer completo e a orientação de consultar um endocrinologista.
+- Nunca ensine onde comprar, como obter fora da via médica ou como burlar exame antidoping.` : ""}`
 
         : "",
       ["nexus_reels", "nexus_stories", "nexus_como_obter"].includes(body?.mode)
@@ -345,6 +354,7 @@ REGRAS DE CONTEÚDO:
 ${body?.compoundData ? JSON.stringify(body.compoundData).slice(0, 4000) : "sem ficha estruturada"}
 ${body?.labData ? `Dados extras do Lab:\n${JSON.stringify(body.labData).slice(0, 3000)}` : ""}
 ${body?.angulo ? `Ângulo do conteúdo: ${body.angulo}` : ""}
+${body?.origem === "SteroidVault" ? "REGRAS EXTRAS STEROIDVAULT: educacional e redução de danos. Nunca recomende dose, ciclo, empilhamento ou PCT. Sempre a tese 'menos é mais' (ganho decrescente x colateral crescente). Riscos com o mesmo peso dos benefícios. Cite Portaria 344/98 ANVISA e a ilegalidade do uso sem prescrição. Encerre com disclaimer e orientação de consultar endocrinologista. Nunca ensine como obter." : ""}
 REGRAS: 90% ciência, linguagem acessível em português do Brasil. Use os dados REAIS da ficha; complemente com ciência consolidada só onde faltar. Cite estudos reais (autor, ano). Nunca recomende uso: apenas informe. Nunca mencione MCE, mindset ou coaching. Nunca use "IA", "AI" ou "inteligência artificial". Sem emoji nos textos de tela.`
         : "",
       body?.mode === "photo_story"

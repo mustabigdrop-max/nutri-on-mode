@@ -9,6 +9,7 @@ export type TipoCarrossel =
   | "MCE"
   | "NEXUS_PEPTIDEO"
   | "NEXUS_MICROBIOTA"
+  | "NEXUS_ESTEROIDE"
   | "RESULTADO_PROTOCOLO"
   | "REFEICAO"
   | "NUTRION_FEATURE"
@@ -31,6 +32,7 @@ export const TIPO_CARROSSEL_LABEL: Record<TipoCarrossel, string> = {
   MCE: "Carrossel MCE",
   NEXUS_PEPTIDEO: "NEXUS · Peptídeo",
   NEXUS_MICROBIOTA: "NEXUS · Microbiota",
+  NEXUS_ESTEROIDE: "NEXUS · Esteroides & PEDs",
   RESULTADO_PROTOCOLO: "Resultado + Protocolo",
   REFEICAO: "Refeição",
   NUTRION_FEATURE: "Funcionalidade nutriON",

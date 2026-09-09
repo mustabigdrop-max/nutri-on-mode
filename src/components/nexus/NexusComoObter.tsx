@@ -89,7 +89,7 @@ export default function NexusComoObter({
   compoundData,
 }: {
   nome: string;
-  origem: "PeptideVault" | "MicrobiotaVault";
+  origem: "PeptideVault" | "MicrobiotaVault" | "SteroidVault";
   compoundData?: unknown;
 }) {
   const [dados, setDados] = useState<ComoObter | null>(null);

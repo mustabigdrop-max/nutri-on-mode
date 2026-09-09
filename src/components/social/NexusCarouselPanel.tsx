@@ -11,6 +11,7 @@ import SlideTextEditor from "@/components/social/SlideTextEditor";
 import { Textarea } from "@/components/ui/textarea";
 import { peptides } from "@/data/peptideVaultData";
 import { microbiotaItems } from "@/data/microbiotaVaultData";
+import { steroidItems } from "@/data/steroidVaultData";
 import {
   NEXUS_TPL,
   NEXUS_CTA_SLIDE,
@@ -31,6 +32,9 @@ const findCompound = (tema: string) => {
   const mic =
     microbiotaItems.find((m) => norm(m.nome) === q) || microbiotaItems.find((m) => norm(m.nome).includes(q));
   if (mic) return { origem: "MicrobiotaVault" as const, data: mic, classe: mic.classe, status: mic.status };
+  const ster =
+    steroidItems.find((s) => norm(s.nome) === q) || steroidItems.find((s) => norm(s.nome).includes(q));
+  if (ster) return { origem: "SteroidVault" as const, data: ster, classe: ster.classe, status: ster.status };
   return null;
 };
 
@@ -232,7 +236,13 @@ export default function NexusCarouselPanel({
             <Textarea value={legenda} rows={6} onChange={(e) => setLegenda(e.target.value)} />
           </div>
           <PosSlidesPanel
-            tipo={match?.origem === "MicrobiotaVault" ? "NEXUS_MICROBIOTA" : "NEXUS_PEPTIDEO"}
+            tipo={
+              match?.origem === "MicrobiotaVault"
+                ? "NEXUS_MICROBIOTA"
+                : match?.origem === "SteroidVault"
+                  ? "NEXUS_ESTEROIDE"
+                  : "NEXUS_PEPTIDEO"
+            }
             tema={tema}
             dados={match?.data ?? null}
           />
