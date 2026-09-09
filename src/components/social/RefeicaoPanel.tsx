@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
-import { getDadosRefeicao, type DadosRefeicao } from "@/lib/refeicaoData";
+import {
+  getDadosRefeicao,
+  getDadosDeRegistro,
+  getRefeicoesRegistradasHoje,
+  type DadosRefeicao,
+  type RefeicaoRegistrada,
+} from "@/lib/refeicaoData";
 import { renderRefeicaoCarousel, type RefeicaoSlide } from "@/lib/refeicaoCarouselTemplate";
 import { renderRefeicaoStories, type RefeicaoStoryFrame } from "@/lib/refeicaoStoriesTemplate";
 
@@ -142,17 +148,43 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
   const [legenda, setLegenda] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [timing, setTiming] = useState<{ feed_horario?: string; motivo_horario?: string } | null>(null);
+  const [registros, setRegistros] = useState<RefeicaoRegistrada[]>([]);
+  const [registroId, setRegistroId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
       setCarregando(true);
       try {
-        setDados(await getDadosRefeicao());
+        const [doPlano, logs] = await Promise.all([getDadosRefeicao(), getRefeicoesRegistradasHoje()]);
+        setRegistros(logs);
+        // Se o coach já registrou essa refeição hoje, ela vale mais que o plano:
+        // são as kcal e os macros que ele de fato comeu.
+        const igual = doPlano ? logs.find((l) => l.slotKey === doPlano.slotKey) : logs[0];
+        if (igual) {
+          setRegistroId(igual.id);
+          setDados(await getDadosDeRegistro(igual));
+        } else {
+          setDados(doPlano);
+        }
       } finally {
         setCarregando(false);
       }
     })();
   }, []);
+
+  /** Troca a fonte do conteúdo: refeição registrada X refeição do plano. */
+  const usarRegistro = async (r: RefeicaoRegistrada | null) => {
+    setCarregando(true);
+    try {
+      setRegistroId(r?.id ?? null);
+      setDados(r ? await getDadosDeRegistro(r) : await getDadosRefeicao());
+      setCarrossel([]);
+      setStories([]);
+      setReels(null);
+    } finally {
+      setCarregando(false);
+    }
+  };
 
   const gerar = async (formato: "carrossel" | "stories" | "reels") => {
     setLoading(formato);
@@ -226,6 +258,40 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
             <p className="flex items-center gap-2 text-xs text-gray-400">
               <Loader2 className="h-3 w-3 animate-spin" /> Puxando a refeição do seu plano…
             </p>
+          )}
+
+          {!!registros.length && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] uppercase tracking-wide text-gray-500">Refeições que você registrou hoje</p>
+              <div className="flex flex-wrap gap-1.5">
+                {registros.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => usarRegistro(r)}
+                    className="rounded-md border px-2 py-1 text-[10px]"
+                    style={{
+                      borderColor: registroId === r.id ? AMBER : "rgba(255,255,255,0.12)",
+                      color: registroId === r.id ? AMBER : "#9ca3af",
+                    }}
+                  >
+                    {r.nome} · {r.horario}
+                    {r.calorias ? ` · ${Math.round(r.calorias)} kcal` : ""}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => usarRegistro(null)}
+                  className="rounded-md border px-2 py-1 text-[10px]"
+                  style={{
+                    borderColor: registroId === null ? AMBER : "rgba(255,255,255,0.12)",
+                    color: registroId === null ? AMBER : "#9ca3af",
+                  }}
+                >
+                  Usar o plano
+                </button>
+              </div>
+            </div>
           )}
 
           {!carregando && !dados && (
