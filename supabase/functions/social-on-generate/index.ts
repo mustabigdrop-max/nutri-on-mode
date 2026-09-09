@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
+import {
+  aplicarConfigPosSlides,
+  promptPosSlides,
+  type TipoCarrossel,
+} from "../_shared/carouselConfigs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,7 +69,7 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "studio_subtitles" | "studio_versions" | "studio_vision" | "video_content" | "video_overlay" | "video_breakdown"
   | "breakdown_caption" | "mce_carousel" | "nexus_carousel" | "nexus_reels" | "nexus_stories" | "nexus_como_obter" | "photo_story" | "photo_all" | "mito_metodo" | "viral_kit" | "interaction_pack" | "story_frames" | "dm_scripts"
   | "daily_brief" | "content_score" | "daily_signal" | "resultado_protocolo" | "resultado_stories" | "resultado_reels"
-  | "refeicao_carrossel" | "refeicao_stories" | "refeicao_reels";
+  | "refeicao_carrossel" | "refeicao_stories" | "refeicao_reels" | "pos_slides";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
@@ -127,6 +132,7 @@ const SCHEMAS: Record<Mode, string> = {
   refeicao_carrossel: `{"capa":{"tag":"tag curta, ex: REFEIÇÃO REAL","titulo":"frase de impacto sobre o prato, até 60 caracteres","subtitulo":"complemento até 45 caracteres"},"contexto":{"titulo":"título do slide de contexto do dia, até 6 palavras","corpo":"por que essa refeição existe nesse ponto do dia, usando SOMENTE os dados reais recebidos, até 220 caracteres"},"ciencia":[{"alimento":"nome do alimento exatamente como veio nos dados","frase":"frase de abertura do slide sobre esse alimento, até 90 caracteres"},"1 a 3 itens, só para alimentos que vieram com ciência nos dados"],"aplicacao":{"titulo":"título do slide prático, até 6 palavras","bullets":["3 a 5 aplicações práticas curtas (até 70 caracteres) derivadas dos dados reais, sem inventar número"]},"legenda":"legenda completa em texto puro, até 600 caracteres, SEM markdown, terminando com o CTA do diagnóstico","legenda_curta":"versão curta até 200 caracteres","hashtags":{"alcance":["5 hashtags"],"nicho":["5 hashtags"],"micro":["5 hashtags incluindo #nutrion #metodomce"]},"timing":{"feed_horario":"ex: 12:30","motivo_horario":"por que esse horário"}}`,
   refeicao_stories: `{"frames":[{"tipo":"FOTO_PRATO","texto":"frase de impacto sobre o prato, MÁXIMO 70 caracteres","subtexto":"complemento curto terminando com 'Arrasta ▸', até 40 caracteres"},{"tipo":"BREAKDOWN","texto":"título curto do que tem no prato, até 5 palavras","linhas":["3 a 5 linhas curtas (até 55 caracteres) com os alimentos e porções REAIS recebidos"],"nota":"observação sobre o encaixe da refeição no dia, só com dado real, até 110 caracteres"},{"tipo":"CIENCIA","alimento":"nome de um alimento que veio com ciência nos dados","texto":"o mecanismo em 1 frase, até 90 caracteres","detalhe":"o dado numérico ou bônus que veio nos dados, até 140 caracteres","fonte":"a fonte só se ela veio nos dados, senão string vazia"},{"tipo":"ENQUETE","pergunta":"pergunta curta, até 45 caracteres","opcao1":"opção 1 com emoji","opcao2":"opção 2 com emoji"},{"tipo":"CTA","texto":"fechamento conectando o prato ao sistema, até 60 caracteres","cta":"chamada final curta"}],"legenda":"legenda curta em texto puro, até 300 caracteres","hashtags":["#tag","10 a 12 itens"]}`,
   refeicao_reels: `{"hook":"frase dos primeiros 3 segundos, até 12 palavras","duracao_total":"30s","cortes":[{"segundo":"0-3s","texto_tela":"TEXTO CURTO EM CAIXA ALTA","fala":"o que o coach diz em 1 frase","acao":"direção de gravação"},"exatamente 6 cortes: 0-3s gancho no prato, 3-8s o que tem nele, 8-15s a ciência do alimento principal, 15-22s como isso encaixa no dia, 22-27s erro comum, 27-30s CTA"],"musica_sugerida":"estilo de trilha","legenda":"legenda em texto puro até 400 caracteres, SEM markdown","hashtags":["#tag","10 a 12 itens"]}`,
+  pos_slides: `{"legenda":"legenda completa sem hashtags e sem markdown, máximo 600 caracteres","self_comment":"pergunta pro primeiro comentário, máximo 80 caracteres","hashtags_top5":["exatamente as 5 hashtags informadas"],"hashtags_15":["exatamente as 15 hashtags informadas"],"cta":"o CTA informado","cta_save":"a frase de save informada","disclaimer":"o disclaimer informado, ou string vazia","melhor_horario":"horário sugerido para postar hoje","dica_engajamento":"1 dica específica pra esse tipo de post"}`,
   pinned_strategy: `{"strategy_score": número 0-100,"overall_verdict": "avaliação geral em 1-2 frases","pins": [{"slot": 1,"role": "identidade" | "resultado" | "oferta","current_fit": "forte" | "adequado" | "fraco" | "ausente","recommendation": "o que esse pin deveria ser/conter especificamente","format_suggestion": "Reel" | "Carrossel" | "Imagem estática" | "Vídeo","hook_suggestion": "sugestão de título/hook pra esse pin","rotation": "fixo" | "mensal" | "por campanha"}, "exatamente 3 itens, slots 1 a 3"],"content_ideas": [{"slot": 1,"idea": "ideia concreta de conteúdo pra esse pin"}],"mistakes_to_avoid": [{"icon": "emoji","text": "erro comum"}]}` ,
 };
 
@@ -459,6 +465,14 @@ REGRAS:
       body?.mode === "profile_audit"
         ? `Você é um auditor sênior de perfis de Instagram no nicho fitness/nutrição no Brasil. Faça um diagnóstico profissional, rigoroso e específico — nada genérico. Scores realistas: acima de 90 só para perfis excepcionais. As 3 versões de bio devem ter abordagens diferentes: (1) Autoridade + CTA, (2) Impacto + benefício, (3) Minimalista + direto. Marque "recommended":true em exatamente uma das 3 — a que você de fato recomendaria pra esse coach usar, considerando nicho, diferenciais e objetivo de conversão; as outras duas ficam com "recommended":false. Nunca mencione que você é um sistema automatizado.`
         : "",
+      body?.mode === "pos_slides"
+        ? promptPosSlides(
+            (body?.tipoCarrossel as TipoCarrossel) || "MCE",
+            String(body?.topic || body?.tema || ""),
+            body?.dados ?? null,
+            typeof body?.grupo === "string" ? body.grupo : undefined,
+          )
+        : "",
     ].filter(Boolean).join("\n");
 
 
@@ -502,6 +516,16 @@ REGRAS:
     }
 
     enforceBioLimit(parsed);
+
+    // O config do tipo é a fonte final: hashtags, CTA e disclaimer nunca vêm
+    // da criatividade do modelo, e frases de outro universo são removidas.
+    if (mode === "pos_slides") {
+      parsed = aplicarConfigPosSlides(
+        (body?.tipoCarrossel as TipoCarrossel) || "MCE",
+        (parsed ?? {}) as Record<string, unknown>,
+        typeof body?.grupo === "string" ? body.grupo : undefined,
+      );
+    }
 
     return new Response(JSON.stringify({ mode, result: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

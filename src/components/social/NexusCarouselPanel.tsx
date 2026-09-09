@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadMany } from "@/lib/socialImageKit";
 import { cleanCaption } from "@/lib/captionText";
+import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import { peptides } from "@/data/peptideVaultData";
 import { microbiotaItems } from "@/data/microbiotaVaultData";
 import {
@@ -222,6 +223,11 @@ export default function NexusCarouselPanel({
               {legenda}
             </div>
           )}
+          <PosSlidesPanel
+            tipo={match?.origem === "MicrobiotaVault" ? "NEXUS_MICROBIOTA" : "NEXUS_PEPTIDEO"}
+            tema={tema}
+            dados={match?.data ?? null}
+          />
           <p className="text-center text-[11px] text-muted-foreground">{NEXUS_CTA_SLIDE.disclaimer}</p>
         </div>
       )}

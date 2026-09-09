@@ -5,6 +5,7 @@ import { Copy, Download, Film, Layers, Loader2, Images } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
+import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import { getDadosRefeicao, type DadosRefeicao } from "@/lib/refeicaoData";
 import { renderRefeicaoCarousel, type RefeicaoSlide } from "@/lib/refeicaoCarouselTemplate";
 import { renderRefeicaoStories, type RefeicaoStoryFrame } from "@/lib/refeicaoStoriesTemplate";
@@ -363,6 +364,10 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {(!!carrossel.length || !!stories.length || !!reels) && (
+        <PosSlidesPanel tipo="REFEICAO" tema={dados?.nome || "refeição do dia"} dados={dados} handle={handle} />
       )}
     </div>
   );

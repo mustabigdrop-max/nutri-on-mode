@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
+import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import { loadImage, ensureFonts } from "@/lib/photoStoryTemplates";
 import { downloadMany } from "@/lib/socialImageKit";
 import {
@@ -339,6 +340,15 @@ export default function ResultadoProtocoloPanel({
             {fullHashtags && <button onClick={() => copiar(fullHashtags, "Hashtags")} style={acao(C.gold)}>COPIAR HASHTAGS</button>}
           </div>
         </Bloco>
+      )}
+
+      {treino && (
+        <PosSlidesPanel
+          tipo="RESULTADO_PROTOCOLO"
+          tema={treino.focoLabel}
+          grupo={treino.focoLabel}
+          dados={treino}
+        />
       )}
     </div>
   );
