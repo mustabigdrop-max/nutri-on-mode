@@ -8,6 +8,7 @@ import { ensureFonts, loadImage, renderPhotoStory } from "@/lib/photoStoryTempla
 import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import { downloadMany } from "@/lib/socialImageKit";
 import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
+import RefeicaoPanel from "@/components/social/RefeicaoPanel";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", s3: "#181824", border: "#ffffff14",
@@ -107,6 +108,8 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
   const [photoUrl, setPhotoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState<PhotoDayResult | null>(null);
+  /** A foto é de comida quando a leitura da imagem devolve o cenário "refeicao". */
+  const ehRefeicao = /refei|comida|prato|alimenta/i.test(res?.analise?.cenario || "");
   const [stories, setStories] = useState<string[]>([]);
   const [ativo, setAtivo] = useState(0);
   const [tipoCarrossel, setTipoCarrossel] = useState<TipoCarrossel>("auto");
@@ -274,7 +277,14 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
 
       {tipoCarrossel === "resultado" && file && <ResultadoProtocoloPanel file={file} handle={at} />}
 
+      {tipoCarrossel !== "resultado" && ehRefeicao && file && (
+        <div style={{ marginBottom: 12 }}>
+          <RefeicaoPanel file={file} handle={at} />
+        </div>
+      )}
+
       {tipoCarrossel !== "resultado" && res && (
+
         <>
           <Bloco titulo="LEITURA DA FOTO" cor={C.green}>
             <div style={{ fontFamily: F.b, fontSize: 12, color: C.text, marginBottom: 6 }}>
