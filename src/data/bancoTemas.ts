@@ -94,6 +94,23 @@ export const BANCO_TEMAS: Record<CategoriaTema, CategoriaBanco> = {
       { titulo: "Deload: treinar MENOS pra crescer MAIS", subtitulo: "A ciência da recuperação", potencial: 8, tipo: "educativo", formato_ideal: "carrossel" },
       { titulo: "Tempo de descanso ideal", subtitulo: "60s vs 120s vs 180s — dados reais", potencial: 8, tipo: "comparativo", formato_ideal: "carrossel" },
       { titulo: "Overtraining existe?", subtitulo: "Ou é desculpa pra não treinar?", potencial: 9, tipo: "mito_metodo", formato_ideal: "reels" },
+      // Costas / Pull
+      { titulo: "Puxada vs Remada", subtitulo: "O que cada uma constrói nas suas costas", potencial: 9, tipo: "comparativo", formato_ideal: "carrossel" },
+      { titulo: "Costas largas: amplitude completa", subtitulo: "Por que meia repetição rouba seu dorsal", potencial: 9, tipo: "educativo", formato_ideal: "reels" },
+      { titulo: "Pegada pronada, supinada ou neutra?", subtitulo: "A ciência por trás de cada pegada nas costas", potencial: 8, tipo: "comparativo", formato_ideal: "carrossel" },
+      // Pernas / Legs
+      { titulo: "Agachamento profundo estraga o joelho?", subtitulo: "O mito que te impede de ter pernas fortes", potencial: 10, tipo: "mito_metodo", formato_ideal: "carrossel" },
+      { titulo: "Posterior de coxa: o grupo mais negligenciado", subtitulo: "Mesa flexora não é suficiente — e a ciência explica", potencial: 8, tipo: "educativo", formato_ideal: "carrossel" },
+      { titulo: "Panturrilha não cresce?", subtitulo: "Frequência e amplitude que realmente funcionam", potencial: 8, tipo: "educativo", formato_ideal: "reels" },
+      // Peito / Push
+      { titulo: "Supino reto vs inclinado", subtitulo: "O que a eletromiografia mostra pro peito", potencial: 9, tipo: "comparativo", formato_ideal: "carrossel" },
+      { titulo: "Crucifixo antes ou depois do supino?", subtitulo: "Ordem de exercícios e fadiga no peito", potencial: 8, tipo: "educativo", formato_ideal: "reels" },
+      // Ombros
+      { titulo: "Desenvolvimento atrás da nuca", subtitulo: "Por que esse exercício de ombro virou vilão", potencial: 9, tipo: "mito_metodo", formato_ideal: "carrossel" },
+      { titulo: "Elevação lateral: carga ou controle?", subtitulo: "O erro que trava seu deltóide lateral", potencial: 8, tipo: "educativo", formato_ideal: "reels" },
+      // Braços
+      { titulo: "Bíceps: rosca direta não é o suficiente", subtitulo: "Cabeça longa, curta e braquial pela ciência", potencial: 8, tipo: "educativo", formato_ideal: "carrossel" },
+      { titulo: "Tríceps é 2/3 do braço", subtitulo: "Os exercícios que realmente enchem a manga", potencial: 9, tipo: "educativo", formato_ideal: "carrossel" },
     ],
   },
 
