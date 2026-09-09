@@ -76,6 +76,146 @@ function weekStartOf(date: Date): string {
   return d.toISOString().split("T")[0];
 }
 
+/** Refeição que o coach já registrou hoje (com kcal e macros salvos). */
+export type RefeicaoRegistrada = {
+  id: string;
+  slotKey: string;
+  nome: string;
+  horario: string;
+  alimentos: string[];
+  calorias?: number;
+  proteina?: number;
+  carbo?: number;
+  gordura?: number;
+};
+
+const nomeDoSlot = (key?: string | null) => {
+  const s = SLOTS_REFEICAO.find((x) => x.key === key);
+  return s ? `${s.ordem} — ${s.nome}` : "Refeição";
+};
+
+/** Lista as refeições registradas hoje no NutriPlan, da mais recente pra mais antiga. */
+export async function getRefeicoesRegistradasHoje(agora = new Date()): Promise<RefeicaoRegistrada[]> {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth?.user?.id;
+  if (!uid) return [];
+  const hoje = agora.toISOString().slice(0, 10);
+
+  const { data } = await supabase
+    .from("meal_logs")
+    .select("id, meal_type, food_names, total_kcal, total_protein, total_carbs, total_fat, created_at")
+    .eq("user_id", uid)
+    .eq("meal_date", hoje)
+    .order("created_at", { ascending: false });
+
+  return (data || []).map((l) => ({
+    id: String(l.id),
+    slotKey: String(l.meal_type || ""),
+    nome: nomeDoSlot(l.meal_type as string),
+    horario: new Date(l.created_at as string).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    alimentos: Array.isArray(l.food_names) ? (l.food_names as string[]).map(String).filter(Boolean) : [],
+    calorias: num(l.total_kcal) || undefined,
+    proteina: num(l.total_protein) || undefined,
+    carbo: num(l.total_carbs) || undefined,
+    gordura: num(l.total_fat) || undefined,
+  }));
+}
+
+/**
+ * Monta os dados do conteúdo a partir de uma refeição JÁ REGISTRADA — usa as
+ * kcal e os macros que o coach salvou, sem recalcular nem inventar nada.
+ */
+export async function getDadosDeRegistro(
+  registro: RefeicaoRegistrada,
+  agora = new Date(),
+): Promise<DadosRefeicao> {
+  const alimentos: AlimentoRefeicao[] = registro.alimentos.map((nome) => ({ nome }));
+  const ctx = await contextoDoDia(agora, registro.slotKey);
+
+  return {
+    slotKey: registro.slotKey,
+    nome: registro.nome,
+    horario: registro.horario,
+    tag: ctx.tag,
+    treinoHoje: ctx.treinoHoje,
+    calorias: registro.calorias ? Math.round(registro.calorias) : undefined,
+    macros: {
+      proteina: registro.proteina ? Math.round(registro.proteina) : undefined,
+      carbo: registro.carbo ? Math.round(registro.carbo) : undefined,
+      gordura: registro.gordura ? Math.round(registro.gordura) : undefined,
+    },
+    alimentos,
+    nutrisync: ctx.nutrisync,
+    ciencia: cienciaDaRefeicao(alimentos),
+  };
+}
+
+/** Treino de hoje + contexto do NutrySync — compartilhado entre plano e registro. */
+async function contextoDoDia(agora: Date, slotKey: string) {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth?.user?.id;
+  if (!uid) return { tag: undefined, treinoHoje: undefined, nutrisync: undefined } as const;
+
+  const { data: treinos } = await supabase
+    .from("workout_schedule")
+    .select("day_of_week, workout_type, workout_time, duration_minutes")
+    .eq("user_id", uid)
+    .eq("day_of_week", agora.getDay());
+  const treino = (treinos || [])[0];
+  const rel = treino ? classifyMealVsWorkout(slotKey, (treino.workout_time as string) || null) : null;
+
+  const hoje = agora.toISOString().slice(0, 10);
+  const trinta = new Date(agora.getTime() - 30 * 86400000).toISOString().slice(0, 10);
+  const { data: dia } = await supabase
+    .from("daily_nutrition_protocol")
+    .select("calorias_meta, treino_tipo")
+    .eq("user_id", uid)
+    .eq("data", hoje)
+    .maybeSingle();
+  const { data: historico } = await supabase
+    .from("daily_nutrition_protocol")
+    .select("calorias_meta")
+    .eq("user_id", uid)
+    .gte("data", trinta)
+    .not("calorias_meta", "is", null);
+  const base = (historico || [])
+    .map((h) => num(h.calorias_meta))
+    .filter((v) => v > 0)
+    .sort((a, b) => a - b)[0];
+
+  const { data: logs } = await supabase
+    .from("meal_logs")
+    .select("total_kcal")
+    .eq("user_id", uid)
+    .eq("meal_date", hoje);
+  const consumido = (logs || []).reduce((t, l) => t + num(l.total_kcal), 0);
+
+  const meta = dia?.calorias_meta ? num(dia.calorias_meta) : undefined;
+  const ajuste = meta && base && meta - base > 0 ? meta - base : undefined;
+
+  return {
+    tag: rel === "pre" ? "PRÉ-TREINO" : rel === "post" ? "PÓS-TREINO" : undefined,
+    treinoHoje: treino
+      ? {
+          tipo: (treino.workout_type as string) || undefined,
+          horario: ((treino.workout_time as string) || "").slice(0, 5) || undefined,
+          duracaoMin: (treino.duration_minutes as number) || undefined,
+        }
+      : undefined,
+    nutrisync:
+      meta || consumido
+        ? {
+            base: ajuste && meta ? meta - ajuste : base || undefined,
+            ajusteTreino: ajuste,
+            meta,
+            consumidoAteAgora: consumido ? Math.round(consumido) : undefined,
+            restante: meta && consumido ? Math.round(meta - consumido) : undefined,
+            treinoTipo: (dia?.treino_tipo as string) || (treino?.workout_type as string) || undefined,
+          }
+        : undefined,
+  } as const;
+}
+
 /**
  * Puxa a refeição real do plano correspondente ao horário informado.
  * Retorna null quando o coach não tem plano alimentar cadastrado.
