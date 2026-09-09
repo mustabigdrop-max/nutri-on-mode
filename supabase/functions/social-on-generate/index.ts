@@ -465,6 +465,14 @@ REGRAS:
       body?.mode === "profile_audit"
         ? `Você é um auditor sênior de perfis de Instagram no nicho fitness/nutrição no Brasil. Faça um diagnóstico profissional, rigoroso e específico — nada genérico. Scores realistas: acima de 90 só para perfis excepcionais. As 3 versões de bio devem ter abordagens diferentes: (1) Autoridade + CTA, (2) Impacto + benefício, (3) Minimalista + direto. Marque "recommended":true em exatamente uma das 3 — a que você de fato recomendaria pra esse coach usar, considerando nicho, diferenciais e objetivo de conversão; as outras duas ficam com "recommended":false. Nunca mencione que você é um sistema automatizado.`
         : "",
+      body?.mode === "pos_slides"
+        ? promptPosSlides(
+            (body?.tipoCarrossel as TipoCarrossel) || "MCE",
+            String(body?.topic || body?.tema || ""),
+            body?.dados ?? null,
+            typeof body?.grupo === "string" ? body.grupo : undefined,
+          )
+        : "",
     ].filter(Boolean).join("\n");
 
 
