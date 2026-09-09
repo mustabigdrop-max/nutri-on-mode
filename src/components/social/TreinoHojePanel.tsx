@@ -100,7 +100,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
     <div className="space-y-4">
       <div className="rounded-lg border border-white/10 p-4">
         <div className="text-[10px] uppercase tracking-widest" style={{ color: AMBER }}>
-          {treino.sincronizado ? "Sincronizado com a agenda de hoje" : "Sessão mais recente do protocolo"}
+          {treino.sincronizado ? "Sincronizado com a agenda de hoje" : "Treino de hoje"}
         </div>
         <div className="mt-1 text-lg font-bold">{treino.nomeTreino}</div>
         <div className="text-xs text-muted-foreground">
