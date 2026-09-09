@@ -10,6 +10,9 @@ import {
 import {
   renderResultadoProtocoloCarousel, RP_SLIDE_LABELS, RP_TPL, type ResultadoProtocoloContent,
 } from "@/lib/resultadoProtocoloTemplate";
+import {
+  renderResultadoStories, RP_STORY_LABELS, type RPStoryFrame,
+} from "@/lib/resultadoStoriesTemplate";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", border: "#ffffff14",
