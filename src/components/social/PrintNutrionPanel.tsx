@@ -30,9 +30,8 @@ const copiar = (txt: string, label: string) => {
 };
 
 /**
- * "Print do app": o coach sobe UM screenshot de uma tela do nutriON e sai com
- * o carrossel de mockup premium, os 3 stories e o roteiro de Reels — tudo
- * construído a partir do que realmente aparece no print.
+ * A captura serve como fonte: o conteúdo visível é reconstruído em peças
+ * editoriais da marca, sem moldura de celular ou aparência de screenshot.
  */
 export default function PrintNutrionPanel({ file, handle }: { file: File; handle?: string }) {
   const at = handle || "diogo.mell0";
@@ -86,10 +85,10 @@ export default function PrintNutrionPanel({ file, handle }: { file: File; handle
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-xs font-semibold tracking-wide" style={{ color: AMBER }}>
-            PRINT DO nutriON
+            TELA DO nutriON
           </p>
           <p className="text-[11px] text-muted-foreground">
-            Um print de tela vira carrossel com mockup, stories e roteiro de Reels.
+            A captura vira uma arte nova na identidade nutriON, sem cara de print.
           </p>
         </div>
         <Button size="sm" className="gap-2" disabled={loading} onClick={gerar}>

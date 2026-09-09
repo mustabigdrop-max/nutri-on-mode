@@ -358,7 +358,7 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
 
       {tipoCarrossel === "print" && (
         <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 12 }}>
-          Suba um print de uma tela do app. Vira carrossel com mockup, stories e roteiro de Reels.
+          Use uma captura como fonte. O conteúdo vira uma arte nova na identidade nutriON, sem cara de print.
         </div>
       )}
 
