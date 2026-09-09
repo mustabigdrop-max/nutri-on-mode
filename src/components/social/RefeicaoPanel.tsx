@@ -352,6 +352,16 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
       </Card>
 
       {!!(carrossel.length || stories.length) && (
+        <SaveShareButtons
+          items={[
+            ...carrossel.map((url, i) => ({ url, filename: `refeicao-slide-${i + 1}.png` })),
+            ...stories.map((url, i) => ({ url, filename: `refeicao-story-${i + 1}.png` })),
+          ]}
+          labelSalvar={`Salvar ${carrossel.length + stories.length} no álbum`}
+        />
+      )}
+
+      {!!(carrossel.length || stories.length) && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {[...carrossel, ...stories].map((src, i) => (
             <div key={i} className="space-y-1">
