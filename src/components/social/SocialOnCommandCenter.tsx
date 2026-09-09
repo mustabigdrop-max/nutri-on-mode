@@ -152,6 +152,16 @@ function DailyCoach({
     }
   };
 
+  /** Legenda, comentário e hashtags específicos do universo daquele carrossel. */
+  const fetchPosSlides = async (tipo: TipoCarrossel, topic: string): Promise<PosSlidesResult | undefined> => {
+    try {
+      const r = (await callSocialAI({ mode: "pos_slides", tipoCarrossel: tipo, topic, ...identity })) as PosSlidesResult;
+      return { ...r, legenda: cleanCaption(r?.legenda) };
+    } catch {
+      return undefined;
+    }
+  };
+
   /** Gera o carrossel de cards; se `coverFile` vier, a capa usa sua foto real de fundo em vez do gradiente puro. */
   const generateReady = async (i: number, action: BriefAction, coverFile?: File) => {
     const kind = detectarTipoConteudo({ title: action.title, detail: action.detail });
