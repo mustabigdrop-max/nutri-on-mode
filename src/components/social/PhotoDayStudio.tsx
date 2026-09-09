@@ -391,18 +391,34 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
                         style={{ width: "100%", maxWidth: 260, borderRadius: 10, display: "block", margin: "0 auto 10px" }}
                       />
                     )}
-                    <button
-                      onClick={() =>
-                        downloadMany(
-                          carrosselImages.map((url, i) => ({
-                            url, filename: `carrossel-mce-${i + 1}-${(MCE_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
-                          })),
-                        )
-                      }
-                      style={acao(C.green)}
-                    >
-                      BAIXAR OS {carrosselImages.length} SLIDES
-                    </button>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button
+                        onClick={() =>
+                          saveManyToDevice(
+                            carrosselImages.map((url, i) => ({
+                              url, filename: `carrossel-mce-${i + 1}-${(MCE_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+                            })),
+                          )
+                        }
+                        style={acao(C.green)}
+                      >
+                        SALVAR OS {carrosselImages.length} NO ÁLBUM
+                      </button>
+                      {canShareFiles() && (
+                        <button
+                          onClick={() =>
+                            shareAll(
+                              carrosselImages.map((url, i) => ({
+                                url, filename: `carrossel-mce-${i + 1}-${(MCE_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+                              })),
+                            )
+                          }
+                          style={acao(C.purple)}
+                        >
+                          COMPARTILHAR TODAS
+                        </button>
+                      )}
+                    </div>
                   </>
                 )}
               </>
