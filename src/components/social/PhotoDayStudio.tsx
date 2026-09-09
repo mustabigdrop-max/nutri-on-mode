@@ -9,6 +9,7 @@ import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTem
 import { canShareFiles, saveManyToDevice, shareAll } from "@/lib/socialImageKit";
 import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
 import RefeicaoPanel from "@/components/social/RefeicaoPanel";
+import PrintNutrionPanel from "@/components/social/PrintNutrionPanel";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", s3: "#181824", border: "#ffffff14",
@@ -249,7 +250,7 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
           const f = e.target.files?.[0];
           e.target.value = "";
           if (!f) return;
-          if (tipoCarrossel === "resultado") {
+          if (tipoCarrossel === "resultado" || tipoCarrossel === "print") {
             setFile(f);
             setRes(null);
             setStories([]);
@@ -261,7 +262,11 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
 
       <div style={{ marginBottom: 12 }}>
         <button onClick={() => galeriaRef.current?.click()} disabled={loading} style={{ ...acao(C.gold), width: "100%", opacity: loading ? 0.6 : 1 }}>
-          {loading ? "LENDO SUA FOTO..." : file ? "🖼️ TROCAR FOTO DO ÁLBUM" : "🖼️ ESCOLHER FOTO DO ÁLBUM"}
+          {loading
+            ? "LENDO SUA FOTO..."
+            : tipoCarrossel === "print"
+              ? file ? "🖼️ TROCAR PRINT DO ÁLBUM" : "🖼️ ESCOLHER PRINT DO ÁLBUM"
+              : file ? "🖼️ TROCAR FOTO DO ÁLBUM" : "🖼️ ESCOLHER FOTO DO ÁLBUM"}
         </button>
       </div>
 
@@ -272,19 +277,32 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         </div>
       )}
 
+      {tipoCarrossel === "print" && (
+        <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 12 }}>
+          Suba um print de uma tela do app. Vira carrossel com mockup, stories e roteiro de Reels.
+        </div>
+      )}
+
       {photoUrl && !stories.length && (
         <img src={photoUrl} alt="Foto enviada pelo coach" style={{ width: "100%", maxHeight: 240, objectFit: "cover", borderRadius: 10, marginBottom: 12 }} />
       )}
 
       {tipoCarrossel === "resultado" && file && <ResultadoProtocoloPanel file={file} handle={at} />}
 
-      {tipoCarrossel !== "resultado" && ehRefeicao && file && (
+      {tipoCarrossel === "print" && file && (
+        <div style={{ marginBottom: 12 }}>
+          <PrintNutrionPanel file={file} handle={at} />
+        </div>
+      )}
+
+      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && ehRefeicao && file && (
         <div style={{ marginBottom: 12 }}>
           <RefeicaoPanel file={file} handle={at} />
         </div>
       )}
 
-      {tipoCarrossel !== "resultado" && res && (
+      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && res && (
+
 
         <>
           <Bloco titulo="LEITURA DA FOTO" cor={C.green}>
