@@ -236,8 +236,15 @@ export default function ResultadoProtocoloPanel({
         </Bloco>
       )}
 
-      {formato === "carrossel" && images.length > 0 && (
-        <Bloco titulo={`CARROSSEL PRONTO (${images.length} SLIDES)`} cor={C.gold}>
+      {images.length > 0 && (
+        <Bloco
+          titulo={
+            formato === "stories"
+              ? `STORIES PRONTOS (${images.length} FRAMES)`
+              : `CARROSSEL PRONTO (${images.length} SLIDES)`
+          }
+          cor={C.gold}
+        >
           <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
             {images.map((_, i) => (
               <button
@@ -245,14 +252,14 @@ export default function ResultadoProtocoloPanel({
                 onClick={() => setActive(i)}
                 style={{ ...acao(i === active ? C.gold : C.muted), fontSize: 9, padding: "5px 8px" }}
               >
-                {i + 1} · {RP_SLIDE_LABELS[i]}
+                {i + 1} · {(formato === "stories" ? RP_STORY_LABELS : RP_SLIDE_LABELS)[i]}
               </button>
             ))}
           </div>
           {images[active] && (
             <img
               src={images[active]}
-              alt={`Slide ${active + 1} — ${RP_SLIDE_LABELS[active]}`}
+              alt={`Frame ${active + 1}`}
               style={{ width: "100%", maxWidth: 280, borderRadius: 10, display: "block", margin: "0 auto 10px" }}
             />
           )}
@@ -261,24 +268,63 @@ export default function ResultadoProtocoloPanel({
               onClick={() =>
                 downloadMany(
                   images.map((url, i) => ({
-                    url, filename: `resultado-protocolo-${i + 1}-${(RP_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+                    url,
+                    filename: `${formato === "stories" ? "story" : "resultado-protocolo"}-${i + 1}-${(
+                      (formato === "stories" ? RP_STORY_LABELS : RP_SLIDE_LABELS)[i] || ""
+                    ).toLowerCase().replace(/\s+/g, "-")}.png`,
                   })),
                 )
               }
               style={acao(C.green)}
             >
-              BAIXAR OS {images.length} SLIDES
+              BAIXAR OS {images.length} {formato === "stories" ? "FRAMES" : "SLIDES"}
             </button>
           </div>
         </Bloco>
       )}
 
-      {formato !== "carrossel" && roteiro && (
-        <Bloco titulo={formato === "reels" ? "ROTEIRO DO REELS" : "TEXTO DOS STORIES"} cor={C.gold}>
-          <div style={{ fontFamily: F.b, fontSize: 12, color: C.text, whiteSpace: "pre-wrap", marginBottom: 10 }}>
-            {roteiro.legenda}
-          </div>
-          <button onClick={() => copiar(roteiro.legenda, "Texto")} style={acao(C.gold)}>COPIAR TEXTO</button>
+      {formato === "reels" && reels && (
+        <Bloco titulo={`ROTEIRO DO REELS · ${reels.duracao_total || "30s"}`} cor={C.gold}>
+          {reels.hook && (
+            <div style={{ fontFamily: F.t, fontSize: 16, fontWeight: 700, color: C.white, marginBottom: 12 }}>
+              🎬 {reels.hook}
+            </div>
+          )}
+          {(reels.cortes || []).map((c, i) => (
+            <div
+              key={i}
+              style={{ borderLeft: `2px solid ${C.gold}`, paddingLeft: 12, marginBottom: 12 }}
+            >
+              <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, marginBottom: 4 }}>{c.segundo}</div>
+              <div style={{ fontFamily: F.t, fontSize: 14, fontWeight: 700, color: C.white, whiteSpace: "pre-wrap" }}>
+                {c.texto_tela}
+              </div>
+              {c.acao && <div style={{ fontFamily: F.b, fontSize: 11, color: C.muted, marginTop: 4 }}>🎥 {c.acao}</div>}
+              {c.fala && <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginTop: 4 }}>🎤 “{c.fala}”</div>}
+            </div>
+          ))}
+          {reels.musica && (
+            <div style={{ fontFamily: F.b, fontSize: 11, color: C.green, marginBottom: 10 }}>🎵 {reels.musica}</div>
+          )}
+          <button
+            onClick={() =>
+              copiar(
+                [
+                  reels.hook ? `HOOK: ${reels.hook}` : "",
+                  ...(reels.cortes || []).map(
+                    (c) => `${c.segundo}\nTELA: ${c.texto_tela}\nAÇÃO: ${c.acao || "-"}\nFALA: ${c.fala || "-"}`,
+                  ),
+                  reels.musica ? `MÚSICA: ${reels.musica}` : "",
+                ]
+                  .filter(Boolean)
+                  .join("\n\n"),
+                "Roteiro",
+              )
+            }
+            style={acao(C.gold)}
+          >
+            COPIAR ROTEIRO
+          </button>
         </Bloco>
       )}
 
