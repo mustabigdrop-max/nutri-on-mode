@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
+import {
+  aplicarConfigPosSlides,
+  promptPosSlides,
+  type TipoCarrossel,
+} from "../_shared/carouselConfigs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
