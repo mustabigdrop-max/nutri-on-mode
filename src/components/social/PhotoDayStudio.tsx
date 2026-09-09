@@ -174,7 +174,6 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
   };
 
   const analisar = async (f: File) => {
-    setFile(f);
     setRes(null);
     setStories([]);
     setCarrosselImages([]);
