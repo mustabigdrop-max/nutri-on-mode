@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Clock, Download, Loader2, Sparkles } from "lucide-react";
+import { Clock, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadMany } from "@/lib/socialImageKit";
+import SaveShareButtons from "@/components/social/SaveShareButtons";
 import { melhorHorario } from "@/lib/socialViral";
 import { renderMceCarousel, MCE_CTA_SLIDE, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
