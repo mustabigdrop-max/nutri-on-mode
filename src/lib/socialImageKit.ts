@@ -190,6 +190,42 @@ export const downloadMany = async (
   return ok;
 };
 
+/** O aparelho consegue abrir a folha de compartilhamento com arquivos? */
+export const canShareFiles = () => {
+  if (typeof navigator === "undefined" || !navigator.share || !navigator.canShare) return false;
+  try {
+    const probe = new File([new Blob(["x"], { type: "image/png" })], "probe.png", { type: "image/png" });
+    return navigator.canShare({ files: [probe] });
+  } catch {
+    return false;
+  }
+};
+
+/** Salva os arquivos direto (galeria no celular / pasta de downloads no desktop). */
+export const saveManyToDevice = async (
+  items: { url: string; filename: string }[],
+  gapMs = 450,
+): Promise<number> => {
+  let ok = 0;
+  for (let i = 0; i < items.length; i++) {
+    const { url, filename } = items[i];
+    if (!url) continue;
+    if (await downloadFromUrl(url, filename)) ok++;
+    if (i < items.length - 1) await new Promise((r) => setTimeout(r, gapMs));
+  }
+  return ok;
+};
+
+/** Abre a folha de compartilhamento com todas as imagens em sequência; se não der, salva. */
+export const shareAll = async (
+  items: { url: string; filename: string }[],
+  text?: string,
+): Promise<{ shared: boolean; count: number }> => {
+  const shared = await shareImages(items, text);
+  if (shared !== null) return { shared: true, count: shared };
+  return { shared: false, count: await saveManyToDevice(items) };
+};
+
 /** Salva 1 imagem (share no celular, download no desktop). */
 export const saveImage = async (url: string, filename: string) => {
   const n = await downloadMany([{ url, filename }]);
