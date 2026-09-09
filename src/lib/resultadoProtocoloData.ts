@@ -54,7 +54,14 @@ export type DadosTreino = {
   /** true quando achou um dia do protocolo batendo com o foco pedido. */
   matchExato: boolean;
   apex: { nome: string; principios: string[] };
-  nutricao?: { metaDiaKcal?: number; treinoTipo?: string };
+  nutricao?: {
+    metaDiaKcal?: number;
+    treinoTipo?: string;
+    proteinaG?: number;
+    carboG?: number;
+    /** Diferença real entre a meta de hoje e o menor dia (descanso) dos últimos 30 dias. */
+    ajusteNutrySyncKcal?: number;
+  };
 };
 
 /** Escolhe o dia do protocolo mais alinhado ao foco pedido (score = tags em comum). */
