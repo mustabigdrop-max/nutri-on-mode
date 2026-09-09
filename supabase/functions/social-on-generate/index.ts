@@ -517,6 +517,16 @@ REGRAS:
 
     enforceBioLimit(parsed);
 
+    // O config do tipo é a fonte final: hashtags, CTA e disclaimer nunca vêm
+    // da criatividade do modelo, e frases de outro universo são removidas.
+    if (mode === "pos_slides") {
+      parsed = aplicarConfigPosSlides(
+        (body?.tipoCarrossel as TipoCarrossel) || "MCE",
+        (parsed ?? {}) as Record<string, unknown>,
+        typeof body?.grupo === "string" ? body.grupo : undefined,
+      );
+    }
+
     return new Response(JSON.stringify({ mode, result: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
