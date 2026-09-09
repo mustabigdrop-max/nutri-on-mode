@@ -94,6 +94,23 @@ export const BANCO_TEMAS: Record<CategoriaTema, CategoriaBanco> = {
       { titulo: "Deload: treinar MENOS pra crescer MAIS", subtitulo: "A ciência da recuperação", potencial: 8, tipo: "educativo", formato_ideal: "carrossel" },
       { titulo: "Tempo de descanso ideal", subtitulo: "60s vs 120s vs 180s — dados reais", potencial: 8, tipo: "comparativo", formato_ideal: "carrossel" },
       { titulo: "Overtraining existe?", subtitulo: "Ou é desculpa pra não treinar?", potencial: 9, tipo: "mito_metodo", formato_ideal: "reels" },
+      // Costas / Pull
+      { titulo: "Puxada vs Remada", subtitulo: "O que cada uma constrói nas suas costas", potencial: 9, tipo: "comparativo", formato_ideal: "carrossel" },
+      { titulo: "Costas largas: amplitude completa", subtitulo: "Por que meia repetição rouba seu dorsal", potencial: 9, tipo: "educativo", formato_ideal: "reels" },
+      { titulo: "Pegada pronada, supinada ou neutra?", subtitulo: "A ciência por trás de cada pegada nas costas", potencial: 8, tipo: "comparativo", formato_ideal: "carrossel" },
+      // Pernas / Legs
+      { titulo: "Agachamento profundo estraga o joelho?", subtitulo: "O mito que te impede de ter pernas fortes", potencial: 10, tipo: "mito_metodo", formato_ideal: "carrossel" },
+      { titulo: "Posterior de coxa: o grupo mais negligenciado", subtitulo: "Mesa flexora não é suficiente — e a ciência explica", potencial: 8, tipo: "educativo", formato_ideal: "carrossel" },
+      { titulo: "Panturrilha não cresce?", subtitulo: "Frequência e amplitude que realmente funcionam", potencial: 8, tipo: "educativo", formato_ideal: "reels" },
+      // Peito / Push
+      { titulo: "Supino reto vs inclinado", subtitulo: "O que a eletromiografia mostra pro peito", potencial: 9, tipo: "comparativo", formato_ideal: "carrossel" },
+      { titulo: "Crucifixo antes ou depois do supino?", subtitulo: "Ordem de exercícios e fadiga no peito", potencial: 8, tipo: "educativo", formato_ideal: "reels" },
+      // Ombros
+      { titulo: "Desenvolvimento atrás da nuca", subtitulo: "Por que esse exercício de ombro virou vilão", potencial: 9, tipo: "mito_metodo", formato_ideal: "carrossel" },
+      { titulo: "Elevação lateral: carga ou controle?", subtitulo: "O erro que trava seu deltóide lateral", potencial: 8, tipo: "educativo", formato_ideal: "reels" },
+      // Braços
+      { titulo: "Bíceps: rosca direta não é o suficiente", subtitulo: "Cabeça longa, curta e braquial pela ciência", potencial: 8, tipo: "educativo", formato_ideal: "carrossel" },
+      { titulo: "Tríceps é 2/3 do braço", subtitulo: "Os exercícios que realmente enchem a manga", potencial: 9, tipo: "educativo", formato_ideal: "carrossel" },
     ],
   },
 
@@ -195,12 +212,98 @@ export const filtrarTemasDisponiveis = <T extends { titulo: string }>(temas: T[]
     return dias === null || dias > DIAS_BLOQUEIO;
   });
 
-/** Sugestões do dia: rotação da semana, potencial alto primeiro, sem repetir em 30 dias. */
-export function sugestoesDoDia(postados: TemaPostado[], data = new Date(), limite = 4): TemaComCategoria[] {
+/** Foco do treino do dia, usado pra contextualizar as sugestões de conteúdo. */
+export type FocoTreino = "costas" | "pernas" | "peito" | "ombros" | "bracos" | "descanso";
+
+export const FOCO_LABEL: Record<FocoTreino, string> = {
+  costas: "Costas",
+  pernas: "Pernas",
+  peito: "Peito",
+  ombros: "Ombros",
+  bracos: "Braços",
+  descanso: "Off / Descanso",
+};
+
+const normTema = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+/** Palavras que indicam cada foco no nome do treino/grupos/exercícios. */
+const SINAIS_FOCO: Record<Exclude<FocoTreino, "descanso">, string[]> = {
+  costas: ["pull", "costa", "dorsal", "remada", "puxada", "barra fixa", "pulley", "lat", "trapézio", "trapezio", "lombar"],
+  pernas: ["leg", "perna", "quadric", "posterior", "agach", "leg press", "cadeira", "mesa flexora", "panturrilha", "gluteo", "stiff"],
+  peito: ["push", "peito", "supino", "crucifixo", "peck", "chest", "cross"],
+  ombros: ["ombro", "deltoide", "desenvolvimento", "elevacao lateral", "shoulder"],
+  bracos: ["bicep", "tricep", "braco", "rosca", "french", "testa", "corda"],
+};
+
+const SINAIS_DESCANSO = ["off", "descanso", "rest", "recuperacao", "recuperação", "livre"];
+
+/** Detecta o foco a partir do treino sincronizado do TrainingON. */
+export function focoDoTreino(
+  treino: { nomeTreino: string; grupos: string[]; agenda?: { tipo?: string } } | null,
+): FocoTreino | null {
+  if (!treino) return null;
+  const texto = normTema([treino.agenda?.tipo, treino.nomeTreino, ...(treino.grupos || [])].filter(Boolean).join(" "));
+  if (SINAIS_DESCANSO.some((s) => texto.includes(normTema(s)))) return "descanso";
+  // Conta sinais por foco; ganha o foco com mais evidências.
+  let melhor: Exclude<FocoTreino, "descanso"> | null = null;
+  let melhorScore = 0;
+  (Object.keys(SINAIS_FOCO) as Exclude<FocoTreino, "descanso">[]).forEach((foco) => {
+    const score = SINAIS_FOCO[foco].filter((s) => texto.includes(normTema(s))).length;
+    if (score > melhorScore) {
+      melhorScore = score;
+      melhor = foco;
+    }
+  });
+  return melhor;
+}
+
+/** Palavras que ligam um tema do banco a um foco muscular. */
+const TEMA_DO_FOCO: Record<Exclude<FocoTreino, "descanso">, string[]> = {
+  costas: ["costa", "dorsal", "remada", "puxada", "pegada"],
+  pernas: ["perna", "joelho", "agach", "coxa", "panturrilha", "posterior"],
+  peito: ["peito", "supino", "crucifixo", "peck"],
+  ombros: ["ombro", "deltoide", "desenvolvimento", "elevacao lateral"],
+  bracos: ["bicep", "tricep", "braco", "rosca", "manga"],
+};
+
+/** Tema fala do foco muscular do dia? */
+export const temaDoFoco = (t: TemaComCategoria, foco: FocoTreino): boolean => {
+  if (foco === "descanso") return t.categoria === "LIFESTYLE" || t.categoria === "CIENCIA_GERAL";
+  const texto = normTema(`${t.titulo} ${t.subtitulo}`);
+  return t.categoria === "TREINO" && TEMA_DO_FOCO[foco].some((s) => texto.includes(s));
+};
+
+/**
+ * Sugestões do dia: o treino do dia manda no contexto.
+ * Pull → temas de costas. Legs → pernas. Off → lifestyle/ciência.
+ * Depois completa com a rotação semanal, potencial alto primeiro, sem repetir em 30 dias.
+ */
+export function sugestoesDoDia(
+  postados: TemaPostado[],
+  data = new Date(),
+  limite = 4,
+  foco?: FocoTreino | null,
+): TemaComCategoria[] {
   const rotacao = ROTACAO_SEMANAL[data.getDay()];
-  const doDia = todosOsTemas().filter((t) => rotacao.categorias.includes(t.categoria));
-  const disponiveis = filtrarTemasDisponiveis(doDia, postados);
-  const base = disponiveis.length ? disponiveis : filtrarTemasDisponiveis(todosOsTemas(), postados);
+  const todos = todosOsTemas();
+  const disponiveis = filtrarTemasDisponiveis(todos, postados);
+
+  if (foco) {
+    const doFoco = disponiveis.filter((t) => temaDoFoco(t, foco));
+    const doDia = disponiveis.filter(
+      (t) => !temaDoFoco(t, foco) && rotacao.categorias.includes(t.categoria),
+    );
+    const ordenado = [
+      ...[...doFoco].sort((a, b) => b.potencial - a.potencial),
+      ...[...doDia].sort((a, b) => b.potencial - a.potencial),
+    ];
+    const base = ordenado.length ? ordenado : disponiveis;
+    return base.slice(0, limite);
+  }
+
+  const doDia = disponiveis.filter((t) => rotacao.categorias.includes(t.categoria));
+  const base = doDia.length ? doDia : disponiveis;
   return [...base].sort((a, b) => b.potencial - a.potencial).slice(0, limite);
 }
 
