@@ -69,7 +69,7 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "studio_subtitles" | "studio_versions" | "studio_vision" | "video_content" | "video_overlay" | "video_breakdown"
   | "breakdown_caption" | "mce_carousel" | "nexus_carousel" | "nexus_reels" | "nexus_stories" | "nexus_como_obter" | "photo_story" | "photo_all" | "mito_metodo" | "viral_kit" | "interaction_pack" | "story_frames" | "dm_scripts"
   | "daily_brief" | "content_score" | "daily_signal" | "resultado_protocolo" | "resultado_stories" | "resultado_reels"
-  | "refeicao_carrossel" | "refeicao_stories" | "refeicao_reels" | "pos_slides";
+  | "refeicao_carrossel" | "refeicao_stories" | "refeicao_reels" | "pos_slides" | "print_nutrion";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
