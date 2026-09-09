@@ -1009,16 +1009,33 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
               <span style={{ flex: 1, fontFamily: F.b, fontSize: 11, color: C.text, lineHeight: 1.5 }}>{a.text}</span>
               {(() => {
                 const t = (a.text || "").toLowerCase();
-                const act = t.includes("métric") || t.includes("metric") || t.includes("alcance") || t.includes("engajamento")
-                  ? { label: "Ver métricas", tool: "intelligence" }
-                  : t.includes("story") || t.includes("venda") || t.includes("oferta")
-                  ? { label: "Gerar Story CTA", tool: "calendario" }
-                  : { label: "Criar post", tool: "studio" };
+                const act =
+                  t.includes("carrossel mce") || t.includes("mce")
+                    ? { label: "Gerar carrossel MCE", tool: "carrossel_mce" }
+                    : t.includes("tema") || t.includes("vault") || t.includes("peptí") || t.includes("microbiota") || t.includes("esteroid")
+                    ? { label: "Gerar tema do dia", tool: "banco_temas" }
+                    : t.includes("treino") || t.includes("pull") || t.includes("push") || t.includes("legs") || t.includes("vídeo") || t.includes("video")
+                    ? { label: "Gerar do treino", tool: "video_conteudo" }
+                    : t.includes("viral") || t.includes("gancho") || t.includes("hook")
+                    ? { label: "Gerar formato viral", tool: "viral" }
+                    : t.includes("story") || t.includes("stories") || t.includes("venda") || t.includes("oferta") || t.includes("cta")
+                    ? { label: "Gerar Story CTA", tool: "pacote_dia" }
+                    : t.includes("reels") || t.includes("reel")
+                    ? { label: "Gerar Reels", tool: "pacote_dia" }
+                    : t.includes("carrossel")
+                    ? { label: "Gerar carrossel", tool: "pacote_dia" }
+                    : t.includes("dm") || t.includes("objeç") || t.includes("lead")
+                    ? { label: "Gerar script de DM", tool: "dm" }
+                    : t.includes("métric") || t.includes("metric") || t.includes("alcance") || t.includes("engajamento") || t.includes("desempenho")
+                    ? { label: "Ver métricas", tool: "metricas" }
+                    : t.includes("post") || t.includes("legenda")
+                    ? { label: "Gerar post", tool: "editor" }
+                    : { label: "Gerar agora", tool: "pacote_dia" };
                 return (
                   <button type="button" onClick={() => onOpenTool?.(act.tool)} style={{
-                    padding: "3px 8px", background: "transparent", border: `1px solid ${C.cyan}40`, borderRadius: 5,
-                    cursor: "pointer", fontFamily: F.m, fontSize: 9, color: C.cyan, flexShrink: 0,
-                  }}>{act.label}</button>
+                    padding: "4px 10px", background: `${C.cyan}12`, border: `1px solid ${C.cyan}50`, borderRadius: 5,
+                    cursor: "pointer", fontFamily: F.m, fontSize: 9, color: C.cyan, flexShrink: 0, whiteSpace: "nowrap",
+                  }}>▶ {act.label}</button>
                 );
               })()}
               <span style={{ width: 6, height: 6, borderRadius: 3, background: alertColors[a.color_hint || ""] || C.cyan, marginTop: 5, flexShrink: 0 }} />
