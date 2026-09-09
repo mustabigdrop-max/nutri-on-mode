@@ -182,6 +182,16 @@ export default function ResultadoProtocoloPanel({
 
   const fullHashtags = useMemo(() => hashtagsTxt, [hashtagsTxt]);
 
+  const arquivos = () =>
+    images.map((url, i) => ({
+      url,
+      filename: `${formato === "stories" ? "story" : "resultado-protocolo"}-${i + 1}-${(
+        (formato === "stories" ? RP_STORY_LABELS : RP_SLIDE_LABELS)[i] || ""
+      )
+        .toLowerCase()
+        .replace(/\s+/g, "-")}.png`,
+    }));
+
   return (
     <div>
       <Bloco titulo="🏆 RESULTADO + PROTOCOLO" cor={C.gold}>
