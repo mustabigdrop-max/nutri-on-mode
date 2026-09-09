@@ -275,26 +275,24 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         ref={galeriaRef}
         type="file"
         accept="image/*"
+        multiple
         style={{ display: "none" }}
         onChange={(e) => {
-          const f = e.target.files?.[0];
+          const escolhidas = Array.from(e.target.files || []);
           e.target.value = "";
-          if (!f) return;
-          if (tipoCarrossel === "resultado" || tipoCarrossel === "print") {
-            setFile(f);
-            setRes(null);
-            setStories([]);
-            return;
-          }
+          if (!escolhidas.length) return;
+          const f = escolhidas[0];
+          setFiles(escolhidas);
+          setFotoAtiva(0);
+          setRes(null);
+          setStories([]);
+          setCarrosselImages([]);
+          if (tipoCarrossel === "resultado" || tipoCarrossel === "print") return;
           // Sem tipo escolhido: se a imagem for um print de tela, entra
           // automaticamente no modo PRINT DO APP em vez de analisar como foto.
           void (async () => {
             if (await parecePrintDeTela(f)) {
               setTipoCarrossel("print");
-              setFile(f);
-              setRes(null);
-              setStories([]);
-              setCarrosselImages([]);
               toast.success("Detectei um print do app — modo PRINT DO APP ativado.");
               return;
             }
@@ -308,10 +306,46 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
           {loading
             ? "LENDO SUA FOTO..."
             : tipoCarrossel === "print"
-              ? file ? "🖼️ TROCAR PRINT DO ÁLBUM" : "🖼️ ESCOLHER PRINT DO ÁLBUM"
-              : file ? "🖼️ TROCAR FOTO DO ÁLBUM" : "🖼️ ESCOLHER FOTO DO ÁLBUM"}
+              ? files.length ? "🖼️ TROCAR PRINT(S) DO ÁLBUM" : "🖼️ ESCOLHER PRINT(S) DO ÁLBUM"
+              : files.length ? "🖼️ TROCAR FOTO(S) DO ÁLBUM" : "🖼️ ESCOLHER FOTO(S) DO ÁLBUM"}
         </button>
+        <div style={{ fontFamily: F.b, fontSize: 10, color: C.muted, marginTop: 6 }}>
+          Pode escolher uma ou várias imagens de uma vez.
+        </div>
       </div>
+
+      {files.length > 1 && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.muted, marginBottom: 6 }}>
+            {files.length} IMAGENS — TOQUE PARA USAR
+          </div>
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
+            {files.map((f, i) => (
+              <button
+                key={`${f.name}-${i}`}
+                onClick={() => {
+                  setFotoAtiva(i);
+                  setRes(null);
+                  setStories([]);
+                  setCarrosselImages([]);
+                  if (tipoCarrossel !== "resultado" && tipoCarrossel !== "print") void analisar(f);
+                }}
+                style={{
+                  padding: 0, border: `2px solid ${i === fotoAtiva ? C.gold : "#ffffff22"}`,
+                  borderRadius: 8, background: "transparent", cursor: "pointer", flex: "0 0 auto",
+                }}
+              >
+                <img
+                  src={URL.createObjectURL(f)}
+                  alt={`Imagem ${i + 1} escolhida`}
+                  style={{ width: 56, height: 72, objectFit: "cover", borderRadius: 6, display: "block" }}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
 
 
       {tipoCarrossel === "resultado" && (
