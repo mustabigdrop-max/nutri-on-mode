@@ -18,7 +18,8 @@ import {
   detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
 } from "@/lib/socialContentTypes";
 import PhotoStoryStudio from "@/components/social/PhotoStoryStudio";
-import { sugestoesDoDia, ROTACAO_SEMANAL, FORMATO_LABEL } from "@/data/bancoTemas";
+import { sugestoesDoDia, ROTACAO_SEMANAL, FORMATO_LABEL, focoDoTreino, FOCO_LABEL } from "@/data/bancoTemas";
+import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 import { useTemasPostados } from "@/hooks/useTemasPostados";
 import PhotoDayStudio from "@/components/social/PhotoDayStudio";
 import { HookChooser, ScreenTextTimeline, ViralExtras } from "@/components/social/ViralKitPanel";
