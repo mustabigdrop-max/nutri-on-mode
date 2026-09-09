@@ -124,6 +124,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
               <li>Comentário fixo com o link do Diagnóstico: <strong>até 5 min</strong> depois de publicar</li>
             </ul>
           </div>
+          <PosSlidesPanel tipo="MCE" tema={tema} handle={handle} />
           <p className="text-center text-[11px] text-muted-foreground">
             Slide 7 fixo: {MCE_CTA_SLIDE.titulo} — {MCE_CTA_SLIDE.caixa}.
           </p>
