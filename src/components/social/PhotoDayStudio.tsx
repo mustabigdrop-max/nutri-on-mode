@@ -6,7 +6,7 @@ import { compressImageFile } from "@/lib/socialMediaFrames";
 import { cleanCaption } from "@/lib/captionText";
 import { ensureFonts, loadImage, renderPhotoStory } from "@/lib/photoStoryTemplates";
 import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
-import { downloadMany } from "@/lib/socialImageKit";
+import { canShareFiles, saveManyToDevice, shareAll } from "@/lib/socialImageKit";
 import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
 import RefeicaoPanel from "@/components/social/RefeicaoPanel";
 
@@ -317,8 +317,21 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
               )}
               <div style={{ fontFamily: F.b, fontSize: 11, color: C.muted, marginBottom: 10 }}>{sugestoes[ativo]?.motivo}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button onClick={() => baixar(stories[ativo], `story-${ativo + 1}.png`)} style={acao(C.gold)}>BAIXAR ESTE STORY</button>
-                <button onClick={() => stories.forEach((s, i) => baixar(s, `story-${i + 1}.png`))} style={acao(C.green)}>BAIXAR OS 3</button>
+                <button onClick={() => baixar(stories[ativo], `story-${ativo + 1}.png`)} style={acao(C.gold)}>SALVAR ESTE STORY</button>
+                <button
+                  onClick={() => saveManyToDevice(stories.map((url, i) => ({ url, filename: `story-${i + 1}.png` })))}
+                  style={acao(C.green)}
+                >
+                  SALVAR OS 3 NO ÁLBUM
+                </button>
+                {canShareFiles() && (
+                  <button
+                    onClick={() => shareAll(stories.map((url, i) => ({ url, filename: `story-${i + 1}.png` })))}
+                    style={acao(C.purple)}
+                  >
+                    COMPARTILHAR OS 3
+                  </button>
+                )}
               </div>
             </Bloco>
           )}
@@ -378,18 +391,34 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
                         style={{ width: "100%", maxWidth: 260, borderRadius: 10, display: "block", margin: "0 auto 10px" }}
                       />
                     )}
-                    <button
-                      onClick={() =>
-                        downloadMany(
-                          carrosselImages.map((url, i) => ({
-                            url, filename: `carrossel-mce-${i + 1}-${(MCE_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
-                          })),
-                        )
-                      }
-                      style={acao(C.green)}
-                    >
-                      BAIXAR OS {carrosselImages.length} SLIDES
-                    </button>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button
+                        onClick={() =>
+                          saveManyToDevice(
+                            carrosselImages.map((url, i) => ({
+                              url, filename: `carrossel-mce-${i + 1}-${(MCE_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+                            })),
+                          )
+                        }
+                        style={acao(C.green)}
+                      >
+                        SALVAR OS {carrosselImages.length} NO ÁLBUM
+                      </button>
+                      {canShareFiles() && (
+                        <button
+                          onClick={() =>
+                            shareAll(
+                              carrosselImages.map((url, i) => ({
+                                url, filename: `carrossel-mce-${i + 1}-${(MCE_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+                              })),
+                            )
+                          }
+                          style={acao(C.purple)}
+                        >
+                          COMPARTILHAR TODAS
+                        </button>
+                      )}
+                    </div>
                   </>
                 )}
               </>

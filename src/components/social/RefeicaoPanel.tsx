@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
+import SaveShareButtons from "@/components/social/SaveShareButtons";
 import {
   getDadosRefeicao,
   getDadosDeRegistro,
@@ -350,6 +351,16 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
           </div>
         </CardContent>
       </Card>
+
+      {!!(carrossel.length || stories.length) && (
+        <SaveShareButtons
+          items={[
+            ...carrossel.map((url, i) => ({ url, filename: `refeicao-slide-${i + 1}.png` })),
+            ...stories.map((url, i) => ({ url, filename: `refeicao-story-${i + 1}.png` })),
+          ]}
+          labelSalvar={`Salvar ${carrossel.length + stories.length} no álbum`}
+        />
+      )}
 
       {!!(carrossel.length || stories.length) && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

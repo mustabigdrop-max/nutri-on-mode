@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Clock, Download, Loader2, Sparkles } from "lucide-react";
+import { Clock, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadMany } from "@/lib/socialImageKit";
+import SaveShareButtons from "@/components/social/SaveShareButtons";
 import { melhorHorario } from "@/lib/socialViral";
 import { renderMceCarousel, MCE_CTA_SLIDE, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
@@ -96,19 +96,14 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
               </button>
             ))}
           </div>
-          <div className="flex justify-center">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() =>
-                downloadMany(
-                  images.map((url, i) => ({ url, filename: `mce-carrossel-${i + 1}-${SLIDE_LABELS[i].toLowerCase().replace(/\s+/g, "-")}.png` })),
-                )
-              }
-            >
-              <Download className="h-4 w-4" /> Baixar os 7 slides
-            </Button>
-          </div>
+          <SaveShareButtons
+            items={images.map((url, i) => ({
+              url,
+              filename: `mce-carrossel-${i + 1}-${SLIDE_LABELS[i].toLowerCase().replace(/\s+/g, "-")}.png`,
+            }))}
+            labelSalvar="Salvar os 7 slides no álbum"
+            texto={tema}
+          />
           <div className="rounded-xl border p-4" style={{ borderColor: "#5DCAA533", background: "#5DCAA50A" }}>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" style={{ color: "#5DCAA5" }} />

@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { Copy, Download, FlaskConical, Loader2 } from "lucide-react";
+import { Copy, FlaskConical, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadMany } from "@/lib/socialImageKit";
+import SaveShareButtons from "@/components/social/SaveShareButtons";
 import { cleanCaption } from "@/lib/captionText";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import { peptides } from "@/data/peptideVaultData";
@@ -190,21 +190,15 @@ export default function NexusCarouselPanel({
               </button>
             ))}
           </div>
+          <SaveShareButtons
+            items={images.map((url, i) => ({
+              url,
+              filename: `nexus-bio-slide-${i + 1}-${(labels[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+            }))}
+            labelSalvar={`Salvar os ${images.length} slides no álbum`}
+            texto={legenda || tema}
+          />
           <div className="flex flex-wrap justify-center gap-2">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() =>
-                downloadMany(
-                  images.map((url, i) => ({
-                    url,
-                    filename: `nexus-bio-slide-${i + 1}-${(labels[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
-                  })),
-                )
-              }
-            >
-              <Download className="h-4 w-4" /> Baixar os {images.length} slides
-            </Button>
             {legenda && (
               <Button
                 variant="outline"
