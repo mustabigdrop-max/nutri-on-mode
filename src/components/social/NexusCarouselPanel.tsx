@@ -222,6 +222,11 @@ export default function NexusCarouselPanel({
               {legenda}
             </div>
           )}
+          <PosSlidesPanel
+            tipo={match?.origem === "MicrobiotaVault" ? "NEXUS_MICROBIOTA" : "NEXUS_PEPTIDEO"}
+            tema={tema}
+            dados={match?.data ?? null}
+          />
           <p className="text-center text-[11px] text-muted-foreground">{NEXUS_CTA_SLIDE.disclaimer}</p>
         </div>
       )}
