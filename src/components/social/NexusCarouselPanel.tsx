@@ -190,21 +190,15 @@ export default function NexusCarouselPanel({
               </button>
             ))}
           </div>
+          <SaveShareButtons
+            items={images.map((url, i) => ({
+              url,
+              filename: `nexus-bio-slide-${i + 1}-${(labels[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+            }))}
+            labelSalvar={`Salvar os ${images.length} slides no álbum`}
+            texto={legenda || tema}
+          />
           <div className="flex flex-wrap justify-center gap-2">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() =>
-                downloadMany(
-                  images.map((url, i) => ({
-                    url,
-                    filename: `nexus-bio-slide-${i + 1}-${(labels[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
-                  })),
-                )
-              }
-            >
-              <Download className="h-4 w-4" /> Baixar os {images.length} slides
-            </Button>
             {legenda && (
               <Button
                 variant="outline"
