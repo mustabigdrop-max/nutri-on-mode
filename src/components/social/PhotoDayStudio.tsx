@@ -274,7 +274,14 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
 
       {tipoCarrossel === "resultado" && file && <ResultadoProtocoloPanel file={file} handle={at} />}
 
+      {tipoCarrossel !== "resultado" && ehRefeicao && file && (
+        <div style={{ marginBottom: 12 }}>
+          <RefeicaoPanel file={file} handle={at} />
+        </div>
+      )}
+
       {tipoCarrossel !== "resultado" && res && (
+
         <>
           <Bloco titulo="LEITURA DA FOTO" cor={C.green}>
             <div style={{ fontFamily: F.b, fontSize: 12, color: C.text, marginBottom: 6 }}>
