@@ -10,6 +10,9 @@ import {
 import {
   renderResultadoProtocoloCarousel, RP_SLIDE_LABELS, RP_TPL, type ResultadoProtocoloContent,
 } from "@/lib/resultadoProtocoloTemplate";
+import {
+  renderResultadoStories, RP_STORY_LABELS, type RPStoryFrame,
+} from "@/lib/resultadoStoriesTemplate";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", border: "#ffffff14",
@@ -46,9 +49,10 @@ const copiar = async (texto: string, label: string) => {
   }
 };
 
-type RoteiroTexto = { legenda: string; hashtags: string[] };
+type Corte = { segundo?: string; texto_tela?: string; acao?: string; fala?: string };
+type RoteiroReels = { hook?: string; duracao_total?: string; cortes?: Corte[]; musica?: string };
 
-/** Shape do resultado da IA para o modo "resultado_protocolo" (ver SCHEMAS no edge function). */
+/** Shape do resultado gerado para o modo "resultado_protocolo" (ver SCHEMAS no edge function). */
 type ResultadoProtocoloAI = {
   capa?: { tag?: string; titulo?: string; subtitulo?: string };
   resultado?: { titulo?: string; corpo?: string; numero?: string; numero_label?: string };
@@ -56,6 +60,13 @@ type ResultadoProtocoloAI = {
   resumo_frase?: string;
   legenda?: string;
   hashtags?: string[];
+  /** stories */
+  frames?: RPStoryFrame[];
+  /** reels */
+  hook?: string;
+  duracao_total?: string;
+  cortes?: Corte[];
+  musica?: string;
 };
 
 /**
@@ -77,14 +88,14 @@ export default function ResultadoProtocoloPanel({
   const [images, setImages] = useState<string[]>([]);
   const [legenda, setLegenda] = useState("");
   const [hashtagsTxt, setHashtagsTxt] = useState("");
-  const [roteiro, setRoteiro] = useState<RoteiroTexto | null>(null);
+  const [reels, setReels] = useState<RoteiroReels | null>(null);
   const [active, setActive] = useState(0);
 
   const gerar = async (f: FocoResultado) => {
     setFoco(f);
     setLoading(true);
     setImages([]);
-    setRoteiro(null);
+    setReels(null);
     try {
       const dados = await getDadosTreino(f);
       if (!dados) {
@@ -94,14 +105,11 @@ export default function ResultadoProtocoloPanel({
       }
       setTreino(dados);
 
+      const mode =
+        formato === "stories" ? "resultado_stories" : formato === "reels" ? "resultado_reels" : "resultado_protocolo";
+
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
-        body: {
-          mode: "resultado_protocolo",
-          foco: dados.focoLabel,
-          treinoData: dados,
-          formato,
-          handle: at,
-        },
+        body: { mode, foco: dados.focoLabel, treinoData: dados, formato, handle: at },
       });
       if (error) throw new Error(error.message);
       if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error!);
@@ -112,11 +120,21 @@ export default function ResultadoProtocoloPanel({
       setLegenda(legendaLimpa);
       setHashtagsTxt(hashtags.join(" "));
 
-      if (formato !== "carrossel") {
-        setRoteiro({ legenda: legendaLimpa, hashtags });
+      if (formato === "reels") {
+        setReels({ hook: r.hook, duracao_total: r.duracao_total, cortes: r.cortes || [], musica: r.musica });
         setLoading(false);
         return;
       }
+
+      if (formato === "stories") {
+        await ensureFonts();
+        const foto = await loadImage(file);
+        setImages(renderResultadoStories(r.frames || [], at, foto));
+        setActive(0);
+        setLoading(false);
+        return;
+      }
+
 
       const content: ResultadoProtocoloContent = {
         focoLabel: dados.focoLabel,
@@ -221,8 +239,15 @@ export default function ResultadoProtocoloPanel({
         </Bloco>
       )}
 
-      {formato === "carrossel" && images.length > 0 && (
-        <Bloco titulo={`CARROSSEL PRONTO (${images.length} SLIDES)`} cor={C.gold}>
+      {images.length > 0 && (
+        <Bloco
+          titulo={
+            formato === "stories"
+              ? `STORIES PRONTOS (${images.length} FRAMES)`
+              : `CARROSSEL PRONTO (${images.length} SLIDES)`
+          }
+          cor={C.gold}
+        >
           <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
             {images.map((_, i) => (
               <button
@@ -230,14 +255,14 @@ export default function ResultadoProtocoloPanel({
                 onClick={() => setActive(i)}
                 style={{ ...acao(i === active ? C.gold : C.muted), fontSize: 9, padding: "5px 8px" }}
               >
-                {i + 1} · {RP_SLIDE_LABELS[i]}
+                {i + 1} · {(formato === "stories" ? RP_STORY_LABELS : RP_SLIDE_LABELS)[i]}
               </button>
             ))}
           </div>
           {images[active] && (
             <img
               src={images[active]}
-              alt={`Slide ${active + 1} — ${RP_SLIDE_LABELS[active]}`}
+              alt={`Frame ${active + 1}`}
               style={{ width: "100%", maxWidth: 280, borderRadius: 10, display: "block", margin: "0 auto 10px" }}
             />
           )}
@@ -246,24 +271,63 @@ export default function ResultadoProtocoloPanel({
               onClick={() =>
                 downloadMany(
                   images.map((url, i) => ({
-                    url, filename: `resultado-protocolo-${i + 1}-${(RP_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+                    url,
+                    filename: `${formato === "stories" ? "story" : "resultado-protocolo"}-${i + 1}-${(
+                      (formato === "stories" ? RP_STORY_LABELS : RP_SLIDE_LABELS)[i] || ""
+                    ).toLowerCase().replace(/\s+/g, "-")}.png`,
                   })),
                 )
               }
               style={acao(C.green)}
             >
-              BAIXAR OS {images.length} SLIDES
+              BAIXAR OS {images.length} {formato === "stories" ? "FRAMES" : "SLIDES"}
             </button>
           </div>
         </Bloco>
       )}
 
-      {formato !== "carrossel" && roteiro && (
-        <Bloco titulo={formato === "reels" ? "ROTEIRO DO REELS" : "TEXTO DOS STORIES"} cor={C.gold}>
-          <div style={{ fontFamily: F.b, fontSize: 12, color: C.text, whiteSpace: "pre-wrap", marginBottom: 10 }}>
-            {roteiro.legenda}
-          </div>
-          <button onClick={() => copiar(roteiro.legenda, "Texto")} style={acao(C.gold)}>COPIAR TEXTO</button>
+      {formato === "reels" && reels && (
+        <Bloco titulo={`ROTEIRO DO REELS · ${reels.duracao_total || "30s"}`} cor={C.gold}>
+          {reels.hook && (
+            <div style={{ fontFamily: F.t, fontSize: 16, fontWeight: 700, color: C.white, marginBottom: 12 }}>
+              🎬 {reels.hook}
+            </div>
+          )}
+          {(reels.cortes || []).map((c, i) => (
+            <div
+              key={i}
+              style={{ borderLeft: `2px solid ${C.gold}`, paddingLeft: 12, marginBottom: 12 }}
+            >
+              <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, marginBottom: 4 }}>{c.segundo}</div>
+              <div style={{ fontFamily: F.t, fontSize: 14, fontWeight: 700, color: C.white, whiteSpace: "pre-wrap" }}>
+                {c.texto_tela}
+              </div>
+              {c.acao && <div style={{ fontFamily: F.b, fontSize: 11, color: C.muted, marginTop: 4 }}>🎥 {c.acao}</div>}
+              {c.fala && <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginTop: 4 }}>🎤 “{c.fala}”</div>}
+            </div>
+          ))}
+          {reels.musica && (
+            <div style={{ fontFamily: F.b, fontSize: 11, color: C.green, marginBottom: 10 }}>🎵 {reels.musica}</div>
+          )}
+          <button
+            onClick={() =>
+              copiar(
+                [
+                  reels.hook ? `HOOK: ${reels.hook}` : "",
+                  ...(reels.cortes || []).map(
+                    (c) => `${c.segundo}\nTELA: ${c.texto_tela}\nAÇÃO: ${c.acao || "-"}\nFALA: ${c.fala || "-"}`,
+                  ),
+                  reels.musica ? `MÚSICA: ${reels.musica}` : "",
+                ]
+                  .filter(Boolean)
+                  .join("\n\n"),
+                "Roteiro",
+              )
+            }
+            style={acao(C.gold)}
+          >
+            COPIAR ROTEIRO
+          </button>
         </Bloco>
       )}
 

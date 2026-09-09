@@ -54,7 +54,14 @@ export type DadosTreino = {
   /** true quando achou um dia do protocolo batendo com o foco pedido. */
   matchExato: boolean;
   apex: { nome: string; principios: string[] };
-  nutricao?: { metaDiaKcal?: number; treinoTipo?: string };
+  nutricao?: {
+    metaDiaKcal?: number;
+    treinoTipo?: string;
+    proteinaG?: number;
+    carboG?: number;
+    /** Diferença real entre a meta de hoje e o menor dia (descanso) dos últimos 30 dias. */
+    ajusteNutrySyncKcal?: number;
+  };
 };
 
 /** Escolhe o dia do protocolo mais alinhado ao foco pedido (score = tags em comum). */
@@ -102,12 +109,30 @@ export async function getDadosTreino(focoId: FocoResultado): Promise<DadosTreino
 
   // Nutrição do dia (best-effort — só entra se o dado realmente existir).
   const hoje = new Date().toISOString().slice(0, 10);
+  const trintaDias = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
   const { data: nutri } = await supabase
     .from("daily_nutrition_protocol")
-    .select("calorias_meta, treino_tipo")
+    .select("calorias_meta, treino_tipo, proteina_meta, carb_meta")
     .eq("user_id", uid)
     .eq("data", hoje)
     .maybeSingle();
+
+  // Ajuste do NutrySync = meta de hoje menos o dia mais leve (descanso) do último mês.
+  const { data: historico } = await supabase
+    .from("daily_nutrition_protocol")
+    .select("calorias_meta")
+    .eq("user_id", uid)
+    .gte("data", trintaDias)
+    .not("calorias_meta", "is", null);
+
+  const baseline = (historico || [])
+    .map((h) => h.calorias_meta as number)
+    .filter((v) => typeof v === "number" && v > 0)
+    .sort((a, b) => a - b)[0];
+  const ajuste =
+    nutri?.calorias_meta && baseline && nutri.calorias_meta - baseline > 0
+      ? nutri.calorias_meta - baseline
+      : undefined;
 
   return {
     focoId,
@@ -130,7 +155,13 @@ export async function getDadosTreino(focoId: FocoResultado): Promise<DadosTreino
     apex: { nome: "APEX Training System", principios: APEX_PRINCIPIOS },
     nutricao:
       nutri && (nutri.calorias_meta || nutri.treino_tipo)
-        ? { metaDiaKcal: nutri.calorias_meta ?? undefined, treinoTipo: nutri.treino_tipo ?? undefined }
+        ? {
+            metaDiaKcal: nutri.calorias_meta ?? undefined,
+            treinoTipo: nutri.treino_tipo ?? undefined,
+            proteinaG: nutri.proteina_meta ?? undefined,
+            carboG: nutri.carb_meta ?? undefined,
+            ajusteNutrySyncKcal: ajuste,
+          }
         : undefined,
   };
 }
