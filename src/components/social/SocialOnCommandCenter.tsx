@@ -1039,17 +1039,39 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
   );
 }
 
-/** Temas sugeridos do banco, pela rotação do dia da semana. */
+/** Temas sugeridos do banco — o treino do dia (TrainingON) manda no contexto. */
 function TemasDoDia({ onOpenTool }: { onOpenTool?: (id: string) => void }) {
   const { postados, loading } = useTemasPostados();
+  const [treino, setTreino] = useState<TreinoHoje | null>(null);
   const hoje = new Date();
-  const sugestoes = useMemo(() => sugestoesDoDia(postados, hoje, 3), [postados]);
+
+  useEffect(() => {
+    let vivo = true;
+    getTreinoDeHoje()
+      .then((t) => vivo && setTreino(t))
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  const foco = useMemo(() => (treino ? focoDoTreino(treino) : null), [treino]);
+  const sugestoes = useMemo(
+    () => sugestoesDoDia(postados, hoje, 3, foco),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [postados, foco],
+  );
   if (loading || !sugestoes.length) return null;
+  const contexto = foco
+    ? foco === "descanso"
+      ? `HOJE É OFF · LIFESTYLE + CIÊNCIA`
+      : `HOJE: ${(treino?.nomeTreino || "").toUpperCase()} · SUGESTÕES DE ${FOCO_LABEL[foco].toUpperCase()}`
+    : `TEMAS DE HOJE · ${ROTACAO_SEMANAL[hoje.getDay()].label.toUpperCase()}`;
   return (
     <div style={{ marginBottom: 12, border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, background: C.s2 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.orange }}>
-          TEMAS DE HOJE · {ROTACAO_SEMANAL[hoje.getDay()].label.toUpperCase()}
+          {contexto}
         </div>
         <button
           type="button"
