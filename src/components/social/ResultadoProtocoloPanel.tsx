@@ -85,14 +85,14 @@ export default function ResultadoProtocoloPanel({
   const [images, setImages] = useState<string[]>([]);
   const [legenda, setLegenda] = useState("");
   const [hashtagsTxt, setHashtagsTxt] = useState("");
-  const [roteiro, setRoteiro] = useState<RoteiroTexto | null>(null);
+  const [reels, setReels] = useState<RoteiroReels | null>(null);
   const [active, setActive] = useState(0);
 
   const gerar = async (f: FocoResultado) => {
     setFoco(f);
     setLoading(true);
     setImages([]);
-    setRoteiro(null);
+    setReels(null);
     try {
       const dados = await getDadosTreino(f);
       if (!dados) {
@@ -102,14 +102,11 @@ export default function ResultadoProtocoloPanel({
       }
       setTreino(dados);
 
+      const mode =
+        formato === "stories" ? "resultado_stories" : formato === "reels" ? "resultado_reels" : "resultado_protocolo";
+
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
-        body: {
-          mode: "resultado_protocolo",
-          foco: dados.focoLabel,
-          treinoData: dados,
-          formato,
-          handle: at,
-        },
+        body: { mode, foco: dados.focoLabel, treinoData: dados, formato, handle: at },
       });
       if (error) throw new Error(error.message);
       if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error!);
@@ -120,11 +117,21 @@ export default function ResultadoProtocoloPanel({
       setLegenda(legendaLimpa);
       setHashtagsTxt(hashtags.join(" "));
 
-      if (formato !== "carrossel") {
-        setRoteiro({ legenda: legendaLimpa, hashtags });
+      if (formato === "reels") {
+        setReels({ hook: r.hook, duracao_total: r.duracao_total, cortes: r.cortes || [], musica: r.musica });
         setLoading(false);
         return;
       }
+
+      if (formato === "stories") {
+        await ensureFonts();
+        const foto = await loadImage(file);
+        setImages(renderResultadoStories(r.frames || [], at, foto));
+        setActive(0);
+        setLoading(false);
+        return;
+      }
+
 
       const content: ResultadoProtocoloContent = {
         focoLabel: dados.focoLabel,
