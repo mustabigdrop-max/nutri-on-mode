@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import { loadImage, ensureFonts } from "@/lib/photoStoryTemplates";
-import { downloadMany } from "@/lib/socialImageKit";
+import { canShareFiles, saveManyToDevice, shareAll } from "@/lib/socialImageKit";
 import {
   FOCO_OPTIONS, getDadosTreino, type FocoResultado, type DadosTreino,
 } from "@/lib/resultadoProtocoloData";
