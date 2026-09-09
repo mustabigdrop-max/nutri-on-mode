@@ -8,6 +8,7 @@ import SaveShareButtons from "@/components/social/SaveShareButtons";
 import { melhorHorario } from "@/lib/socialViral";
 import { renderMceCarousel, MCE_CTA_SLIDE, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
+import SlideTextEditor from "@/components/social/SlideTextEditor";
 
 const SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
 
@@ -28,6 +29,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
   const [tema, setTema] = useState(initialTema || "");
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [content, setContent] = useState<MceCarouselContent | null>(null);
   const [active, setActive] = useState(0);
   const horarioHoje = melhorHorario("CARROSSEL_MCE");
 
@@ -41,6 +43,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
       if (error) throw error;
       const content = { ...(data?.result || {}), tema, handle: handle || "diogo.mell0" } as MceCarouselContent;
       const safe: MceCarouselContent = { ...fallback(tema), ...content, handle: content.handle };
+      setContent(safe);
       setImages(renderMceCarousel(safe));
       setActive(0);
     } catch (e) {
@@ -96,6 +99,15 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
               </button>
             ))}
           </div>
+          {content && (
+            <SlideTextEditor
+              content={content}
+              onApply={(next) => {
+                setContent(next);
+                setImages(renderMceCarousel(next));
+              }}
+            />
+          )}
           <SaveShareButtons
             items={images.map((url, i) => ({
               url,
