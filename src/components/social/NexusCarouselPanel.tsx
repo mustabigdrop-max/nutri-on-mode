@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadMany } from "@/lib/socialImageKit";
 import { cleanCaption } from "@/lib/captionText";
+import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import { peptides } from "@/data/peptideVaultData";
 import { microbiotaItems } from "@/data/microbiotaVaultData";
 import {
