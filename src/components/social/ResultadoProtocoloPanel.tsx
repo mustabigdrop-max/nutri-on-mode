@@ -48,6 +48,16 @@ const copiar = async (texto: string, label: string) => {
 
 type RoteiroTexto = { legenda: string; hashtags: string[] };
 
+/** Shape do resultado da IA para o modo "resultado_protocolo" (ver SCHEMAS no edge function). */
+type ResultadoProtocoloAI = {
+  capa?: { tag?: string; titulo?: string; subtitulo?: string };
+  resultado?: { titulo?: string; corpo?: string; numero?: string; numero_label?: string };
+  nutricao?: { titulo?: string; corpo?: string };
+  resumo_frase?: string;
+  legenda?: string;
+  hashtags?: string[];
+};
+
 /**
  * "Resultado + Protocolo": conecta a evolução física real do coach com o
  * protocolo (APEX/TrainingON) que ele usou. Puxa dados reais do treino,
@@ -95,7 +105,7 @@ export default function ResultadoProtocoloPanel({
       });
       if (error) throw new Error(error.message);
       if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error!);
-      const r = (data as { result: Record<string, any> })?.result || {};
+      const r = (data as { result?: ResultadoProtocoloAI })?.result || {};
 
       const hashtags: string[] = Array.isArray(r.hashtags) ? r.hashtags : [];
       const legendaLimpa = cleanCaption(r.legenda || "");
