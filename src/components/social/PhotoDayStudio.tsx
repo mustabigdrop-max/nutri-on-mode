@@ -104,6 +104,7 @@ const acao = (cor: string): React.CSSProperties => ({
 export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: string; handle?: string; onClose: () => void }) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const galeriaRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -239,31 +240,41 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         ))}
       </div>
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        style={{ display: "none" }}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          e.target.value = "";
-          if (!f) return;
-          if (tipoCarrossel === "resultado") {
-            setFile(f);
-            setRes(null);
-            setStories([]);
-          } else {
-            void analisar(f);
-          }
-        }}
-      />
+      {([
+        { ref: inputRef, capture: "environment" as const },
+        { ref: galeriaRef, capture: undefined },
+      ]).map((cfg, i) => (
+        <input
+          key={i}
+          ref={cfg.ref}
+          type="file"
+          accept="image/*"
+          capture={cfg.capture}
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            e.target.value = "";
+            if (!f) return;
+            if (tipoCarrossel === "resultado") {
+              setFile(f);
+              setRes(null);
+              setStories([]);
+            } else {
+              void analisar(f);
+            }
+          }}
+        />
+      ))}
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+        <button onClick={() => galeriaRef.current?.click()} disabled={loading} style={{ ...acao(C.gold), flex: 1, opacity: loading ? 0.6 : 1 }}>
+          {loading ? "LENDO SUA FOTO..." : file ? "🖼️ TROCAR DO ÁLBUM" : "🖼️ ESCOLHER DO ÁLBUM"}
+        </button>
         <button onClick={() => inputRef.current?.click()} disabled={loading} style={{ ...acao(C.gold), flex: 1, opacity: loading ? 0.6 : 1 }}>
-          {loading ? "LENDO SUA FOTO..." : file ? "TROCAR FOTO" : "ESCOLHER FOTO"}
+          📷 TIRAR FOTO AGORA
         </button>
       </div>
+
 
       {tipoCarrossel === "resultado" && (
         <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 12 }}>
