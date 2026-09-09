@@ -6,7 +6,7 @@ import { compressImageFile } from "@/lib/socialMediaFrames";
 import { cleanCaption } from "@/lib/captionText";
 import { ensureFonts, loadImage, renderPhotoStory } from "@/lib/photoStoryTemplates";
 import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
-import { downloadMany } from "@/lib/socialImageKit";
+import { canShareFiles, saveManyToDevice, shareAll } from "@/lib/socialImageKit";
 import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
 import RefeicaoPanel from "@/components/social/RefeicaoPanel";
 
