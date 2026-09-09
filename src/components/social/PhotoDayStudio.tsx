@@ -10,6 +10,7 @@ import { canShareFiles, saveManyToDevice, shareAll } from "@/lib/socialImageKit"
 import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
 import RefeicaoPanel from "@/components/social/RefeicaoPanel";
 import PrintNutrionPanel from "@/components/social/PrintNutrionPanel";
+import TreinoHojePanel from "@/components/social/TreinoHojePanel";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", s3: "#181824", border: "#ffffff14",
@@ -38,13 +39,14 @@ export type PhotoDayResult = {
   timing?: { story_agora?: boolean; feed_horario?: string; motivo_horario?: string };
 };
 
-type TipoCarrossel = "auto" | "mce" | "nexus" | "nutrion" | "resultado" | "print";
+type TipoCarrossel = "auto" | "mce" | "nexus" | "nutrion" | "resultado" | "print" | "treino";
 const TIPO_CARROSSEL_OPTIONS: { id: TipoCarrossel; label: string }[] = [
   { id: "mce", label: "MCE Drop" },
   { id: "nexus", label: "NEXUS-BIO" },
   { id: "nutrion", label: "nutriON" },
   { id: "resultado", label: "🏆 RESULTADO + PROTOCOLO" },
   { id: "print", label: "📱 PRINT DO APP" },
+  { id: "treino", label: "🏋 TREINO DE HOJE" },
 ];
 
 const MCE_SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
@@ -287,7 +289,7 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
           setRes(null);
           setStories([]);
           setCarrosselImages([]);
-          if (tipoCarrossel === "resultado" || tipoCarrossel === "print") return;
+          if (tipoCarrossel === "resultado" || tipoCarrossel === "print" || tipoCarrossel === "treino") return;
           // Sem tipo escolhido: se a imagem for um print de tela, entra
           // automaticamente no modo PRINT DO APP em vez de analisar como foto.
           void (async () => {
@@ -328,7 +330,7 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
                   setRes(null);
                   setStories([]);
                   setCarrosselImages([]);
-                  if (tipoCarrossel !== "resultado" && tipoCarrossel !== "print") void analisar(f);
+                  if (tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && tipoCarrossel !== "treino") void analisar(f);
                 }}
                 style={{
                   padding: 0, border: `2px solid ${i === fotoAtiva ? C.gold : "#ffffff22"}`,
@@ -366,19 +368,28 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
 
       {tipoCarrossel === "resultado" && file && <ResultadoProtocoloPanel file={file} handle={at} />}
 
+      {tipoCarrossel === "treino" && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 10 }}>
+            Puxa a sua sessão de hoje no TrainingON e monta o post com a sua foto na capa.
+          </div>
+          <TreinoHojePanel file={file} handle={at} />
+        </div>
+      )}
+
       {tipoCarrossel === "print" && file && (
         <div style={{ marginBottom: 12 }}>
           <PrintNutrionPanel file={file} handle={at} />
         </div>
       )}
 
-      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && ehRefeicao && file && (
+      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && tipoCarrossel !== "treino" && ehRefeicao && file && (
         <div style={{ marginBottom: 12 }}>
           <RefeicaoPanel file={file} handle={at} />
         </div>
       )}
 
-      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && res && (
+      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && tipoCarrossel !== "treino" && res && (
 
 
         <>
