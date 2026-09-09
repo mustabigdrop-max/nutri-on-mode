@@ -466,6 +466,15 @@ REGRAS:
       body?.mode === "profile_audit"
         ? `Você é um auditor sênior de perfis de Instagram no nicho fitness/nutrição no Brasil. Faça um diagnóstico profissional, rigoroso e específico — nada genérico. Scores realistas: acima de 90 só para perfis excepcionais. As 3 versões de bio devem ter abordagens diferentes: (1) Autoridade + CTA, (2) Impacto + benefício, (3) Minimalista + direto. Marque "recommended":true em exatamente uma das 3 — a que você de fato recomendaria pra esse coach usar, considerando nicho, diferenciais e objetivo de conversão; as outras duas ficam com "recommended":false. Nunca mencione que você é um sistema automatizado.`
         : "",
+      body?.mode === "print_nutrion"
+        ? `MODO "PRINT DO nutriON": você recebeu UM screenshot real de uma tela do app nutriON e vai transformá-lo em conteúdo de produto.
+- Leia o print e descreva SOMENTE o que está visível nele: nomes de tela, seções, botões, exercícios, números, macros. Nunca invente exercício, caloria, macro, RPE, ajuste, estudo ou funcionalidade que não aparece na imagem.
+- "posicao_y_percentual" é a altura relativa do elemento no print (0 = topo, 1 = base) — use a posição real do que você viu, porque o recorte da imagem depende disso.
+- Alterne "lado_anotacao" entre esquerda e direita para as anotações não se sobreporem.
+- O comparativo é honesto: descreva o que apps comuns entregam sem citar marca de concorrente.
+- Tom: fundador orgulhoso mostrando o que construiu. Sem clichê motivacional.
+- Nunca use markdown, nem as palavras "IA", "AI" ou "inteligência artificial".`
+        : "",
       body?.mode === "pos_slides"
         ? promptPosSlides(
             (body?.tipoCarrossel as TipoCarrossel) || "MCE",
