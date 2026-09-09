@@ -1,8 +1,7 @@
 /**
- * Carrossel e Stories "PRINT DO nutriON" — o coach sobe UM print de tela do
- * app e o sistema monta o mockup premium (celular + anotações), os slides de
- * zoom nas features, o comparativo e o CTA. Tudo 1080x1350 (feed) e 1080x1920
- * (stories), na identidade nutriON, com rodapé fixo via `slideBase`.
+ * Carrossel e Stories "TELA DO nutriON" — o coach sobe uma captura como fonte
+ * e o sistema reconstrói o conteúdo em uma composição editorial. A imagem é
+ * tratada e recortada, sem celular, moldura ou aparência de screenshot.
  *
  * Nada é inventado aqui: os textos vêm da leitura do próprio print e os
  * recortes usam a posição vertical devolvida na análise.
@@ -146,89 +145,41 @@ const drawTagPill = (
   ctx.fillText(texto.toUpperCase(), x + px(14), y + px(22));
 };
 
-type PhoneRect = { x: number; y: number; w: number; h: number };
-
-/** Mockup de celular com o print dentro, mantendo proporção real da imagem. */
-const drawPhone = (
+/** Usa a captura como textura tratada, nunca como um print literal. */
+const drawImageBackdrop = (
   ctx: CanvasRenderingContext2D,
   print: HTMLImageElement,
-  cx: number,
-  top: number,
-  maxH: number,
-): PhoneRect => {
-  const ratio = print.height / print.width || 2;
-  let w = px(300);
-  let h = w * ratio;
-  if (h > maxH) {
-    h = maxH;
-    w = h / ratio;
-  }
-  const x = cx - w / 2;
-  const y = top;
-  const pad = px(8);
-
+  w: number,
+  h: number,
+  opacity = 0.3,
+) => {
+  const scale = Math.max(w / print.width, h / print.height);
+  const dw = print.width * scale;
+  const dh = print.height * scale;
   ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,0.6)";
-  ctx.shadowBlur = px(30);
-  ctx.shadowOffsetY = px(12);
-  roundRect(ctx, x - pad, y - pad, w + pad * 2, h + pad * 2, px(26));
-  ctx.fillStyle = "#141418";
-  ctx.fill();
+  ctx.globalAlpha = opacity;
+  ctx.filter = `blur(${px(14)}px) saturate(1.35) contrast(1.1)`;
+  ctx.drawImage(print, (w - dw) / 2, (h - dh) / 2, dw, dh);
   ctx.restore();
-
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(239,159,39,0.45)";
-  roundRect(ctx, x - pad, y - pad, w + pad * 2, h + pad * 2, px(26));
-  ctx.stroke();
-
-  ctx.save();
-  roundRect(ctx, x, y, w, h, px(20));
-  ctx.clip();
-  ctx.drawImage(print, x, y, w, h);
-  ctx.restore();
-
-  // Notch
-  roundRect(ctx, cx - px(34), y + px(4), px(68), px(10), px(5));
-  ctx.fillStyle = "#141418";
-  ctx.fill();
-
-  return { x, y, w, h };
+  const veil = ctx.createLinearGradient(0, 0, 0, h);
+  veil.addColorStop(0, "rgba(10,10,10,0.15)");
+  veil.addColorStop(0.52, "rgba(10,10,10,0.72)");
+  veil.addColorStop(1, "rgba(10,10,10,0.98)");
+  ctx.fillStyle = veil;
+  ctx.fillRect(0, 0, w, h);
 };
 
-/** Anotações laterais com linha e ponto apontando pro print. */
-const drawAnotacoes = (ctx: CanvasRenderingContext2D, itens: PrintElemento[], phone: PhoneRect) => {
-  const usaveis = itens.filter((i) => i.elemento).slice(0, 4);
-  usaveis.forEach((item, i) => {
-    const frac = Math.min(0.92, Math.max(0.08, Number(item.posicao_y_percentual) || (i + 1) / (usaveis.length + 1)));
-    const y = phone.y + phone.h * frac;
-    const esquerda = (item.lado_anotacao || (i % 2 === 0 ? "direita" : "esquerda")).toLowerCase().includes("esq");
-    const anchorX = esquerda ? phone.x : phone.x + phone.w;
-    const endX = esquerda ? SLIDE_PAD_X + px(4) : SLIDE_W - SLIDE_PAD_X - px(4);
-
-    ctx.strokeStyle = "rgba(239,159,39,0.5)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(anchorX, y);
-    ctx.lineTo(endX, y);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(anchorX, y, px(5), 0, Math.PI * 2);
-    ctx.fillStyle = PRINT_TPL.gold;
-    ctx.fill();
-
-    const maxW = esquerda ? phone.x - SLIDE_PAD_X - px(18) : SLIDE_W - SLIDE_PAD_X - (phone.x + phone.w) - px(18);
-    ctx.textAlign = esquerda ? "left" : "right";
-    const tx = esquerda ? SLIDE_PAD_X : SLIDE_W - SLIDE_PAD_X;
-    ctx.font = font(800, px(15));
+const drawFeatureList = (ctx: CanvasRenderingContext2D, itens: PrintElemento[], y0: number, maxW: number) => {
+  itens.filter((item) => item.elemento).slice(0, 3).forEach((item, index) => {
+    const y = y0 + index * px(104);
+    ctx.fillStyle = index === 0 ? PRINT_TPL.gold : index === 1 ? PRINT_TPL.green : PRINT_TPL.purple;
+    ctx.fillRect(SLIDE_PAD_X, y, px(5), px(70));
+    ctx.font = font(800, px(17));
     ctx.fillStyle = PRINT_TPL.ink;
-    const base = wrap(ctx, item.elemento || "", tx, y - px(10), Math.max(px(120), maxW), px(20), 2);
-    if (item.destaque || item.descricao) {
-      ctx.font = font(400, px(12));
-      ctx.fillStyle = PRINT_TPL.muted;
-      wrap(ctx, item.destaque || item.descricao || "", tx, base + px(20), Math.max(px(120), maxW), px(17), 3);
-    }
-    ctx.textAlign = "left";
+    ctx.fillText(item.elemento || "", SLIDE_PAD_X + px(22), y + px(22));
+    ctx.font = font(400, px(13));
+    ctx.fillStyle = PRINT_TPL.soft;
+    wrap(ctx, item.destaque || item.descricao || "", SLIDE_PAD_X + px(22), y + px(48), maxW - px(22), px(18), 2);
   });
 };
 
@@ -262,7 +213,7 @@ const drawRecorte = (
 };
 
 type PrintSlide =
-  | { tipo: "MOCKUP" }
+  | { tipo: "CAPA" }
   | { tipo: "ZOOM"; zoom: PrintZoom; indice: number }
   | { tipo: "COMPARATIVO" }
   | { tipo: "CTA" };
@@ -277,26 +228,26 @@ const renderSlide = (
   const { canvas, ctx } = createSlideCanvas(SLIDE_W, SLIDE_H, isCta ? PRINT_TPL.gold : PRINT_TPL.bg);
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
-  if (!isCta) drawTextura(ctx, SLIDE_W, SLIDE_H);
+  if (!isCta) {
+    if (slide.tipo === "CAPA") drawImageBackdrop(ctx, print, SLIDE_W, SLIDE_H, 0.42);
+    drawTextura(ctx, SLIDE_W, SLIDE_H);
+  }
 
   beginSlideContent(ctx, SLIDE_W, SLIDE_H);
   const maxW = SLIDE_W - SLIDE_PAD_X * 2;
   const tela = (analise.titulo_tela || analise.tipo_tela || "nutriON").toUpperCase();
 
-  if (slide.tipo === "MOCKUP") {
+  if (slide.tipo === "CAPA") {
     drawTagPill(ctx, `nutriON · ${tela}`, SLIDE_PAD_X, px(50));
-    const phone = drawPhone(ctx, print, SLIDE_W / 2, px(140), px(600));
-    drawAnotacoes(ctx, analise.elementos_visiveis || [], phone);
-
-    const gY = px(860);
-    ctx.font = font(800, px(28));
+    ctx.font = font(800, px(43));
     ctx.fillStyle = PRINT_TPL.ink;
-    const base = wrap(ctx, analise.gancho_slide1 || tela, SLIDE_PAD_X, gY, maxW, px(36), 3);
+    const base = wrap(ctx, analise.gancho_slide1 || tela, SLIDE_PAD_X, px(250), maxW, px(50), 3);
     if (analise.subtexto_slide1) {
-      ctx.font = font(400, px(16));
-      ctx.fillStyle = PRINT_TPL.muted;
-      wrap(ctx, analise.subtexto_slide1, SLIDE_PAD_X, base + px(38), maxW, px(24), 2);
+      ctx.font = font(500, px(18));
+      ctx.fillStyle = PRINT_TPL.gold;
+      wrap(ctx, analise.subtexto_slide1, SLIDE_PAD_X, base + px(34), maxW, px(25), 2);
     }
+    drawFeatureList(ctx, analise.elementos_visiveis || [], px(600), maxW);
     ctx.font = font(600, px(14));
     ctx.fillStyle = PRINT_TPL.gold;
     ctx.fillText("ARRASTA PRA VER OS DETALHES ▸", SLIDE_PAD_X, px(1060));
@@ -307,11 +258,20 @@ const renderSlide = (
     drawTagPill(ctx, `zoom ${indice + 1}`, SLIDE_PAD_X, px(50), PRINT_TPL.green);
     ctx.font = font(800, px(30));
     ctx.fillStyle = PRINT_TPL.ink;
-    let y = wrap(ctx, zoom.titulo || "Detalhe da tela", SLIDE_PAD_X, px(160), maxW, px(38), 2) + px(44);
+    let y = wrap(ctx, zoom.titulo || "Detalhe da experiência", SLIDE_PAD_X, px(160), maxW, px(38), 2) + px(44);
 
     const frac = Math.min(0.92, Math.max(0.08, Number(zoom.posicao_y_percentual) || (indice + 1) / 5));
-    drawRecorte(ctx, print, frac, SLIDE_PAD_X, y, maxW, px(300));
-    y += px(300) + px(56);
+    drawRecorte(ctx, print, frac, SLIDE_PAD_X, y, maxW, px(220));
+    const wash = ctx.createLinearGradient(SLIDE_PAD_X, y, SLIDE_W - SLIDE_PAD_X, y + px(220));
+    wash.addColorStop(0, "rgba(10,10,10,0.28)");
+    wash.addColorStop(1, "rgba(10,10,10,0.78)");
+    ctx.fillStyle = wash;
+    roundRect(ctx, SLIDE_PAD_X, y, maxW, px(220), px(18));
+    ctx.fill();
+    ctx.font = font(800, px(24));
+    ctx.fillStyle = PRINT_TPL.ink;
+    wrap(ctx, zoom.area_recorte || zoom.titulo || "", SLIDE_PAD_X + px(24), y + px(118), maxW - px(48), px(31), 2);
+    y += px(220) + px(56);
 
     if (zoom.explicacao) {
       ctx.font = font(500, px(18));
@@ -390,19 +350,19 @@ const renderSlide = (
 };
 
 export const PRINT_SLIDE_LABELS = (analise: PrintAnalise): string[] => [
-  "MOCKUP",
-  ...(analise.slides_zoom || []).slice(0, 4).map((_, i) => `ZOOM ${i + 1}`),
+  "CAPA",
+  ...(analise.slides_zoom || []).slice(0, 4).map((_, i) => `DESTAQUE ${i + 1}`),
   "COMPARATIVO",
   "CTA",
 ];
 
-/** Carrossel completo: mockup + zooms + comparativo + CTA. */
+/** Carrossel completo: capa editorial + destaques + comparativo + CTA. */
 export const renderPrintCarousel = (
   analise: PrintAnalise,
   print: HTMLImageElement,
   handle = "diogo.mell0",
 ): string[] => {
-  const slides: PrintSlide[] = [{ tipo: "MOCKUP" }];
+  const slides: PrintSlide[] = [{ tipo: "CAPA" }];
   (analise.slides_zoom || []).slice(0, 4).forEach((zoom, indice) => slides.push({ tipo: "ZOOM", zoom, indice }));
   slides.push({ tipo: "COMPARATIVO" }, { tipo: "CTA" });
   return slides.map((s) => renderSlide(s, analise, print, handle)).filter(Boolean);
@@ -410,7 +370,7 @@ export const renderPrintCarousel = (
 
 /* ---------------------------------- Stories --------------------------------- */
 
-export const PRINT_STORY_LABELS = ["MOCKUP", "ZOOM", "CTA"];
+export const PRINT_STORY_LABELS = ["CAPA", "DESTAQUE", "CTA"];
 
 const storyFooter = (ctx: CanvasRenderingContext2D, handle: string, dark: boolean) => {
   ctx.textAlign = "left";
@@ -437,54 +397,32 @@ const renderStoryFrame = (
   canvas.height = STORY_H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
-  const tipo = (frame.tipo || (indice === 2 ? "CTA" : indice === 1 ? "ZOOM_FEATURE" : "MOCKUP_PRINT")).toUpperCase();
+  const tipo = (frame.tipo || (indice === 2 ? "CTA" : indice === 1 ? "DESTAQUE" : "CAPA")).toUpperCase();
   const isCta = tipo.includes("CTA");
 
   ctx.fillStyle = isCta ? PRINT_TPL.gold : PRINT_TPL.bg;
   ctx.fillRect(0, 0, STORY_W, STORY_H);
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
-  if (!isCta) drawTextura(ctx, STORY_W, STORY_H);
+  if (!isCta) {
+    drawImageBackdrop(ctx, print, STORY_W, STORY_H, indice === 0 ? 0.4 : 0.24);
+    drawTextura(ctx, STORY_W, STORY_H);
+  }
 
-  if (tipo.includes("MOCKUP")) {
-    const ratio = print.height / print.width || 2;
-    let w = 620;
-    let h = w * ratio;
-    if (h > 1050) {
-      h = 1050;
-      w = h / ratio;
-    }
-    const x = (STORY_W - w) / 2;
-    const y = 220;
-    ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,0.6)";
-    ctx.shadowBlur = 60;
-    roundRect(ctx, x - 18, y - 18, w + 36, h + 36, 48);
-    ctx.fillStyle = "#141418";
-    ctx.fill();
-    ctx.restore();
-    ctx.save();
-    roundRect(ctx, x, y, w, h, 36);
-    ctx.clip();
-    ctx.drawImage(print, x, y, w, h);
-    ctx.restore();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "rgba(239,159,39,0.45)";
-    roundRect(ctx, x - 18, y - 18, w + 36, h + 36, 48);
-    ctx.stroke();
-
-    ctx.font = font(800, 58);
+  if (tipo.includes("CAPA") || tipo.includes("MOCKUP")) {
+    drawTagPill(ctx, "TRANSFORMAÇÃO É SISTEMA", 60, 120);
+    ctx.font = font(800, 72);
     ctx.fillStyle = PRINT_TPL.ink;
-    const base = wrap(ctx, frame.texto || "", 60, Math.min(STORY_H - 340, y + h + 130), 960, 70, 3);
+    const base = wrap(ctx, frame.texto || "", 60, 760, 960, 84, 4);
     if (frame.subtexto) {
-      ctx.font = font(500, 34);
+      ctx.font = font(600, 36);
       ctx.fillStyle = PRINT_TPL.gold;
-      wrap(ctx, frame.subtexto, 60, base + 62, 960, 44, 2);
+      wrap(ctx, frame.subtexto, 60, base + 72, 960, 48, 3);
     }
-  } else if (tipo.includes("ZOOM")) {
+  } else if (tipo.includes("ZOOM") || tipo.includes("DESTAQUE")) {
     ctx.font = font(700, 20);
     ctx.fillStyle = PRINT_TPL.green;
-    ctx.fillText("DENTRO DA TELA", 60, 150);
+    ctx.fillText("COMO O SISTEMA FUNCIONA", 60, 150);
     const frac = Math.min(0.92, Math.max(0.08, Number(frame.posicao_y_percentual) || 0.5));
     const bandaH = 800;
     const bandaFrac = 0.32;
@@ -492,7 +430,9 @@ const renderStoryFrame = (
     const sy = Math.min(print.height - sh, Math.max(0, print.height * frac - sh / 2));
     const escala = Math.max(960 / print.width, bandaH / sh);
     ctx.save();
-    roundRect(ctx, 60, 260, 960, bandaH, 32);
+    ctx.globalAlpha = 0.5;
+    ctx.filter = "saturate(1.3) contrast(1.1)";
+    roundRect(ctx, 60, 260, 960, bandaH, 12);
     ctx.clip();
     ctx.drawImage(
       print,
@@ -506,10 +446,11 @@ const renderStoryFrame = (
       sh * escala,
     );
     ctx.restore();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "rgba(239,159,39,0.45)";
-    roundRect(ctx, 60, 260, 960, bandaH, 32);
-    ctx.stroke();
+    const storyWash = ctx.createLinearGradient(60, 260, 60, 1060);
+    storyWash.addColorStop(0, "rgba(10,10,10,0.15)");
+    storyWash.addColorStop(1, "rgba(10,10,10,0.88)");
+    ctx.fillStyle = storyWash;
+    ctx.fillRect(60, 260, 960, bandaH);
 
     ctx.font = font(800, 54);
     ctx.fillStyle = PRINT_TPL.ink;
@@ -532,7 +473,7 @@ const renderStoryFrame = (
   return canvas.toDataURL("image/png");
 };
 
-/** Stories do print: 3 frames rápidos (mockup, zoom na feature, CTA). */
+/** Stories reconstruídos: capa, destaque editorial e CTA. */
 export const renderPrintStories = (
   frames: PrintStoryFrame[],
   print: HTMLImageElement,
