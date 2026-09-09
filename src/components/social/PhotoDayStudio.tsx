@@ -8,6 +8,7 @@ import { ensureFonts, loadImage, renderPhotoStory } from "@/lib/photoStoryTempla
 import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import { downloadMany } from "@/lib/socialImageKit";
 import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
+import RefeicaoPanel from "@/components/social/RefeicaoPanel";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", s3: "#181824", border: "#ffffff14",
