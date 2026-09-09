@@ -11,6 +11,8 @@ import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import { renderStoryFrames, type StoryScript } from "@/lib/storyFrameTemplate";
 import { renderMitoMetodo, type MitoMetodoContent } from "@/lib/mitoMetodoTemplate";
+import { cleanCaption } from "@/lib/captionText";
+import type { PosSlidesResult, TipoCarrossel } from "@/lib/carouselPostConfig";
 import { montarPlanoDeHoje, totalMinutos, ICONE_DO_DIA, LEGENDA_SERIES } from "@/lib/socialWeeklyPlan";
 import {
   detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
