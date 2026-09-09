@@ -155,7 +155,13 @@ export async function getDadosTreino(focoId: FocoResultado): Promise<DadosTreino
     apex: { nome: "APEX Training System", principios: APEX_PRINCIPIOS },
     nutricao:
       nutri && (nutri.calorias_meta || nutri.treino_tipo)
-        ? { metaDiaKcal: nutri.calorias_meta ?? undefined, treinoTipo: nutri.treino_tipo ?? undefined }
+        ? {
+            metaDiaKcal: nutri.calorias_meta ?? undefined,
+            treinoTipo: nutri.treino_tipo ?? undefined,
+            proteinaG: nutri.proteina_meta ?? undefined,
+            carboG: nutri.carb_meta ?? undefined,
+            ajusteNutrySyncKcal: ajuste,
+          }
         : undefined,
   };
 }
