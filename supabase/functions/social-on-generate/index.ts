@@ -421,18 +421,25 @@ REGRAS: só informações reais e verificáveis; se não houver dado para uma se
 - Hashtags misturando fitness, representatividade e nicho, sem repetir entre os 3 grupos.
 - Nunca escreva markdown na legenda e nunca use as palavras "IA", "AI" ou "inteligência artificial".`
         : "",
-      body?.mode === "resultado_protocolo"
-        ? `TEMPLATE FIXO "RESULTADO + PROTOCOLO" — carrossel de 10 slides conectando o resultado físico REAL do coach com o protocolo (APEX/TrainingON) que ele usou.
+      ["resultado_protocolo", "resultado_stories", "resultado_reels"].includes(body?.mode)
+        ? `TEMPLATE FIXO "RESULTADO + PROTOCOLO" conectando o resultado físico REAL do coach com o protocolo (APEX/TrainingON) que ele usou.
 Foco escolhido: ${body?.foco || "geral"}.
 Dados REAIS do treino puxados do TrainingON (fonte primária — NUNCA invente séries, cargas, RPE ou números fora daqui): ${body?.treinoData ? JSON.stringify(body.treinoData).slice(0, 4000) : "sem dados de treino disponíveis"}
 REGRAS:
 - Prova social + educação: mostre COMO o coach chegou no resultado através do sistema, sem vender abertamente.
-- Use SOMENTE os dados reais fornecidos acima para citar o nome do treino, exercícios e método — não invente séries, cargas, porcentagens ou nomes de exercícios que não estão nos dados.
-- O campo "numero" do resultado só é preenchido se um dado numérico real aparecer no contexto (nunca invente um número de evolução que não foi informado).
-- Em "nutricao", só cite um valor de calorias se "nutricao.metaDiaKcal" existir nos dados reais; caso contrário dê uma dica geral de nutrição pós-treino sem inventar número.
+- Use SOMENTE os dados reais fornecidos acima para citar o nome do treino, exercícios, duração e método — não invente séries, cargas, porcentagens, calorias ou nomes de exercícios que não estão nos dados.
+- Em nutrição, só cite um valor de calorias ou ajuste do NutrySync se ele existir nos dados reais; caso contrário fale do princípio sem número.
 - Tom: primeira pessoa do coach, direto, autoral, sem clichê motivacional vazio ("acredite em você", "sem dor sem ganho").
-- Nunca use "IA", "AI" ou "inteligência artificial".
-- Marque no máximo 3 palavras entre **asteriscos duplos** para destaque de cor, só no título da capa e no resumo_frase.`
+- Nunca use "IA", "AI" ou "inteligência artificial".`
+        : "",
+      body?.mode === "resultado_protocolo"
+        ? `FORMATO: carrossel de 10 slides. O campo "numero" do resultado só é preenchido se um dado numérico real aparecer no contexto. Marque no máximo 3 palavras entre **asteriscos duplos** para destaque de cor, só no título da capa e no resumo_frase.`
+        : "",
+      body?.mode === "resultado_stories"
+        ? `FORMATO: sequência de 6 frames de STORIES na ordem FOTO_RESULTADO, PROTOCOLO_RESUMO, EXERCICIO_DESTAQUE, NUTRICAO, ENQUETE e CTA. Os textos são desenhados em imagem: respeite os limites de caracteres à risca, frases curtas, caixa alta só onde o schema pede, sem markdown e sem emoji fora da enquete. O frame 1 vai por cima da foto real do coach. O frame EXERCICIO_DESTAQUE usa o exercício principal que está nos dados reais, com a progressão real de séries.`
+        : "",
+      body?.mode === "resultado_reels"
+        ? `FORMATO: roteiro de Reels de 30 segundos com 6 cortes (0-3s, 3-8s, 8-15s, 15-22s, 22-27s, 27-30s). "texto_tela" é o que aparece na tela: caixa alta, curtíssimo, legível sem som (pode ter \\n para 2 linhas). "fala" é o que o coach diz em 1 frase. "acao" é a direção de gravação. Cortes na ordem: gancho no resultado, aquecimento do protocolo, top set com RPE, back-off, nutrição do dia e CTA final pro protocolo.`
         : "",
       body?.mode === "profile_audit"
         ? `Você é um auditor sênior de perfis de Instagram no nicho fitness/nutrição no Brasil. Faça um diagnóstico profissional, rigoroso e específico — nada genérico. Scores realistas: acima de 90 só para perfis excepcionais. As 3 versões de bio devem ter abordagens diferentes: (1) Autoridade + CTA, (2) Impacto + benefício, (3) Minimalista + direto. Marque "recommended":true em exatamente uma das 3 — a que você de fato recomendaria pra esse coach usar, considerando nicho, diferenciais e objetivo de conversão; as outras duas ficam com "recommended":false. Nunca mencione que você é um sistema automatizado.`
