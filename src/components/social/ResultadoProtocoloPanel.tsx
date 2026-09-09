@@ -268,21 +268,14 @@ export default function ResultadoProtocoloPanel({
             />
           )}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-            <button
-              onClick={() =>
-                downloadMany(
-                  images.map((url, i) => ({
-                    url,
-                    filename: `${formato === "stories" ? "story" : "resultado-protocolo"}-${i + 1}-${(
-                      (formato === "stories" ? RP_STORY_LABELS : RP_SLIDE_LABELS)[i] || ""
-                    ).toLowerCase().replace(/\s+/g, "-")}.png`,
-                  })),
-                )
-              }
-              style={acao(C.green)}
-            >
-              BAIXAR OS {images.length} {formato === "stories" ? "FRAMES" : "SLIDES"}
+            <button onClick={() => saveManyToDevice(arquivos())} style={acao(C.green)}>
+              SALVAR {images.length} NO ÁLBUM
             </button>
+            {canShareFiles() && (
+              <button onClick={() => shareAll(arquivos())} style={acao(C.gold)}>
+                COMPARTILHAR TODAS
+              </button>
+            )}
           </div>
         </Bloco>
       )}
