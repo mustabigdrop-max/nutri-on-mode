@@ -153,7 +153,7 @@ export async function getDadosRefeicao(agora = new Date()): Promise<DadosRefeica
   return {
     slotKey: slot.key,
     nome: `${slot.ordem} — ${slot.nome}`,
-    horario: (treino?.workout_time as string | null)?.slice(0, 5) && rel ? slot.horarioPadrao : slot.horarioPadrao,
+    horario: slot.horarioPadrao,
     tag: rel === "pre" ? "PRÉ-TREINO" : rel === "post" ? "PÓS-TREINO" : undefined,
     treinoHoje: treino
       ? {
