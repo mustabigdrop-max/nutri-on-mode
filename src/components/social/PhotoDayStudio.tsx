@@ -239,38 +239,28 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         ))}
       </div>
 
-      {([
-        { ref: inputRef, capture: "environment" as const },
-        { ref: galeriaRef, capture: undefined },
-      ]).map((cfg, i) => (
-        <input
-          key={i}
-          ref={cfg.ref}
-          type="file"
-          accept="image/*"
-          capture={cfg.capture}
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            e.target.value = "";
-            if (!f) return;
-            if (tipoCarrossel === "resultado") {
-              setFile(f);
-              setRes(null);
-              setStories([]);
-            } else {
-              void analisar(f);
-            }
-          }}
-        />
-      ))}
+      <input
+        ref={galeriaRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (!f) return;
+          if (tipoCarrossel === "resultado") {
+            setFile(f);
+            setRes(null);
+            setStories([]);
+          } else {
+            void analisar(f);
+          }
+        }}
+      />
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        <button onClick={() => galeriaRef.current?.click()} disabled={loading} style={{ ...acao(C.gold), flex: 1, opacity: loading ? 0.6 : 1 }}>
-          {loading ? "LENDO SUA FOTO..." : file ? "🖼️ TROCAR DO ÁLBUM" : "🖼️ ESCOLHER DO ÁLBUM"}
-        </button>
-        <button onClick={() => inputRef.current?.click()} disabled={loading} style={{ ...acao(C.gold), flex: 1, opacity: loading ? 0.6 : 1 }}>
-          📷 TIRAR FOTO AGORA
+      <div style={{ marginBottom: 12 }}>
+        <button onClick={() => galeriaRef.current?.click()} disabled={loading} style={{ ...acao(C.gold), width: "100%", opacity: loading ? 0.6 : 1 }}>
+          {loading ? "LENDO SUA FOTO..." : file ? "🖼️ TROCAR FOTO DO ÁLBUM" : "🖼️ ESCOLHER FOTO DO ÁLBUM"}
         </button>
       </div>
 
