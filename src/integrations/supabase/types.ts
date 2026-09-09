@@ -11071,6 +11071,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_temas_postados: {
+        Row: {
+          categoria: string
+          created_at: string
+          engajamento: number | null
+          formato: string | null
+          id: string
+          postado_em: string
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          engajamento?: number | null
+          formato?: string | null
+          id?: string
+          postado_em?: string
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          engajamento?: number | null
+          formato?: string | null
+          id?: string
+          postado_em?: string
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_weekly_checklist: {
         Row: {
           coach_id: string

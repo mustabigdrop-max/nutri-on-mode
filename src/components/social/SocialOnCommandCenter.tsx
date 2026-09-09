@@ -18,6 +18,8 @@ import {
   detectarTipoConteudo, CONTENT_TYPE_LABEL, CONTENT_TYPE_MINUTES, usesMedia, isPostType, type PlanContentType,
 } from "@/lib/socialContentTypes";
 import PhotoStoryStudio from "@/components/social/PhotoStoryStudio";
+import { sugestoesDoDia, ROTACAO_SEMANAL, FORMATO_LABEL } from "@/data/bancoTemas";
+import { useTemasPostados } from "@/hooks/useTemasPostados";
 import PhotoDayStudio from "@/components/social/PhotoDayStudio";
 import { HookChooser, ScreenTextTimeline, ViralExtras } from "@/components/social/ViralKitPanel";
 import {
@@ -85,13 +87,14 @@ const copyReady = (r: ReadyContent) => {
 };
 
 function DailyCoach({
-  brief, loading, identity, coachId, canPublish, onConnectInstagram,
+  brief, loading, identity, coachId, canPublish, onConnectInstagram, onOpenTool,
 }: {
   brief: Brief | null; loading: boolean;
   identity: { handle?: string; niches?: string[]; products?: string[]; differentials?: string[] };
   coachId?: string;
   canPublish: boolean;
   onConnectInstagram: () => void;
+  onOpenTool?: (id: string) => void;
 }) {
   const [ready, setReady] = useState<Record<number, ReadyContent>>({});
   const [generating, setGenerating] = useState<number | null>(null);
@@ -405,6 +408,9 @@ function DailyCoach({
           🖼️ POSTAR FOTO DO ÁLBUM
         </button>
       )}
+
+      {/* Temas sugeridos pelo banco de temas — rotação da semana, sem repetir em 30 dias */}
+      <TemasDoDia onOpenTool={onOpenTool} />
 
       {/* Sugestão da MicrobiotaVault */}
       <MicrobiotaSuggestion />
@@ -983,6 +989,7 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
           brief={brief} loading={briefLoading} identity={identity}
           coachId={coachId} canPublish={canPublish}
           onConnectInstagram={() => onOpenTool?.("um_toque")}
+          onOpenTool={onOpenTool}
         />
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ContentScore />
@@ -1027,6 +1034,51 @@ export default function SocialOnCommandCenter({ handle, niches, products, differ
             <ZoneCard key={i} {...z} onClick={() => onOpenTool?.(z.tool)} />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Temas sugeridos do banco, pela rotação do dia da semana. */
+function TemasDoDia({ onOpenTool }: { onOpenTool?: (id: string) => void }) {
+  const { postados, loading } = useTemasPostados();
+  const hoje = new Date();
+  const sugestoes = useMemo(() => sugestoesDoDia(postados, hoje, 3), [postados]);
+  if (loading || !sugestoes.length) return null;
+  return (
+    <div style={{ marginBottom: 12, border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, background: C.s2 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.orange }}>
+          TEMAS DE HOJE · {ROTACAO_SEMANAL[hoje.getDay()].label.toUpperCase()}
+        </div>
+        <button
+          type="button"
+          onClick={() => onOpenTool?.("banco_temas")}
+          style={{ background: "none", border: "none", color: C.cyan, fontSize: 10, cursor: "pointer" }}
+        >
+          ver banco completo
+        </button>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {sugestoes.map((t) => (
+          <button
+            key={t.titulo}
+            type="button"
+            onClick={() => onOpenTool?.("banco_temas")}
+            style={{
+              textAlign: "left", background: "transparent", border: `1px solid ${C.border}`,
+              borderRadius: 8, padding: "8px 10px", cursor: "pointer",
+            }}
+          >
+            <div style={{ fontFamily: F.t, fontSize: 13, fontWeight: 700, color: C.white }}>
+              {t.icone} {t.titulo}
+            </div>
+            <div style={{ fontSize: 11, color: C.muted }}>{t.subtitulo}</div>
+            <div style={{ fontFamily: F.m, fontSize: 9, color: C.orange, marginTop: 2 }}>
+              {FORMATO_LABEL[t.formato_ideal]} · potencial {t.potencial}/10
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );

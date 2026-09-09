@@ -52,6 +52,8 @@ import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerat
 import ContentPackTodayPanel from "@/components/social/ContentPackTodayPanel";
 import MceCarouselPanel from "@/components/social/MceCarouselPanel";
 import NexusCarouselPanel from "@/components/social/NexusCarouselPanel";
+import BancoTemasPanel from "@/components/social/BancoTemasPanel";
+import { ehTemaNexus, type TemaComCategoria } from "@/data/bancoTemas";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
@@ -153,6 +155,7 @@ const SocialOnModulePage = () => {
   const [objective, setObjective] = useState("seguidores");
   const [product, setProduct] = useState<string | null>(null);
   const [topic, setTopic] = useState("");
+  const [temaBanco, setTemaBanco] = useState("");
   const [generated, setGenerated] = useState<any>(null);
 
   // lists
@@ -459,6 +462,7 @@ const SocialOnModulePage = () => {
           <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
             <TabsTrigger value="carrossel_nexus" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Carrossel NEXUS-BIO</TabsTrigger>
+            <TabsTrigger value="banco_temas" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Banco de temas</TabsTrigger>
             <TabsTrigger value="pacote_dia" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Pacote do Dia</TabsTrigger>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
             <TabsTrigger value="lote" className="text-xs gap-1"><Rocket className="w-3 h-3" />Modo Lote</TabsTrigger>
@@ -1091,11 +1095,22 @@ const SocialOnModulePage = () => {
           <TabsContent value="overlay_studio" className="mt-4">
             <SocialOnOverlayStudio />
           </TabsContent>
+          <TabsContent value="banco_temas" className="mt-4">
+            <BancoTemasPanel
+              onUsarTema={(t: TemaComCategoria) => {
+                const tema = `${t.titulo} — ${t.subtitulo}`;
+                setTemaBanco(ehTemaNexus(t.categoria) ? t.titulo : tema);
+                setTopic(tema);
+                if (t.formato_ideal !== "carrossel") return setTab("criar");
+                setTab(ehTemaNexus(t.categoria) ? "carrossel_nexus" : "carrossel_mce");
+              }}
+            />
+          </TabsContent>
           <TabsContent value="carrossel_mce" className="mt-4">
-            <MceCarouselPanel handle={handle} initialTema={initialTema} />
+            <MceCarouselPanel key={temaBanco || "mce"} handle={handle} initialTema={temaBanco || initialTema} />
           </TabsContent>
           <TabsContent value="carrossel_nexus" className="mt-4">
-            <NexusCarouselPanel handle={handle} initialTema={initialTema} />
+            <NexusCarouselPanel key={temaBanco || "nexus"} handle={handle} initialTema={temaBanco || initialTema} />
           </TabsContent>
           <TabsContent value="pacote_dia" className="mt-4">
             <ContentPackTodayPanel />
