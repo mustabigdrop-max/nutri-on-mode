@@ -104,6 +104,7 @@ const acao = (cor: string): React.CSSProperties => ({
 export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: string; handle?: string; onClose: () => void }) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const galeriaRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState("");
   const [loading, setLoading] = useState(false);
