@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { downloadMany } from "@/lib/socialImageKit";
 import { melhorHorario } from "@/lib/socialViral";
 import { renderMceCarousel, MCE_CTA_SLIDE, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
+import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 
 const SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
 
