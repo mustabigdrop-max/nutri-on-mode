@@ -262,8 +262,17 @@ const pillarSlide = (
   return canvas.toDataURL("image/png");
 };
 
-/** Renderiza os 7 slides do template MCE Educacional em 1080x1350. */
-export const renderMceCarousel = (content: MceCarouselContent, w = 1080, h = 1350): string[] => {
+/**
+ * Renderiza os 7 slides do template MCE Educacional em 1080x1350.
+ * `fotoImg`, quando informado, vira o fundo do slide 1 (capa) — usado pelo
+ * "Postar com minha foto" pra colocar a foto real do coach na capa.
+ */
+export const renderMceCarousel = (
+  content: MceCarouselContent,
+  fotoImg?: HTMLImageElement | null,
+  w = 1080,
+  h = 1350,
+): string[] => {
   const handle = content.handle?.startsWith("@") ? content.handle : `@${(content.handle || "diogo.mell0").replace("@", "")}`;
   const x = px(28);
   const out: string[] = [];
@@ -271,9 +280,22 @@ export const renderMceCarousel = (content: MceCarouselContent, w = 1080, h = 135
   // 1 — CAPA
   {
     const { canvas, ctx } = canvasOf(w, h);
-    ctx.fillStyle = MCE_TPL.bg;
-    ctx.fillRect(0, 0, w, h);
-    orb(ctx, w - px(30), h - px(40), px(125), MCE_TPL.gold);
+    if (fotoImg) {
+      const scale = Math.max(w / fotoImg.width, h / fotoImg.height);
+      const dw = fotoImg.width * scale;
+      const dh = fotoImg.height * scale;
+      ctx.drawImage(fotoImg, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      const grad = ctx.createLinearGradient(0, h * 0.35, 0, h);
+      grad.addColorStop(0, "rgba(10,10,10,0)");
+      grad.addColorStop(0.45, "rgba(10,10,10,0.55)");
+      grad.addColorStop(1, "rgba(10,10,10,0.95)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    } else {
+      ctx.fillStyle = MCE_TPL.bg;
+      ctx.fillRect(0, 0, w, h);
+      orb(ctx, w - px(30), h - px(40), px(125), MCE_TPL.gold);
+    }
     let y = px(64);
     y = pill(ctx, content.capa.tag, x, y, { bg: MCE_TPL.gold, color: MCE_TPL.bg });
     y += px(52);

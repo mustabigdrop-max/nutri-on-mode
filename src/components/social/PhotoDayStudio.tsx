@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { compressImageFile } from "@/lib/socialMediaFrames";
 import { cleanCaption } from "@/lib/captionText";
 import { ensureFonts, loadImage, renderPhotoStory } from "@/lib/photoStoryTemplates";
+import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
+import { downloadMany } from "@/lib/socialImageKit";
 import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
 
 const C = {
@@ -40,6 +42,29 @@ const TIPO_CARROSSEL_OPTIONS: { id: TipoCarrossel; label: string }[] = [
   { id: "nexus", label: "NEXUS-BIO" },
   { id: "nutrion", label: "nutriON" },
   { id: "resultado", label: "🏆 RESULTADO + PROTOCOLO" },
+];
+
+const MCE_SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
+
+/** Conteúdo padrão do carrossel MCE enquanto a IA não personaliza os slides 2-7. */
+const mceFallback = (tema: string, capa: { titulo?: string; subtitulo?: string }): Omit<MceCarouselContent, "handle"> => ({
+  tema,
+  capa: { tag: "método mce", titulo: capa.titulo || `Por que **${tema}** trava o seu resultado`, subtitulo: capa.subtitulo || "" },
+  dor: { tag: "o problema", titulo: "Você já sabe o que precisa fazer.", impacto: "E mesmo assim não faz.", corpo: "O problema quase nunca é **informação**. É o **sistema** que sustenta a decisão quando a motivação some — e ele nunca foi construído." },
+  pilares: {
+    M: { frase: "Antes de mudar a rotina, muda a **leitura**.", corpo: "A forma como você interpreta a falha define se ela vira **aprendizado** ou desistência." },
+    C: { frase: "Comportamento é **ambiente**, não força de vontade.", corpo: "Reduza o número de decisões por dia e o padrão certo passa a acontecer sozinho.", lista: ["Deixe a próxima ação pronta na véspera", "Corte um gatilho por semana"] },
+    E: { frase: "Execução é o que sobra num dia **ruim**.", corpo: "Um plano só é bom se você consegue cumprir a versão mínima dele em qualquer dia." },
+  },
+  integracao: { tag: "os 3 pilares", titulo: "Nenhum funciona **sozinho**", verbos: { M: "Enxerga", C: "Sustenta", E: "Entrega" }, conexao: "Mentalidade sem comportamento vira teoria. Comportamento sem execução vira intenção. **Transformação é sistema.**" },
+});
+
+const CHECKLIST_BASE = [
+  { label: "Story com foto", min: 2 },
+  { label: "Story enquete", min: 1 },
+  { label: "Story CTA", min: 1 },
+  { label: "Carrossel no feed", min: 1 },
+  { label: "Responder comentários", min: 15 },
 ];
 
 const copiar = async (texto: string, label: string) => {
@@ -85,6 +110,10 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
   const [stories, setStories] = useState<string[]>([]);
   const [ativo, setAtivo] = useState(0);
   const [tipoCarrossel, setTipoCarrossel] = useState<TipoCarrossel>("auto");
+  const [carrosselImages, setCarrosselImages] = useState<string[]>([]);
+  const [carrosselAtivo, setCarrosselAtivo] = useState(0);
+  const [carrosselLoading, setCarrosselLoading] = useState(false);
+  const [checklist, setChecklist] = useState<boolean[]>([]);
   const at = handle || "diogo.mell0";
 
   useEffect(() => {
@@ -112,6 +141,8 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
     setFile(f);
     setRes(null);
     setStories([]);
+    setCarrosselImages([]);
+    setChecklist(CHECKLIST_BASE.map(() => false));
     setLoading(true);
     try {
       const base64 = await compressImageFile(f, 1024);
@@ -140,6 +171,40 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
       toast.error(e instanceof Error ? e.message : "Não consegui gerar o conteúdo agora.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  /** Gera os 7 slides do carrossel MCE com a foto real do coach na capa (slide 1). */
+  const gerarCarrosselInline = async () => {
+    if (!file || !res?.carrossel) return;
+    const temaCarrossel = res.carrossel.tema_sugerido || tema || "método MCE";
+    setCarrosselLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("social-on-generate", {
+        body: { mode: "mce_carousel", topic: temaCarrossel, handle: at },
+      });
+      if (error) throw new Error(error.message);
+      const gerado = (data as { result?: Partial<MceCarouselContent> })?.result || {};
+      const base = mceFallback(temaCarrossel, { titulo: res.carrossel.texto_capa, subtitulo: res.carrossel.subtexto_capa });
+      const content: MceCarouselContent = {
+        ...base,
+        ...gerado,
+        tema: temaCarrossel,
+        capa: {
+          tag: gerado.capa?.tag || base.capa.tag,
+          titulo: res.carrossel.texto_capa || gerado.capa?.titulo || base.capa.titulo,
+          subtitulo: res.carrossel.subtexto_capa || gerado.capa?.subtitulo || base.capa.subtitulo,
+        },
+        handle: at,
+      };
+      await ensureFonts();
+      const img = await loadImage(file);
+      setCarrosselImages(renderMceCarousel(content, img));
+      setCarrosselAtivo(0);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não consegui gerar os slides agora.");
+    } finally {
+      setCarrosselLoading(false);
     }
   };
 
@@ -253,8 +318,20 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
             <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, margin: "6px 0 10px" }}>
               {res.stories?.enquete?.opcao1} · {res.stories?.enquete?.opcao2}
             </div>
+            <button
+              onClick={() => copiar(`${res.stories?.enquete?.pergunta}\n${res.stories?.enquete?.opcao1} · ${res.stories?.enquete?.opcao2}`, "Enquete")}
+              style={{ ...acao(C.purple), marginBottom: 12 }}
+            >
+              COPIAR ENQUETE
+            </button>
             <div style={{ fontFamily: F.b, fontSize: 12, color: C.white }}>{res.stories?.story_cta?.texto}</div>
-            <div style={{ fontFamily: F.b, fontSize: 11, color: C.gold }}>{res.stories?.story_cta?.cta}</div>
+            <div style={{ fontFamily: F.b, fontSize: 11, color: C.gold, marginBottom: 10 }}>{res.stories?.story_cta?.cta}</div>
+            <button
+              onClick={() => copiar(`${res.stories?.story_cta?.texto}\n${res.stories?.story_cta?.cta}`, "Story CTA")}
+              style={acao(C.gold)}
+            >
+              COPIAR STORY CTA
+            </button>
           </Bloco>
 
           <Bloco titulo="CARROSSEL COM SUA FOTO NA CAPA" cor={C.green}>
@@ -263,16 +340,61 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
             <div style={{ fontFamily: F.b, fontSize: 11, color: C.muted, marginBottom: 10 }}>
               Tema: {res.carrossel?.tema_sugerido} · {res.carrossel?.tipo} · {res.carrossel?.potencial_viral ?? "-"}/10 — {res.carrossel?.motivo}
             </div>
-            <button
-              onClick={() => {
-                const tipo = res.carrossel?.tipo || "MCE";
-                const aba = tipo === "MCE" ? "carrossel_mce" : "carrossel_nexus";
-                navigate(`/coach/social?tab=${aba}&tema=${encodeURIComponent(res.carrossel?.tema_sugerido || tema || "")}`);
-              }}
-              style={acao(C.green)}
-            >
-              GERAR ESTE CARROSSEL
-            </button>
+
+            {(res.carrossel?.tipo || "MCE") === "MCE" ? (
+              <>
+                {!carrosselImages.length && (
+                  <button onClick={gerarCarrosselInline} disabled={carrosselLoading} style={{ ...acao(C.green), opacity: carrosselLoading ? 0.6 : 1 }}>
+                    {carrosselLoading ? "GERANDO SLIDES..." : "✦ GERAR SLIDES"}
+                  </button>
+                )}
+                {!!carrosselImages.length && (
+                  <>
+                    <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+                      {carrosselImages.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCarrosselAtivo(i)}
+                          style={{ ...acao(i === carrosselAtivo ? C.green : C.muted), fontSize: 9, padding: "5px 8px" }}
+                        >
+                          {i + 1} · {MCE_SLIDE_LABELS[i]}
+                        </button>
+                      ))}
+                    </div>
+                    {carrosselImages[carrosselAtivo] && (
+                      <img
+                        src={carrosselImages[carrosselAtivo]}
+                        alt={`Slide ${carrosselAtivo + 1} — ${MCE_SLIDE_LABELS[carrosselAtivo]}`}
+                        style={{ width: "100%", maxWidth: 260, borderRadius: 10, display: "block", margin: "0 auto 10px" }}
+                      />
+                    )}
+                    <button
+                      onClick={() =>
+                        downloadMany(
+                          carrosselImages.map((url, i) => ({
+                            url, filename: `carrossel-mce-${i + 1}-${(MCE_SLIDE_LABELS[i] || "").toLowerCase().replace(/\s+/g, "-")}.png`,
+                          })),
+                        )
+                      }
+                      style={acao(C.green)}
+                    >
+                      BAIXAR OS {carrosselImages.length} SLIDES
+                    </button>
+                  </>
+                )}
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  const tipo = res.carrossel?.tipo || "MCE";
+                  const aba = tipo === "MCE" ? "carrossel_mce" : "carrossel_nexus";
+                  navigate(`/coach/social?tab=${aba}&tema=${encodeURIComponent(res.carrossel?.tema_sugerido || tema || "")}`);
+                }}
+                style={acao(C.green)}
+              >
+                GERAR ESTE CARROSSEL
+              </button>
+            )}
           </Bloco>
 
           <Bloco titulo="LEGENDA DO FEED" cor={C.gold}>
@@ -293,6 +415,40 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
               Story: {res.timing?.story_agora ? "agora" : "mais tarde"} · Feed: {res.timing?.feed_horario}
             </div>
             <div style={{ fontFamily: F.b, fontSize: 11, color: C.muted }}>{res.timing?.motivo_horario}</div>
+          </Bloco>
+
+          <Bloco titulo="✅ CHECKLIST DO DIA" cor={C.gold}>
+            {CHECKLIST_BASE.map((item, i) => {
+              const feito = !!checklist[i];
+              const label = item.label === "Carrossel no feed" && res.timing?.feed_horario
+                ? `${item.label} às ${res.timing.feed_horario}`
+                : item.label;
+              return (
+                <label
+                  key={i}
+                  style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, cursor: "pointer" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={feito}
+                    onChange={() => setChecklist((cur) => cur.map((v, idx) => (idx === i ? !v : v)))}
+                    style={{ accentColor: C.gold, width: 15, height: 15 }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: F.b, fontSize: 12, color: feito ? C.muted : C.text,
+                      textDecoration: feito ? "line-through" : "none", flex: 1,
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>{item.min}min</span>
+                </label>
+              );
+            })}
+            <div style={{ fontFamily: F.m, fontSize: 10, color: C.gold, marginTop: 6 }}>
+              ⏱️ Tempo total: ~{CHECKLIST_BASE.reduce((sum, i) => sum + i.min, 0)} minutos
+            </div>
           </Bloco>
         </>
       )}
