@@ -317,8 +317,21 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
               )}
               <div style={{ fontFamily: F.b, fontSize: 11, color: C.muted, marginBottom: 10 }}>{sugestoes[ativo]?.motivo}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button onClick={() => baixar(stories[ativo], `story-${ativo + 1}.png`)} style={acao(C.gold)}>BAIXAR ESTE STORY</button>
-                <button onClick={() => stories.forEach((s, i) => baixar(s, `story-${i + 1}.png`))} style={acao(C.green)}>BAIXAR OS 3</button>
+                <button onClick={() => baixar(stories[ativo], `story-${ativo + 1}.png`)} style={acao(C.gold)}>SALVAR ESTE STORY</button>
+                <button
+                  onClick={() => saveManyToDevice(stories.map((url, i) => ({ url, filename: `story-${i + 1}.png` })))}
+                  style={acao(C.green)}
+                >
+                  SALVAR OS 3 NO ÁLBUM
+                </button>
+                {canShareFiles() && (
+                  <button
+                    onClick={() => shareAll(stories.map((url, i) => ({ url, filename: `story-${i + 1}.png` })))}
+                    style={acao(C.purple)}
+                  >
+                    COMPARTILHAR OS 3
+                  </button>
+                )}
               </div>
             </Bloco>
           )}
