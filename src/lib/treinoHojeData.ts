@@ -61,8 +61,33 @@ const mapExercicio = (e: {
   notas: e.notes,
 });
 
+type AgendaRow = {
+  day_of_week: number;
+  workout_type: string | null;
+  workout_time: string | null;
+  duration_minutes: number | null;
+  slot: number | null;
+};
+
+const dataSaoPaulo = () => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const valor = (tipo: string) => parts.find((p) => p.type === tipo)?.value || "";
+  const data = `${valor("year")}-${valor("month")}-${valor("day")}`;
+  const meioDiaUtc = new Date(`${data}T12:00:00Z`);
+  return { data, dow: meioDiaUtc.getUTCDay(), date: meioDiaUtc };
+};
+
 /** Escolhe o dia do protocolo que corresponde ao treino agendado para hoje. */
-function escolherDia(dias: ParsedDay[], tipoAgenda?: string): { dia: ParsedDay; sincronizado: boolean } {
+function escolherDia(
+  dias: ParsedDay[],
+  tipoAgenda: string | undefined,
+  indiceNaSemana: number,
+): { dia: ParsedDay; sincronizado: boolean } | null {
   const alvo = norm(tipoAgenda || "");
   if (alvo) {
     const termos = alvo.split(/[^a-z]+/).filter((t) => t.length > 3);
@@ -78,7 +103,11 @@ function escolherDia(dias: ParsedDay[], tipoAgenda?: string): { dia: ParsedDay; 
     }
     if (melhor) return { dia: melhor, sincronizado: true };
   }
-  return { dia: dias[0], sincronizado: false };
+
+  // D1/D2/D3 representam a ordem real das sessões agendadas na semana.
+  // Nunca volta silenciosamente ao D1, pois isso exibe o treino do dia anterior.
+  const diaDaPosicao = dias[indiceNaSemana];
+  return diaDaPosicao ? { dia: diaDaPosicao, sincronizado: true } : null;
 }
 
 /**
@@ -90,8 +119,8 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
   const uid = auth?.user?.id;
   if (!uid) return null;
 
-  const agora = new Date();
-  const dow = agora.getDay();
+  const hojeLocal = dataSaoPaulo();
+  const dow = hojeLocal.dow;
 
   const [{ data: proto }, { data: agendaRows }] = await Promise.all([
     supabase
@@ -103,9 +132,9 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
       .maybeSingle(),
     supabase
       .from("workout_schedule")
-      .select("workout_type, workout_time, duration_minutes")
+      .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
       .eq("user_id", uid)
-      .eq("day_of_week", dow)
+      .order("day_of_week", { ascending: true })
       .order("slot", { ascending: true }),
   ]);
 
@@ -113,10 +142,18 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
   const dias = (parsed?.days || []).filter((d) => Array.isArray(d.exercises) && d.exercises.length > 0);
   if (!dias.length) return null;
 
-  const agendaHoje = (agendaRows || [])[0];
-  const { dia, sincronizado } = escolherDia(dias, agendaHoje?.workout_type || undefined);
+  const agenda = (agendaRows || []) as AgendaRow[];
+  const agendaHoje = agenda.find((row) => row.day_of_week === dow);
+  if (!agendaHoje) return null;
 
-  const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
+  const diasAgendados = Array.from(new Set(agenda.map((row) => row.day_of_week)))
+    .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+  const indiceNaSemana = diasAgendados.indexOf(dow);
+  const selecionado = escolherDia(dias, agendaHoje.workout_type || undefined, indiceNaSemana);
+  if (!selecionado) return null;
+  const { dia, sincronizado } = selecionado;
+
+  const hoje = hojeLocal.data;
   const { data: nutri } = await supabase
     .from("daily_nutrition_protocol")
     .select("calorias_meta, treino_tipo, proteina_meta, carb_meta")
@@ -139,7 +176,11 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
     exercicios: (dia.exercises || []).slice(0, 6).map(mapExercicio),
     sincronizado,
     diaSemana: DIAS[dow],
-    dataLabel: agora.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }),
+    dataLabel: hojeLocal.date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      timeZone: "UTC",
+    }),
     nutricao:
       nutri && (nutri.calorias_meta || nutri.treino_tipo)
         ? {
