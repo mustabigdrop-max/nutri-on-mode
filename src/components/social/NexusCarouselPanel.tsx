@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
 import { cleanCaption } from "@/lib/captionText";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
+import SlideTextEditor from "@/components/social/SlideTextEditor";
+import { Textarea } from "@/components/ui/textarea";
 import { peptides } from "@/data/peptideVaultData";
 import { microbiotaItems } from "@/data/microbiotaVaultData";
 import {
@@ -76,6 +78,7 @@ export default function NexusCarouselPanel({
   const [images, setImages] = useState<string[]>([]);
   const [labels, setLabels] = useState<string[]>([]);
   const [legenda, setLegenda] = useState("");
+  const [content, setContent] = useState<NexusCarouselContent | null>(null);
   const [active, setActive] = useState(0);
 
   const match = useMemo(() => findCompound(tema), [tema]);
@@ -125,6 +128,7 @@ export default function NexusCarouselPanel({
         handle: handle || "diogo.mell0",
 
       };
+      setContent(content);
       setImages(renderNexusCarousel(content));
       setLabels(nexusSlideLabels(content));
       setLegenda(cleanCaption(content.legenda));
@@ -190,6 +194,17 @@ export default function NexusCarouselPanel({
               </button>
             ))}
           </div>
+          {content && (
+            <SlideTextEditor
+              content={content}
+              accent={NEXUS_TPL.accent}
+              onApply={(next) => {
+                setContent(next);
+                setImages(renderNexusCarousel(next));
+                setLabels(nexusSlideLabels(next));
+              }}
+            />
+          )}
           <SaveShareButtons
             items={images.map((url, i) => ({
               url,
@@ -212,11 +227,10 @@ export default function NexusCarouselPanel({
               </Button>
             )}
           </div>
-          {legenda && (
-            <div className="rounded-xl border p-4 text-sm whitespace-pre-wrap" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
-              {legenda}
-            </div>
-          )}
+          <div className="space-y-1">
+            <label className="text-[11px] text-muted-foreground">Legenda do post (edite à vontade)</label>
+            <Textarea value={legenda} rows={6} onChange={(e) => setLegenda(e.target.value)} />
+          </div>
           <PosSlidesPanel
             tipo={match?.origem === "MicrobiotaVault" ? "NEXUS_MICROBIOTA" : "NEXUS_PEPTIDEO"}
             tema={tema}
