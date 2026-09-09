@@ -37,12 +37,13 @@ export type PhotoDayResult = {
   timing?: { story_agora?: boolean; feed_horario?: string; motivo_horario?: string };
 };
 
-type TipoCarrossel = "auto" | "mce" | "nexus" | "nutrion" | "resultado";
+type TipoCarrossel = "auto" | "mce" | "nexus" | "nutrion" | "resultado" | "print";
 const TIPO_CARROSSEL_OPTIONS: { id: TipoCarrossel; label: string }[] = [
   { id: "mce", label: "MCE Drop" },
   { id: "nexus", label: "NEXUS-BIO" },
   { id: "nutrion", label: "nutriON" },
   { id: "resultado", label: "🏆 RESULTADO + PROTOCOLO" },
+  { id: "print", label: "📱 PRINT DO APP" },
 ];
 
 const MCE_SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
