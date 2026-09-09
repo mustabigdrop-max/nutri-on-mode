@@ -142,6 +142,34 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
     return "";
   };
 
+  /**
+   * Detecta se a imagem escolhida é um print de tela de celular:
+   * proporção alta (ex.: 9:19.5, 9:16) combinada com largura típica de
+   * screenshot de aparelho. Prints assim vão direto pro modo PRINT DO APP.
+   */
+  const parecePrintDeTela = async (f: File): Promise<boolean> => {
+    try {
+      const url = URL.createObjectURL(f);
+      try {
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const i = new Image();
+          i.onload = () => resolve(i);
+          i.onerror = reject;
+          i.src = url;
+        });
+        const w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h) return false;
+        const razao = h / w;
+        // screenshots de celular: altura bem maior que largura
+        return razao >= 1.8;
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      return false;
+    }
+  };
+
   const analisar = async (f: File) => {
     setFile(f);
     setRes(null);
@@ -254,9 +282,22 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
             setFile(f);
             setRes(null);
             setStories([]);
-          } else {
-            void analisar(f);
+            return;
           }
+          // Sem tipo escolhido: se a imagem for um print de tela, entra
+          // automaticamente no modo PRINT DO APP em vez de analisar como foto.
+          void (async () => {
+            if (await parecePrintDeTela(f)) {
+              setTipoCarrossel("print");
+              setFile(f);
+              setRes(null);
+              setStories([]);
+              setCarrosselImages([]);
+              toast.success("Detectei um print do app — modo PRINT DO APP ativado.");
+              return;
+            }
+            void analisar(f);
+          })();
         }}
       />
 
