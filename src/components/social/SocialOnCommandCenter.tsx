@@ -385,7 +385,7 @@ function DailyCoach({
             border: "none", borderRadius: 12, fontFamily: F.t, fontWeight: 700, fontSize: 17, cursor: "pointer",
           }}
         >
-          📸 POSTAR COM MINHA FOTO
+          🖼️ POSTAR FOTO DO ÁLBUM
         </button>
       )}
 
