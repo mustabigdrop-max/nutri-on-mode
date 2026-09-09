@@ -282,9 +282,22 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
             setFile(f);
             setRes(null);
             setStories([]);
-          } else {
-            void analisar(f);
+            return;
           }
+          // Sem tipo escolhido: se a imagem for um print de tela, entra
+          // automaticamente no modo PRINT DO APP em vez de analisar como foto.
+          void (async () => {
+            if (await parecePrintDeTela(f)) {
+              setTipoCarrossel("print");
+              setFile(f);
+              setRes(null);
+              setStories([]);
+              setCarrosselImages([]);
+              toast.success("Detectei um print do app — modo PRINT DO APP ativado.");
+              return;
+            }
+            void analisar(f);
+          })();
         }}
       />
 
