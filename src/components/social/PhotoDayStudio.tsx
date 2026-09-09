@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { compressImageFile } from "@/lib/socialMediaFrames";
 import { cleanCaption } from "@/lib/captionText";
 import { ensureFonts, loadImage, renderPhotoStory } from "@/lib/photoStoryTemplates";
+import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", s3: "#181824", border: "#ffffff14",
@@ -32,6 +33,14 @@ export type PhotoDayResult = {
   hashtags?: { alcance?: string[]; nicho?: string[]; micro?: string[] };
   timing?: { story_agora?: boolean; feed_horario?: string; motivo_horario?: string };
 };
+
+type TipoCarrossel = "auto" | "mce" | "nexus" | "nutrion" | "resultado";
+const TIPO_CARROSSEL_OPTIONS: { id: TipoCarrossel; label: string }[] = [
+  { id: "mce", label: "MCE Drop" },
+  { id: "nexus", label: "NEXUS-BIO" },
+  { id: "nutrion", label: "nutriON" },
+  { id: "resultado", label: "🏆 RESULTADO + PROTOCOLO" },
+];
 
 const copiar = async (texto: string, label: string) => {
   try {
@@ -75,6 +84,7 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
   const [res, setRes] = useState<PhotoDayResult | null>(null);
   const [stories, setStories] = useState<string[]>([]);
   const [ativo, setAtivo] = useState(0);
+  const [tipoCarrossel, setTipoCarrossel] = useState<TipoCarrossel>("auto");
   const at = handle || "diogo.mell0";
 
   useEffect(() => {
@@ -89,6 +99,15 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
     return [...(h?.alcance || []), ...(h?.nicho || []), ...(h?.micro || [])].join(" ");
   }, [res]);
 
+  const tipoCarrosselHint = (tipo: TipoCarrossel): string => {
+    if (tipo === "mce") return "O coach escolheu o tipo de carrossel MCE Drop — sugira carrossel.tipo = MCE.";
+    if (tipo === "nexus")
+      return "O coach escolheu o tipo de carrossel NEXUS-BIO — sugira carrossel.tipo = NEXUS_PEPTIDEO ou NEXUS_MICROBIOTA, o que fizer mais sentido pela foto.";
+    if (tipo === "nutrion")
+      return "O coach escolheu o tipo de carrossel nutriON — carrossel.tipo = MCE, mas o tema_sugerido precisa ser sobre nutrição/alimentação prática.";
+    return "";
+  };
+
   const analisar = async (f: File) => {
     setFile(f);
     setRes(null);
@@ -98,7 +117,10 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
       const base64 = await compressImageFile(f, 1024);
       if (!base64) throw new Error("Não consegui ler essa foto.");
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
-        body: { mode: "photo_all", topic: tema || "conteúdo do dia", handle: at, images: [base64] },
+        body: {
+          mode: "photo_all", topic: tema || "conteúdo do dia", handle: at, images: [base64],
+          notes: tipoCarrosselHint(tipoCarrossel) || undefined,
+        },
       });
       if (error) throw new Error(error.message);
       if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error!);
@@ -134,6 +156,21 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         <button onClick={onClose} style={acao(C.muted)}>FECHAR</button>
       </div>
 
+      <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.muted, marginBottom: 6 }}>
+        TIPO DE CARROSSEL
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+        {TIPO_CARROSSEL_OPTIONS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTipoCarrossel((cur) => (cur === t.id ? "auto" : t.id))}
+            style={acao(tipoCarrossel === t.id ? C.gold : C.muted)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <input
         ref={inputRef}
         type="file"
@@ -143,7 +180,14 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         onChange={(e) => {
           const f = e.target.files?.[0];
           e.target.value = "";
-          if (f) void analisar(f);
+          if (!f) return;
+          if (tipoCarrossel === "resultado") {
+            setFile(f);
+            setRes(null);
+            setStories([]);
+          } else {
+            void analisar(f);
+          }
         }}
       />
 
@@ -153,11 +197,19 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         </button>
       </div>
 
+      {tipoCarrossel === "resultado" && (
+        <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 12 }}>
+          Conecte sua evolução com o protocolo que você usou. Prova real.
+        </div>
+      )}
+
       {photoUrl && !stories.length && (
         <img src={photoUrl} alt="Foto enviada pelo coach" style={{ width: "100%", maxHeight: 240, objectFit: "cover", borderRadius: 10, marginBottom: 12 }} />
       )}
 
-      {res && (
+      {tipoCarrossel === "resultado" && file && <ResultadoProtocoloPanel file={file} handle={at} />}
+
+      {tipoCarrossel !== "resultado" && res && (
         <>
           <Bloco titulo="LEITURA DA FOTO" cor={C.green}>
             <div style={{ fontFamily: F.b, fontSize: 12, color: C.text, marginBottom: 6 }}>
