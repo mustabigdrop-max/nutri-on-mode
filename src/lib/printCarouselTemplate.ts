@@ -127,7 +127,13 @@ const drawTextura = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
   }
 };
 
-const drawTagPill = (ctx: CanvasRenderingContext2D, texto: string, x: number, y: number, cor = PRINT_TPL.gold) => {
+const drawTagPill = (
+  ctx: CanvasRenderingContext2D,
+  texto: string,
+  x: number,
+  y: number,
+  cor: string = PRINT_TPL.gold,
+) => {
   ctx.font = font(700, px(11));
   const w = ctx.measureText(texto.toUpperCase()).width + px(28);
   roundRect(ctx, x, y, w, px(34), px(17));
