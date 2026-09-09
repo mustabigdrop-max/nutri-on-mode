@@ -47,6 +47,16 @@ const norm = (s: string) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
+const TERMOS_POR_TIPO: Record<string, string[]> = {
+  pull: ["costas", "dorsal", "dorsais", "biceps", "trapezio"],
+  push: ["peito", "peitoral", "triceps", "ombro", "ombros", "deltoide"],
+  legs: ["pernas", "quadriceps", "posterior", "gluteo", "gluteos", "panturrilha"],
+  upper: ["costas", "dorsal", "peito", "peitoral", "ombro", "bracos"],
+  lower: ["pernas", "quadriceps", "posterior", "gluteo", "panturrilha"],
+};
+
+const ehCardio = (tipo: string | null) => /cardio|liss|z2|hiit|aerob/i.test(tipo || "");
+
 const mapExercicio = (e: {
   name: string;
   muscle_target?: string;
@@ -90,7 +100,10 @@ function escolherDia(
 ): { dia: ParsedDay; sincronizado: boolean } | null {
   const alvo = norm(tipoAgenda || "");
   if (alvo) {
-    const termos = alvo.split(/[^a-z]+/).filter((t) => t.length > 3);
+    const chave = Object.keys(TERMOS_POR_TIPO).find((tipo) => alvo.includes(tipo));
+    const termos = chave
+      ? TERMOS_POR_TIPO[chave]
+      : alvo.split(/[^a-z]+/).filter((t) => t.length > 3);
     let melhor: ParsedDay | null = null;
     let melhorScore = 0;
     for (const d of dias) {
@@ -143,10 +156,14 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
   if (!dias.length) return null;
 
   const agenda = (agendaRows || []) as AgendaRow[];
-  const agendaHoje = agenda.find((row) => row.day_of_week === dow);
+  const agendaDoDia = agenda.filter((row) => row.day_of_week === dow);
+  // O post enfatiza musculação: uma sessão de cardio do mesmo dia nunca deve
+  // deslocar Pull/Push/Legs nem selecionar a sessão de outro dia do protocolo.
+  const agendaHoje = agendaDoDia.find((row) => !ehCardio(row.workout_type)) || agendaDoDia[0];
   if (!agendaHoje) return null;
 
-  const diasAgendados = Array.from(new Set(agenda.map((row) => row.day_of_week)))
+  const agendaMusculacao = agenda.filter((row) => !ehCardio(row.workout_type));
+  const diasAgendados = Array.from(new Set(agendaMusculacao.map((row) => row.day_of_week)))
     .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
   const indiceNaSemana = diasAgendados.indexOf(dow);
   const selecionado = escolherDia(dias, agendaHoje.workout_type || undefined, indiceNaSemana);
