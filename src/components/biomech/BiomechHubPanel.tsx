@@ -19,6 +19,10 @@ import {
   renderBiomechCarousel, BIOMECH_SLIDE_LABELS, BIOMECH_TPL, type BiomechCarouselContent,
 } from "@/lib/biomechCarouselTemplate";
 import { renderStoryFrames, type StoryScript } from "@/lib/storyFrameTemplate";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { biomechToTech } from "@/lib/techAdapters";
 import {
   historicoDoExercicio, registrarGeracao, dataCurta, type BiomechHistoricoItem,
 } from "@/lib/biomechHistorico";
@@ -135,6 +139,8 @@ export default function BiomechHubPanel({
   const [loading, setLoading] = useState(false);
   const [citacoes, setCitacoes] = useState<string[]>([]);
   const [slides, setSlides] = useState<string[]>([]);
+  const [bioContent, setBioContent] = useState<BiomechCarouselContent | null>(null);
+  const [style, setStyle] = useCarouselStyle();
   const [legendaEditada, setLegendaEditada] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const [storiesImgs, setStoriesImgs] = useState<string[]>([]);
@@ -159,6 +165,19 @@ export default function BiomechHubPanel({
   useEffect(() => {
     if (formatoInicial) setFormato(formatoInicial);
   }, [formatoInicial]);
+
+  // Renderiza o carrossel no estilo escolhido (clássico ou tech científico).
+  useEffect(() => {
+    if (!bioContent) return;
+    let vivo = true;
+    (async () => {
+      const imgs = style === "tech"
+        ? await renderTechSlides(biomechToTech(bioContent), { handle: bioContent.handle || at })
+        : renderBiomechCarousel(bioContent);
+      if (vivo) setSlides(imgs);
+    })();
+    return () => { vivo = false; };
+  }, [bioContent, style, at]);
 
   /** Pesquisa real da vault: uma aba, ou as 5 quando o foco é "completo". */
   const buscarPesquisa = useCallback(async (f: Foco) => {
@@ -213,6 +232,7 @@ export default function BiomechHubPanel({
   const gerar = async (f: Foco = foco, ang: Angulo = angulo, fm: Formato = formato) => {
     setLoading(true);
     setSlides([]);
+    setBioContent(null);
     setStoriesImgs([]);
     setReels(null);
     try {
@@ -241,7 +261,7 @@ export default function BiomechHubPanel({
           aplicacao: { titulo: r.aplicacao?.titulo || "Como aplicar no treino", corpo: r.aplicacao?.corpo || "" },
           fontes: bio.citations,
         };
-        setSlides(renderBiomechCarousel(content));
+        setBioContent(content);
         setActive(0);
         legendaFinalTxt = cleanCaption(r.legenda || "");
         registrarGeracao({ exercicio, formato: "carrossel", foco: f, angulo: ang });
@@ -359,6 +379,10 @@ export default function BiomechHubPanel({
               {fm.emoji} {fm.label.toUpperCase()}
             </button>
           ))}
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <CarouselStyleSwitch style={style} onChange={setStyle} disabled={loading} />
         </div>
 
         <button onClick={() => void gerar()} disabled={loading} style={{ ...acao(C.gold), width: "100%", opacity: loading ? 0.6 : 1 }}>

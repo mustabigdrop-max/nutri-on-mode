@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, Images, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { treinoHojeToTech } from "@/lib/techAdapters";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
 import SlideTextEditor from "@/components/social/SlideTextEditor";
 import {
@@ -46,6 +50,13 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
   const [fotoImg, setFotoImg] = useState<HTMLImageElement | null>(null);
   const [protocolos, setProtocolos] = useState<ProtocoloOpcao[]>([]);
   const [protocoloId, setProtocoloId] = useState<string>("");
+  const [style, setStyle] = useCarouselStyle();
+
+  /** Carrossel no estilo escolhido: clássico (foto na capa) ou tech científico. */
+  const renderCarrossel = async (t: TreinoHoje, foto: HTMLImageElement | null, estilo: typeof style) =>
+    estilo === "tech"
+      ? renderTechSlides(treinoHojeToTech(t), { handle: at })
+      : renderTreinoHojeCarousel(t, foto, at);
 
   const carregar = async (id?: string) => {
     setCarregando(true);
@@ -77,7 +88,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
     try {
       const foto = file ? await loadPhoto(file) : null;
       setFotoImg(foto);
-      setSlides(renderTreinoHojeCarousel(treino, foto, at));
+      setSlides(await renderCarrossel(treino, foto, style));
       setStories(renderTreinoHojeStories(treino, foto, at));
       setAtivo(0);
       toast.success("Post do treino de hoje pronto.");
@@ -161,6 +172,8 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
         </ul>
       </div>
 
+      <CarouselStyleSwitch style={style} onChange={setStyle} disabled={gerando} />
+
       <div className="flex flex-wrap gap-2">
         <Button className="gap-2" disabled={gerando} onClick={() => void gerar()}>
           {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Images className="h-4 w-4" />}
@@ -202,7 +215,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
             content={treino}
             onApply={(next) => {
               setTreino(next);
-              setSlides(renderTreinoHojeCarousel(next, fotoImg, at));
+              void renderCarrossel(next, fotoImg, style).then(setSlides);
               setStories(renderTreinoHojeStories(next, fotoImg, at));
             }}
           />

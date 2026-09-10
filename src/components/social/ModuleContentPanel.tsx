@@ -7,6 +7,10 @@ import SaveShareButtons from "@/components/social/SaveShareButtons";
 import InstagramAcoesPanel from "@/components/social/InstagramAcoesPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { renderModuleCarousel, type ModuleSlide } from "@/lib/moduleCarouselTemplate";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { moduleToTech } from "@/lib/techAdapters";
 import { renderStoryFrames, type StoryFrame } from "@/lib/storyFrameTemplate";
 import {
   CONFIGS_MODULO,
@@ -80,6 +84,26 @@ export default function ModuleContentPanel({
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [slides, setSlides] = useState<string[]>([]);
   const [stories, setStories] = useState<string[]>([]);
+  const [slidesBrutos, setSlidesBrutos] = useState<ModuleSlide[] | null>(null);
+  const [style, setStyle] = useCarouselStyle();
+
+  /** Desenha os slides do módulo no estilo escolhido. */
+  const renderSlidesModulo = async (brutos: ModuleSlide[], estilo: typeof style) =>
+    estilo === "tech"
+      ? renderTechSlides(moduleToTech(brutos, config.titulo), { handle })
+      : renderModuleCarousel(brutos, handle, config.titulo);
+
+  // Ao trocar o estilo, redesenha o carrossel já gerado.
+  useEffect(() => {
+    if (!slidesBrutos?.length) return;
+    let vivo = true;
+    void (async () => {
+      const imgs = await renderSlidesModulo(slidesBrutos, style);
+      if (vivo) setSlides(imgs);
+    })();
+    return () => { vivo = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slidesBrutos, style]);
 
   useEffect(() => {
     let vivo = true;
@@ -101,6 +125,7 @@ export default function ModuleContentPanel({
     setGerando(`${tipo.id}-${formatos.join()}`);
     setResultado(null);
     setSlides([]);
+    setSlidesBrutos(null);
     setStories([]);
     try {
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
@@ -125,7 +150,7 @@ export default function ModuleContentPanel({
       setResultado(res);
 
       if (formatos.includes("carrossel") && res.carrossel?.slides?.length) {
-        setSlides(renderModuleCarousel(res.carrossel.slides, handle, config.titulo));
+        setSlidesBrutos(res.carrossel.slides);
       }
       if (formatos.includes("stories") && res.stories?.frames?.length) {
         setStories(renderStoryFrames({ frames: paraStoryFrames(res.stories.frames) }, handle));
@@ -148,6 +173,8 @@ export default function ModuleContentPanel({
           {contexto ? contexto.resumo : "Lendo os dados desta tela…"}
         </p>
       </div>
+
+      <CarouselStyleSwitch style={style} onChange={setStyle} disabled={!!gerando} />
 
       <div className="rounded-lg border border-primary/40 bg-primary/5 p-3">
         <p className="text-xs font-bold uppercase tracking-wide text-primary">⚡ Melhor pra hoje</p>

@@ -15,6 +15,10 @@ import {
   type RefeicaoRegistrada,
 } from "@/lib/refeicaoData";
 import { renderRefeicaoCarousel, type RefeicaoSlide } from "@/lib/refeicaoCarouselTemplate";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { refeicaoToTech } from "@/lib/techAdapters";
 import { renderRefeicaoStories, type RefeicaoStoryFrame } from "@/lib/refeicaoStoriesTemplate";
 
 const AMBER = "#EF9F27";
@@ -144,6 +148,19 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
   const [carregando, setCarregando] = useState(true);
   const [loading, setLoading] = useState<string | null>(null);
   const [carrossel, setCarrossel] = useState<string[]>([]);
+  const [slidesRefeicao, setSlidesRefeicao] = useState<RefeicaoSlide[] | null>(null);
+  const [style, setStyle] = useCarouselStyle();
+
+  // Troca de estilo redesenha o carrossel de refeição já gerado (versão sem foto no tech).
+  useEffect(() => {
+    if (!slidesRefeicao?.length || style !== "tech") return;
+    let vivo = true;
+    void (async () => {
+      const imgs = await renderTechSlides(refeicaoToTech(slidesRefeicao), { handle });
+      if (vivo) setCarrossel(imgs);
+    })();
+    return () => { vivo = false; };
+  }, [slidesRefeicao, style, handle]);
   const [stories, setStories] = useState<string[]>([]);
   const [reels, setReels] = useState<ReelsAI | null>(null);
   const [legenda, setLegenda] = useState("");
@@ -210,7 +227,13 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
       if (formato === "carrossel") {
         const ai = result as CarrosselAI;
         if (!dados) throw new Error("Sem plano alimentar de hoje para essa refeição.");
-        setCarrossel(renderRefeicaoCarousel(montarSlides(dados, ai), handle, photo));
+        const brutos = montarSlides(dados, ai);
+        setSlidesRefeicao(brutos);
+        setCarrossel(
+          style === "tech"
+            ? await renderTechSlides(refeicaoToTech(brutos), { handle })
+            : renderRefeicaoCarousel(brutos, handle, photo),
+        );
         setLegenda(cleanCaption(ai.legenda));
         setHashtags([...(ai.hashtags?.alcance || []), ...(ai.hashtags?.nicho || []), ...(ai.hashtags?.micro || [])]);
         setTiming(ai.timing || null);
@@ -329,6 +352,10 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
               )}
             </div>
           )}
+
+          <div className="mb-2">
+            <CarouselStyleSwitch style={style} onChange={setStyle} disabled={!!loading} />
+          </div>
 
           <div className="grid gap-2 sm:grid-cols-3">
             {(
