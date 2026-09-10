@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronDown, ChevronUp, AlertTriangle, Shield, Brain, Dumbbell, Syringe, Pill, FlaskConical, Leaf, Clock, Bug, ShieldAlert, HeartPulse } from "lucide-react";
 import MicrobiomeScoreCalculator from "./MicrobiomeScoreCalculator";
+import NexusContentCreator from "@/components/nexus/NexusContentCreator";
 
 interface MicrobiotaSection {
   id: string;
@@ -36,6 +37,11 @@ const SectionCard = ({ section }: { section: MicrobiotaSection }) => {
       {open && (
         <CardContent className="pt-0 px-4 pb-4 text-xs text-muted-foreground leading-relaxed space-y-3">
           {section.content}
+          <NexusContentCreator
+            nome={section.title}
+            origem="MicrobiotaVault"
+            contexto={`Tema de microbiota intestinal do nutriON: ${section.title}${section.badge ? ` (${section.badge})` : ""}. Use ciência real de microbiota: cepas, fibras, SCFAs, eixo intestino-cérebro, permeabilidade e imunidade.`}
+          />
         </CardContent>
       )}
     </Card>
