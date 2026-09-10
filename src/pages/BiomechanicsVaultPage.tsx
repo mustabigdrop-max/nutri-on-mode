@@ -58,9 +58,26 @@ const BiomechanicsVaultPage = () => {
     { exercicio: string; angulo: SugestaoAngulo; formato: SugestaoFormato } | null
   >(null);
 
+  const [protocolos, setProtocolos] = useState<ProtocoloOpcao[]>([]);
+  const [protocoloId, setProtocoloId] = useState("");
+
   useEffect(() => {
-    getTreinoDeHoje().then(setTreino).catch(() => setTreino(null));
+    (async () => {
+      const lista = await listarProtocolosTreino();
+      setProtocolos(lista);
+      const salvo = getProtocoloPreferido();
+      const inicial = (salvo && lista.some((p) => p.id === salvo) ? salvo : lista[0]?.id) || "";
+      setProtocoloId(inicial);
+      getTreinoDeHoje(inicial || undefined).then(setTreino).catch(() => setTreino(null));
+    })().catch(() => setTreino(null));
   }, []);
+
+  const trocarProtocolo = (id: string) => {
+    setProtocoloId(id);
+    setProtocoloPreferido(id);
+    setTreino(null);
+    getTreinoDeHoje(id).then(setTreino).catch(() => setTreino(null));
+  };
 
   /** Descobre o grupo muscular a partir do nome do exercício da sessão. */
   const grupoDoExercicio = (nome: string) => {
