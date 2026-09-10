@@ -225,7 +225,7 @@ const FitoSectionCard = ({ item }: { item: Fitoterapico }) => {
             origem="FitoVault"
             compoundData={item}
             contexto={`Fitoterápico ${item.nome}${item.nome_cientifico ? ` (${item.nome_cientifico})` : ""}. Mecanismo: ${item.mecanismo || "—"}. Indicações: ${(item.indicacoes || []).join("; ") || "—"}. Contraindicações: ${(item.contraindicoes || []).join("; ") || "—"}. Nível de evidência: ${item.evidencia || "—"}.`}
-          />]
+          />
         </CardContent>
       )}
     </Card>
