@@ -148,6 +148,19 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
   const [carregando, setCarregando] = useState(true);
   const [loading, setLoading] = useState<string | null>(null);
   const [carrossel, setCarrossel] = useState<string[]>([]);
+  const [slidesRefeicao, setSlidesRefeicao] = useState<RefeicaoSlide[] | null>(null);
+  const [style, setStyle] = useCarouselStyle();
+
+  // Troca de estilo redesenha o carrossel de refeição já gerado (versão sem foto no tech).
+  useEffect(() => {
+    if (!slidesRefeicao?.length || style !== "tech") return;
+    let vivo = true;
+    void (async () => {
+      const imgs = await renderTechSlides(refeicaoToTech(slidesRefeicao), { handle });
+      if (vivo) setCarrossel(imgs);
+    })();
+    return () => { vivo = false; };
+  }, [slidesRefeicao, style, handle]);
   const [stories, setStories] = useState<string[]>([]);
   const [reels, setReels] = useState<ReelsAI | null>(null);
   const [legenda, setLegenda] = useState("");
