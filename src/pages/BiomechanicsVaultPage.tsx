@@ -15,6 +15,9 @@ import ReactMarkdown from "react-markdown";
 import BiomechHubPanel from "@/components/biomech/BiomechHubPanel";
 import { potencialDoExercicio, POTENCIAL_LABEL, POTENCIAL_COR } from "@/lib/biomechPotencial";
 import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
+import TreinoHojeSugestoes, {
+  type SugestaoAngulo, type SugestaoFormato,
+} from "@/components/biomech/TreinoHojeSugestoes";
 
 const muscleGroups = [
   "Peitoral", "Costas (Lat)", "Deltoides", "Bíceps", "Tríceps",
