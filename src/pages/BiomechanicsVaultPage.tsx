@@ -14,7 +14,10 @@ import ScienceIndicator from "@/components/science/ScienceIndicator";
 import ReactMarkdown from "react-markdown";
 import BiomechHubPanel from "@/components/biomech/BiomechHubPanel";
 import { potencialDoExercicio, POTENCIAL_LABEL, POTENCIAL_COR } from "@/lib/biomechPotencial";
-import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
+import {
+  getProtocoloPreferido, getTreinoDeHoje, listarProtocolosTreino, setProtocoloPreferido,
+  type ProtocoloOpcao, type TreinoHoje,
+} from "@/lib/treinoHojeData";
 import TreinoHojeSugestoes, {
   type SugestaoAngulo, type SugestaoFormato,
 } from "@/components/biomech/TreinoHojeSugestoes";
@@ -55,9 +58,26 @@ const BiomechanicsVaultPage = () => {
     { exercicio: string; angulo: SugestaoAngulo; formato: SugestaoFormato } | null
   >(null);
 
+  const [protocolos, setProtocolos] = useState<ProtocoloOpcao[]>([]);
+  const [protocoloId, setProtocoloId] = useState("");
+
   useEffect(() => {
-    getTreinoDeHoje().then(setTreino).catch(() => setTreino(null));
+    (async () => {
+      const lista = await listarProtocolosTreino();
+      setProtocolos(lista);
+      const salvo = getProtocoloPreferido();
+      const inicial = (salvo && lista.some((p) => p.id === salvo) ? salvo : lista[0]?.id) || "";
+      setProtocoloId(inicial);
+      getTreinoDeHoje(inicial || undefined).then(setTreino).catch(() => setTreino(null));
+    })().catch(() => setTreino(null));
   }, []);
+
+  const trocarProtocolo = (id: string) => {
+    setProtocoloId(id);
+    setProtocoloPreferido(id);
+    setTreino(null);
+    getTreinoDeHoje(id).then(setTreino).catch(() => setTreino(null));
+  };
 
   /** Descobre o grupo muscular a partir do nome do exercício da sessão. */
   const grupoDoExercicio = (nome: string) => {
@@ -116,6 +136,23 @@ const BiomechanicsVaultPage = () => {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 space-y-6">
+        {/* Qual protocolo do TrainingON usar como treino de hoje */}
+        {protocolos.length > 1 && (
+          <div className="rounded-xl p-3" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="text-[10px] tracking-widest" style={{ color: "#9ca3af" }}>PROTOCOLO DO TRAININGON</div>
+            <select
+              value={protocoloId}
+              onChange={(e) => trocarProtocolo(e.target.value)}
+              className="mt-2 w-full rounded-md p-2 text-sm"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(74,222,128,0.15)", color: "#f0fdf4" }}
+            >
+              {protocolos.map((p) => (
+                <option key={p.id} value={p.id} style={{ background: "#0a0f0a" }}>{p.nome}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Treino real de hoje (TrainingON) */}
         {treino?.exercicios?.length ? (
           <div className="rounded-xl p-4" style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.25)" }}>

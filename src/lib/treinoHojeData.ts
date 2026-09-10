@@ -136,6 +136,28 @@ function escolherDia(
 
 export type ProtocoloOpcao = { id: string; nome: string; criadoEm: string };
 
+/**
+ * Protocolo escolhido pelo coach. O mais recente do banco pode ser de outro
+ * aluno, então a escolha fica salva e vale em todas as telas.
+ */
+const PREF_PROTOCOLO = "nutrion:treino-protocolo";
+
+export function getProtocoloPreferido(): string | null {
+  try {
+    return localStorage.getItem(PREF_PROTOCOLO);
+  } catch {
+    return null;
+  }
+}
+
+export function setProtocoloPreferido(id: string) {
+  try {
+    localStorage.setItem(PREF_PROTOCOLO, id);
+  } catch {
+    /* storage indisponível */
+  }
+}
+
 /** Lista os protocolos do usuário para escolher qual sincronizar. */
 export async function listarProtocolosTreino(): Promise<ProtocoloOpcao[]> {
   const { data: auth } = await supabase.auth.getUser();
@@ -167,16 +189,16 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
   const hojeLocal = dataSaoPaulo();
   const dow = hojeLocal.dow;
 
-  let protoQuery = supabase
-    .from("training_protocols")
-    .select("protocol_text")
-    .eq("user_id", uid);
-  protoQuery = protocoloId
-    ? protoQuery.eq("id", protocoloId)
-    : protoQuery.order("created_at", { ascending: false }).limit(1);
+  const idEscolhido = protocoloId || getProtocoloPreferido() || undefined;
+  const buscarProtocolo = async (id?: string) => {
+    let q = supabase.from("training_protocols").select("protocol_text").eq("user_id", uid);
+    q = id ? q.eq("id", id) : q.order("created_at", { ascending: false }).limit(1);
+    const { data } = await q.maybeSingle();
+    return data;
+  };
 
-  const [{ data: proto }, { data: agendaRows }] = await Promise.all([
-    protoQuery.maybeSingle(),
+  const [protoEscolhido, { data: agendaRows }] = await Promise.all([
+    buscarProtocolo(idEscolhido),
     supabase
       .from("workout_schedule")
       .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
@@ -185,6 +207,8 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
       .order("slot", { ascending: true }),
   ]);
 
+  // Protocolo salvo pode ter sido apagado: cai para o mais recente do usuário.
+  const proto = protoEscolhido || (idEscolhido ? await buscarProtocolo() : null);
   const parsed = proto?.protocol_text ? parseProtocolToDays(proto.protocol_text as unknown) : null;
   const dias = (parsed?.days || []).filter((d) => Array.isArray(d.exercises) && d.exercises.length > 0);
   if (!dias.length) return null;

@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
 import SlideTextEditor from "@/components/social/SlideTextEditor";
 import {
+  getProtocoloPreferido,
   getTreinoDeHoje,
   listarProtocolosTreino,
+  setProtocoloPreferido,
   type ProtocoloOpcao,
   type TreinoHoje,
 } from "@/lib/treinoHojeData";
@@ -60,7 +62,8 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
     void (async () => {
       const lista = await listarProtocolosTreino();
       setProtocolos(lista);
-      const inicial = lista[0]?.id || "";
+      const salvo = getProtocoloPreferido();
+      const inicial = (salvo && lista.some((p) => p.id === salvo) ? salvo : lista[0]?.id) || "";
       setProtocoloId(inicial);
       await carregar(inicial);
     })();
@@ -122,6 +125,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
             value={protocoloId}
             onChange={(e) => {
               setProtocoloId(e.target.value);
+              setProtocoloPreferido(e.target.value);
               setSlides([]);
               setStories([]);
               void carregar(e.target.value);
