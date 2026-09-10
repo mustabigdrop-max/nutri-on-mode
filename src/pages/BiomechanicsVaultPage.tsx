@@ -12,6 +12,9 @@ import { motion } from "framer-motion";
 import CitationBadge from "@/components/science/CitationBadge";
 import ScienceIndicator from "@/components/science/ScienceIndicator";
 import ReactMarkdown from "react-markdown";
+import BiomechHubPanel from "@/components/biomech/BiomechHubPanel";
+import { potencialDoExercicio, POTENCIAL_LABEL, POTENCIAL_COR } from "@/lib/biomechPotencial";
+import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 
 const muscleGroups = [
   "Peitoral", "Costas (Lat)", "Deltoides", "Bíceps", "Tríceps",
