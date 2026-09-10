@@ -39,7 +39,7 @@ export const BIOMECH_CTA_SLIDE = {
   titulo: "Quer a execução perfeita desse exercício?",
   subtitulo: "Análise biomecânica completa de cada exercício no nutriON.",
   caixa: "Link na bio",
-  caixaSub: "BiomechanicsVault · Dual-AI + estudos reais",
+  caixaSub: "BiomechanicsVault · estudos reais",
 } as const;
 
 const S = 3;
@@ -73,9 +73,26 @@ const drawRich = (ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   const styleFor = (hi: boolean) =>
     `${hi && o.hiItalic ? "italic " : ""}${hi ? o.hiWeight || o.weight : o.weight} ${px(o.size)}px Inter, system-ui, sans-serif`;
 
+  // Palavras maiores que a coluna (URLs, termos longos) precisam ser quebradas,
+  // senão vazam para fora da arte.
+  const quebrar = (word: Token): Token[] => {
+    ctx.font = styleFor(word.hi);
+    if (ctx.measureText(word.text).width <= o.maxWidth) return [word];
+    const partes: Token[] = [];
+    let atual = "";
+    for (const ch of word.text) {
+      if (atual && ctx.measureText(atual + ch).width > o.maxWidth) {
+        partes.push({ text: atual, hi: word.hi });
+        atual = ch;
+      } else atual += ch;
+    }
+    if (atual) partes.push({ text: atual, hi: word.hi });
+    return partes;
+  };
+
   const lines: Token[][] = [[]];
   let width = 0;
-  for (const word of words) {
+  for (const word of words.flatMap(quebrar)) {
     ctx.font = styleFor(word.hi);
     const w = ctx.measureText(`${word.text} `).width;
     if (width + w > o.maxWidth && lines[lines.length - 1].length) {
@@ -104,6 +121,30 @@ const drawRich = (ctx: CanvasRenderingContext2D, text: string, x: number, y: num
     cursorY += lh;
   }
   return cursorY;
+};
+
+/** Corta o texto na largura disponível, sempre com reticências — nunca vaza. */
+const truncar = (ctx: CanvasRenderingContext2D, texto: string, maxWidth: number) => {
+  if (ctx.measureText(texto).width <= maxWidth) return texto;
+  let corte = texto;
+  while (corte.length > 1 && ctx.measureText(`${corte}…`).width > maxWidth) corte = corte.slice(0, -1);
+  return `${corte}…`;
+};
+
+/** Transforma a URL da pesquisa em domínio legível + caminho curto. */
+const fonteInfo = (fonte: string): { dominio: string; resto: string } => {
+  const bruto = (fonte || "").trim();
+  const m = bruto.match(/^https?:\/\/([^/]+)(\/.*)?$/i);
+  if (!m) {
+    const [primeira, ...rest] = bruto.split(" — ");
+    return { dominio: primeira, resto: rest.join(" — ") };
+  }
+  const dominio = m[1].replace(/^www\./i, "");
+  const caminho = decodeURIComponent(m[2] || "")
+    .replace(/\.(html?|php|pdf)$/i, "")
+    .replace(/[/_-]+/g, " ")
+    .trim();
+  return { dominio, resto: caminho };
 };
 
 const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
@@ -151,10 +192,13 @@ const pill = (
   return y + h;
 };
 
-const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string) =>
+const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
   drawSlideFooter(ctx, w, h, handle, {
-    ink: BIOMECH_TPL.ink, accent: BIOMECH_TPL.gold, handleColor: BIOMECH_TPL.footerMuted,
-    background: BIOMECH_TPL.bg, scale: S,
+    ink: dark ? BIOMECH_TPL.bg : BIOMECH_TPL.ink,
+    accent: dark ? BIOMECH_TPL.bg : BIOMECH_TPL.gold,
+    handleColor: dark ? BIOMECH_TPL.ctaSub : BIOMECH_TPL.footerMuted,
+    background: dark ? BIOMECH_TPL.gold : BIOMECH_TPL.bg,
+    scale: S,
   });
 
 const canvasOf = (w: number, h: number) => {
@@ -175,18 +219,27 @@ const pontosSlide = (numero: number, itens: BiomechPonto[], handle: string, w: n
   const x = px(28);
   let y = px(64);
   y = pill(ctx, `O QUE A CIÊNCIA MOSTRA ${numero}`, x, y, { bg: `${BIOMECH_TPL.green}20`, color: BIOMECH_TPL.green, border: `${BIOMECH_TPL.green}40` });
-  y += px(44);
-  for (const item of itens) {
-    y = drawRich(ctx, item.titulo, x, y, {
-      size: 15, weight: 900, color: BIOMECH_TPL.ink, accent: BIOMECH_TPL.green, lineHeight: 1.25, maxWidth: w - x * 2,
+  y += px(48);
+  const colX = x + px(46);
+  const colW = w - colX - x;
+  itens.forEach((item, i) => {
+    if (y > h - px(90)) return;
+    if (i > 0) {
+      ctx.fillStyle = `${BIOMECH_TPL.green}26`;
+      ctx.fillRect(x, y - px(20), w - x * 2, px(1));
+    }
+    ctx.font = font(900, 13);
+    ctx.fillStyle = BIOMECH_TPL.green;
+    ctx.fillText(String(i + 1).padStart(2, "0"), x, y + px(15));
+    y = drawRich(ctx, item.titulo, colX, y, {
+      size: 18, weight: 900, color: BIOMECH_TPL.ink, accent: BIOMECH_TPL.green, lineHeight: 1.22, maxWidth: colW,
     });
-    y += px(6);
-    y = drawRich(ctx, item.corpo, x, y, {
-      size: 11, weight: 300, color: BIOMECH_TPL.muted, accent: BIOMECH_TPL.green, lineHeight: 1.65, maxWidth: w - x * 2, hiWeight: 700,
+    y += px(8);
+    y = drawRich(ctx, item.corpo, colX, y, {
+      size: 12.5, weight: 300, color: BIOMECH_TPL.muted, accent: BIOMECH_TPL.green, lineHeight: 1.6, maxWidth: colW, hiWeight: 700,
     });
-    y += px(22);
-    if (y > slideContentBottom(h) - px(30)) break;
-  }
+    y += px(46);
+  });
   footer(ctx, w, h, handle);
   return canvas.toDataURL("image/png");
 };
@@ -217,7 +270,7 @@ export const renderBiomechCarousel = (content: BiomechCarouselContent, w = 1080,
     });
     ctx.font = font(500, 11);
     ctx.fillStyle = BIOMECH_TPL.gold;
-    ctx.fillText(content.exercicio.toUpperCase(), x, slideContentBottom(h) - px(8));
+    ctx.fillText(content.exercicio.toUpperCase(), x, h - px(18));
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -282,24 +335,51 @@ export const renderBiomechCarousel = (content: BiomechCarouselContent, w = 1080,
     ctx.fillStyle = BIOMECH_TPL.bg;
     ctx.fillRect(0, 0, w, h);
     orb(ctx, px(20), px(30), px(140), BIOMECH_TPL.green);
-    let y = px(64);
+    let y = px(52);
     y = pill(ctx, "FONTES", x, y, { color: BIOMECH_TPL.green, border: `${BIOMECH_TPL.green}40` });
-    y += px(46);
+    y += px(42);
     y = drawRich(ctx, "De onde vem esse conteúdo", x, y, {
       size: 18, weight: 900, color: BIOMECH_TPL.ink, accent: BIOMECH_TPL.green, lineHeight: 1.25, maxWidth: w - x * 2,
     });
-    y += px(24);
-    const fontes = content.fontes.length ? content.fontes.slice(0, 5) : ["Pesquisa em andamento — consulte o app pra ver as fontes completas."];
-    for (const f of fontes) {
-      ctx.font = font(700, 11);
-      ctx.fillStyle = BIOMECH_TPL.green;
-      ctx.fillText("▸", x, y);
-      y = drawRich(ctx, f, x + px(16), y, {
-        size: 10, weight: 300, color: BIOMECH_TPL.soft, accent: BIOMECH_TPL.green, lineHeight: 1.6, maxWidth: w - x * 2 - px(16),
+    y += px(10);
+    ctx.font = font(400, 10);
+    ctx.fillStyle = BIOMECH_TPL.muted;
+    ctx.fillText("Referências consultadas na análise deste exercício", x, y + px(12));
+    y += px(28);
+
+    const fontes = content.fontes.length ? content.fontes.slice(0, 5) : [];
+    const colW = w - x * 2;
+    if (!fontes.length) {
+      drawRich(ctx, "Pesquisa em andamento — as referências completas ficam no app.", x, y + px(4), {
+        size: 11, weight: 300, color: BIOMECH_TPL.soft, accent: BIOMECH_TPL.green, lineHeight: 1.6, maxWidth: colW,
       });
-      y += px(14);
-      if (y > slideContentBottom(h) - px(20)) break;
     }
+    fontes.forEach((f, i) => {
+      const { dominio, resto } = fonteInfo(f);
+      const cardH = px(40);
+      if (y + cardH > h - px(14)) return;
+      roundRect(ctx, x, y, colW, cardH, px(10));
+      ctx.fillStyle = `${BIOMECH_TPL.green}0D`;
+      ctx.fill();
+      ctx.lineWidth = px(1);
+      ctx.strokeStyle = `${BIOMECH_TPL.green}33`;
+      ctx.stroke();
+
+      ctx.font = font(900, 10);
+      ctx.fillStyle = BIOMECH_TPL.green;
+      ctx.fillText(String(i + 1).padStart(2, "0"), x + px(14), y + px(19));
+
+      ctx.font = font(700, 11);
+      ctx.fillStyle = BIOMECH_TPL.ink;
+      ctx.fillText(truncar(ctx, dominio, colW - px(60)), x + px(40), y + px(19));
+
+      if (resto) {
+        ctx.font = font(300, 9);
+        ctx.fillStyle = BIOMECH_TPL.muted;
+        ctx.fillText(truncar(ctx, resto, colW - px(60)), x + px(40), y + px(33));
+      }
+      y += cardH + px(8);
+    });
     footer(ctx, w, h, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -331,7 +411,7 @@ export const renderBiomechCarousel = (content: BiomechCarouselContent, w = 1080,
     ctx.font = font(400, 10);
     ctx.fillStyle = BIOMECH_TPL.muted;
     ctx.fillText(BIOMECH_CTA_SLIDE.caixaSub, x + px(16), y + px(44));
-    footer(ctx, w, h, handle);
+    footer(ctx, w, h, handle, true);
     out.push(canvas.toDataURL("image/png"));
   }
 

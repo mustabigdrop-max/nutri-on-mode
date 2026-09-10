@@ -134,6 +134,7 @@ export default function BiomechHubPanel({
   const [loading, setLoading] = useState(false);
   const [citacoes, setCitacoes] = useState<string[]>([]);
   const [slides, setSlides] = useState<string[]>([]);
+  const [legendaEditada, setLegendaEditada] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const [storiesImgs, setStoriesImgs] = useState<string[]>([]);
   const [reels, setReels] = useState<BiomechAI | null>(null);
@@ -260,6 +261,7 @@ export default function BiomechHubPanel({
       }
 
       setLegenda(legendaFinalTxt);
+      setLegendaEditada(null);
       setHistorico(historicoDoExercicio(exercicio));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar agora.");
@@ -280,7 +282,8 @@ export default function BiomechHubPanel({
   };
 
   const hashtags = hashtagsBiomech([grupo], grupo);
-  const legendaFinal = legenda ? `${legenda}\n\n${CONFIG_BIOMECH.cta_save}\n\n${hashtags.join(" ")}` : "";
+  const legendaBase = legenda ? `${legenda}\n\n${CONFIG_BIOMECH.cta_save}\n\n${hashtags.join(" ")}` : "";
+  const legendaFinal = legendaEditada ?? legendaBase;
 
   const CardSugestao = ({ tag, cor, s }: { tag: string; cor: string; s?: Sugestao }) => {
     if (!s?.titulo) return null;
@@ -417,8 +420,24 @@ export default function BiomechHubPanel({
 
       {!!legendaFinal && (
         <Bloco titulo="LEGENDA + HASHTAGS" cor={C.purple}>
-          <div style={{ fontFamily: F.b, fontSize: 12, color: C.text, whiteSpace: "pre-wrap", marginBottom: 10 }}>{legendaFinal}</div>
-          <button onClick={() => copiar(legendaFinal, "Legenda")} style={acao(C.purple)}>COPIAR LEGENDA + HASHTAGS</button>
+          <textarea
+            value={legendaFinal}
+            onChange={(e) => setLegendaEditada(e.target.value)}
+            spellCheck={false}
+            style={{
+              width: "100%", minHeight: 190, maxHeight: 340, resize: "vertical",
+              fontFamily: F.b, fontSize: 12, lineHeight: 1.65, color: C.text,
+              background: "rgba(255,255,255,0.03)", border: `1px solid ${C.purple}44`,
+              borderRadius: 10, padding: 12, marginBottom: 8, outline: "none",
+              overflowWrap: "anywhere", whiteSpace: "pre-wrap",
+            }}
+          />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => copiar(legendaFinal, "Legenda")} style={{ ...acao(C.purple), flex: 1 }}>COPIAR LEGENDA + HASHTAGS</button>
+            {legendaEditada !== null && (
+              <button onClick={() => setLegendaEditada(null)} style={acao(C.muted)}>RESTAURAR</button>
+            )}
+          </div>
         </Bloco>
       )}
 
