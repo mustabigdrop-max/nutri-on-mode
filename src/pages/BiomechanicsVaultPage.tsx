@@ -111,7 +111,7 @@ const BiomechanicsVaultPage = () => {
               {treino.exercicios.map((e) => (
                 <button
                   key={e.nome}
-                  onClick={() => { setSelectedExercise(e.nome); setSelectedMuscle(selectedMuscle || treino.grupoPrincipal || ""); setResult(null); }}
+                  onClick={() => { setSelectedExercise(e.nome); setSelectedMuscle(selectedMuscle || treino.grupos?.[0] || ""); setResult(null); }}
                   className="px-3 py-2 rounded-lg text-xs text-left"
                   style={{
                     background: selectedExercise === e.nome ? "rgba(232,160,32,0.16)" : "rgba(255,255,255,0.03)",
