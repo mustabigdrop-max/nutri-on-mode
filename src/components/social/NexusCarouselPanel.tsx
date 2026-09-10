@@ -20,6 +20,14 @@ import {
   type NexusCarouselContent,
   type NexusStatus,
 } from "@/lib/nexusCarouselTemplate";
+import { TECH_TPL, renderNexusTechCarousel } from "@/lib/nexusTechTemplate";
+
+type NexusStyle = "classico" | "tech";
+
+const NEXUS_STYLES: { id: NexusStyle; label: string; hint: string }[] = [
+  { id: "classico", label: "CLÁSSICO", hint: "âmbar nutriON" },
+  { id: "tech", label: "TECH CIENTÍFICO", hint: "ciano + dourado · diagrama" },
+];
 
 const norm = (v: string) => v.trim().toLowerCase();
 
