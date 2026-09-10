@@ -7,6 +7,7 @@
  * em `TechSlide[]` — nenhum dado é inventado aqui, só desenhado.
  */
 
+import { sanitizarConteudoPublico } from "@/lib/publicLanguage";
 import {
   TECH_PAD as PAD,
   TECH_TPL,
@@ -265,9 +266,11 @@ const drawCta = (ctx: CanvasRenderingContext2D, s: TechSlide, accent: string) =>
 
 /** Renderiza slides normalizados no estilo TECH CIENTÍFICO. */
 export const renderTechSlides = async (
-  slides: TechSlide[],
+  slidesBrutos: TechSlide[],
   opts: TechRenderOptions = {},
 ): Promise<string[]> => {
+  // Traduz termos internos para linguagem que o público entende.
+  const slides = sanitizarConteudoPublico(slidesBrutos);
   await ensureTechFonts();
   const handle = opts.handle || "diogo.mell0";
   const accent = opts.accent || TECH_TPL.cyan;
