@@ -153,3 +153,21 @@ export const chunk = <T,>(items: T[], size: number): T[][] => {
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
 };
+
+/**
+ * Trava de segurança global: nenhuma palavra pode ultrapassar a borda da arte.
+ * Substitui `fillText` por uma versão que sempre recebe a largura máxima
+ * disponível a partir do ponto de desenho (respeitando o alinhamento atual),
+ * de modo que o texto é condensado em vez de vazar para fora do slide.
+ */
+export const guardTextBounds = (ctx: CanvasRenderingContext2D, w: number, padX = 24) => {
+  const original = ctx.fillText.bind(ctx);
+  ctx.fillText = (texto: string, x: number, y: number, maxWidth?: number) => {
+    let disponivel: number;
+    if (ctx.textAlign === "center") disponivel = Math.min(x - padX, w - padX - x) * 2;
+    else if (ctx.textAlign === "right" || ctx.textAlign === "end") disponivel = x - padX;
+    else disponivel = w - padX - x;
+    disponivel = Math.max(40, disponivel);
+    original(texto, x, y, maxWidth && maxWidth < disponivel ? maxWidth : disponivel);
+  };
+};
