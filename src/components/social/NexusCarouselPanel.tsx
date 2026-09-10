@@ -92,6 +92,11 @@ export default function NexusCarouselPanel({
   const [legenda, setLegenda] = useState("");
   const [content, setContent] = useState<NexusCarouselContent | null>(null);
   const [active, setActive] = useState(0);
+  const [style, setStyle] = useState<NexusStyle>("classico");
+
+  /** Renderiza no estilo escolhido (tech é assíncrono por causa das fontes). */
+  const renderWith = async (c: NexusCarouselContent, s: NexusStyle) =>
+    s === "tech" ? renderNexusTechCarousel(c) : Promise.resolve(renderNexusCarousel(c));
 
   const match = useMemo(() => findCompound(tema), [tema]);
 
@@ -141,7 +146,7 @@ export default function NexusCarouselPanel({
 
       };
       setContent(content);
-      setImages(renderNexusCarousel(content));
+      setImages(await renderWith(content, style));
       setLabels(nexusSlideLabels(content));
       setLegenda(cleanCaption(content.legenda));
       setActive(0);
