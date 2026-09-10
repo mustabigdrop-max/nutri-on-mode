@@ -114,11 +114,29 @@ export const drawSlideFooter = (
   ctx.textAlign = "left";
 };
 
+/**
+ * Ajuste automático de corpo de texto dentro de uma figura (card, retângulo,
+ * pill, caixa arredondada). Recebe uma função que informa quantas linhas o
+ * texto ocupa em um determinado tamanho e devolve o maior tamanho que ainda
+ * cabe na altura disponível. Regra do projeto: a palavra NUNCA sai da figura.
+ */
+export const fitTextSize = (
+  medirLinhas: (size: number) => number,
+  o: { size: number; lineHeight: number; maxHeight: number; min?: number; step?: number },
+) => {
+  const min = o.min ?? Math.max(8, o.size * 0.55);
+  const step = o.step ?? 0.5;
+  let size = o.size;
+  while (size > min && medirLinhas(size) * size * o.lineHeight > o.maxHeight) size -= step;
+  return Math.max(min, size);
+};
+
 /** Corta um texto para no máximo `max` palavras (sem reticências agressivas). */
 export const limitWords = (text: string, max: number) => {
   const parts = (text || "").trim().split(/\s+/).filter(Boolean);
   return parts.length <= max ? parts.join(" ") : `${parts.slice(0, max).join(" ")}…`;
 };
+
 
 /** Quebra uma lista em grupos de `size` itens — vira slide adicional em vez de cortar. */
 export const chunk = <T,>(items: T[], size: number): T[][] => {
