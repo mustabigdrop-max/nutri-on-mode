@@ -183,6 +183,31 @@ export default function NexusCarouselPanel({
         </Button>
       </div>
 
+      <div className="flex flex-wrap gap-1.5">
+        {NEXUS_STYLES.map((s) => {
+          const ativo = style === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              disabled={loading}
+              onClick={async () => {
+                setStyle(s.id);
+                if (content) setImages(await renderWith(content, s.id));
+              }}
+              className="rounded-md border px-3 py-1.5 text-[11px] font-semibold tracking-wide transition-colors"
+              style={{
+                borderColor: ativo ? (s.id === "tech" ? TECH_TPL.cyan : NEXUS_TPL.accent) : "rgba(255,255,255,0.12)",
+                color: ativo ? (s.id === "tech" ? TECH_TPL.cyan : NEXUS_TPL.accent) : undefined,
+                background: ativo ? "rgba(255,255,255,0.04)" : undefined,
+              }}
+            >
+              {s.label} <span className="font-normal opacity-60">· {s.hint}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {match && (
         <p className="text-xs text-muted-foreground">
           Ficha encontrada no <strong>{match.origem}</strong> — {match.classe} · {match.status}. Os dados reais da ficha
@@ -214,10 +239,10 @@ export default function NexusCarouselPanel({
           {content && (
             <SlideTextEditor
               content={content}
-              accent={NEXUS_TPL.accent}
-              onApply={(next) => {
+              accent={style === "tech" ? TECH_TPL.cyan : NEXUS_TPL.accent}
+              onApply={async (next) => {
                 setContent(next);
-                setImages(renderNexusCarousel(next));
+                setImages(await renderWith(next, style));
                 setLabels(nexusSlideLabels(next));
               }}
             />
