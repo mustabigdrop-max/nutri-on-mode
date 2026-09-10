@@ -136,6 +136,28 @@ function escolherDia(
 
 export type ProtocoloOpcao = { id: string; nome: string; criadoEm: string };
 
+/**
+ * Protocolo escolhido pelo coach. O mais recente do banco pode ser de outro
+ * aluno, então a escolha fica salva e vale em todas as telas.
+ */
+const PREF_PROTOCOLO = "nutrion:treino-protocolo";
+
+export function getProtocoloPreferido(): string | null {
+  try {
+    return localStorage.getItem(PREF_PROTOCOLO);
+  } catch {
+    return null;
+  }
+}
+
+export function setProtocoloPreferido(id: string) {
+  try {
+    localStorage.setItem(PREF_PROTOCOLO, id);
+  } catch {
+    /* storage indisponível */
+  }
+}
+
 /** Lista os protocolos do usuário para escolher qual sincronizar. */
 export async function listarProtocolosTreino(): Promise<ProtocoloOpcao[]> {
   const { data: auth } = await supabase.auth.getUser();
