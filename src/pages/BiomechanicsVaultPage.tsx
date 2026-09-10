@@ -136,6 +136,23 @@ const BiomechanicsVaultPage = () => {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 space-y-6">
+        {/* Qual protocolo do TrainingON usar como treino de hoje */}
+        {protocolos.length > 1 && (
+          <div className="rounded-xl p-3" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="text-[10px] tracking-widest" style={{ color: "#9ca3af" }}>PROTOCOLO DO TRAININGON</div>
+            <select
+              value={protocoloId}
+              onChange={(e) => trocarProtocolo(e.target.value)}
+              className="mt-2 w-full rounded-md p-2 text-sm"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(74,222,128,0.15)", color: "#f0fdf4" }}
+            >
+              {protocolos.map((p) => (
+                <option key={p.id} value={p.id} style={{ background: "#0a0f0a" }}>{p.nome}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Treino real de hoje (TrainingON) */}
         {treino?.exercicios?.length ? (
           <div className="rounded-xl p-4" style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.25)" }}>
