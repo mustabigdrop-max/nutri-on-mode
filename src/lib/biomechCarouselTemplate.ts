@@ -228,9 +228,10 @@ const pontosSlide = (numero: number, itens: BiomechPonto[], handle: string, w: n
       ctx.fillStyle = `${BIOMECH_TPL.green}26`;
       ctx.fillRect(x, y - px(20), w - x * 2, px(1));
     }
-    ctx.font = font(900, 13);
+    ctx.beginPath();
+    ctx.arc(x + px(6), y + px(10), px(5), 0, Math.PI * 2);
     ctx.fillStyle = BIOMECH_TPL.green;
-    ctx.fillText(String(i + 1).padStart(2, "0"), x, y + px(15));
+    ctx.fill();
     y = drawRich(ctx, item.titulo, colX, y, {
       size: 18, weight: 900, color: BIOMECH_TPL.ink, accent: BIOMECH_TPL.green, lineHeight: 1.22, maxWidth: colW,
     });
@@ -365,9 +366,10 @@ export const renderBiomechCarousel = (content: BiomechCarouselContent, w = 1080,
       ctx.strokeStyle = `${BIOMECH_TPL.green}33`;
       ctx.stroke();
 
-      ctx.font = font(900, 10);
+      ctx.beginPath();
+      ctx.arc(x + px(20), y + px(15), px(4), 0, Math.PI * 2);
       ctx.fillStyle = BIOMECH_TPL.green;
-      ctx.fillText(String(i + 1).padStart(2, "0"), x + px(14), y + px(19));
+      ctx.fill();
 
       ctx.font = font(700, 11);
       ctx.fillStyle = BIOMECH_TPL.ink;

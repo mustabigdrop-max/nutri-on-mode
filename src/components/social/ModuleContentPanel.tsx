@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
+import InstagramAcoesPanel from "@/components/social/InstagramAcoesPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { renderModuleCarousel, type ModuleSlide } from "@/lib/moduleCarouselTemplate";
 import { renderStoryFrames, type StoryFrame } from "@/lib/storyFrameTemplate";
@@ -228,6 +229,10 @@ export default function ModuleContentPanel({
                 texto={resultado.carrossel?.legenda}
               />
             </div>
+          )}
+
+          {(slides.length > 0 || stories.length > 0) && (
+            <InstagramAcoesPanel tema={config.titulo} />
           )}
 
           {stories.length > 0 && (

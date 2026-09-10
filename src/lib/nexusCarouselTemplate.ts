@@ -467,9 +467,10 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
     const passos = (content.slide3_mecanismo?.passos || []).slice(0, MAX_PASSOS).map((p) => limitWords(p, MAX_PALAVRAS_PASSO));
     passos.forEach((passo, i) => {
       const top = y;
-      ctx.font = font(900, 13);
+      ctx.beginPath();
+      ctx.arc(x + px(22), top + px(21), px(5), 0, Math.PI * 2);
       ctx.fillStyle = A;
-      ctx.fillText(String(i + 1).padStart(2, "0"), x + px(16), top + px(26));
+      ctx.fill();
       const end = drawRich(ctx, passo, x + px(48), top + px(26), {
         size: 12, weight: 400, color: NEXUS_TPL.ink, accent: A, lineHeight: 1.55, maxWidth: maxW - px(70), hiWeight: 800,
       });
@@ -698,9 +699,10 @@ export const renderNexusCarousel = (content: NexusCarouselContent, w = 1080, h =
       ctx.strokeStyle = `${A}26`;
       ctx.lineWidth = px(1);
       ctx.stroke();
-      ctx.font = font(900, 14);
+      ctx.beginPath();
+      ctx.arc(x + px(24), top + px(27), px(5), 0, Math.PI * 2);
       ctx.fillStyle = A;
-      ctx.fillText(String(i + 1), x + px(18), top + px(32));
+      ctx.fill();
       y = top + boxH + px(14);
     });
     ctx.font = font(400, 10);

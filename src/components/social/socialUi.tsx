@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizarConteudoPublico } from "@/lib/publicLanguage";
 
 // Identidade do Social ON — dourado (autoridade/elite, mesmo tom do "ELITE"
 // do Apex Visual) como destaque principal em todo painel, ciano como
@@ -41,7 +42,9 @@ export const callSocialAI = async (body: Record<string, any>) => {
   const { data, error } = await supabase.functions.invoke("social-on-generate", { body });
   if (error) throw new Error(await socialAIErrorMessage(error));
   if ((data as any)?.error) throw new Error((data as any).error);
-  return (data as any).result;
+  // Rede de segurança: jargão interno (APEX, RPE, NutrySync...) e numeração
+  // decorativa nunca chegam no slide, mesmo se o modelo escorregar.
+  return sanitizarConteudoPublico((data as any).result);
 };
 
 export const Section = ({ title, right, children }: { title: string; right?: React.ReactNode; children: React.ReactNode }) => (
