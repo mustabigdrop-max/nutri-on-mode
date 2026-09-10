@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Images, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
+import SlideTextEditor from "@/components/social/SlideTextEditor";
 import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 import {
   TREINO_HASHTAGS,
@@ -35,6 +36,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
   const [slides, setSlides] = useState<string[]>([]);
   const [stories, setStories] = useState<string[]>([]);
   const [ativo, setAtivo] = useState(0);
+  const [fotoImg, setFotoImg] = useState<HTMLImageElement | null>(null);
 
   const carregar = async () => {
     setCarregando(true);
@@ -57,6 +59,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
     setGerando(true);
     try {
       const foto = file ? await loadPhoto(file) : null;
+      setFotoImg(foto);
       setSlides(renderTreinoHojeCarousel(treino, foto, at));
       setStories(renderTreinoHojeStories(treino, foto, at));
       setAtivo(0);
@@ -154,6 +157,14 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
             src={[...slides, ...stories][ativo]}
             alt={`Slide ${ativo + 1} do treino de hoje`}
             className="w-full rounded-lg border border-white/10"
+          />
+          <SlideTextEditor
+            content={treino}
+            onApply={(next) => {
+              setTreino(next);
+              setSlides(renderTreinoHojeCarousel(next, fotoImg, at));
+              setStories(renderTreinoHojeStories(next, fotoImg, at));
+            }}
           />
           <SaveShareButtons items={itens} texto={legenda} />
         </>

@@ -8,6 +8,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { parseProtocolToDays, type ParsedDay } from "@/lib/parseProtocolMarkdown";
+import { duracaoSlide } from "@/lib/socialDuracao";
 
 export type TreinoHojeSet = { label?: string; detail: string };
 export type TreinoHojeExercicio = {
@@ -180,7 +181,7 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
 
   return {
     nomeTreino: dia.session_title,
-    duracao: dia.estimated_duration,
+    duracao: duracaoSlide(dia.estimated_duration),
     grupos: dia.muscle_tags || [],
     agenda: agendaHoje
       ? {

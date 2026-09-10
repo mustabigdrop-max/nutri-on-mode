@@ -7,6 +7,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { parseProtocolToDays, type ParsedDay } from "@/lib/parseProtocolMarkdown";
+import { duracaoSlide } from "@/lib/socialDuracao";
 
 export type FocoResultado =
   | "pernas" | "costas" | "peito" | "ombros" | "bracos" | "shape" | "composicao" | "nutri";
@@ -138,7 +139,7 @@ export async function getDadosTreino(focoId: FocoResultado): Promise<DadosTreino
     focoId,
     focoLabel: `${foco.emoji} ${foco.label}`,
     nomeTreino: dia.session_title,
-    duracao: dia.estimated_duration,
+    duracao: duracaoSlide(dia.estimated_duration),
     grupos: dia.muscle_tags || [],
     aquecimento: (dia.warmup || []).slice(0, 3).map((w) => ({
       nome: w.name,
