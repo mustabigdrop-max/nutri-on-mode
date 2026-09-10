@@ -77,7 +77,7 @@ export default function NexusContentCreator({
   contexto,
 }: {
   nome: string;
-  origem: "PeptideVault" | "MicrobiotaVault" | "SteroidVault";
+  origem: "PeptideVault" | "MicrobiotaVault" | "SteroidVault" | "FitoVault";
   compoundData?: unknown;
   contexto?: string;
 }) {
