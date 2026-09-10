@@ -1,5 +1,5 @@
 import { Instagram, Lightbulb } from "lucide-react";
-import { acoesInstagram, DICA_INSTAGRAM } from "@/lib/publicLanguage";
+import { acoesInstagram, acoesDosStories, DICA_INSTAGRAM, type AcaoInstagram } from "@/lib/publicLanguage";
 
 /**
  * Enquete, quiz e caixa de perguntas não são slide — são ação no Instagram.
