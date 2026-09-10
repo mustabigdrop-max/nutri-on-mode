@@ -146,6 +146,21 @@ const BiomechanicsVaultPage = () => {
           </div>
         ) : null}
 
+        {/* Hub de sugestões ligado ao treino do dia */}
+        <TreinoHojeSugestoes
+          treino={treino}
+          ativo={sugestaoAtiva}
+          onEscolher={(s) => {
+            setSelectedExercise(s.exercicio);
+            setSelectedMuscle(grupoDoExercicio(s.exercicio));
+            setResult(null);
+            setSugestaoAtiva({ exercicio: s.exercicio, angulo: s.angulo, formato: s.formato });
+            requestAnimationFrame(() =>
+              document.getElementById("biomech-hub")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+            );
+          }}
+        />
+
         {/* Muscle selector */}
         <div>
           <h2 className="text-sm font-semibold mb-3" style={{ color: "#9ca3af" }}>SELECIONAR GRUPO MUSCULAR</h2>
