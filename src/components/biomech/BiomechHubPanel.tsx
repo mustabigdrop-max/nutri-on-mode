@@ -162,6 +162,19 @@ export default function BiomechHubPanel({
     if (formatoInicial) setFormato(formatoInicial);
   }, [formatoInicial]);
 
+  // Renderiza o carrossel no estilo escolhido (clássico ou tech científico).
+  useEffect(() => {
+    if (!bioContent) return;
+    let vivo = true;
+    (async () => {
+      const imgs = style === "tech"
+        ? await renderTechSlides(biomechToTech(bioContent), { handle: bioContent.handle || at })
+        : renderBiomechCarousel(bioContent);
+      if (vivo) setSlides(imgs);
+    })();
+    return () => { vivo = false; };
+  }, [bioContent, style, at]);
+
   /** Pesquisa real da vault: uma aba, ou as 5 quando o foco é "completo". */
   const buscarPesquisa = useCallback(async (f: Foco) => {
     const tabs = f === "completo"
@@ -215,6 +228,7 @@ export default function BiomechHubPanel({
   const gerar = async (f: Foco = foco, ang: Angulo = angulo, fm: Formato = formato) => {
     setLoading(true);
     setSlides([]);
+    setBioContent(null);
     setStoriesImgs([]);
     setReels(null);
     try {
@@ -361,6 +375,10 @@ export default function BiomechHubPanel({
               {fm.emoji} {fm.label.toUpperCase()}
             </button>
           ))}
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <CarouselStyleSwitch style={style} onChange={setStyle} disabled={loading} />
         </div>
 
         <button onClick={() => void gerar()} disabled={loading} style={{ ...acao(C.gold), width: "100%", opacity: loading ? 0.6 : 1 }}>
