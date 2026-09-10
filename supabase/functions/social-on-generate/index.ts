@@ -527,6 +527,29 @@ REGRAS:
             typeof body?.grupo === "string" ? body.grupo : undefined,
           )
         : "",
+      body?.mode === "module_content"
+        ? `MODO "CRIAR CONTEÚDO POR MÓDULO" do nutriON.
+Módulo: ${String(body?.modulo || "")}
+Tipo de conteúdo: ${String(body?.tipoConteudo || "")}${body?.foco ? `\nFoco escolhido pelo coach: ${body.foco}` : ""}
+Formatos pedidos: ${Array.isArray(body?.formatos) && body.formatos.length ? body.formatos.join(", ") : "carrossel, reels, stories"}
+
+DADOS REAIS DA PLATAFORMA (use exatamente estes valores; jamais invente exercício, série, RPE, caloria, macro, estudo ou número):
+${body?.dadosReais ? JSON.stringify(body.dadosReais) : "Sem dados estruturados desta tela — escreva apenas conteúdo conceitual, sem citar números específicos."}
+
+REGRAS OBRIGATÓRIAS:
+- Carrossel: 7 a 10 slides, educativo profundo (feito pra SALVAR). Tipos permitidos: capa, conteudo, dados, comparativo, dica, cta. Último slide sempre "cta".
+- Título de slide até 50 caracteres; corpo até 200 caracteres; "destaque" é um número ou palavra curta (máx 18 caracteres) ou string vazia.
+- Reels: hook nos 3 primeiros segundos, 5 cortes, "texto_tela" SEMPRE em CAIXA ALTA com no máximo 40 caracteres.
+- Stories: 4 a 5 frames com pelo menos um interativo (ENQUETE ou QUIZ).
+- Cada formato aborda o MESMO tema de forma DIFERENTE. Nunca repita frases entre formatos.
+- Tom: ${String(body?.tom || "autoridade com acessibilidade, ciência sem arrogância")}
+- CTA final: ${String(body?.cta || "Diagnóstico MCE gratuito — link na bio")}
+- Emojis do tema (use com parcimônia na legenda): ${String(body?.emojis || "")}
+- Hashtags: inclua obrigatoriamente ${Array.isArray(body?.hashtagsFixas) ? body.hashtagsFixas.join(", ") : ""} em hashtags_top5 e hashtags_15.
+${Array.isArray(body?.nuncaMencionar) && body.nuncaMencionar.length ? `- NUNCA mencione: ${body.nuncaMencionar.join(", ")}.` : ""}
+${body?.disclaimer ? `- Inclua no campo disclaimer: "Conteúdo educacional. Não é prescrição. Procure acompanhamento profissional."` : ""}
+- Sem markdown. Nunca use as palavras "IA", "AI" ou "inteligência artificial".`
+        : "",
     ].filter(Boolean).join("\n");
 
 
