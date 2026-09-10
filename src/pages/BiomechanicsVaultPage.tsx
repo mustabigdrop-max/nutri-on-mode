@@ -14,7 +14,10 @@ import ScienceIndicator from "@/components/science/ScienceIndicator";
 import ReactMarkdown from "react-markdown";
 import BiomechHubPanel from "@/components/biomech/BiomechHubPanel";
 import { potencialDoExercicio, POTENCIAL_LABEL, POTENCIAL_COR } from "@/lib/biomechPotencial";
-import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
+import {
+  getProtocoloPreferido, getTreinoDeHoje, listarProtocolosTreino, setProtocoloPreferido,
+  type ProtocoloOpcao, type TreinoHoje,
+} from "@/lib/treinoHojeData";
 import TreinoHojeSugestoes, {
   type SugestaoAngulo, type SugestaoFormato,
 } from "@/components/biomech/TreinoHojeSugestoes";
