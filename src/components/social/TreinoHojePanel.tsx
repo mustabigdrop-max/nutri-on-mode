@@ -125,6 +125,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
             value={protocoloId}
             onChange={(e) => {
               setProtocoloId(e.target.value);
+              setProtocoloPreferido(e.target.value);
               setSlides([]);
               setStories([]);
               void carregar(e.target.value);
