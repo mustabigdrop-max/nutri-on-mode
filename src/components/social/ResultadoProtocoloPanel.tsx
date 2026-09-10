@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { resultadoToTech } from "@/lib/techAdapters";
 import { loadImage, ensureFonts } from "@/lib/photoStoryTemplates";
 import { canShareFiles, saveManyToDevice, shareAll } from "@/lib/socialImageKit";
 import {
@@ -91,11 +95,28 @@ export default function ResultadoProtocoloPanel({
   const [hashtagsTxt, setHashtagsTxt] = useState("");
   const [reels, setReels] = useState<RoteiroReels | null>(null);
   const [active, setActive] = useState(0);
+  const [rpContent, setRpContent] = useState<ResultadoProtocoloContent | null>(null);
+  const [rpFoto, setRpFoto] = useState<HTMLImageElement | null>(null);
+  const [style, setStyle] = useCarouselStyle();
+
+  // Re-renderiza o carrossel quando o estilo muda (clássico ou tech científico).
+  useEffect(() => {
+    if (!rpContent) return;
+    let vivo = true;
+    (async () => {
+      const imgs = style === "tech"
+        ? await renderTechSlides(resultadoToTech(rpContent), { handle: rpContent.handle || at })
+        : renderResultadoProtocoloCarousel(rpContent, rpFoto);
+      if (vivo) setImages(imgs);
+    })();
+    return () => { vivo = false; };
+  }, [rpContent, rpFoto, style, at]);
 
   const gerar = async (f: FocoResultado) => {
     setFoco(f);
     setLoading(true);
     setImages([]);
+    setRpContent(null);
     setReels(null);
     try {
       const dados = await getDadosTreino(f);
@@ -171,7 +192,8 @@ export default function ResultadoProtocoloPanel({
 
       await ensureFonts();
       const img = await loadImage(file);
-      setImages(renderResultadoProtocoloCarousel(content, img));
+      setRpFoto(img);
+      setRpContent(content);
       setActive(0);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar agora.");
