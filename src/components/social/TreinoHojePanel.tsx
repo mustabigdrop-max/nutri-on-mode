@@ -162,7 +162,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
           {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Images className="h-4 w-4" />}
           Gerar post do treino
         </Button>
-        <Button variant="outline" size="icon" onClick={() => void carregar()} title="Recarregar treino">
+        <Button variant="outline" size="icon" onClick={() => void carregar(protocoloId)} title="Recarregar treino">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
