@@ -1,3 +1,4 @@
+import { guardTextBounds } from "@/lib/slideBase";
 /**
  * Renderizador de frames de Stories (9:16 — 1080x1920) na identidade nutriON.
  * Fundo escuro #0A0A0A, texto #F5F0E8, destaque #EF9F27 e rodapé com o @.
@@ -127,6 +128,7 @@ const renderFrame = (frame: StoryFrame, handle: string): string => {
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
+  guardTextBounds(ctx, canvas.width);
 
   const tipo = (frame.tipo || "").toUpperCase();
   const isCta = tipo === "CTA_DIRETO" || (frame.cor_fundo || "").toUpperCase() === "#EF9F27";

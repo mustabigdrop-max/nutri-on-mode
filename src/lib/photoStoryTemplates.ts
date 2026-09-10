@@ -1,3 +1,4 @@
+import { guardTextBounds } from "@/lib/slideBase";
 /**
  * Stories 1080x1920 com a foto real do coach + overlay nutriON.
  * Cinco templates fixos: FRASE, DADO, ROTINA, CTA e MÍNIMO.
@@ -314,6 +315,7 @@ export function renderPhotoStory(
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
+  guardTextBounds(ctx, canvas.width);
 
   ctx.fillStyle = STORY_TPL.bg;
   ctx.fillRect(0, 0, W, H);

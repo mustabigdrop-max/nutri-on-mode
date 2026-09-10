@@ -11,7 +11,7 @@
  * `nexusSlideLabels` continuam válidos.
  */
 
-import { chunk, fitTextSize, limitWords, slideContentBottom } from "@/lib/slideBase";
+import { chunk, fitTextSize, limitWords, slideContentBottom, guardTextBounds } from "@/lib/slideBase";
 import {
   MAX_BENEFICIOS_SLIDE,
   MAX_BENEFICIOS_TOTAL,
@@ -321,6 +321,7 @@ const newSlide = (status: NexusStatus, seed: number) => {
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
+  guardTextBounds(ctx, canvas.width);
   ctx.textBaseline = "alphabetic";
   ctx.save();
   techBackground(ctx, seed);
@@ -825,6 +826,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d")!;
+    guardTextBounds(ctx, canvas.width);
     ctx.fillStyle = G;
     ctx.fillRect(0, 0, W, H);
     // grade escura sutil

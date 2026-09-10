@@ -8,7 +8,7 @@
  * Nada aqui inventa conteúdo — só desenha o que o gerador entrega.
  */
 
-import { fitTextSize } from "@/lib/slideBase";
+import { fitTextSize, guardTextBounds } from "@/lib/slideBase";
 
 export const TECH_TPL = {
   bg: "#020205",
@@ -315,6 +315,7 @@ export const newTechSlide = (seed: number, pill?: { text: string; color: string 
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
+  guardTextBounds(ctx, canvas.width);
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
   ctx.save();

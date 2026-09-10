@@ -1,3 +1,4 @@
+import { guardTextBounds } from "@/lib/slideBase";
 /**
  * Stories "RESULTADO + PROTOCOLO" — 6 frames 1080x1920 na identidade nutriON.
  * Frame 1 usa a foto real do coach; os demais são cards escuros com os dados
@@ -72,6 +73,7 @@ const renderFrame = (
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
+  guardTextBounds(ctx, canvas.width);
 
   const isCta = frame.tipo === "CTA";
   ctx.fillStyle = isCta ? STORY_TPL.gold : STORY_TPL.bg;

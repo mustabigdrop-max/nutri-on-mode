@@ -10,8 +10,7 @@ import {
   SLIDE_W,
   beginSlideContent,
   drawSlideFooter,
-  slideContentBottom,
-} from "@/lib/slideBase";
+  slideContentBottom,, guardTextBounds } from "@/lib/slideBase";
 
 export const MOD_TPL = {
   bg: "#0A0A0A",
@@ -80,6 +79,7 @@ const renderSlide = (slide: ModuleSlide, index: number, total: number, handle: s
   canvas.width = SLIDE_W;
   canvas.height = SLIDE_H;
   const ctx = canvas.getContext("2d")!;
+  guardTextBounds(ctx, canvas.width);
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, SLIDE_W, SLIDE_H);

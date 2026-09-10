@@ -13,8 +13,7 @@ import {
   SLIDE_PAD_X,
   beginSlideContent,
   createSlideCanvas,
-  drawSlideFooter,
-} from "@/lib/slideBase";
+  drawSlideFooter,, guardTextBounds } from "@/lib/slideBase";
 import { W as STORY_W, H as STORY_H } from "@/lib/photoStoryTemplates";
 
 export const PRINT_TPL = {
@@ -397,6 +396,7 @@ const renderStoryFrame = (
   canvas.height = STORY_H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
+  guardTextBounds(ctx, canvas.width);
   const tipo = (frame.tipo || (indice === 2 ? "CTA" : indice === 1 ? "DESTAQUE" : "CAPA")).toUpperCase();
   const isCta = tipo.includes("CTA");
 
