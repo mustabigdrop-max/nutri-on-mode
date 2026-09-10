@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronDown, ChevronUp, Leaf, AlertTriangle, Zap, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import NexusContentCreator from "@/components/nexus/NexusContentCreator";
 
 interface Fitoterapico {
   id: string;
