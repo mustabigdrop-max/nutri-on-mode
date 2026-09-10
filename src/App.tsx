@@ -364,6 +364,7 @@ const App = () => (
           </Suspense>
           </RouteErrorBoundary>
         <PWAInstallBanner />
+        <ModuleContentFab />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
