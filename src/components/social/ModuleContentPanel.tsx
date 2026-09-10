@@ -230,6 +230,10 @@ export default function ModuleContentPanel({
             </div>
           )}
 
+          {(slides.length > 0 || stories.length > 0) && (
+            <InstagramAcoesPanel tema={config.titulo} />
+          )}
+
           {stories.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-widest text-muted-foreground">Stories ({stories.length})</p>
