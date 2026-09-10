@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizarConteudoPublico } from "@/lib/publicLanguage";
 
 // Identidade do Social ON — dourado (autoridade/elite, mesmo tom do "ELITE"
 // do Apex Visual) como destaque principal em todo painel, ciano como
