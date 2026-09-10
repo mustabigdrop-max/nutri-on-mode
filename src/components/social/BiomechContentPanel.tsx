@@ -114,10 +114,15 @@ export default function BiomechContentPanel({ file, handle }: { file?: File | nu
     setCitacoes([]);
     try {
       // 1) Dados REAIS da BiomechanicsVault (Perplexity + Dr. BioMech, com citações).
-      const { data: bio, error: bioErr } = await supabase.functions.invoke("analyze-biomechanics", {
+      const chamarBio = () => supabase.functions.invoke("analyze-biomechanics", {
         body: { exerciseName: exercicio.trim(), muscleGroup: grupo.trim(), tab: foco },
       });
-      if (bioErr) throw new Error(bioErr.message);
+      let { data: bio, error: bioErr } = await chamarBio();
+      if (bioErr || !bio?.content) {
+        // A busca científica pode demorar/oscilar — uma segunda tentativa resolve a maioria das falhas.
+        ({ data: bio, error: bioErr } = await chamarBio());
+      }
+      if (bioErr) throw new Error(`Busca científica indisponível agora (${bioErr.message}). Tente de novo em alguns segundos.`);
       if (bio?.error) throw new Error(bio.error);
       const biomechData = { content: bio?.content || "", citations: Array.isArray(bio?.citations) ? bio.citations : [] };
       setCitacoes(biomechData.citations);
