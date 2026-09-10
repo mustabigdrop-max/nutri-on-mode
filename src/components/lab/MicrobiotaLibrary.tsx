@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronDown, ChevronUp, AlertTriangle, Shield, Brain, Dumbbell, Syringe, Pill, FlaskConical, Leaf, Clock, Bug, ShieldAlert, HeartPulse } from "lucide-react";
 import MicrobiomeScoreCalculator from "./MicrobiomeScoreCalculator";
+import NexusContentCreator from "@/components/nexus/NexusContentCreator";
 
 interface MicrobiotaSection {
   id: string;
