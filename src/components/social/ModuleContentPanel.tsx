@@ -8,6 +8,9 @@ import InstagramAcoesPanel from "@/components/social/InstagramAcoesPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { renderModuleCarousel, type ModuleSlide } from "@/lib/moduleCarouselTemplate";
 import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import DualResearchField from "@/components/social/DualResearchField";
+import { comPesquisa } from "@/lib/dualResearch";
+import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { moduleToTech } from "@/lib/techAdapters";
@@ -86,6 +89,7 @@ export default function ModuleContentPanel({
   const [stories, setStories] = useState<string[]>([]);
   const [slidesBrutos, setSlidesBrutos] = useState<ModuleSlide[] | null>(null);
   const [style, setStyle] = useCarouselStyle();
+  const [pesquisa, setPesquisa] = usePesquisaAtiva();
 
   /** Desenha os slides do módulo no estilo escolhido. */
   const renderSlidesModulo = async (brutos: ModuleSlide[], estilo: typeof style) =>
@@ -129,7 +133,7 @@ export default function ModuleContentPanel({
     setStories([]);
     try {
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
-        body: {
+        body: comPesquisa({
           mode: "module_content",
           modulo,
           tipoConteudo: `${tipo.titulo} — ${tipo.descricao}`,
@@ -143,7 +147,8 @@ export default function ModuleContentPanel({
           hashtagsFixas: config.hashtagsFixas,
           nuncaMencionar: config.nuncaMencionar,
           disclaimer: !!config.disclaimer,
-        },
+        }),
+
       });
       if (error) throw error;
       const res = (data?.result || {}) as Resultado;
@@ -173,6 +178,8 @@ export default function ModuleContentPanel({
           {contexto ? contexto.resumo : "Lendo os dados desta tela…"}
         </p>
       </div>
+
+      <DualResearchField pesquisa={pesquisa} onChange={setPesquisa} disabled={!!gerando} />
 
       <CarouselStyleSwitch style={style} onChange={setStyle} disabled={!!gerando} />
 

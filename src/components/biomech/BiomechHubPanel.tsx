@@ -20,6 +20,9 @@ import {
 } from "@/lib/biomechCarouselTemplate";
 import { renderStoryFrames, type StoryScript } from "@/lib/storyFrameTemplate";
 import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import DualResearchField from "@/components/social/DualResearchField";
+import { comPesquisa } from "@/lib/dualResearch";
+import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { biomechToTech } from "@/lib/techAdapters";
@@ -141,6 +144,7 @@ export default function BiomechHubPanel({
   const [slides, setSlides] = useState<string[]>([]);
   const [bioContent, setBioContent] = useState<BiomechCarouselContent | null>(null);
   const [style, setStyle] = useCarouselStyle();
+  const [pesquisa, setPesquisa] = usePesquisaAtiva();
   const [legendaEditada, setLegendaEditada] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const [storiesImgs, setStoriesImgs] = useState<string[]>([]);
@@ -209,7 +213,7 @@ export default function BiomechHubPanel({
     biomechData: { content: string; citations: string[] },
   ) => {
     const { data, error } = await supabase.functions.invoke("social-on-generate", {
-      body: { mode, exercicio, grupo, foco: f, angulo: ang, biomechData, handle: at },
+      body: comPesquisa({ mode, exercicio, grupo, foco: f, angulo: ang, biomechData, handle: at }),
     });
     if (error) throw new Error(error.message);
     if ((data as { error?: string })?.error) throw new Error((data as { error?: string }).error!);
@@ -382,6 +386,8 @@ export default function BiomechHubPanel({
         </div>
 
         <div style={{ marginBottom: 12 }}>
+          <DualResearchField dominioPadrao="treino" temaPadrao={exercicio} pesquisa={pesquisa} onChange={setPesquisa} disabled={loading} />
+
           <CarouselStyleSwitch style={style} onChange={setStyle} disabled={loading} />
         </div>
 

@@ -10,6 +10,9 @@ import { renderMceCarousel, MCE_CTA_SLIDE, type MceCarouselContent } from "@/lib
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import SlideTextEditor from "@/components/social/SlideTextEditor";
 import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import DualResearchField from "@/components/social/DualResearchField";
+import { comPesquisa } from "@/lib/dualResearch";
+import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { mceToTech } from "@/lib/techAdapters";
@@ -37,6 +40,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
   const [active, setActive] = useState(0);
   const horarioHoje = melhorHorario("CARROSSEL_MCE");
   const [style, setStyle] = useCarouselStyle();
+  const [pesquisa, setPesquisa] = usePesquisaAtiva();
 
   // re-renderiza sempre que o conteúdo ou o estilo mudam
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
-        body: { mode: "mce_carousel", topic: tema.trim(), handle },
+        body: comPesquisa({ mode: "mce_carousel", topic: tema.trim(), handle }),
       });
       if (error) throw error;
       const content = { ...(data?.result || {}), tema, handle: handle || "diogo.mell0" } as MceCarouselContent;
@@ -84,6 +88,8 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
           7 slides fixos em 4:5: capa, a dor, os pilares M / C / E, integração e o convite pro Diagnóstico MCE.
         </p>
       </div>
+
+      <DualResearchField dominioPadrao="mce" pesquisa={pesquisa} onChange={setPesquisa} disabled={loading} />
 
       <CarouselStyleSwitch style={style} onChange={setStyle} disabled={loading} />
 
