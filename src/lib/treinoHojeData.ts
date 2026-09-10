@@ -148,6 +148,16 @@ function escolherDia(
 export type ProtocoloOpcao = { id: string; nome: string; criadoEm: string };
 
 /**
+ * Em protocolos estruturados, D1–D6 são dias civis (segunda–sábado).
+ * Esta resolução é deliberadamente independente de workout_schedule, porque
+ * essa agenda pode continuar com a divisão antiga depois de o protocolo mudar.
+ */
+export function diaEstruturadoDeHoje(dias: ParsedDay[], diaDaSemana: number): ParsedDay | null {
+  if (diaDaSemana < 1 || diaDaSemana > 6) return null;
+  return dias.find((dia) => Number(dia.day_number) === diaDaSemana) || dias[diaDaSemana - 1] || null;
+}
+
+/**
  * Protocolo escolhido pelo coach. O mais recente do banco pode ser de outro
  * aluno, então a escolha fica salva e vale em todas as telas.
  */
@@ -224,12 +234,16 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
   const dias = (parsed?.days || []).filter((d) => Array.isArray(d.exercises) && d.exercises.length > 0);
   if (!dias.length) return null;
 
+  // Para JSON do TrainingON, o dia numerado é a fonte única da sessão. A agenda
+  // abaixo fornece somente horário/duração; jamais escolhe outro treino.
+  const diaOficial = parsed?.isStructured ? diaEstruturadoDeHoje(dias, dow) : null;
+
   const agenda = (agendaRows || []) as AgendaRow[];
   const agendaDoDia = agenda.filter((row) => row.day_of_week === dow);
   // O post enfatiza musculação: uma sessão de cardio do mesmo dia nunca deve
   // deslocar Pull/Push/Legs nem selecionar a sessão de outro dia do protocolo.
   const agendaHoje = agendaDoDia.find((row) => !ehCardio(row.workout_type)) || agendaDoDia[0];
-  if (!agendaHoje) return null;
+  if (!agendaHoje && !diaOficial) return null;
 
   const agendaMusculacao = agenda.filter((row) => !ehCardio(row.workout_type));
   const ordemSemana = (d: number) => (d + 6) % 7;
@@ -238,7 +252,7 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
   const indiceNaSemana = diasAgendados.indexOf(dow);
 
   // Quantas vezes esse mesmo tipo de treino já apareceu antes de hoje na semana.
-  const tipoHoje = norm(agendaHoje.workout_type || "");
+  const tipoHoje = norm(agendaHoje?.workout_type || "");
   const ocorrenciaDoTipo = Array.from(
     new Set(
       agendaMusculacao
@@ -249,13 +263,15 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
     .sort((a, b) => ordemSemana(a) - ordemSemana(b))
     .indexOf(dow);
 
-  const selecionado = escolherDia(
-    dias,
-    agendaHoje.workout_type || undefined,
-    indiceNaSemana,
-    ocorrenciaDoTipo,
-    dow,
-  );
+  const selecionado = diaOficial
+    ? { dia: diaOficial, sincronizado: true }
+    : escolherDia(
+        dias,
+        agendaHoje?.workout_type || undefined,
+        indiceNaSemana,
+        ocorrenciaDoTipo,
+        dow,
+      );
 
   if (!selecionado) return null;
   const { dia, sincronizado } = selecionado;

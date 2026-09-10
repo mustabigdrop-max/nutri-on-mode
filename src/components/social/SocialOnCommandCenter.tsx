@@ -19,7 +19,7 @@ import {
 } from "@/lib/socialContentTypes";
 import PhotoStoryStudio from "@/components/social/PhotoStoryStudio";
 import { sugestoesDoDia, ROTACAO_SEMANAL, FORMATO_LABEL, focoDoTreino, FOCO_LABEL } from "@/data/bancoTemas";
-import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
+import { getProtocoloPreferido, getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 import { useTemasPostados } from "@/hooks/useTemasPostados";
 import PhotoDayStudio from "@/components/social/PhotoDayStudio";
 import { HookChooser, ScreenTextTimeline, ViralExtras } from "@/components/social/ViralKitPanel";
@@ -1065,7 +1065,9 @@ function TemasDoDia({ onOpenTool }: { onOpenTool?: (id: string) => void }) {
 
   useEffect(() => {
     let vivo = true;
-    getTreinoDeHoje()
+    // Usa explicitamente o mesmo protocolo escolhido no TrainingON/Studio.
+    // Evita que este painel volte ao protocolo mais recente de outro aluno.
+    getTreinoDeHoje(getProtocoloPreferido() || undefined)
       .then((t) => vivo && setTreino(t))
       .catch(() => {});
     return () => {
