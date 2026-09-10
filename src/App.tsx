@@ -18,6 +18,7 @@ const ModulesPage = lazy(() => import("./pages/ModulesPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
 const DiagnosticoMCEPage = lazy(() => import("./pages/DiagnosticoMCEPage"));
+const BioLinkPage = lazy(() => import("./pages/BioLinkPage"));
 const LeadsPage = lazy(() => import("./pages/LeadsPage"));
 const ClientesPage = lazy(() => import("./pages/ClientesPage"));
 
@@ -192,6 +193,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/modulos" element={<ModulesPage />} />
             <Route path="/diagnostico" element={<DiagnosticoMCEPage />} />
+            <Route path="/bio" element={<BioLinkPage />} />
+            <Route path="/links" element={<BioLinkPage />} />
             <Route path="/leads" element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
             <Route path="/clientes" element={<ProtectedRoute><ClientesPage /></ProtectedRoute>} />
             <Route path="/auth" element={<AuthPage />} />

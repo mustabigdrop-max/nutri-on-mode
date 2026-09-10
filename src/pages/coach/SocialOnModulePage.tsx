@@ -55,6 +55,11 @@ import NexusCarouselPanel from "@/components/social/NexusCarouselPanel";
 import BancoTemasPanel from "@/components/social/BancoTemasPanel";
 import { ehTemaNexus, type TemaComCategoria } from "@/data/bancoTemas";
 import SocialOnHub from "@/components/social/SocialOnHub";
+import GrowthFunnelPanel from "@/components/social/GrowthFunnelPanel";
+import HighlightsPanel from "@/components/social/HighlightsPanel";
+import DmAutomationPanel from "@/components/social/DmAutomationPanel";
+import TransformacaoPanel from "@/components/social/TransformacaoPanel";
+import RecicladorPanel from "@/components/social/RecicladorPanel";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
@@ -486,6 +491,12 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="kit_midia" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Kit de Mídia</TabsTrigger>
 
             <TabGroupLabel>📈 Crescimento e vendas</TabGroupLabel>
+            <TabsTrigger value="funil" className="text-xs gap-1"><BarChart3 className="w-3 h-3" />Funil</TabsTrigger>
+            <TabsTrigger value="highlights" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Highlights</TabsTrigger>
+            <TabsTrigger value="link_bio" className="text-xs gap-1"><Target className="w-3 h-3" />Link na bio</TabsTrigger>
+            <TabsTrigger value="dm_auto" className="text-xs gap-1"><MessageSquare className="w-3 h-3" />Automação de DM</TabsTrigger>
+            <TabsTrigger value="transformacao" className="text-xs gap-1"><Flame className="w-3 h-3" />Transformação</TabsTrigger>
+            <TabsTrigger value="reciclador" className="text-xs gap-1"><RefreshCw className="w-3 h-3" />Reciclador</TabsTrigger>
             <TabsTrigger value="viral" className="text-xs gap-1"><Microscope className="w-3 h-3" />Viral</TabsTrigger>
             <TabsTrigger value="viral_lab" className="text-xs gap-1"><Flame className="w-3 h-3" />Viral Lab</TabsTrigger>
             <TabsTrigger value="dna" className="text-xs gap-1"><Dna className="w-3 h-3" />DNA</TabsTrigger>
@@ -1147,6 +1158,31 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="signal" className="mt-0">
             <SocialOnSignalPanel />
+          </TabsContent>
+          <TabsContent value="funil" className="mt-4">
+            <GrowthFunnelPanel seguidores={ig.account?.followers_count ?? null} />
+          </TabsContent>
+          <TabsContent value="highlights" className="mt-4">
+            <HighlightsPanel />
+          </TabsContent>
+          <TabsContent value="link_bio" className="mt-4 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Sua página de links fica em <strong>nutrion.app.br/bio</strong> — mesma identidade nutriON, com cada
+              clique rastreado.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => window.open("/bio", "_blank")}>Abrir página</Button>
+              <Button style={{ background: ACCENT }} onClick={() => copy("https://nutrion.app.br/bio")}>Copiar link da bio</Button>
+            </div>
+          </TabsContent>
+          <TabsContent value="dm_auto" className="mt-4">
+            <DmAutomationPanel />
+          </TabsContent>
+          <TabsContent value="transformacao" className="mt-4">
+            <TransformacaoPanel />
+          </TabsContent>
+          <TabsContent value="reciclador" className="mt-4">
+            <RecicladorPanel ctx={aiCtx} />
           </TabsContent>
 
         </Tabs>
