@@ -207,6 +207,8 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
       .order("slot", { ascending: true }),
   ]);
 
+  // Protocolo salvo pode ter sido apagado: cai para o mais recente do usuário.
+  const proto = protoEscolhido || (idEscolhido ? await buscarProtocolo() : null);
   const parsed = proto?.protocol_text ? parseProtocolToDays(proto.protocol_text as unknown) : null;
   const dias = (parsed?.days || []).filter((d) => Array.isArray(d.exercises) && d.exercises.length > 0);
   if (!dias.length) return null;
