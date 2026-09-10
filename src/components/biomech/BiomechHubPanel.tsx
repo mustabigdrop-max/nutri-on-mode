@@ -19,6 +19,10 @@ import {
   renderBiomechCarousel, BIOMECH_SLIDE_LABELS, BIOMECH_TPL, type BiomechCarouselContent,
 } from "@/lib/biomechCarouselTemplate";
 import { renderStoryFrames, type StoryScript } from "@/lib/storyFrameTemplate";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { biomechToTech } from "@/lib/techAdapters";
 import {
   historicoDoExercicio, registrarGeracao, dataCurta, type BiomechHistoricoItem,
 } from "@/lib/biomechHistorico";
