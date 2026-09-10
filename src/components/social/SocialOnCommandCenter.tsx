@@ -422,6 +422,9 @@ function DailyCoach({
         </button>
       )}
 
+      {/* Pesquisa científica que alimenta TODA geração do Social ON */}
+      <PesquisaAtivaBloco />
+
       {/* Temas sugeridos pelo banco de temas — rotação da semana, sem repetir em 30 dias */}
       <TemasDoDia onOpenTool={onOpenTool} />
 
@@ -937,6 +940,16 @@ interface Props {
   stats?: { label: string; value: string; color: string }[];
   weekPosted?: boolean[];
   onOpenTool?: (id: string) => void;
+}
+
+/** Campo de pesquisa global: vale para qualquer conteúdo gerado a seguir. */
+function PesquisaAtivaBloco() {
+  const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  return (
+    <div style={{ margin: "12px 0" }}>
+      <DualResearchField pesquisa={pesquisa} onChange={setPesquisa} />
+    </div>
+  );
 }
 
 export default function SocialOnCommandCenter({ handle, niches, products, differentials, stats, weekPosted, onOpenTool }: Props) {
