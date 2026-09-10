@@ -124,22 +124,43 @@ function drawFooter(ctx: CanvasRenderingContext2D, handle: string) {
   ctx.fillText(`@${handle.replace(/^@/, "")}`, 60, H - 50);
 }
 
-function templateFrase(ctx: CanvasRenderingContext2D, texto: string, subtexto?: string) {
-  const y = H * 0.62;
-  ctx.font = font(900, 90);
-  ctx.fillStyle = STORY_TPL.gold;
-  ctx.globalAlpha = 0.3;
-  ctx.fillText("\u201C", 55, y - 10);
-  ctx.globalAlpha = 1;
+/** Regra de ouro do overlay: m\u00e1x 10 palavras, 2 linhas, sem hashtag nem CTA. */
+export function validarOverlay(texto: string): { valido: boolean; motivo?: string } {
+  const limpo = (texto || "").trim();
+  const palavras = limpo.split(/\s+/).filter(Boolean).length;
+  if (palavras > 10) return { valido: false, motivo: `Overlay tem ${palavras} palavras. M\u00e1ximo: 10.` };
+  if (limpo.includes("#")) return { valido: false, motivo: "Sem hashtag no overlay." };
+  return { valido: true };
+}
 
-  ctx.font = font(700, 42);
+/** Corta o overlay pro limite visual: remove hashtags e trunca em 10 palavras. */
+export function encurtarOverlay(texto: string, maxPalavras = 10): string {
+  const limpo = (texto || "").replace(/#\S+/g, "").replace(/\s+/g, " ").trim();
+  const palavras = limpo.split(" ").filter(Boolean);
+  if (palavras.length <= maxPalavras) return limpo;
+  return palavras.slice(0, maxPalavras).join(" ").replace(/[,;:\s]+$/, "") + ".";
+}
+
+function templateFrase(ctx: CanvasRenderingContext2D, texto: string, subtexto?: string) {
+  const frase = encurtarOverlay(texto);
+  const y = H * 0.68;
+  const maxWidth = W - 120;
+
+  // Mede: se cabe em 1 linha, vai ainda maior; sen\u00e3o quebra em 2.
+  ctx.font = font(900, 72);
   ctx.fillStyle = STORY_TPL.ink;
-  const lastY = wrapText(ctx, texto, 70, y + 60, 940, 54);
+  if (ctx.measureText(frase).width <= maxWidth) {
+    ctx.fillText(frase, 60, y);
+  } else {
+    ctx.font = font(900, 64);
+    wrapText(ctx, frase, 60, y, maxWidth, 76);
+  }
 
   if (subtexto) {
-    ctx.font = font(400, 26);
-    ctx.fillStyle = STORY_TPL.muted;
-    wrapText(ctx, subtexto, 70, lastY + 56, 940, 34);
+    const sub = encurtarOverlay(subtexto, 5);
+    ctx.font = font(300, 28);
+    ctx.fillStyle = "#cccccc";
+    ctx.fillText(sub, 60, y + 90);
   }
 }
 
