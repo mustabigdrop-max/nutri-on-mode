@@ -188,5 +188,41 @@ export const acoesInstagram = (opts?: { tema?: string; pergunta?: string; enquet
   ];
 };
 
+type FrameInterativo = {
+  tipo?: string;
+  pergunta?: string;
+  sticker_tipo?: string;
+  opcoes?: string[];
+  opcao_1?: string;
+  opcao_2?: string;
+  resposta_certa?: string;
+  instrucao?: string;
+};
+
+const NOME_STICKER: Record<string, string> = {
+  enquete: "ENQUETE",
+  quiz: "QUIZ",
+  caixa_perguntas: "CAIXA DE PERGUNTAS",
+  slider: "SLIDER (barra de emoji)",
+};
+
+/** Instruções derivadas dos frames de story realmente gerados. */
+export const acoesDosStories = (frames: FrameInterativo[]): AcaoInstagram[] =>
+  (frames || []).map((f, i) => {
+    const tipo = (f.sticker_tipo || f.tipo || "").toLowerCase().replace(/\s/g, "_");
+    const sticker = NOME_STICKER[tipo];
+    const opcoes = f.opcoes?.length ? f.opcoes : [f.opcao_1, f.opcao_2].filter(Boolean) as string[];
+    return {
+      story: `Story ${i + 1}`,
+      titulo: sticker ? `Colar o sticker de ${sticker} por cima` : "Postar o slide como está",
+      detalhe:
+        f.instrucao ||
+        (sticker
+          ? `${f.pergunta || ""}${f.resposta_certa ? ` · resposta certa: ${f.resposta_certa}` : ""}`.trim()
+          : "Sem sticker — deixa o texto respirar."),
+      opcoes: opcoes.length ? opcoes : undefined,
+    };
+  });
+
 export const DICA_INSTAGRAM =
   "Use as ferramentas NATIVAS do Instagram (enquete, quiz, caixa de perguntas). Não precisa estar no slide — adicione POR CIMA do story ao postar.";
