@@ -11,7 +11,7 @@
  * `nexusSlideLabels` continuam válidos.
  */
 
-import { chunk, limitWords, slideContentBottom } from "@/lib/slideBase";
+import { chunk, fitTextSize, limitWords, slideContentBottom } from "@/lib/slideBase";
 import {
   MAX_BENEFICIOS_SLIDE,
   MAX_BENEFICIOS_TOTAL,

@@ -12,7 +12,7 @@
  * Nos textos, trechos entre **asteriscos duplos** saem destacados no acento.
  */
 
-import { beginSlideContent, chunk, drawSlideFooter, slideContentBottom } from "@/lib/slideBase";
+import { beginSlideContent, chunk, drawSlideFooter, fitTextSize, slideContentBottom } from "@/lib/slideBase";
 
 export const RP_TPL = {
   bg: "#0A0A0A",
