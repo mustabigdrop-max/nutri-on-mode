@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
 import SlideTextEditor from "@/components/social/SlideTextEditor";
 import {
+  getProtocoloPreferido,
   getTreinoDeHoje,
   listarProtocolosTreino,
+  setProtocoloPreferido,
   type ProtocoloOpcao,
   type TreinoHoje,
 } from "@/lib/treinoHojeData";
