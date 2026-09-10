@@ -350,24 +350,27 @@ const drawMechanismDiagram = (
   if (f.dose_estudada) inputs.push({ label: "DOSE ESTUDADA", value: f.dose_estudada, side: "right" });
   if (f.meia_vida) inputs.push({ label: "MEIA-VIDA", value: f.meia_vida, side: "left" });
 
-  const nodeY = y + 90;
+  const nodeY = y + 100;
+  const sideCount = { left: 0, right: 0 };
   for (const input of inputs.slice(0, 3)) {
     const left = input.side === "left";
+    const k = left ? sideCount.left++ : sideCount.right++;
+    const iy = nodeY - 70 + k * 58;
     const tx = left ? PAD : W - PAD;
     ctx.font = monoFont(700, 12);
     ctx.fillStyle = left ? rgba(TECH_TPL.cyan, 0.75) : rgba(TECH_TPL.gold, 0.75);
     ctx.textAlign = left ? "left" : "right";
-    ctx.fillText(input.label, tx, nodeY - 38);
+    ctx.fillText(input.label, tx, iy);
     ctx.font = headFont(500, 18);
     ctx.fillStyle = TECH_TPL.soft;
-    ctx.fillText(limitWords(input.value, 5), tx, nodeY - 16);
+    ctx.fillText(limitWords(input.value, 5), tx, iy + 24);
     // seta para o nó central
     ctx.strokeStyle = left ? rgba(TECH_TPL.cyan, 0.45) : rgba(TECH_TPL.gold, 0.45);
     ctx.lineWidth = 1.2;
-    ctx.setLineDash(input.side === "right" ? [6, 4] : []);
+    ctx.setLineDash(left ? [] : [6, 4]);
     ctx.beginPath();
-    ctx.moveTo(left ? PAD + 130 : W - PAD - 130, nodeY - 10);
-    ctx.lineTo(left ? cx - 95 : cx + 95, nodeY - 10);
+    ctx.moveTo(left ? PAD + 4 : W - PAD - 4, iy + 38);
+    ctx.lineTo(left ? cx - 92 : cx + 92, nodeY - 4);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.textAlign = "left";
@@ -418,15 +421,15 @@ const drawMechanismDiagram = (
     const boxW = W - PAD * 2 - 120;
     const bx = cx - boxW / 2;
     const top = y + 16;
-    const end = drawRich(ctx, passo, bx + 26, top + 36, {
-      size: 22, weight: 500, color: TECH_TPL.ink, accent: TECH_TPL.cyan, lineHeight: 1.4, maxWidth: boxW - 52,
+    const color = i % 2 === 0 ? TECH_TPL.cyan : TECH_TPL.gold;
+    const end = drawRich(ctx, passo, bx + 48, top + 38, {
+      size: 22, weight: 500, color: TECH_TPL.ink, accent: TECH_TPL.cyan, lineHeight: 1.4, maxWidth: boxW - 74,
     });
     const boxH = Math.max(76, end - top + 16);
-    const color = i % 2 === 0 ? TECH_TPL.cyan : TECH_TPL.gold;
     infoCard(ctx, bx, top, boxW, boxH, color);
     // marcador circular (sem numeração decorativa)
     ctx.beginPath();
-    ctx.arc(bx + 26, top + 30, 5, 0, Math.PI * 2);
+    ctx.arc(bx + 30, top + 32, 5, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
     y = top + boxH + 26;
@@ -495,6 +498,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     ctx.font = monoFont(700, 15);
     ctx.fillStyle = C;
     ctx.fillText("ARRASTA PRA CIÊNCIA ▸", PAD, contentBottom() - 10);
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -572,6 +576,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
         ctx.fillText(f.num_estudos, PAD + 4 + ctx.measureText(evid).width + 24, cy + 84);
       }
     }
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -581,6 +586,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     const { canvas, ctx } = newSlide(status, 2.1);
     const y = techHeader(ctx, "COMO FUNCIONA", "O mecanismo", content.composto);
     drawMechanismDiagram(ctx, content, y);
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -612,6 +618,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     ctx.font = monoFont(400, 12);
     ctx.fillStyle = TECH_TPL.muted;
     ctx.fillText("Dados dos estudos citados. Resultados variam entre indivíduos.", PAD, contentBottom() - 8);
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   });
@@ -624,19 +631,18 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     let y = techHeader(ctx, ri === 0 ? "O OUTRO LADO" : "O OUTRO LADO · CONTINUAÇÃO", "Riscos e limites");
     for (const r of grupoRisco) {
       const top = y;
-      let end = drawRich(ctx, r.risco || "", PAD + 28, top + 40, {
-        size: 22, weight: 600, color: TECH_TPL.ink, accent: G, lineHeight: 1.45, maxWidth: maxW - 56,
+      let end = drawRich(ctx, r.risco || "", PAD + 48, top + 42, {
+        size: 22, weight: 600, color: TECH_TPL.ink, accent: G, lineHeight: 1.45, maxWidth: maxW - 76,
       });
       if (r.contexto) {
-        end = drawRich(ctx, `→ ${r.contexto}`, PAD + 28, end + 6, {
-          size: 18, weight: 500, color: TECH_TPL.muted, lineHeight: 1.5, maxWidth: maxW - 56,
+        end = drawRich(ctx, `→ ${r.contexto}`, PAD + 48, end + 6, {
+          size: 18, weight: 500, color: TECH_TPL.muted, lineHeight: 1.5, maxWidth: maxW - 76,
         });
       }
       infoCard(ctx, PAD, top, maxW, end - top + 16, G);
       ctx.font = headFont(700, 20);
       ctx.fillStyle = G;
-      ctx.fillText("✕", PAD + 28, top + 0 + 40);
-      // redesenha o texto por cima do marcador deslocado
+      ctx.fillText("✕", PAD + 26, top + 44);
       y = end + 34;
     }
     if (content.slide5_nao_indicado && ri === gruposRiscos.length - 1 && y + 120 < contentBottom()) {
@@ -649,6 +655,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
       ctx.fillStyle = G;
       ctx.fillText("NÃO É INDICADO PARA", PAD + 28, top + 34);
     }
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   });
@@ -691,6 +698,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
       ctx.stroke();
       if (y > contentBottom() - 60) break;
     }
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -721,6 +729,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     };
     col(PAD, "PODE FAZER SENTIDO SE", content.slide7_faz_sentido || [], C, "✓");
     col(PAD + colW + 24, "NÃO FAZ SENTIDO SE", content.slide7_nao_faz_sentido || [], G, "✕");
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   }
@@ -736,12 +745,12 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     let y = techHeader(ctx, qi === 0 ? "LEVE PRO SEU MÉDICO" : "LEVE PRO SEU MÉDICO · CONTINUAÇÃO", "Perguntas certas");
     grupoPergunta.forEach((q, i) => {
       const top = y;
-      const end = drawRich(ctx, `“${q}”`, PAD + 28, top + 44, {
-        size: 22, weight: 500, color: TECH_TPL.ink, accent: C, lineHeight: 1.45, maxWidth: maxW - 56,
+      const end = drawRich(ctx, `“${q}”`, PAD + 48, top + 44, {
+        size: 22, weight: 500, color: TECH_TPL.ink, accent: C, lineHeight: 1.45, maxWidth: maxW - 76,
       });
       infoCard(ctx, PAD, top, maxW, end - top + 18, i % 2 === 0 ? C : G);
       ctx.beginPath();
-      ctx.arc(PAD + 28, top + 38, 5, 0, Math.PI * 2);
+      ctx.arc(PAD + 30, top + 38, 5, 0, Math.PI * 2);
       ctx.fillStyle = i % 2 === 0 ? C : G;
       ctx.fill();
       y = end + 34;
@@ -749,6 +758,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
     ctx.font = monoFont(400, 12);
     ctx.fillStyle = TECH_TPL.muted;
     ctx.fillText("Salva esse slide e leva na consulta.", PAD, contentBottom() - 8);
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   });
@@ -783,6 +793,7 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
       ctx.fillStyle = G;
       ctx.fillRect(PAD + 4, vTop + 12, 4, vEnd - vTop - 20);
     }
+    ctx.restore();
     techFooter(ctx, handle);
     out.push(canvas.toDataURL("image/png"));
   }
