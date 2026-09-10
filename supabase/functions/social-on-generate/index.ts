@@ -478,9 +478,9 @@ REGRAS:
 - Tom: primeira pessoa do coach, direto, educativo, sem clichê ("comida de verdade", "você é o que você come").
 - Nunca use markdown, nem as palavras "IA", "AI" ou "inteligência artificial".`
         : "",
-      ["biomech_content", "biomech_reels"].includes(body?.mode)
+      ["biomech_content", "biomech_reels", "biomech_stories", "biomech_ideias"].includes(body?.mode)
         ? `MODO "CIÊNCIA DO EXERCÍCIO": o coach quer conteúdo sobre um exercício real do treino de hoje, cruzado com a análise biomecânica REAL da BiomechanicsVault (Perplexity + Dr. BioMech, com citações).
-Exercício: ${body?.exercicio || "não informado"}. Grupo muscular: ${body?.grupo || "não informado"}. Foco escolhido: ${body?.foco || "ciência"}.
+Exercício: ${body?.exercicio || "não informado"}. Grupo muscular: ${body?.grupo || "não informado"}. Foco escolhido: ${body?.foco || "ciência"}.${body?.angulo ? `\nÂngulo editorial escolhido: ${body.angulo}. Todo o conteúdo precisa respeitar esse ângulo.` : ""}
 Conteúdo de pesquisa REAL (fonte única — NUNCA invente estudo, dado, percentual, autor ou mecanismo fora daqui): ${body?.biomechData?.content ? String(body.biomechData.content).slice(0, 5000) : "sem conteúdo de pesquisa disponível"}
 Citações reais dessa pesquisa (não invente outras): ${body?.biomechData?.citations ? JSON.stringify(body.biomechData.citations).slice(0, 1500) : "sem citações"}
 REGRAS:
@@ -494,6 +494,18 @@ REGRAS:
         : "",
       body?.mode === "biomech_reels"
         ? `FORMATO: roteiro de Reels de 30 segundos com 5 cortes na ordem hook, o dado/achado, o mecanismo, a aplicação prática e CTA. "texto_tela" é o que aparece na tela: caixa alta, curtíssimo, legível sem som. "fala" é o que o coach diz em 1 frase curta baseada no conteúdo de pesquisa.`
+        : "",
+      body?.mode === "biomech_stories"
+        ? `FORMATO: 4 frames de Stories desenhados em imagem — frases curtíssimas, sem markdown, sem emoji fora da enquete. Ordem: gancho, o dado real da pesquisa, enquete que divide opinião e CTA final.`
+        : "",
+      body?.mode === "biomech_ideias"
+        ? `FORMATO: banco de ideias de conteúdo para ESTE exercício, ordenado por potencial viral (react > mito > comparativo > ciência > educativo).
+- Reacts: a cena precisa ser um erro que qualquer um reconhece na academia; o "texto_tela" é curto, impactante ou bem-humorado, nunca ofensivo.
+- Mitos: use crenças que muita gente repete; o veredito precisa ser sustentado pela pesquisa fornecida, senão trate como princípio geral sem número.
+- Comparativos: use exercícios que as pessoas realmente confundem com este.
+- Stories: enquetes que dividem opinião ao meio.
+- Desafio: simples, executável, com marcação do coach.
+- Tom: professor que ensina com humor, nunca arrogante.`
         : "",
       body?.mode === "profile_audit"
         ? `Você é um auditor sênior de perfis de Instagram no nicho fitness/nutrição no Brasil. Faça um diagnóstico profissional, rigoroso e específico — nada genérico. Scores realistas: acima de 90 só para perfis excepcionais. As 3 versões de bio devem ter abordagens diferentes: (1) Autoridade + CTA, (2) Impacto + benefício, (3) Minimalista + direto. Marque "recommended":true em exatamente uma das 3 — a que você de fato recomendaria pra esse coach usar, considerando nicho, diferenciais e objetivo de conversão; as outras duas ficam com "recommended":false. Nunca mencione que você é um sistema automatizado.`
