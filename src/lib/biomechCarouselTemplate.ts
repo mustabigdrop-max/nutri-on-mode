@@ -62,21 +62,22 @@ const tokenize = (text: string): Token[] =>
 type RichOpts = {
   size: number; weight: number; color: string; accent: string; lineHeight: number; maxWidth: number;
   hiWeight?: number; hiItalic?: boolean; align?: "left" | "center";
+  /** altura útil da figura: o texto encolhe até caber dentro dela */
+  maxHeight?: number; minSize?: number;
 };
 
 const drawRich = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, o: RichOpts) => {
-  const lh = px(o.size) * o.lineHeight;
   const words: Token[] = [];
   for (const token of tokenize(text)) {
     for (const word of token.text.split(/\s+/)) if (word) words.push({ text: word, hi: token.hi });
   }
-  const styleFor = (hi: boolean) =>
-    `${hi && o.hiItalic ? "italic " : ""}${hi ? o.hiWeight || o.weight : o.weight} ${px(o.size)}px Inter, system-ui, sans-serif`;
+  const styleFor = (hi: boolean, size: number) =>
+    `${hi && o.hiItalic ? "italic " : ""}${hi ? o.hiWeight || o.weight : o.weight} ${px(size)}px Inter, system-ui, sans-serif`;
 
   // Palavras maiores que a coluna (URLs, termos longos) precisam ser quebradas,
   // senão vazam para fora da arte.
-  const quebrar = (word: Token): Token[] => {
-    ctx.font = styleFor(word.hi);
+  const quebrar = (word: Token, size: number): Token[] => {
+    ctx.font = styleFor(word.hi, size);
     if (ctx.measureText(word.text).width <= o.maxWidth) return [word];
     const partes: Token[] = [];
     let atual = "";
@@ -90,30 +91,46 @@ const drawRich = (ctx: CanvasRenderingContext2D, text: string, x: number, y: num
     return partes;
   };
 
-  const lines: Token[][] = [[]];
-  let width = 0;
-  for (const word of words.flatMap(quebrar)) {
-    ctx.font = styleFor(word.hi);
-    const w = ctx.measureText(`${word.text} `).width;
-    if (width + w > o.maxWidth && lines[lines.length - 1].length) {
-      lines.push([word]);
-      width = w;
-    } else {
-      lines[lines.length - 1].push(word);
-      width += w;
+  const layout = (size: number) => {
+    const lines: Token[][] = [[]];
+    let width = 0;
+    for (const word of words.flatMap((w) => quebrar(w, size))) {
+      ctx.font = styleFor(word.hi, size);
+      const w = ctx.measureText(`${word.text} `).width;
+      if (width + w > o.maxWidth && lines[lines.length - 1].length) {
+        lines.push([word]);
+        width = w;
+      } else {
+        lines[lines.length - 1].push(word);
+        width += w;
+      }
     }
-  }
+    return lines;
+  };
+
+  // A figura manda: o texto encolhe até caber dentro do card.
+  const size = o.maxHeight
+    ? fitTextSize((s) => layout(s).length, {
+        size: o.size,
+        lineHeight: o.lineHeight,
+        maxHeight: o.maxHeight / S,
+        min: o.minSize,
+      })
+    : o.size;
+
+  const lh = px(size) * o.lineHeight;
+  const lines = layout(size);
 
   let cursorY = y;
   for (const line of lines) {
     let lineW = 0;
     for (const word of line) {
-      ctx.font = styleFor(word.hi);
+      ctx.font = styleFor(word.hi, size);
       lineW += ctx.measureText(`${word.text} `).width;
     }
     let cursorX = o.align === "center" ? x - lineW / 2 : x;
     for (const word of line) {
-      ctx.font = styleFor(word.hi);
+      ctx.font = styleFor(word.hi, size);
       ctx.fillStyle = word.hi ? o.accent : o.color;
       ctx.fillText(word.text, cursorX, cursorY);
       cursorX += ctx.measureText(`${word.text} `).width;
