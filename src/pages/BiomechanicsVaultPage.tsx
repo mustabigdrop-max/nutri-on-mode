@@ -176,6 +176,11 @@ const BiomechanicsVaultPage = () => {
                   }}
                 >
                   {ex}
+                  <span className="block mt-1">
+                    {potencialDoExercicio(ex).map((t) => (
+                      <span key={t} className="text-[9px] mr-1" style={{ color: POTENCIAL_COR[t] }}>{POTENCIAL_LABEL[t]}</span>
+                    ))}
+                  </span>
                 </button>
               ))}
             </div>
@@ -249,6 +254,8 @@ const BiomechanicsVaultPage = () => {
                 </TabsContent>
               ))}
             </Tabs>
+
+            <BiomechHubPanel exercicio={selectedExercise} grupo={selectedMuscle} />
           </div>
         )}
       </main>
