@@ -68,11 +68,21 @@ const drawLines = (
   ctx: CanvasRenderingContext2D,
   text: string,
   y: number,
-  o: { size: number; weight: number; color: string; lineHeight?: number },
+  o: { size: number; weight: number; color: string; lineHeight?: number; maxHeight?: number },
 ) => {
-  ctx.font = font(o.weight, o.size);
+  const ratio = o.lineHeight ?? 1.18;
+  // A figura manda: o texto encolhe até caber na altura disponível do story.
+  let size = o.size;
+  const linhasEm = (s: number) => {
+    ctx.font = font(o.weight, s);
+    return wrap(ctx, text, W - PAD * 2).length;
+  };
+  const limite = o.maxHeight ?? Math.max(120, H - PAD * 2 - y);
+  while (size > o.size * 0.55 && linhasEm(size) * size * ratio > limite) size -= 2;
+
+  ctx.font = font(o.weight, size);
   ctx.fillStyle = o.color;
-  const lh = o.size * (o.lineHeight ?? 1.18);
+  const lh = size * ratio;
   let cursor = y;
   for (const line of wrap(ctx, text, W - PAD * 2)) {
     ctx.fillText(line, PAD, cursor);
@@ -165,13 +175,19 @@ const renderFrame = (frame: StoryFrame, handle: string): string => {
     if (frame.cta) {
       y += 70;
       const text = frame.cta;
-      ctx.font = font(800, 46);
+      // O texto do CTA precisa caber DENTRO da pílula: encolhe até caber.
+      let ctaSize = 46;
+      ctx.font = font(800, ctaSize);
+      while (ctaSize > 26 && ctx.measureText(text).width + 80 > W - PAD * 2) {
+        ctaSize -= 2;
+        ctx.font = font(800, ctaSize);
+      }
       const w = Math.min(W - PAD * 2, ctx.measureText(text).width + 80);
       roundRect(ctx, PAD, y - 10, w, 120, 26);
       ctx.fillStyle = isCta ? "rgba(10,10,10,0.9)" : STORY_TPL.gold;
       ctx.fill();
       ctx.fillStyle = isCta ? STORY_TPL.gold : STORY_TPL.dark;
-      ctx.fillText(text, PAD + 40, y + 68);
+      ctx.fillText(text, PAD + 40, y + 60 + ctaSize / 6);
       y += 150;
     }
     if (frame.subtexto) {
