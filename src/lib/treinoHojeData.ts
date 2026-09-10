@@ -159,7 +159,7 @@ export async function listarProtocolosTreino(): Promise<ProtocoloOpcao[]> {
  * Lê o treino de hoje do TrainingON do próprio usuário autenticado.
  * Retorna null quando não há protocolo estruturado.
  */
-export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
+export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje | null> {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth?.user?.id;
   if (!uid) return null;
@@ -167,14 +167,16 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
   const hojeLocal = dataSaoPaulo();
   const dow = hojeLocal.dow;
 
+  let protoQuery = supabase
+    .from("training_protocols")
+    .select("protocol_text")
+    .eq("user_id", uid);
+  protoQuery = protocoloId
+    ? protoQuery.eq("id", protocoloId)
+    : protoQuery.order("created_at", { ascending: false }).limit(1);
+
   const [{ data: proto }, { data: agendaRows }] = await Promise.all([
-    supabase
-      .from("training_protocols")
-      .select("protocol_text")
-      .eq("user_id", uid)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+    protoQuery.maybeSingle(),
     supabase
       .from("workout_schedule")
       .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
@@ -195,10 +197,30 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
   if (!agendaHoje) return null;
 
   const agendaMusculacao = agenda.filter((row) => !ehCardio(row.workout_type));
+  const ordemSemana = (d: number) => (d + 6) % 7;
   const diasAgendados = Array.from(new Set(agendaMusculacao.map((row) => row.day_of_week)))
-    .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+    .sort((a, b) => ordemSemana(a) - ordemSemana(b));
   const indiceNaSemana = diasAgendados.indexOf(dow);
-  const selecionado = escolherDia(dias, agendaHoje.workout_type || undefined, indiceNaSemana);
+
+  // Quantas vezes esse mesmo tipo de treino já apareceu antes de hoje na semana.
+  const tipoHoje = norm(agendaHoje.workout_type || "");
+  const ocorrenciaDoTipo = Array.from(
+    new Set(
+      agendaMusculacao
+        .filter((row) => norm(row.workout_type || "") === tipoHoje)
+        .map((row) => row.day_of_week),
+    ),
+  )
+    .sort((a, b) => ordemSemana(a) - ordemSemana(b))
+    .indexOf(dow);
+
+  const selecionado = escolherDia(
+    dias,
+    agendaHoje.workout_type || undefined,
+    indiceNaSemana,
+    ocorrenciaDoTipo,
+  );
+
   if (!selecionado) return null;
   const { dia, sincronizado } = selecionado;
 
