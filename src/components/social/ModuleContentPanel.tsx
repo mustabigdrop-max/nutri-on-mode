@@ -10,7 +10,7 @@ import { renderModuleCarousel, type ModuleSlide } from "@/lib/moduleCarouselTemp
 import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
 
 import { comPesquisa } from "@/lib/dualResearch";
-import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
+
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { moduleToTech } from "@/lib/techAdapters";
