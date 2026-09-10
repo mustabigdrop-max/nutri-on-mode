@@ -13,7 +13,9 @@ import {
   SLIDE_PAD_X,
   beginSlideContent,
   createSlideCanvas,
-  drawSlideFooter,, guardTextBounds } from "@/lib/slideBase";
+  drawSlideFooter,
+  guardTextBounds,
+} from "@/lib/slideBase";
 import { W as STORY_W, H as STORY_H } from "@/lib/photoStoryTemplates";
 
 export const PRINT_TPL = {

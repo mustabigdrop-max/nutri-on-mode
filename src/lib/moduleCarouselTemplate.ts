@@ -10,7 +10,9 @@ import {
   SLIDE_W,
   beginSlideContent,
   drawSlideFooter,
-  slideContentBottom,, guardTextBounds } from "@/lib/slideBase";
+  slideContentBottom,
+  guardTextBounds,
+} from "@/lib/slideBase";
 
 export const MOD_TPL = {
   bg: "#0A0A0A",
