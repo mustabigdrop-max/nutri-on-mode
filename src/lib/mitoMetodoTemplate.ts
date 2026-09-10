@@ -120,10 +120,10 @@ const badge = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number
 /** Rodapé fixo — delegado ao SlideBase compartilhado (faixa de 100px na base). */
 const footer = (ctx: CanvasRenderingContext2D, w: number, h: number, handle: string, dark = false) =>
   drawSlideFooter(ctx, w, h, handle, {
-    ink: MM_TPL.ink,
-    accent: MM_TPL.gold,
-    handleColor: "#666666",
-    background: MM_TPL.bg,
+    ink: dark ? MM_TPL.bg : MM_TPL.ink,
+    accent: dark ? MM_TPL.bg : MM_TPL.gold,
+    handleColor: dark ? MM_TPL.ctaHandle : "#666666",
+    background: dark ? MM_TPL.gold : MM_TPL.bg,
     scale: S,
   });
 

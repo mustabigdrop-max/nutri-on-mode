@@ -91,15 +91,11 @@ export const drawSlideFooter = (
   // própria, equivalente a position:absolute; bottom:20px; z-index:15.
   ctx.restore();
   ctx.save();
-  const footerBackground = "#0A0A0A";
-  const fadeTop = h - SLIDE_FOOTER_H - 30;
-  const gradient = ctx.createLinearGradient(0, fadeTop, 0, h - SLIDE_FOOTER_H);
-  gradient.addColorStop(0, "rgba(10,10,10,0)");
-  gradient.addColorStop(1, footerBackground);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, fadeTop, w, 30);
-  ctx.fillStyle = footerBackground;
-  ctx.fillRect(0, h - SLIDE_FOOTER_H, w, SLIDE_FOOTER_H);
+  // O fundo do conteúdo é recortado acima da área segura. Repinte toda essa
+  // área com a cor real do slide para o PNG nunca ficar transparente nem
+  // ganhar uma faixa preta em CTAs claros.
+  ctx.fillStyle = o.background;
+  ctx.fillRect(0, slideContentBottom(h), w, h - slideContentBottom(h));
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
   ctx.font = `700 ${15 * s}px Inter, system-ui, sans-serif`;
