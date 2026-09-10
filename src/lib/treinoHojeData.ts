@@ -106,7 +106,18 @@ function escolherDia(
   tipoAgenda: string | undefined,
   indiceNaSemana: number,
   ocorrenciaDoTipo: number,
+  diaDaSemana: number,
 ): { dia: ParsedDay; sincronizado: boolean } | null {
+  // Protocolos estruturados D1–D6 são a fonte oficial do TrainingON:
+  // segunda=D1, terça=D2, quarta=D3, quinta=D4, sexta=D5, sábado=D6.
+  // A workout_schedule pode manter tipos antigos após uma revisão do protocolo
+  // e não deve trocar, por exemplo, a quinta D4 por uma sessão de pernas D5.
+  const numeroDoDia = diaDaSemana >= 1 && diaDaSemana <= 6 ? diaDaSemana : 0;
+  const diaEstruturado = numeroDoDia
+    ? dias.find((d) => d.day_number === numeroDoDia)
+    : undefined;
+  if (diaEstruturado) return { dia: diaEstruturado, sincronizado: true };
+
   const alvo = norm(tipoAgenda || "");
   if (alvo) {
     const chave = Object.keys(TERMOS_POR_TIPO).find((tipo) => alvo.includes(tipo));
@@ -243,6 +254,7 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
     agendaHoje.workout_type || undefined,
     indiceNaSemana,
     ocorrenciaDoTipo,
+    dow,
   );
 
   if (!selecionado) return null;
