@@ -8,7 +8,7 @@ import InstagramAcoesPanel from "@/components/social/InstagramAcoesPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { renderModuleCarousel, type ModuleSlide } from "@/lib/moduleCarouselTemplate";
 import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
-import DualResearchField from "@/components/social/DualResearchField";
+
 import { comPesquisa } from "@/lib/dualResearch";
 import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
@@ -89,7 +89,7 @@ export default function ModuleContentPanel({
   const [stories, setStories] = useState<string[]>([]);
   const [slidesBrutos, setSlidesBrutos] = useState<ModuleSlide[] | null>(null);
   const [style, setStyle] = useCarouselStyle();
-  const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  
 
   /** Desenha os slides do módulo no estilo escolhido. */
   const renderSlidesModulo = async (brutos: ModuleSlide[], estilo: typeof style) =>
@@ -179,7 +179,6 @@ export default function ModuleContentPanel({
         </p>
       </div>
 
-      <DualResearchField pesquisa={pesquisa} onChange={setPesquisa} disabled={!!gerando} />
 
       <CarouselStyleSwitch style={style} onChange={setStyle} disabled={!!gerando} />
 
