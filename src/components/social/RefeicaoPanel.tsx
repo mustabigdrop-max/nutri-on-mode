@@ -353,6 +353,10 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
             </div>
           )}
 
+          <div className="mb-2">
+            <CarouselStyleSwitch style={style} onChange={setStyle} disabled={!!loading} />
+          </div>
+
           <div className="grid gap-2 sm:grid-cols-3">
             {(
               [

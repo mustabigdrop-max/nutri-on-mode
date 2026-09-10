@@ -242,6 +242,10 @@ export default function ResultadoProtocoloPanel({
           ))}
         </div>
 
+        <div style={{ marginBottom: 12 }}>
+          <CarouselStyleSwitch style={style} onChange={setStyle} disabled={loading} />
+        </div>
+
         <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.muted, marginBottom: 6 }}>FORMATO</div>
         <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
           {FORMATOS.map((fm) => (

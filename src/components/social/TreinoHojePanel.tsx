@@ -172,6 +172,8 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
         </ul>
       </div>
 
+      <CarouselStyleSwitch style={style} onChange={setStyle} disabled={gerando} />
+
       <div className="flex flex-wrap gap-2">
         <Button className="gap-2" disabled={gerando} onClick={() => void gerar()}>
           {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Images className="h-4 w-4" />}
