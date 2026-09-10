@@ -15,6 +15,10 @@ import {
   type RefeicaoRegistrada,
 } from "@/lib/refeicaoData";
 import { renderRefeicaoCarousel, type RefeicaoSlide } from "@/lib/refeicaoCarouselTemplate";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { refeicaoToTech } from "@/lib/techAdapters";
 import { renderRefeicaoStories, type RefeicaoStoryFrame } from "@/lib/refeicaoStoriesTemplate";
 
 const AMBER = "#EF9F27";
@@ -210,7 +214,13 @@ export default function RefeicaoPanel({ file, handle }: { file: File; handle: st
       if (formato === "carrossel") {
         const ai = result as CarrosselAI;
         if (!dados) throw new Error("Sem plano alimentar de hoje para essa refeição.");
-        setCarrossel(renderRefeicaoCarousel(montarSlides(dados, ai), handle, photo));
+        const brutos = montarSlides(dados, ai);
+        setSlidesRefeicao(brutos);
+        setCarrossel(
+          style === "tech"
+            ? await renderTechSlides(refeicaoToTech(brutos), { handle })
+            : renderRefeicaoCarousel(brutos, handle, photo),
+        );
         setLegenda(cleanCaption(ai.legenda));
         setHashtags([...(ai.hashtags?.alcance || []), ...(ai.hashtags?.nicho || []), ...(ai.hashtags?.micro || [])]);
         setTiming(ai.timing || null);
