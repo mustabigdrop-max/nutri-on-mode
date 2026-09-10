@@ -1,5 +1,5 @@
 import { Instagram, Lightbulb } from "lucide-react";
-import { acoesInstagram, DICA_INSTAGRAM } from "@/lib/publicLanguage";
+import { acoesInstagram, acoesDosStories, DICA_INSTAGRAM, type AcaoInstagram } from "@/lib/publicLanguage";
 
 /**
  * Enquete, quiz e caixa de perguntas não são slide — são ação no Instagram.
@@ -9,12 +9,17 @@ export const InstagramAcoesPanel = ({
   tema,
   pergunta,
   enquete,
+  frames,
 }: {
   tema?: string;
   pergunta?: string;
   enquete?: { pergunta: string; opcao1: string; opcao2: string };
+  /** Frames de story gerados — quando vêm, as instruções seguem eles. */
+  frames?: Parameters<typeof acoesDosStories>[0];
 }) => {
-  const acoes = acoesInstagram({ tema, pergunta, enquete });
+  const acoes: AcaoInstagram[] = frames?.length
+    ? acoesDosStories(frames)
+    : acoesInstagram({ tema, pergunta, enquete });
   return (
     <div className="rounded-xl border p-4 space-y-3" style={{ borderColor: "rgba(239,159,39,0.28)", background: "rgba(239,159,39,0.05)" }}>
       <p className="text-[11px] uppercase tracking-[0.18em] font-mono flex items-center gap-2" style={{ color: "#EF9F27" }}>

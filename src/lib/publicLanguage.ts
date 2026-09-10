@@ -158,7 +158,12 @@ NUNCA presuma que o seguidor sabe jargão de treino. Escreva como se explicasse 
 REGRAS DE SLIDE LIMPO:
 - NÃO numere itens dentro dos slides ("01", "02", "1)", "Passo 1"). A ordem já é dada pela sequência do carrossel.
 - Números só quando são DADO: "-15.8%", "+2.000%", "150min", "P 70g C 77g G 8g", "85%".
-- NÃO coloque enquete, quiz, caixa de perguntas ou "responde aqui" DENTRO do slide. Isso são ferramentas nativas do Instagram e vão no campo de instruções, aplicadas por cima do story ao postar.`;
+- Em CARROSSEL: nada de enquete, quiz ou "responde aqui" dentro do slide.
+- Em STORY: o slide de ENQUETE/QUIZ/CAIXA DE PERGUNTAS É permitido e serve de fundo padronizado para o sticker nativo. No slide vai SÓ a pergunta grande + espaço vazio no centro. NUNCA escreva as opções ("A) ... B) ..."), "responde aqui" nem botões falsos.
+- As opções de resposta vão no JSON, em "opcoes"/"resposta_certa"/"instrucao", que aparecem nas instruções abaixo do slide para o coach montar o sticker.
+
+FORMATO DO STORY INTERATIVO:
+{"tipo":"ENQUETE","pergunta":"texto curto no slide","sticker_tipo":"enquete|quiz|caixa_perguntas|slider","opcoes":["opção 1","opção 2"],"resposta_certa":"só se for quiz","instrucao":"o que o coach faz no Instagram"}`;
 
 export type AcaoInstagram = { story: string; titulo: string; detalhe?: string; opcoes?: string[] };
 
@@ -182,6 +187,42 @@ export const acoesInstagram = (opts?: { tema?: string; pergunta?: string; enquet
     { story: "Story 4", titulo: "Slide CTA com link na bio", detalhe: "Diagnóstico MCE gratuito — link na bio." },
   ];
 };
+
+type FrameInterativo = {
+  tipo?: string;
+  pergunta?: string;
+  sticker_tipo?: string;
+  opcoes?: string[];
+  opcao_1?: string;
+  opcao_2?: string;
+  resposta_certa?: string;
+  instrucao?: string;
+};
+
+const NOME_STICKER: Record<string, string> = {
+  enquete: "ENQUETE",
+  quiz: "QUIZ",
+  caixa_perguntas: "CAIXA DE PERGUNTAS",
+  slider: "SLIDER (barra de emoji)",
+};
+
+/** Instruções derivadas dos frames de story realmente gerados. */
+export const acoesDosStories = (frames: FrameInterativo[]): AcaoInstagram[] =>
+  (frames || []).map((f, i) => {
+    const tipo = (f.sticker_tipo || f.tipo || "").toLowerCase().replace(/\s/g, "_");
+    const sticker = NOME_STICKER[tipo];
+    const opcoes = f.opcoes?.length ? f.opcoes : [f.opcao_1, f.opcao_2].filter(Boolean) as string[];
+    return {
+      story: `Story ${i + 1}`,
+      titulo: sticker ? `Colar o sticker de ${sticker} por cima` : "Postar o slide como está",
+      detalhe:
+        f.instrucao ||
+        (sticker
+          ? `${f.pergunta || ""}${f.resposta_certa ? ` · resposta certa: ${f.resposta_certa}` : ""}`.trim()
+          : "Sem sticker — deixa o texto respirar."),
+      opcoes: opcoes.length ? opcoes : undefined,
+    };
+  });
 
 export const DICA_INSTAGRAM =
   "Use as ferramentas NATIVAS do Instagram (enquete, quiz, caixa de perguntas). Não precisa estar no slide — adicione POR CIMA do story ao postar.";
