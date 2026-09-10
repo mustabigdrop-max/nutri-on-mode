@@ -8,6 +8,8 @@
  * Nada aqui inventa conteúdo — só desenha o que o gerador entrega.
  */
 
+import { fitTextSize } from "@/lib/slideBase";
+
 export const TECH_TPL = {
   bg: "#020205",
   ink: "#FFFFFF",
