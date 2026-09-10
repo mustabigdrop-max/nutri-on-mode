@@ -189,16 +189,16 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
   const hojeLocal = dataSaoPaulo();
   const dow = hojeLocal.dow;
 
-  let protoQuery = supabase
-    .from("training_protocols")
-    .select("protocol_text")
-    .eq("user_id", uid);
-  protoQuery = protocoloId
-    ? protoQuery.eq("id", protocoloId)
-    : protoQuery.order("created_at", { ascending: false }).limit(1);
+  const idEscolhido = protocoloId || getProtocoloPreferido() || undefined;
+  const buscarProtocolo = async (id?: string) => {
+    let q = supabase.from("training_protocols").select("protocol_text").eq("user_id", uid);
+    q = id ? q.eq("id", id) : q.order("created_at", { ascending: false }).limit(1);
+    const { data } = await q.maybeSingle();
+    return data;
+  };
 
-  const [{ data: proto }, { data: agendaRows }] = await Promise.all([
-    protoQuery.maybeSingle(),
+  const [protoEscolhido, { data: agendaRows }] = await Promise.all([
+    buscarProtocolo(idEscolhido),
     supabase
       .from("workout_schedule")
       .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
