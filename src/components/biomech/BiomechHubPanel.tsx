@@ -119,15 +119,18 @@ const FOCO_DO_ANGULO: Record<Angulo, Foco> = {
 };
 
 export default function BiomechHubPanel({
-  exercicio, grupo, handle,
-}: { exercicio: string; grupo: string; handle?: string }) {
+  exercicio, grupo, handle, anguloInicial, formatoInicial,
+}: {
+  exercicio: string; grupo: string; handle?: string;
+  anguloInicial?: Angulo; formatoInicial?: Formato;
+}) {
   const at = handle || "diogo.mell0";
 
   const [ideias, setIdeias] = useState<Ideias | null>(null);
   const [loadingIdeias, setLoadingIdeias] = useState(false);
   const [foco, setFoco] = useState<Foco>("ciencia");
-  const [angulo, setAngulo] = useState<Angulo>("educativo");
-  const [formato, setFormato] = useState<Formato>("carrossel");
+  const [angulo, setAngulo] = useState<Angulo>(anguloInicial || "educativo");
+  const [formato, setFormato] = useState<Formato>(formatoInicial || "carrossel");
   const [loading, setLoading] = useState(false);
   const [citacoes, setCitacoes] = useState<string[]>([]);
   const [slides, setSlides] = useState<string[]>([]);
