@@ -25,6 +25,10 @@ export type StoryFrame = {
   pergunta?: string;
   opcao_1?: string;
   opcao_2?: string;
+  /** Sticker nativo que o coach cola por cima do slide ao postar. */
+  sticker_tipo?: "enquete" | "quiz" | "caixa_perguntas" | "slider" | string;
+  opcoes?: string[];
+  resposta_certa?: string;
   texto_acima?: string;
   cta?: string;
   subtexto?: string;
