@@ -150,6 +150,14 @@ export default function BiomechHubPanel({
     setHistorico(historicoDoExercicio(exercicio));
   }, [exercicio]);
 
+  // Quando a sugestão do treino de hoje escolhe o ângulo/formato, o hub acompanha.
+  useEffect(() => {
+    if (anguloInicial) setAngulo(anguloInicial);
+  }, [anguloInicial]);
+  useEffect(() => {
+    if (formatoInicial) setFormato(formatoInicial);
+  }, [formatoInicial]);
+
   /** Pesquisa real da vault: uma aba, ou as 5 quando o foco é "completo". */
   const buscarPesquisa = useCallback(async (f: Foco) => {
     const tabs = f === "completo"
