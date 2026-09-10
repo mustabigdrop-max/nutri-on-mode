@@ -109,8 +109,23 @@ const drawRich = (ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   };
 
   // A figura manda: se o texto não cabe na caixa, o corpo diminui até caber.
+  const medir = (s: number) => {
+    const ls = layout(s);
+    let maior = 0;
+    for (const line of ls) {
+      let w = 0;
+      for (const word of line) {
+        ctx.font = styleFor(word.hi, s);
+        w += ctx.measureText(`${word.text} `).width;
+      }
+      maior = Math.max(maior, w);
+    }
+    return { linhas: ls.length, largura: maior };
+  };
+
   const size = o.maxHeight
-    ? fitTextSize((s) => layout(s).length, {
+    ? fitTextSize(medir, {
+        maxWidth: o.maxWidth,
         size: o.size,
         lineHeight: o.lineHeight,
         maxHeight: o.maxHeight / S,
