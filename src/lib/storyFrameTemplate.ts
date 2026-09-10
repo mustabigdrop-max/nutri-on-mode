@@ -136,21 +136,17 @@ const renderFrame = (frame: StoryFrame, handle: string): string => {
 
   let y = H * 0.34;
 
-  if (tipo === "ENQUETE") {
-    if (frame.texto_acima) y = drawLines(ctx, frame.texto_acima, y - 90, { size: 34, weight: 600, color: STORY_TPL.soft }) + 40;
-    y = drawLines(ctx, frame.pergunta || "", y, { size: 68, weight: 800, color: ink }) + 60;
-    for (const opt of [frame.opcao_1, frame.opcao_2].filter(Boolean) as string[]) {
-      roundRect(ctx, PAD, y, W - PAD * 2, 130, 28);
-      ctx.fillStyle = "rgba(239,159,39,0.10)";
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = "rgba(239,159,39,0.5)";
-      ctx.stroke();
-      ctx.font = font(800, 46);
-      ctx.fillStyle = STORY_TPL.ink;
-      ctx.fillText(opt, PAD + 44, y + 84);
-      y += 160;
-    }
+  if (tipo === "ENQUETE" || tipo === "QUIZ" || tipo === "CAIXA_PERGUNTAS" || tipo === "SLIDER") {
+    // Slide de sticker: só a pergunta em cima e espaço vazio no centro,
+    // onde o coach cola a enquete/quiz nativa do Instagram ao postar.
+    let cursor = H * 0.2;
+    if (frame.texto_acima) cursor = drawLines(ctx, frame.texto_acima, cursor, { size: 34, weight: 600, color: STORY_TPL.soft }) + 40;
+    cursor = drawLines(ctx, frame.pergunta || frame.texto_principal || "", cursor, { size: 72, weight: 800, color: ink });
+
+    // linha de acento discreta abaixo da pergunta — nada de botões falsos
+    ctx.fillStyle = STORY_TPL.gold;
+    ctx.fillRect(PAD, cursor + 40, 120, 4);
+    y = cursor;
   } else {
     const main = frame.texto_principal || frame.texto_tela || "";
     y = drawLines(ctx, main, y, { size: 78, weight: 800, color: ink });
