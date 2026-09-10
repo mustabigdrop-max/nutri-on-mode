@@ -195,7 +195,12 @@ export default function NexusContentCreator({
 
         <p className="text-[10px] text-gray-500">
           O ângulo Cross-Vault cruza este composto com{" "}
-          {origem === "PeptideVault" ? "o MicrobiotaVault" : "o PeptideVault"}.
+          {origem === "PeptideVault"
+            ? "a ciência da microbiota"
+            : origem === "FitoVault"
+              ? "peptídeos e fármacos da mesma finalidade"
+              : "a enciclopédia de peptídeos"}
+          .
         </p>
 
         {reels && (
