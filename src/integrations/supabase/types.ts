@@ -2094,6 +2094,33 @@ export type Database = {
         }
         Relationships: []
       }
+      bio_link_clicks: {
+        Row: {
+          created_at: string
+          device: string | null
+          id: string
+          link_id: string
+          referrer: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          device?: string | null
+          id?: string
+          link_id: string
+          referrer?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          device?: string | null
+          id?: string
+          link_id?: string
+          referrer?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       biological_age_scores: {
         Row: {
           age_delta: number | null
@@ -10750,6 +10777,33 @@ export type Database = {
           },
         ]
       }
+      social_dm_triggers: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          mensagem: string
+          palavra: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          mensagem: string
+          palavra: string
+          user_id?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          mensagem?: string
+          palavra?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_hooks: {
         Row: {
           category: string
@@ -11006,6 +11060,63 @@ export type Database = {
           status?: string
           title?: string | null
           tone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_posts_tracked: {
+        Row: {
+          alcance: number | null
+          comentarios: number | null
+          compartilhamentos: number | null
+          created_at: string
+          curtidas: number | null
+          data: string
+          formato: string | null
+          id: string
+          leads_gerados: number
+          modulo_origem: string | null
+          salvamentos: number | null
+          score_performance: number | null
+          tema: string | null
+          tipo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alcance?: number | null
+          comentarios?: number | null
+          compartilhamentos?: number | null
+          created_at?: string
+          curtidas?: number | null
+          data?: string
+          formato?: string | null
+          id?: string
+          leads_gerados?: number
+          modulo_origem?: string | null
+          salvamentos?: number | null
+          score_performance?: number | null
+          tema?: string | null
+          tipo: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          alcance?: number | null
+          comentarios?: number | null
+          compartilhamentos?: number | null
+          created_at?: string
+          curtidas?: number | null
+          data?: string
+          formato?: string | null
+          id?: string
+          leads_gerados?: number
+          modulo_origem?: string | null
+          salvamentos?: number | null
+          score_performance?: number | null
+          tema?: string | null
+          tipo?: string
           updated_at?: string
           user_id?: string
         }

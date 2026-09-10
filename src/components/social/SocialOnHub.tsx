@@ -57,6 +57,12 @@ const SECTIONS: HubSection[] = [
     label: "CRESCIMENTO",
     accent: GREEN,
     tools: [
+      { id: "funil", name: "Funil de Conversão", icon: "📊", desc: "Alcance → engajamento → leads → clientes, com gargalo e ranking", hot: true, isNew: true },
+      { id: "highlights", name: "Highlights", icon: "📌", desc: "Capas e roteiros dos 6 destaques do perfil", isNew: true },
+      { id: "link_bio", name: "Link na Bio", icon: "🔗", desc: "Página /bio com cliques rastreados", isNew: true },
+      { id: "dm_auto", name: "Automação de DM", icon: "🤖", desc: "Gatilhos por palavra-chave e scripts prontos", isNew: true },
+      { id: "transformacao", name: "Transformação", icon: "🔥", desc: "Prova social com diagnóstico inicial vs. atual", isNew: true },
+      { id: "reciclador", name: "Reciclador 1→10", icon: "♻️", desc: "Uma peça vira 10 formatos", isNew: true },
       { id: "viral", name: "Viral", icon: "🔥", desc: "Formatos que escalam" },
       { id: "viral_lab", name: "Viral Lab", icon: "🧪", desc: "Teste A/B de criativos" },
       { id: "dna", name: "DNA", icon: "🧬", desc: "Identidade de marca" },

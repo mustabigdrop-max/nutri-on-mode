@@ -551,6 +551,18 @@ ${Array.isArray(body?.nuncaMencionar) && body.nuncaMencionar.length ? `- NUNCA m
 ${body?.disclaimer ? `- Inclua no campo disclaimer: "Conteúdo educacional. Não é prescrição. Procure acompanhamento profissional."` : ""}
 - Sem markdown. Nunca use as palavras "IA", "AI" ou "inteligência artificial".`
         : "",
+      body?.mode === "reciclar_10"
+        ? `MODO "RECICLADOR" — pegue o conteúdo original abaixo e gere 9 formatos diferentes sobre o MESMO tema, cada um otimizado para o seu formato. Nunca repita as mesmas frases entre formatos e nunca invente estudo, número, caloria, série ou dado científico que não esteja no original.
+
+CONTEÚDO ORIGINAL:
+${String(body?.conteudo_original || "")}
+
+REGRAS:
+- Português do Brasil, voz do Coach Diogo Mello (pessoa), sem markdown.
+- Nunca use as palavras "IA", "AI" ou "inteligência artificial".
+- Texto de tela de Reels e Stories em CAIXA ALTA, curto.
+- Toda peça termina com CTA. Use CTA com palavra-chave de automação de DM: escolha entre MCE, TREINO, QUERO, PLANO, CIÊNCIA. Ex.: "Comenta MCE que eu te mando o diagnóstico no DM 📩".`
+        : "",
     ].filter(Boolean).join("\n");
 
 
