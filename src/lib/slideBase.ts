@@ -121,15 +121,24 @@ export const drawSlideFooter = (
  * cabe na altura disponível. Regra do projeto: a palavra NUNCA sai da figura.
  */
 export const fitTextSize = (
-  medirLinhas: (size: number) => number,
-  o: { size: number; lineHeight: number; maxHeight: number; min?: number; step?: number },
+  medir: (size: number) => number | { linhas: number; largura: number },
+  o: { size: number; lineHeight: number; maxHeight: number; maxWidth?: number; min?: number; step?: number },
 ) => {
   const min = o.min ?? Math.max(8, o.size * 0.55);
   const step = o.step ?? 0.5;
   let size = o.size;
-  while (size > min && medirLinhas(size) * size * o.lineHeight > o.maxHeight) size -= step;
+  const cabe = (s: number) => {
+    const m = medir(s);
+    const linhas = typeof m === "number" ? m : m.linhas;
+    const largura = typeof m === "number" ? 0 : m.largura;
+    if (linhas * s * o.lineHeight > o.maxHeight) return false;
+    if (o.maxWidth && largura > o.maxWidth) return false;
+    return true;
+  };
+  while (size > min && !cabe(size)) size -= step;
   return Math.max(min, size);
 };
+
 
 /** Corta um texto para no máximo `max` palavras (sem reticências agressivas). */
 export const limitWords = (text: string, max: number) => {
