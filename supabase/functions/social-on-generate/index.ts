@@ -443,6 +443,8 @@ REGRAS: só informações reais e verificáveis; se não houver dado para uma se
       body?.mode === "photo_all"
         ? `MODO POSTAR COM MINHA FOTO: você recebeu UMA foto real do coach Diogo Mello (@diogo.mell0) e precisa entregar TODO o conteúdo do dia a partir dela.
 - Descreva só o que você REALMENTE vê na foto; nunca invente elementos, pessoas ou lugares.
+- REGRA ABSOLUTA DO OVERLAY (texto_overlay e texto_capa): MÁXIMO 10 palavras e MÁXIMO 2 linhas. Frase que para o scroll em 2 segundos. Sem explicação — só impacto. Ponto final em cada frase (peso visual). Se não cabe em 2 linhas, está longo demais. O subtexto tem MÁXIMO 5 palavras. NUNCA no overlay: mais de 10 palavras, explicações ou contexto (isso vai na legenda), hashtags, CTA (vai no último story ou na legenda) e textos que pareçam legenda de Instagram.
+- TIPOS DE FRASE QUE FUNCIONAM no overlay: 1. Curta + seca: "Pernas. Feriado. Sozinho." 2. Contraste: "Eles descansam. Eu construo." 3. Identidade: "Preto. Pai. Coach." 4. Provocativa: "Você treinou hoje?" 5. Dado: "150min. RPE 8. Zero desculpa." 6. Vulnerável: "Hoje foi difícil. Fui assim mesmo."
 - As 3 sugestões de story têm ÂNGULOS DIFERENTES entre si e vêm ordenadas por potencial_viral (maior primeiro).
 - Nunca use frase genérica de coach ("acredite em você", "sem dor sem ganho", "foco, força e fé").
 - Conecte os pilares de marca de forma natural: representatividade negra no fitness, lifestyle real, paternidade ativa, ciência aplicada e disciplina militar (16+ anos de Marinha).
