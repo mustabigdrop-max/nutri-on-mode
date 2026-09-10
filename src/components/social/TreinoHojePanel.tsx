@@ -105,7 +105,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
       <div className="rounded-lg border border-white/10 p-4 text-sm text-muted-foreground">
         Não achei a sua sessão de hoje no TrainingON. Gere ou abra o protocolo lá e volte aqui.
         <div className="mt-3">
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => void carregar()}>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => void carregar(protocoloId)}>
             <RefreshCw className="h-4 w-4" /> Tentar de novo
           </Button>
         </div>
@@ -115,7 +115,29 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
 
   return (
     <div className="space-y-4">
+      {protocolos.length > 1 && (
+        <div className="rounded-lg border border-white/10 p-3">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Protocolo do TrainingON</div>
+          <select
+            value={protocoloId}
+            onChange={(e) => {
+              setProtocoloId(e.target.value);
+              setSlides([]);
+              setStories([]);
+              void carregar(e.target.value);
+            }}
+            className="mt-2 w-full rounded-md border border-white/10 bg-transparent p-2 text-sm"
+          >
+            {protocolos.map((p) => (
+              <option key={p.id} value={p.id} className="bg-background">
+                {p.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="rounded-lg border border-white/10 p-4">
+
         <div className="text-[10px] uppercase tracking-widest" style={{ color: AMBER }}>
           {treino.sincronizado ? "Sincronizado com a agenda de hoje" : "Treino de hoje"}
         </div>
