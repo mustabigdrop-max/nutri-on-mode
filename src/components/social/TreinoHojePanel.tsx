@@ -62,7 +62,8 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
     void (async () => {
       const lista = await listarProtocolosTreino();
       setProtocolos(lista);
-      const inicial = lista[0]?.id || "";
+      const salvo = getProtocoloPreferido();
+      const inicial = (salvo && lista.some((p) => p.id === salvo) ? salvo : lista[0]?.id) || "";
       setProtocoloId(inicial);
       await carregar(inicial);
     })();
