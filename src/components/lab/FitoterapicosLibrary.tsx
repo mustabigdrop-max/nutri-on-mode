@@ -220,6 +220,12 @@ const FitoSectionCard = ({ item }: { item: Fitoterapico }) => {
               <p className="text-xs text-foreground leading-relaxed italic">{item.nota_elite}</p>
             </Card>
           )}
+          <NexusContentCreator
+            nome={item.nome}
+            origem="FitoVault"
+            compoundData={item}
+            contexto={`Fitoterápico ${item.nome}${item.nome_cientifico ? ` (${item.nome_cientifico})` : ""}. Mecanismo: ${item.mecanismo || "—"}. Indicações: ${(item.indicacoes || []).join("; ") || "—"}. Contraindicações: ${(item.contraindicoes || []).join("; ") || "—"}. Nível de evidência: ${item.evidencia || "—"}.`}
+          />]
         </CardContent>
       )}
     </Card>
