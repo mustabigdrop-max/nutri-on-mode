@@ -6,7 +6,7 @@ import { detectarModulo, CONFIGS_MODULO } from "@/lib/moduleContent";
 import ModuleContentPanel from "@/components/social/ModuleContentPanel";
 
 /** Rotas públicas/neutras onde o botão não aparece. */
-const OCULTAR = ["/", "/auth", "/modulos", "/diagnostico", "/onboarding"];
+const OCULTAR = ["/", "/auth", "/modulos", "/diagnostico", "/onboarding", "/coach/social", "/coach/social-on", "/coach/social-classic"];
 
 /**
  * Botão flutuante "📲 Criar conteúdo" — presente em todas as telas internas do
