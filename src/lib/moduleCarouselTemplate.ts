@@ -158,6 +158,29 @@ const renderSlide = (slide: ModuleSlide, index: number, total: number, handle: s
     y += 116;
   }
 
+  // Slide com pouco conteúdo nunca fica vazio: bloco de reforço na identidade
+  const sobra = slideContentBottom() - y;
+  if (!cta && sobra > 300) {
+    const boxY = slideContentBottom() - 240;
+    ctx.fillStyle = "rgba(255,255,255,0.03)";
+    ctx.fillRect(x, boxY, maxW, 200);
+    ctx.fillStyle = accent;
+    ctx.fillRect(x, boxY, 6, 200);
+    ctx.font = font(700, 26);
+    ctx.fillStyle = MOD_TPL.muted;
+    ctx.fillText(titulo.toUpperCase(), x + 32, boxY + 56);
+    drawText(ctx, "Transformação é sistema.", x + 32, boxY + 116, {
+      size: 40,
+      weight: 800,
+      color: MOD_TPL.ink,
+      lineHeight: 50,
+      maxWidth: maxW - 64,
+    });
+    ctx.font = font(500, 24);
+    ctx.fillStyle = MOD_TPL.muted;
+    ctx.fillText("Salva esse slide", x + 32, boxY + 176);
+  }
+
   drawSlideFooter(ctx, SLIDE_W, SLIDE_H, handle, {
     ink: cta ? "#0A0A0A" : MOD_TPL.ink,
     accent: cta ? "#633806" : MOD_TPL.gold,
