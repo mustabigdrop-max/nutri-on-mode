@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import { motion } from "framer-motion";
 import CitationBadge from "@/components/science/CitationBadge";
 import ScienceIndicator from "@/components/science/ScienceIndicator";
 import ReactMarkdown from "react-markdown";
+import BiomechHubPanel from "@/components/biomech/BiomechHubPanel";
+import { potencialDoExercicio, POTENCIAL_LABEL, POTENCIAL_COR } from "@/lib/biomechPotencial";
+import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 
 const muscleGroups = [
   "Peitoral", "Costas (Lat)", "Deltoides", "Bíceps", "Tríceps",
@@ -44,6 +47,11 @@ const BiomechanicsVaultPage = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ content: string; citations: string[] } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [treino, setTreino] = useState<TreinoHoje | null>(null);
+
+  useEffect(() => {
+    getTreinoDeHoje().then(setTreino).catch(() => setTreino(null));
+  }, []);
 
   const exercises = selectedMuscle ? (popularExercises[selectedMuscle] || []) : [];
   const filteredMuscles = muscleGroups.filter(m => m.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -93,6 +101,36 @@ const BiomechanicsVaultPage = () => {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 space-y-6">
+        {/* Treino real de hoje (TrainingON) */}
+        {treino?.exercicios?.length ? (
+          <div className="rounded-xl p-4" style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.25)" }}>
+            <div className="text-[10px] tracking-widest mb-2" style={{ color: "#EF9F27" }}>
+              TREINO DE HOJE — {treino.nomeTreino?.toUpperCase()}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {treino.exercicios.map((e) => (
+                <button
+                  key={e.nome}
+                  onClick={() => { setSelectedExercise(e.nome); setSelectedMuscle(selectedMuscle || treino.grupos?.[0] || ""); setResult(null); }}
+                  className="px-3 py-2 rounded-lg text-xs text-left"
+                  style={{
+                    background: selectedExercise === e.nome ? "rgba(232,160,32,0.16)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${selectedExercise === e.nome ? "#EF9F27" : "rgba(255,255,255,0.08)"}`,
+                    color: "#f0fdf4",
+                  }}
+                >
+                  {e.nome}
+                  <span className="ml-2">
+                    {potencialDoExercicio(e.nome).map((t) => (
+                      <span key={t} className="text-[9px] ml-1" style={{ color: POTENCIAL_COR[t] }}>{POTENCIAL_LABEL[t]}</span>
+                    ))}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {/* Muscle selector */}
         <div>
           <h2 className="text-sm font-semibold mb-3" style={{ color: "#9ca3af" }}>SELECIONAR GRUPO MUSCULAR</h2>
@@ -138,6 +176,11 @@ const BiomechanicsVaultPage = () => {
                   }}
                 >
                   {ex}
+                  <span className="block mt-1">
+                    {potencialDoExercicio(ex).map((t) => (
+                      <span key={t} className="text-[9px] mr-1" style={{ color: POTENCIAL_COR[t] }}>{POTENCIAL_LABEL[t]}</span>
+                    ))}
+                  </span>
                 </button>
               ))}
             </div>
@@ -211,6 +254,8 @@ const BiomechanicsVaultPage = () => {
                 </TabsContent>
               ))}
             </Tabs>
+
+            <BiomechHubPanel exercicio={selectedExercise} grupo={selectedMuscle} />
           </div>
         )}
       </main>
