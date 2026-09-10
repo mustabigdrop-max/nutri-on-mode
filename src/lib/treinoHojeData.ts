@@ -252,7 +252,7 @@ export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje 
   const indiceNaSemana = diasAgendados.indexOf(dow);
 
   // Quantas vezes esse mesmo tipo de treino já apareceu antes de hoje na semana.
-  const tipoHoje = norm(agendaHoje.workout_type || "");
+  const tipoHoje = norm(agendaHoje?.workout_type || "");
   const ocorrenciaDoTipo = Array.from(
     new Set(
       agendaMusculacao
