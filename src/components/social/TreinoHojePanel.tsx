@@ -4,7 +4,12 @@ import { Copy, Images, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
 import SlideTextEditor from "@/components/social/SlideTextEditor";
-import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
+import {
+  getTreinoDeHoje,
+  listarProtocolosTreino,
+  type ProtocoloOpcao,
+  type TreinoHoje,
+} from "@/lib/treinoHojeData";
 import {
   TREINO_HASHTAGS,
   TREINO_STORY_LABELS,
