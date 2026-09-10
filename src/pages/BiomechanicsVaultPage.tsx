@@ -285,7 +285,14 @@ const BiomechanicsVaultPage = () => {
               ))}
             </Tabs>
 
-            <BiomechHubPanel exercicio={selectedExercise} grupo={selectedMuscle} />
+            <div id="biomech-hub">
+              <BiomechHubPanel
+                exercicio={selectedExercise}
+                grupo={selectedMuscle}
+                anguloInicial={sugestaoAtiva?.exercicio === selectedExercise ? sugestaoAtiva.angulo : undefined}
+                formatoInicial={sugestaoAtiva?.exercicio === selectedExercise ? sugestaoAtiva.formato : undefined}
+              />
+            </div>
           </div>
         )}
       </main>
