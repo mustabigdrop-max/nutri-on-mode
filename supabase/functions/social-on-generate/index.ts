@@ -70,7 +70,7 @@ type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" |
   | "breakdown_caption" | "mce_carousel" | "nexus_carousel" | "nexus_reels" | "nexus_stories" | "nexus_como_obter" | "photo_story" | "photo_all" | "mito_metodo" | "viral_kit" | "interaction_pack" | "story_frames" | "dm_scripts"
   | "daily_brief" | "content_score" | "daily_signal" | "resultado_protocolo" | "resultado_stories" | "resultado_reels"
   | "refeicao_carrossel" | "refeicao_stories" | "refeicao_reels" | "pos_slides" | "print_nutrion"
-  | "biomech_content" | "biomech_reels" | "biomech_stories" | "biomech_ideias";
+  | "biomech_content" | "biomech_reels" | "biomech_stories" | "biomech_ideias" | "module_content";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}` ,
@@ -140,6 +140,7 @@ const SCHEMAS: Record<Mode, string> = {
   pos_slides: `{"legenda":"legenda completa sem hashtags e sem markdown, máximo 600 caracteres","self_comment":"pergunta pro primeiro comentário, máximo 80 caracteres","hashtags_top5":["exatamente as 5 hashtags informadas"],"hashtags_15":["exatamente as 15 hashtags informadas"],"cta":"o CTA informado","cta_save":"a frase de save informada","disclaimer":"o disclaimer informado, ou string vazia","melhor_horario":"horário sugerido para postar hoje","dica_engajamento":"1 dica específica pra esse tipo de post"}`,
   print_nutrion: `{"tipo_tela":"treino|plano_alimentar|nutrisync|diagnostico|muscular|nexus|outro","titulo_tela":"nome da tela como aparece na captura, até 6 palavras","elementos_visiveis":[{"elemento":"nome do que aparece na tela","descricao":"o que é e por que importa, até 90 caracteres","posicao_y_percentual":0.3,"destaque":"o diferencial a transformar em chamada editorial, até 70 caracteres","lado_anotacao":"esquerda|direita"},"3 a 4 itens que você REALMENTE vê na captura, ordenados de cima pra baixo"],"gancho_slide1":"frase de impacto pra capa, máximo 60 caracteres","subtexto_slide1":"complemento, máximo 40 caracteres","slides_zoom":[{"titulo":"título do destaque editorial, até 6 palavras","area_recorte":"o conteúdo real presente nessa área","posicao_y_percentual":0.4,"explicacao":"o que essa parte faz e por que é diferencial, 25 a 40 palavras","comparativo":"o que apps comuns fazem vs o que essa tela faz, até 140 caracteres"},"2 a 4 itens"],"comparativo":{"outros_apps":["3 a 4 frases curtas do que apps comuns entregam"],"nutrion":["3 a 4 frases curtas do que esta tela entrega, só o que aparece na captura"]},"stories":[{"tipo":"CAPA","texto":"frase principal do frame, máximo 70 caracteres","subtexto":"complemento, máximo 45 caracteres"},{"tipo":"DESTAQUE","texto":"frase sobre o diferencial em destaque, máximo 70 caracteres","subtexto":"provocação curta, ex: Seu app faz isso?","posicao_y_percentual":0.4},{"tipo":"CTA","texto":"pergunta de fechamento, máximo 40 caracteres","cta":"chamada final curta"}],"reels":{"hook":"frase dos primeiros 3 segundos, até 12 palavras","cortes":[{"segundo":"0-3s","texto_tela":"TEXTO EM CAIXA ALTA, até 6 palavras","acao":"direção de gravação apresentando o resultado visual, sem exibir um print cru"},"exatamente 5 cortes cobrindo 0-3s, 3-8s, 8-13s, 13-18s e 18-20s"]},"dados_extraidos":{"exercicios":["nomes de exercícios legíveis na captura, ou lista vazia"],"macros":"macros legíveis na captura, ou string vazia","calorias":"calorias legíveis na captura, ou string vazia","treino_nome":"nome do treino legível na captura, ou string vazia"},"legenda":"legenda pro Instagram focada no diferencial mostrado, máximo 600 caracteres, sem hashtags, sem markdown, tom de fundador mostrando o que construiu","self_comment":"pergunta que provoca, ex: Seu app faz isso?, máximo 80 caracteres","hashtags_top5":["5 hashtags relevantes pro tipo de tela"]}`,
   pinned_strategy: `{"strategy_score": número 0-100,"overall_verdict": "avaliação geral em 1-2 frases","pins": [{"slot": 1,"role": "identidade" | "resultado" | "oferta","current_fit": "forte" | "adequado" | "fraco" | "ausente","recommendation": "o que esse pin deveria ser/conter especificamente","format_suggestion": "Reel" | "Carrossel" | "Imagem estática" | "Vídeo","hook_suggestion": "sugestão de título/hook pra esse pin","rotation": "fixo" | "mensal" | "por campanha"}, "exatamente 3 itens, slots 1 a 3"],"content_ideas": [{"slot": 1,"idea": "ideia concreta de conteúdo pra esse pin"}],"mistakes_to_avoid": [{"icon": "emoji","text": "erro comum"}]}` ,
+  module_content: `{"titulo":"título curto do conteúdo gerado","carrossel":{"slides":[{"tipo":"capa|conteudo|dados|comparativo|dica|cta","tag":"TAG DO SLIDE","titulo":"máximo 50 caracteres","corpo":"máximo 200 caracteres","dados":[{"label":"rótulo curto","valor":"valor real"}],"destaque":"número ou palavra de impacto, ou string vazia"},"7 a 10 slides, o último sempre tipo cta"],"legenda":"legenda do Instagram, máximo 600 caracteres, sem hashtags e sem markdown","self_comment":"pergunta pro primeiro comentário, máximo 80 caracteres","hashtags_top5":["5 hashtags"],"hashtags_15":["15 hashtags"]},"reels":{"hook":"frase dos 3 primeiros segundos","duracao":"30s","cortes":[{"segundo":"0-3s","texto_tela":"TEXTO EM CAIXA ALTA ATÉ 40 CARACTERES","fala":"o que o coach fala","acao":"o que fazer na câmera"},"exatamente 5 cortes"],"legenda_reels":"máximo 400 caracteres","musica":"estilo de áudio sugerido"},"stories":{"frames":[{"tipo":"HOOK|DADO|ERRO|COMPARATIVO|ENQUETE|QUIZ|CTA","texto":"texto principal","subtexto":"complemento","opcoes":["quando enquete ou quiz"],"fundo":"#0A0A0A ou #EF9F27"},"4 a 5 frames"]},"timing":{"stories":"agora","reels":"horário ideal","carrossel":"horário ideal, nunca no mesmo dia do reels"},"checklist":["3 a 5 ações com tempo estimado"],"disclaimer":"disclaimer quando exigido, senão string vazia"}`,
 };
 
 
@@ -526,6 +527,29 @@ REGRAS:
             body?.dados ?? null,
             typeof body?.grupo === "string" ? body.grupo : undefined,
           )
+        : "",
+      body?.mode === "module_content"
+        ? `MODO "CRIAR CONTEÚDO POR MÓDULO" do nutriON.
+Módulo: ${String(body?.modulo || "")}
+Tipo de conteúdo: ${String(body?.tipoConteudo || "")}${body?.foco ? `\nFoco escolhido pelo coach: ${body.foco}` : ""}
+Formatos pedidos: ${Array.isArray(body?.formatos) && body.formatos.length ? body.formatos.join(", ") : "carrossel, reels, stories"}
+
+DADOS REAIS DA PLATAFORMA (use exatamente estes valores; jamais invente exercício, série, RPE, caloria, macro, estudo ou número):
+${body?.dadosReais ? JSON.stringify(body.dadosReais) : "Sem dados estruturados desta tela — escreva apenas conteúdo conceitual, sem citar números específicos."}
+
+REGRAS OBRIGATÓRIAS:
+- Carrossel: 7 a 10 slides, educativo profundo (feito pra SALVAR). Tipos permitidos: capa, conteudo, dados, comparativo, dica, cta. Último slide sempre "cta".
+- Título de slide até 50 caracteres; corpo até 200 caracteres; "destaque" é um número ou palavra curta (máx 18 caracteres) ou string vazia.
+- Reels: hook nos 3 primeiros segundos, 5 cortes, "texto_tela" SEMPRE em CAIXA ALTA com no máximo 40 caracteres.
+- Stories: 4 a 5 frames com pelo menos um interativo (ENQUETE ou QUIZ).
+- Cada formato aborda o MESMO tema de forma DIFERENTE. Nunca repita frases entre formatos.
+- Tom: ${String(body?.tom || "autoridade com acessibilidade, ciência sem arrogância")}
+- CTA final: ${String(body?.cta || "Diagnóstico MCE gratuito — link na bio")}
+- Emojis do tema (use com parcimônia na legenda): ${String(body?.emojis || "")}
+- Hashtags: inclua obrigatoriamente ${Array.isArray(body?.hashtagsFixas) ? body.hashtagsFixas.join(", ") : ""} em hashtags_top5 e hashtags_15.
+${Array.isArray(body?.nuncaMencionar) && body.nuncaMencionar.length ? `- NUNCA mencione: ${body.nuncaMencionar.join(", ")}.` : ""}
+${body?.disclaimer ? `- Inclua no campo disclaimer: "Conteúdo educacional. Não é prescrição. Procure acompanhamento profissional."` : ""}
+- Sem markdown. Nunca use as palavras "IA", "AI" ou "inteligência artificial".`
         : "",
     ].filter(Boolean).join("\n");
 

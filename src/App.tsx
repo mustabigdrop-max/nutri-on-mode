@@ -12,6 +12,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { AthleteDashboardGate, CoachToolRoute, AthleteOnlyRoute } from "@/components/athlete/AthleteRouteGuard";
 import PlanGateWrapper from "@/components/PlanGateWrapper";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
+import ModuleContentFab from "@/components/social/ModuleContentFab";
 const Index = lazy(() => import("./pages/Index"));
 const ModulesPage = lazy(() => import("./pages/ModulesPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
@@ -364,6 +365,7 @@ const App = () => (
           </Suspense>
           </RouteErrorBoundary>
         <PWAInstallBanner />
+        <ModuleContentFab />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
