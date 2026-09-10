@@ -41,7 +41,11 @@ export type StoryTexts = {
 const font = (weight: number | string, size: number) =>
   `${weight} ${size}px Inter, 'Inter var', system-ui, -apple-system, sans-serif`;
 
-/** Texto com quebra automática; devolve o Y da última linha. */
+/**
+ * Texto com quebra automática; devolve o Y da última linha.
+ * Quando `maxHeight` é informado (altura útil do card/figura), a fonte encolhe
+ * até o texto caber inteiro dentro da figura — nada escapa da caixa.
+ */
 export function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -49,21 +53,43 @@ export function wrapText(
   y: number,
   maxWidth: number,
   lineHeight: number,
+  maxHeight?: number,
 ) {
   const words = (text || "").split(/\s+/).filter(Boolean);
-  let line = "";
-  let currentY = y;
-  for (const word of words) {
-    const test = line ? `${line} ${word}` : word;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      ctx.fillText(line, x, currentY);
-      line = word;
-      currentY += lineHeight;
-    } else {
-      line = test;
+  const fonteBase = ctx.font;
+  const tamanhoBase = Number(/([\d.]+)px/.exec(fonteBase)?.[1] || 0);
+
+  const quebrar = () => {
+    const linhas: string[] = [];
+    let line = "";
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        linhas.push(line);
+        line = word;
+      } else line = test;
+    }
+    if (line) linhas.push(line);
+    return linhas;
+  };
+
+  let escala = 1;
+  if (maxHeight && tamanhoBase) {
+    const min = 0.55;
+    while (escala > min && quebrar().length * lineHeight * escala > maxHeight) {
+      escala -= 0.04;
+      ctx.font = fonteBase.replace(/([\d.]+)px/, `${(tamanhoBase * escala).toFixed(1)}px`);
     }
   }
-  if (line) ctx.fillText(line, x, currentY);
+
+  const lh = lineHeight * escala;
+  const linhas = quebrar();
+  let currentY = y;
+  linhas.forEach((l, i) => {
+    ctx.fillText(l, x, currentY);
+    if (i < linhas.length - 1) currentY += lh;
+  });
+  ctx.font = fonteBase;
   return currentY;
 }
 
