@@ -40,6 +40,7 @@ export const createSlideCanvas = (w: number = SLIDE_W, h: number = SLIDE_H, bg =
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
+  guardTextBounds(ctx, w);
   return { canvas, ctx };
 };
 
@@ -114,15 +115,60 @@ export const drawSlideFooter = (
   ctx.textAlign = "left";
 };
 
+/**
+ * Ajuste automático de corpo de texto dentro de uma figura (card, retângulo,
+ * pill, caixa arredondada). Recebe uma função que informa quantas linhas o
+ * texto ocupa em um determinado tamanho e devolve o maior tamanho que ainda
+ * cabe na altura disponível. Regra do projeto: a palavra NUNCA sai da figura.
+ */
+export const fitTextSize = (
+  medir: (size: number) => number | { linhas: number; largura: number },
+  o: { size: number; lineHeight: number; maxHeight: number; maxWidth?: number; min?: number; step?: number },
+) => {
+  const min = o.min ?? Math.max(8, o.size * 0.55);
+  const step = o.step ?? 0.5;
+  let size = o.size;
+  const cabe = (s: number) => {
+    const m = medir(s);
+    const linhas = typeof m === "number" ? m : m.linhas;
+    const largura = typeof m === "number" ? 0 : m.largura;
+    if (linhas * s * o.lineHeight > o.maxHeight) return false;
+    if (o.maxWidth && largura > o.maxWidth) return false;
+    return true;
+  };
+  while (size > min && !cabe(size)) size -= step;
+  return Math.max(min, size);
+};
+
+
 /** Corta um texto para no máximo `max` palavras (sem reticências agressivas). */
 export const limitWords = (text: string, max: number) => {
   const parts = (text || "").trim().split(/\s+/).filter(Boolean);
   return parts.length <= max ? parts.join(" ") : `${parts.slice(0, max).join(" ")}…`;
 };
 
+
 /** Quebra uma lista em grupos de `size` itens — vira slide adicional em vez de cortar. */
 export const chunk = <T,>(items: T[], size: number): T[][] => {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
+};
+
+/**
+ * Trava de segurança global: nenhuma palavra pode ultrapassar a borda da arte.
+ * Substitui `fillText` por uma versão que sempre recebe a largura máxima
+ * disponível a partir do ponto de desenho (respeitando o alinhamento atual),
+ * de modo que o texto é condensado em vez de vazar para fora do slide.
+ */
+export const guardTextBounds = (ctx: CanvasRenderingContext2D, w: number, padX = 24) => {
+  const original = ctx.fillText.bind(ctx);
+  ctx.fillText = (texto: string, x: number, y: number, maxWidth?: number) => {
+    let disponivel: number;
+    if (ctx.textAlign === "center") disponivel = Math.min(x - padX, w - padX - x) * 2;
+    else if (ctx.textAlign === "right" || ctx.textAlign === "end") disponivel = x - padX;
+    else disponivel = w - padX - x;
+    disponivel = Math.max(40, disponivel);
+    original(texto, x, y, maxWidth && maxWidth < disponivel ? maxWidth : disponivel);
+  };
 };

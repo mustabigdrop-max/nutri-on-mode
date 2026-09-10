@@ -1,3 +1,4 @@
+import { guardTextBounds } from "@/lib/slideBase";
 /**
  * Capas de Highlights do Instagram (1080x1920) na identidade nutriON,
  * e frames de story simples para o conteúdo de cada destaque.
@@ -30,6 +31,7 @@ const base = () => {
   canvas.width = 1080;
   canvas.height = 1920;
   const ctx = canvas.getContext("2d")!;
+  guardTextBounds(ctx, canvas.width);
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, 1080, 1920);
   // textura sutil de grão

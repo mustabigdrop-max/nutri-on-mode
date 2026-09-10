@@ -1,3 +1,4 @@
+import { guardTextBounds } from "@/lib/slideBase";
 /**
  * Stories 1080x1920 com a foto real do coach + overlay nutriON.
  * Cinco templates fixos: FRASE, DADO, ROTINA, CTA e MÍNIMO.
@@ -41,7 +42,11 @@ export type StoryTexts = {
 const font = (weight: number | string, size: number) =>
   `${weight} ${size}px Inter, 'Inter var', system-ui, -apple-system, sans-serif`;
 
-/** Texto com quebra automática; devolve o Y da última linha. */
+/**
+ * Texto com quebra automática; devolve o Y da última linha.
+ * Quando `maxHeight` é informado (altura útil do card/figura), a fonte encolhe
+ * até o texto caber inteiro dentro da figura — nada escapa da caixa.
+ */
 export function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -49,22 +54,64 @@ export function wrapText(
   y: number,
   maxWidth: number,
   lineHeight: number,
+  maxHeight?: number,
 ) {
   const words = (text || "").split(/\s+/).filter(Boolean);
-  let line = "";
-  let currentY = y;
-  for (const word of words) {
-    const test = line ? `${line} ${word}` : word;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      ctx.fillText(line, x, currentY);
-      line = word;
-      currentY += lineHeight;
-    } else {
-      line = test;
+  const fonteBase = ctx.font;
+  const tamanhoBase = Number(/([\d.]+)px/.exec(fonteBase)?.[1] || 0);
+
+  const quebrar = () => {
+    const linhas: string[] = [];
+    let line = "";
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        linhas.push(line);
+        line = word;
+      } else line = test;
+    }
+    if (line) linhas.push(line);
+    return linhas;
+  };
+
+  let escala = 1;
+  if (maxHeight && tamanhoBase) {
+    const min = 0.55;
+    while (escala > min && quebrar().length * lineHeight * escala > maxHeight) {
+      escala -= 0.04;
+      ctx.font = fonteBase.replace(/([\d.]+)px/, `${(tamanhoBase * escala).toFixed(1)}px`);
     }
   }
-  if (line) ctx.fillText(line, x, currentY);
+
+  const lh = lineHeight * escala;
+  const linhas = quebrar();
+  let currentY = y;
+  linhas.forEach((l, i) => {
+    ctx.fillText(l, x, currentY);
+    if (i < linhas.length - 1) currentY += lh;
+  });
+  ctx.font = fonteBase;
   return currentY;
+}
+
+/**
+ * Escreve uma linha única garantindo que ela caiba na largura da figura:
+ * reduz a fonte progressivamente e, no limite, corta com reticências.
+ */
+export function fitLine(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number) {
+  const t = (text || "").trim();
+  if (!t) return;
+  const fonteBase = ctx.font;
+  const tamanhoBase = Number(/([\d.]+)px/.exec(fonteBase)?.[1] || 0);
+  let escala = 1;
+  while (tamanhoBase && escala > 0.6 && ctx.measureText(t).width > maxWidth) {
+    escala -= 0.04;
+    ctx.font = fonteBase.replace(/([\d.]+)px/, `${(tamanhoBase * escala).toFixed(1)}px`);
+  }
+  let saida = t;
+  while (saida.length > 2 && ctx.measureText(saida).width > maxWidth) saida = saida.slice(0, -2);
+  ctx.fillText(saida === t ? t : `${saida}…`, x, y);
+  ctx.font = fonteBase;
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
@@ -181,12 +228,12 @@ function templateDado(ctx: CanvasRenderingContext2D, d: NonNullable<StoryTexts["
 
   ctx.font = font(400, 28);
   ctx.fillStyle = STORY_TPL.ink;
-  wrapText(ctx, d.descricao || "", 80, cardY + 155, 920, 36);
+  wrapText(ctx, d.descricao || "", 80, cardY + 155, 920, 36, d.fonte ? 110 : 140);
 
   if (d.fonte) {
     ctx.font = font("italic 300", 20);
     ctx.fillStyle = STORY_TPL.dim;
-    ctx.fillText(d.fonte, 80, cardY + 285);
+    fitLine(ctx, d.fonte, 80, cardY + 285, 920);
   }
 }
 
@@ -201,18 +248,18 @@ function templateRotina(ctx: CanvasRenderingContext2D, r: NonNullable<StoryTexts
 
   ctx.font = font(700, 30);
   ctx.fillStyle = STORY_TPL.ink;
-  ctx.fillText(r.nome || "Treino de hoje", 70, cardY + 55);
+  fitLine(ctx, r.nome || "Treino de hoje", 70, cardY + 55, 900);
 
   ctx.font = font(400, 22);
   ctx.fillStyle = STORY_TPL.muted;
-  ctx.fillText(r.detalhes || "", 70, cardY + 95);
+  fitLine(ctx, r.detalhes || "", 70, cardY + 95, 900);
 
   ctx.fillStyle = STORY_TPL.gold;
   ctx.fillRect(70, cardY + 125, 40, 2);
 
   ctx.font = font(400, 26);
   ctx.fillStyle = STORY_TPL.ink;
-  wrapText(ctx, r.frase || "", 70, cardY + 180, 920, 34);
+  wrapText(ctx, r.frase || "", 70, cardY + 180, 920, 34, 140);
 }
 
 function templateCta(ctx: CanvasRenderingContext2D, pergunta: string) {
@@ -222,7 +269,7 @@ function templateCta(ctx: CanvasRenderingContext2D, pergunta: string) {
 
   ctx.font = font(700, 38);
   ctx.fillStyle = STORY_TPL.ink;
-  wrapText(ctx, pergunta || "Qual pilar te trava?", 80, cardY + 70, 900, 48);
+  wrapText(ctx, pergunta || "Qual pilar te trava?", 80, cardY + 70, 900, 48, 110);
 
   ctx.textAlign = "center";
   ctx.font = font(900, 44);
@@ -268,6 +315,7 @@ export function renderPhotoStory(
   canvas.height = H;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
+  guardTextBounds(ctx, canvas.width);
 
   ctx.fillStyle = STORY_TPL.bg;
   ctx.fillRect(0, 0, W, H);

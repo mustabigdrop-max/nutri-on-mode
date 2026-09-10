@@ -1,3 +1,4 @@
+import { guardTextBounds } from "@/lib/slideBase";
 // SOCIAL ON — geração de imagens no canvas (edição de foto, carrossel, stories, brand score)
 import type { CarouselPreset, CarouselSlideType, CoachPhotoMode, McePillar } from "./socialCarouselSystem";
 import { MCE_ACCENTS } from "./socialCarouselSystem";
@@ -62,6 +63,7 @@ const ctxOf = (w: number, h: number) => {
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
+  guardTextBounds(ctx, canvas.width);
   return { canvas, ctx };
 };
 
