@@ -4,7 +4,7 @@
  * alternativa prática e CTA fixo. Sem emoji.
  */
 
-import { beginSlideContent, drawSlideFooter, fitTextSize, slideContentBottom } from "@/lib/slideBase";
+import { beginSlideContent, drawSlideFooter, fitTextSize, slideContentBottom, guardTextBounds } from "@/lib/slideBase";
 
 export const MM_TPL = {
   bg: "#0A0A0A",
@@ -43,6 +43,7 @@ const canvasOf = (w: number, h: number) => {
   const ctx = canvas.getContext("2d")!;
   ctx.textBaseline = "alphabetic";
   beginSlideContent(ctx, w, h);
+  guardTextBounds(ctx, w);
   return { canvas, ctx };
 };
 

@@ -40,6 +40,7 @@ export const createSlideCanvas = (w: number = SLIDE_W, h: number = SLIDE_H, bg =
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
+  guardTextBounds(ctx, w);
   return { canvas, ctx };
 };
 
