@@ -15,6 +15,9 @@ import ReactMarkdown from "react-markdown";
 import BiomechHubPanel from "@/components/biomech/BiomechHubPanel";
 import { potencialDoExercicio, POTENCIAL_LABEL, POTENCIAL_COR } from "@/lib/biomechPotencial";
 import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
+import TreinoHojeSugestoes, {
+  type SugestaoAngulo, type SugestaoFormato,
+} from "@/components/biomech/TreinoHojeSugestoes";
 
 const muscleGroups = [
   "Peitoral", "Costas (Lat)", "Deltoides", "Bíceps", "Tríceps",
@@ -48,10 +51,22 @@ const BiomechanicsVaultPage = () => {
   const [result, setResult] = useState<{ content: string; citations: string[] } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [treino, setTreino] = useState<TreinoHoje | null>(null);
+  const [sugestaoAtiva, setSugestaoAtiva] = useState<
+    { exercicio: string; angulo: SugestaoAngulo; formato: SugestaoFormato } | null
+  >(null);
 
   useEffect(() => {
     getTreinoDeHoje().then(setTreino).catch(() => setTreino(null));
   }, []);
+
+  /** Descobre o grupo muscular a partir do nome do exercício da sessão. */
+  const grupoDoExercicio = (nome: string) => {
+    const n = nome.toLowerCase();
+    const achado = Object.entries(popularExercises).find(([, lista]) =>
+      lista.some((ex) => n.includes(ex.toLowerCase()) || ex.toLowerCase().includes(n)),
+    );
+    return achado?.[0] || treino?.grupos?.[0] || "";
+  };
 
   const exercises = selectedMuscle ? (popularExercises[selectedMuscle] || []) : [];
   const filteredMuscles = muscleGroups.filter(m => m.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -130,6 +145,21 @@ const BiomechanicsVaultPage = () => {
             </div>
           </div>
         ) : null}
+
+        {/* Hub de sugestões ligado ao treino do dia */}
+        <TreinoHojeSugestoes
+          treino={treino}
+          ativo={sugestaoAtiva}
+          onEscolher={(s) => {
+            setSelectedExercise(s.exercicio);
+            setSelectedMuscle(grupoDoExercicio(s.exercicio));
+            setResult(null);
+            setSugestaoAtiva({ exercicio: s.exercicio, angulo: s.angulo, formato: s.formato });
+            requestAnimationFrame(() =>
+              document.getElementById("biomech-hub")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+            );
+          }}
+        />
 
         {/* Muscle selector */}
         <div>
@@ -255,7 +285,14 @@ const BiomechanicsVaultPage = () => {
               ))}
             </Tabs>
 
-            <BiomechHubPanel exercicio={selectedExercise} grupo={selectedMuscle} />
+            <div id="biomech-hub">
+              <BiomechHubPanel
+                exercicio={selectedExercise}
+                grupo={selectedMuscle}
+                anguloInicial={sugestaoAtiva?.exercicio === selectedExercise ? sugestaoAtiva.angulo : undefined}
+                formatoInicial={sugestaoAtiva?.exercicio === selectedExercise ? sugestaoAtiva.formato : undefined}
+              />
+            </div>
           </div>
         )}
       </main>
