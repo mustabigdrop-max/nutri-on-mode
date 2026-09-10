@@ -518,16 +518,6 @@ export const renderNexusTechCarousel = async (content: NexusCarouselContent): Pr
 
     const colW = (maxW - 16) / 2;
     let cy = y;
-    rows.forEach(([label, value], i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const cx0 = PAD + col * (colW + 16);
-      const top = cy + row * 0; // altura medida abaixo
-      void top;
-      void label;
-      void value;
-      void cx0;
-    });
     // mede alturas por linha (maior card da linha define o passo)
     for (let r = 0; r < rows.length; r += 2) {
       const par = rows.slice(r, r + 2);
