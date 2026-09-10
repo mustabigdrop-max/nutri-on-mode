@@ -7,6 +7,10 @@ import SaveShareButtons from "@/components/social/SaveShareButtons";
 import InstagramAcoesPanel from "@/components/social/InstagramAcoesPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { renderModuleCarousel, type ModuleSlide } from "@/lib/moduleCarouselTemplate";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { moduleToTech } from "@/lib/techAdapters";
 import { renderStoryFrames, type StoryFrame } from "@/lib/storyFrameTemplate";
 import {
   CONFIGS_MODULO,
@@ -125,7 +129,7 @@ export default function ModuleContentPanel({
       setResultado(res);
 
       if (formatos.includes("carrossel") && res.carrossel?.slides?.length) {
-        setSlides(renderModuleCarousel(res.carrossel.slides, handle, config.titulo));
+        setSlides(await renderSlidesModulo(res.carrossel.slides, style));
       }
       if (formatos.includes("stories") && res.stories?.frames?.length) {
         setStories(renderStoryFrames({ frames: paraStoryFrames(res.stories.frames) }, handle));
