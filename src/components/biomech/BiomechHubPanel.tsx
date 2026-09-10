@@ -135,6 +135,8 @@ export default function BiomechHubPanel({
   const [loading, setLoading] = useState(false);
   const [citacoes, setCitacoes] = useState<string[]>([]);
   const [slides, setSlides] = useState<string[]>([]);
+  const [bioContent, setBioContent] = useState<BiomechCarouselContent | null>(null);
+  const [style, setStyle] = useCarouselStyle();
   const [legendaEditada, setLegendaEditada] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const [storiesImgs, setStoriesImgs] = useState<string[]>([]);
@@ -241,7 +243,7 @@ export default function BiomechHubPanel({
           aplicacao: { titulo: r.aplicacao?.titulo || "Como aplicar no treino", corpo: r.aplicacao?.corpo || "" },
           fontes: bio.citations,
         };
-        setSlides(renderBiomechCarousel(content));
+        setBioContent(content);
         setActive(0);
         legendaFinalTxt = cleanCaption(r.legenda || "");
         registrarGeracao({ exercicio, formato: "carrossel", foco: f, angulo: ang });
