@@ -158,7 +158,12 @@ NUNCA presuma que o seguidor sabe jargão de treino. Escreva como se explicasse 
 REGRAS DE SLIDE LIMPO:
 - NÃO numere itens dentro dos slides ("01", "02", "1)", "Passo 1"). A ordem já é dada pela sequência do carrossel.
 - Números só quando são DADO: "-15.8%", "+2.000%", "150min", "P 70g C 77g G 8g", "85%".
-- NÃO coloque enquete, quiz, caixa de perguntas ou "responde aqui" DENTRO do slide. Isso são ferramentas nativas do Instagram e vão no campo de instruções, aplicadas por cima do story ao postar.`;
+- Em CARROSSEL: nada de enquete, quiz ou "responde aqui" dentro do slide.
+- Em STORY: o slide de ENQUETE/QUIZ/CAIXA DE PERGUNTAS É permitido e serve de fundo padronizado para o sticker nativo. No slide vai SÓ a pergunta grande + espaço vazio no centro. NUNCA escreva as opções ("A) ... B) ..."), "responde aqui" nem botões falsos.
+- As opções de resposta vão no JSON, em "opcoes"/"resposta_certa"/"instrucao", que aparecem nas instruções abaixo do slide para o coach montar o sticker.
+
+FORMATO DO STORY INTERATIVO:
+{"tipo":"ENQUETE","pergunta":"texto curto no slide","sticker_tipo":"enquete|quiz|caixa_perguntas|slider","opcoes":["opção 1","opção 2"],"resposta_certa":"só se for quiz","instrucao":"o que o coach faz no Instagram"}`;
 
 export type AcaoInstagram = { story: string; titulo: string; detalhe?: string; opcoes?: string[] };
 
