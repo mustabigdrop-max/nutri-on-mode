@@ -42,11 +42,13 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
   const [stories, setStories] = useState<string[]>([]);
   const [ativo, setAtivo] = useState(0);
   const [fotoImg, setFotoImg] = useState<HTMLImageElement | null>(null);
+  const [protocolos, setProtocolos] = useState<ProtocoloOpcao[]>([]);
+  const [protocoloId, setProtocoloId] = useState<string>("");
 
-  const carregar = async () => {
+  const carregar = async (id?: string) => {
     setCarregando(true);
     try {
-      const t = await getTreinoDeHoje();
+      const t = await getTreinoDeHoje(id || undefined);
       setTreino(t);
       if (!t) toast.error("Não encontrei um protocolo do TrainingON com exercícios para hoje.");
     } finally {
@@ -55,9 +57,16 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
   };
 
   useEffect(() => {
-    void carregar();
+    void (async () => {
+      const lista = await listarProtocolosTreino();
+      setProtocolos(lista);
+      const inicial = lista[0]?.id || "";
+      setProtocoloId(inicial);
+      await carregar(inicial);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   const gerar = async () => {
     if (!treino) return;
