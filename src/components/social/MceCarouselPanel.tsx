@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Clock, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,10 @@ import { melhorHorario } from "@/lib/socialViral";
 import { renderMceCarousel, MCE_CTA_SLIDE, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import PosSlidesPanel from "@/components/social/PosSlidesPanel";
 import SlideTextEditor from "@/components/social/SlideTextEditor";
+import CarouselStyleSwitch from "@/components/social/CarouselStyleSwitch";
+import { useCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { mceToTech } from "@/lib/techAdapters";
 
 const SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
 
@@ -32,6 +36,23 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
   const [content, setContent] = useState<MceCarouselContent | null>(null);
   const [active, setActive] = useState(0);
   const horarioHoje = melhorHorario("CARROSSEL_MCE");
+  const [style, setStyle] = useCarouselStyle();
+
+  // re-renderiza sempre que o conteúdo ou o estilo mudam
+  useEffect(() => {
+    if (!content) return;
+    let vivo = true;
+    (async () => {
+      const imgs =
+        style === "tech"
+          ? await renderTechSlides(mceToTech(content), { handle: content.handle || handle || undefined })
+          : renderMceCarousel(content);
+      if (vivo) setImages(imgs);
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, [content, style, handle]);
 
   const generate = async () => {
     if (!tema.trim()) return toast.error("Escreva o tema do carrossel.");
@@ -44,7 +65,6 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
       const content = { ...(data?.result || {}), tema, handle: handle || "diogo.mell0" } as MceCarouselContent;
       const safe: MceCarouselContent = { ...fallback(tema), ...content, handle: content.handle };
       setContent(safe);
-      setImages(renderMceCarousel(safe));
       setActive(0);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar agora.");
@@ -64,6 +84,8 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
           7 slides fixos em 4:5: capa, a dor, os pilares M / C / E, integração e o convite pro Diagnóstico MCE.
         </p>
       </div>
+
+      <CarouselStyleSwitch style={style} onChange={setStyle} disabled={loading} />
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input
@@ -102,10 +124,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
           {content && (
             <SlideTextEditor
               content={content}
-              onApply={(next) => {
-                setContent(next);
-                setImages(renderMceCarousel(next));
-              }}
+              onApply={(next) => setContent(next)}
             />
           )}
           <SaveShareButtons
