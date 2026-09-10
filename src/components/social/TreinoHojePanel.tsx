@@ -36,6 +36,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
   const [slides, setSlides] = useState<string[]>([]);
   const [stories, setStories] = useState<string[]>([]);
   const [ativo, setAtivo] = useState(0);
+  const [fotoImg, setFotoImg] = useState<HTMLImageElement | null>(null);
 
   const carregar = async () => {
     setCarregando(true);
@@ -58,6 +59,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
     setGerando(true);
     try {
       const foto = file ? await loadPhoto(file) : null;
+      setFotoImg(foto);
       setSlides(renderTreinoHojeCarousel(treino, foto, at));
       setStories(renderTreinoHojeStories(treino, foto, at));
       setAtivo(0);
