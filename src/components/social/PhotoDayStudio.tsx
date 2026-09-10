@@ -11,6 +11,7 @@ import ResultadoProtocoloPanel from "@/components/social/ResultadoProtocoloPanel
 import RefeicaoPanel from "@/components/social/RefeicaoPanel";
 import PrintNutrionPanel from "@/components/social/PrintNutrionPanel";
 import TreinoHojePanel from "@/components/social/TreinoHojePanel";
+import BiomechContentPanel from "@/components/social/BiomechContentPanel";
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", s3: "#181824", border: "#ffffff14",
@@ -39,7 +40,7 @@ export type PhotoDayResult = {
   timing?: { story_agora?: boolean; feed_horario?: string; motivo_horario?: string };
 };
 
-type TipoCarrossel = "auto" | "mce" | "nexus" | "nutrion" | "resultado" | "print" | "treino";
+type TipoCarrossel = "auto" | "mce" | "nexus" | "nutrion" | "resultado" | "print" | "treino" | "biomech";
 const TIPO_CARROSSEL_OPTIONS: { id: TipoCarrossel; label: string }[] = [
   { id: "mce", label: "MCE Drop" },
   { id: "nexus", label: "NEXUS-BIO" },
@@ -47,7 +48,11 @@ const TIPO_CARROSSEL_OPTIONS: { id: TipoCarrossel; label: string }[] = [
   { id: "resultado", label: "🏆 RESULTADO + PROTOCOLO" },
   { id: "print", label: "📱 PRINT DO APP" },
   { id: "treino", label: "🏋 TREINO DE HOJE" },
+  { id: "biomech", label: "🔬 CIÊNCIA DO EXERCÍCIO" },
 ];
+
+/** Tipos de carrossel com fluxo próprio — não usam a análise genérica de foto (res). */
+const TIPOS_COM_FLUXO_PROPRIO: TipoCarrossel[] = ["resultado", "print", "treino", "biomech"];
 
 const MCE_SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
 
@@ -289,7 +294,7 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
           setRes(null);
           setStories([]);
           setCarrosselImages([]);
-          if (tipoCarrossel === "resultado" || tipoCarrossel === "print" || tipoCarrossel === "treino") return;
+          if (TIPOS_COM_FLUXO_PROPRIO.includes(tipoCarrossel)) return;
           // Sem tipo escolhido: se a imagem for um print de tela, entra
           // automaticamente no modo PRINT DO APP em vez de analisar como foto.
           void (async () => {
@@ -330,7 +335,7 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
                   setRes(null);
                   setStories([]);
                   setCarrosselImages([]);
-                  if (tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && tipoCarrossel !== "treino") void analisar(f);
+                  if (!TIPOS_COM_FLUXO_PROPRIO.includes(tipoCarrossel)) void analisar(f);
                 }}
                 style={{
                   padding: 0, border: `2px solid ${i === fotoAtiva ? C.gold : "#ffffff22"}`,
@@ -377,19 +382,25 @@ export default function PhotoDayStudio({ tema, handle, onClose }: { tema?: strin
         </div>
       )}
 
+      {tipoCarrossel === "biomech" && (
+        <div style={{ marginBottom: 12 }}>
+          <BiomechContentPanel file={file} handle={at} />
+        </div>
+      )}
+
       {tipoCarrossel === "print" && file && (
         <div style={{ marginBottom: 12 }}>
           <PrintNutrionPanel file={file} handle={at} />
         </div>
       )}
 
-      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && tipoCarrossel !== "treino" && ehRefeicao && file && (
+      {!TIPOS_COM_FLUXO_PROPRIO.includes(tipoCarrossel) && ehRefeicao && file && (
         <div style={{ marginBottom: 12 }}>
           <RefeicaoPanel file={file} handle={at} />
         </div>
       )}
 
-      {tipoCarrossel !== "resultado" && tipoCarrossel !== "print" && tipoCarrossel !== "treino" && res && (
+      {!TIPOS_COM_FLUXO_PROPRIO.includes(tipoCarrossel) && res && (
 
 
         <>
