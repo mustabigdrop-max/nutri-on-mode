@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
+import InstagramAcoesPanel from "@/components/social/InstagramAcoesPanel";
 import { CONFIG_BIOMECH, hashtagsBiomech } from "@/lib/biomechContentConfig";
 import {
   renderBiomechCarousel, BIOMECH_SLIDE_LABELS, BIOMECH_TPL, type BiomechCarouselContent,
@@ -383,6 +384,8 @@ export default function BiomechHubPanel({
           />
         </Bloco>
       )}
+
+      {(!!slides.length || !!storiesImgs.length) && <InstagramAcoesPanel tema="este exercício" />}
 
       {!!storiesImgs.length && (
         <Bloco titulo={`STORIES PRONTOS (${storiesImgs.length})`} cor={C.green}>
