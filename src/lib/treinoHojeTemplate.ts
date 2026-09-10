@@ -220,9 +220,10 @@ const renderSlide = (slide: Slide, t: TreinoHoje, foto: HTMLImageElement | null,
       ctx.strokeStyle = "rgba(239,159,39,0.25)";
       ctx.stroke();
 
-      ctx.font = font(800, px(20));
+      ctx.beginPath();
+      ctx.arc(SLIDE_PAD_X + px(30), y - px(6), px(5), 0, Math.PI * 2);
       ctx.fillStyle = TREINO_TPL.gold;
-      ctx.fillText(String(i + 1).padStart(2, "0"), SLIDE_PAD_X + px(18), y);
+      ctx.fill();
       ctx.font = font(700, px(20));
       ctx.fillStyle = TREINO_TPL.ink;
       ctx.fillText(ex.nome, SLIDE_PAD_X + px(62), y);
@@ -396,9 +397,10 @@ const renderStory = (
     let y = px(300);
     t.exercicios.slice(0, 6).forEach((ex, i) => {
       if (y + px(90) > bottom) return;
-      ctx.font = font(800, px(22));
+      ctx.beginPath();
+      ctx.arc(SLIDE_PAD_X + px(8), y - px(7), px(6), 0, Math.PI * 2);
       ctx.fillStyle = TREINO_TPL.gold;
-      ctx.fillText(String(i + 1).padStart(2, "0"), SLIDE_PAD_X, y);
+      ctx.fill();
       ctx.font = font(700, px(24));
       ctx.fillStyle = TREINO_TPL.ink;
       y = wrap(ctx, ex.nome, SLIDE_PAD_X + px(56), y, maxW - px(56), px(30), 2) + px(20);
