@@ -231,6 +231,22 @@ serve(async (req) => {
       body?.toneBrief ? `Regras do tom: ${body.toneBrief}` : "",
       body?.bestTime ? `Melhor horário para este objetivo: ${body.bestTime}` : "",
       body?.topic ? `Tema: ${body.topic}` : "",
+      body?.temaLivre ? `Tema escrito pelo coach (prioridade máxima sobre qualquer tema automático): ${body.temaLivre}` : "",
+      body?.pesquisa
+        ? `PESQUISA CIENTÍFICA DUAL (fonte ÚNICA de dado, número, dose, meia-vida, estudo, mecanismo e status regulatório deste conteúdo — se não está aqui, não afirme):
+Domínio: ${(body.pesquisa as any)?.dominioLabel || (body.pesquisa as any)?.dominio || ""}
+Tema pesquisado: ${(body.pesquisa as any)?.tema || ""}
+Briefing: ${JSON.stringify((body.pesquisa as any)?.brief || {}).slice(0, 6000)}
+
+REGRAS DESTE CONTEÚDO COM PESQUISA:
+- Abra por um dado ou pergunta real do briefing (campos "dados" e "perguntas_publico"), nunca por frase genérica.
+- Explique o mecanismo em linguagem de quem treina há 3 meses, mantendo o número real.
+- Traga o contraponto: risco, efeito adverso, o que ainda é incerto. Conteúdo equilibrado gera mais confiança do que promessa.
+- Quando o briefing trouxer diferença entre homens e mulheres, mostre.
+- ENQUADRAMENTO EDUCACIONAL: descreva o que os estudos usaram. NUNCA prescreva dose, ciclo, empilhamento, horário de aplicação, protocolo pessoal ou onde comprar. Temas de peptídeos e esteroides são 18+, com disclaimer médico no último slide.
+- LACUNA DE CURIOSIDADE (obrigatória): entregue valor real, mas NÃO entregue o material completo. Feche apontando o aprofundamento que existe na enciclopédia e na consultoria do coach, usando o campo "teaser" do briefing como base — sem prometer o que o briefing não sustenta.
+- Nunca cite nome de journal nem "Autor et al., ano". Prefira "pesquisadores mostraram" ou o nome do pesquisador por extenso.`
+        : "",
       body?.style ? `Estilo: ${body.style}` : "",
       body?.duration ? `Duração: ${body.duration}` : "",
       body?.handle ? `Handle: @${String(body.handle).replace("@", "")}` : "",

@@ -43,8 +43,13 @@ const C = {
 };
 const F = { t: "'Rajdhani',sans-serif", m: "'Space Mono',monospace", b: "'Inter',sans-serif" };
 
+import DualResearchField from "@/components/social/DualResearchField";
+import { comPesquisa } from "@/lib/dualResearch";
+import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
+
 const callSocialAI = async (body: Record<string, unknown>) => {
-  const { data, error } = await supabase.functions.invoke("social-on-generate", { body });
+  // Toda geração do Social ON carrega a pesquisa científica ativa, se houver.
+  const { data, error } = await supabase.functions.invoke("social-on-generate", { body: comPesquisa(body) });
   if (error) throw new Error(error.message);
   if ((data as any)?.error) throw new Error((data as any).error);
   return (data as any).result;
@@ -416,6 +421,9 @@ function DailyCoach({
           🖼️ POSTAR FOTO DO ÁLBUM
         </button>
       )}
+
+      {/* Pesquisa científica que alimenta TODA geração do Social ON */}
+      <PesquisaAtivaBloco />
 
       {/* Temas sugeridos pelo banco de temas — rotação da semana, sem repetir em 30 dias */}
       <TemasDoDia onOpenTool={onOpenTool} />
@@ -932,6 +940,16 @@ interface Props {
   stats?: { label: string; value: string; color: string }[];
   weekPosted?: boolean[];
   onOpenTool?: (id: string) => void;
+}
+
+/** Campo de pesquisa global: vale para qualquer conteúdo gerado a seguir. */
+function PesquisaAtivaBloco() {
+  const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  return (
+    <div style={{ margin: "12px 0" }}>
+      <DualResearchField pesquisa={pesquisa} onChange={setPesquisa} />
+    </div>
+  );
 }
 
 export default function SocialOnCommandCenter({ handle, niches, products, differentials, stats, weekPosted, onOpenTool }: Props) {

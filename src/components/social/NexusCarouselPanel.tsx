@@ -22,6 +22,9 @@ import {
 } from "@/lib/nexusCarouselTemplate";
 import { TECH_TPL, renderNexusTechCarousel } from "@/lib/nexusTechTemplate";
 import { useCarouselStyle, type CarouselStyle } from "@/hooks/useCarouselStyle";
+import DualResearchField from "@/components/social/DualResearchField";
+import { comPesquisa } from "@/lib/dualResearch";
+import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 
 const NEXUS_STYLES: { id: CarouselStyle; label: string; hint: string }[] = [
   { id: "classico", label: "CLÁSSICO", hint: "âmbar nutriON" },
@@ -92,6 +95,7 @@ export default function NexusCarouselPanel({
   const [content, setContent] = useState<NexusCarouselContent | null>(null);
   const [active, setActive] = useState(0);
   const [style, setStyle] = useCarouselStyle();
+  const [pesquisa, setPesquisa] = usePesquisaAtiva();
 
   /** Renderiza no estilo escolhido (tech é assíncrono por causa das fontes). */
   const renderWith = async (c: NexusCarouselContent, s: CarouselStyle) =>
@@ -130,6 +134,7 @@ export default function NexusCarouselPanel({
           compoundData: found?.data || null,
           labData,
           handle,
+          ...comPesquisa({}),
         },
       });
 
@@ -181,6 +186,14 @@ export default function NexusCarouselPanel({
           {loading ? "Gerando…" : "Gerar carrossel"}
         </Button>
       </div>
+
+      <DualResearchField
+        dominioPadrao="peptideos"
+        temaPadrao={tema}
+        pesquisa={pesquisa}
+        onChange={setPesquisa}
+        disabled={loading}
+      />
 
       <div className="flex flex-wrap gap-1.5">
         {NEXUS_STYLES.map((s) => {
