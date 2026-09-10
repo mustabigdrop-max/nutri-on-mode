@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,11 @@ const BiomechanicsVaultPage = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ content: string; citations: string[] } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [treino, setTreino] = useState<TreinoHoje | null>(null);
+
+  useEffect(() => {
+    getTreinoDeHoje().then(setTreino).catch(() => setTreino(null));
+  }, []);
 
   const exercises = selectedMuscle ? (popularExercises[selectedMuscle] || []) : [];
   const filteredMuscles = muscleGroups.filter(m => m.toLowerCase().includes(searchQuery.toLowerCase()));
