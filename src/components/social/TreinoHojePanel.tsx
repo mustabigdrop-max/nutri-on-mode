@@ -4,7 +4,12 @@ import { Copy, Images, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
 import SlideTextEditor from "@/components/social/SlideTextEditor";
-import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
+import {
+  getTreinoDeHoje,
+  listarProtocolosTreino,
+  type ProtocoloOpcao,
+  type TreinoHoje,
+} from "@/lib/treinoHojeData";
 import {
   TREINO_HASHTAGS,
   TREINO_STORY_LABELS,
@@ -37,11 +42,13 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
   const [stories, setStories] = useState<string[]>([]);
   const [ativo, setAtivo] = useState(0);
   const [fotoImg, setFotoImg] = useState<HTMLImageElement | null>(null);
+  const [protocolos, setProtocolos] = useState<ProtocoloOpcao[]>([]);
+  const [protocoloId, setProtocoloId] = useState<string>("");
 
-  const carregar = async () => {
+  const carregar = async (id?: string) => {
     setCarregando(true);
     try {
-      const t = await getTreinoDeHoje();
+      const t = await getTreinoDeHoje(id || undefined);
       setTreino(t);
       if (!t) toast.error("Não encontrei um protocolo do TrainingON com exercícios para hoje.");
     } finally {
@@ -50,9 +57,16 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
   };
 
   useEffect(() => {
-    void carregar();
+    void (async () => {
+      const lista = await listarProtocolosTreino();
+      setProtocolos(lista);
+      const inicial = lista[0]?.id || "";
+      setProtocoloId(inicial);
+      await carregar(inicial);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   const gerar = async () => {
     if (!treino) return;
@@ -91,7 +105,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
       <div className="rounded-lg border border-white/10 p-4 text-sm text-muted-foreground">
         Não achei a sua sessão de hoje no TrainingON. Gere ou abra o protocolo lá e volte aqui.
         <div className="mt-3">
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => void carregar()}>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => void carregar(protocoloId)}>
             <RefreshCw className="h-4 w-4" /> Tentar de novo
           </Button>
         </div>
@@ -101,7 +115,29 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
 
   return (
     <div className="space-y-4">
+      {protocolos.length > 1 && (
+        <div className="rounded-lg border border-white/10 p-3">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Protocolo do TrainingON</div>
+          <select
+            value={protocoloId}
+            onChange={(e) => {
+              setProtocoloId(e.target.value);
+              setSlides([]);
+              setStories([]);
+              void carregar(e.target.value);
+            }}
+            className="mt-2 w-full rounded-md border border-white/10 bg-transparent p-2 text-sm"
+          >
+            {protocolos.map((p) => (
+              <option key={p.id} value={p.id} className="bg-background">
+                {p.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="rounded-lg border border-white/10 p-4">
+
         <div className="text-[10px] uppercase tracking-widest" style={{ color: AMBER }}>
           {treino.sincronizado ? "Sincronizado com a agenda de hoje" : "Treino de hoje"}
         </div>
@@ -126,7 +162,7 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
           {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Images className="h-4 w-4" />}
           Gerar post do treino
         </Button>
-        <Button variant="outline" size="icon" onClick={() => void carregar()} title="Recarregar treino">
+        <Button variant="outline" size="icon" onClick={() => void carregar(protocoloId)} title="Recarregar treino">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>

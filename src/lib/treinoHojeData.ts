@@ -93,11 +93,19 @@ const dataSaoPaulo = () => {
   return { data, dow: meioDiaUtc.getUTCDay(), date: meioDiaUtc };
 };
 
-/** Escolhe o dia do protocolo que corresponde ao treino agendado para hoje. */
+/**
+ * Escolhe o dia do protocolo que corresponde ao treino agendado para hoje.
+ *
+ * Quando o mesmo tipo (ex.: pull) aparece duas vezes na semana, a ordem importa:
+ * o primeiro pull da semana usa o primeiro dia compatível do protocolo, o
+ * segundo pull usa o segundo dia compatível. Sem isso, quarta e sábado
+ * mostrariam a mesma sessão (ou a sessão errada).
+ */
 function escolherDia(
   dias: ParsedDay[],
   tipoAgenda: string | undefined,
   indiceNaSemana: number,
+  ocorrenciaDoTipo: number,
 ): { dia: ParsedDay; sincronizado: boolean } | null {
   const alvo = norm(tipoAgenda || "");
   if (alvo) {
@@ -105,17 +113,19 @@ function escolherDia(
     const termos = chave
       ? TERMOS_POR_TIPO[chave]
       : alvo.split(/[^a-z]+/).filter((t) => t.length > 3);
-    let melhor: ParsedDay | null = null;
-    let melhorScore = 0;
-    for (const d of dias) {
-      const texto = norm(`${d.session_title} ${(d.muscle_tags || []).join(" ")}`);
-      const score = termos.filter((t) => texto.includes(t)).length;
-      if (score > melhorScore) {
-        melhorScore = score;
-        melhor = d;
-      }
+    const candidatos = dias
+      .map((d) => {
+        const texto = norm(`${d.session_title} ${(d.muscle_tags || []).join(" ")}`);
+        return { dia: d, score: termos.filter((t) => texto.includes(t)).length };
+      })
+      .filter((c) => c.score > 0);
+    if (candidatos.length) {
+      const melhorScore = Math.max(...candidatos.map((c) => c.score));
+      // Só desempata por ordem entre dias igualmente compatíveis.
+      const topo = candidatos.filter((c) => c.score === melhorScore);
+      const escolhido = topo[Math.min(Math.max(ocorrenciaDoTipo, 0), topo.length - 1)];
+      return { dia: escolhido.dia, sincronizado: true };
     }
-    if (melhor) return { dia: melhor, sincronizado: true };
   }
 
   // D1/D2/D3 representam a ordem real das sessões agendadas na semana.
@@ -124,11 +134,32 @@ function escolherDia(
   return diaDaPosicao ? { dia: diaDaPosicao, sincronizado: true } : null;
 }
 
+export type ProtocoloOpcao = { id: string; nome: string; criadoEm: string };
+
+/** Lista os protocolos do usuário para escolher qual sincronizar. */
+export async function listarProtocolosTreino(): Promise<ProtocoloOpcao[]> {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth?.user?.id;
+  if (!uid) return [];
+  const { data } = await supabase
+    .from("training_protocols")
+    .select("id, client_name, phase, created_at")
+    .eq("user_id", uid)
+    .order("created_at", { ascending: false })
+    .limit(15);
+  return (data || []).map((p) => ({
+    id: p.id as string,
+    nome: (p.client_name as string) || (p.phase as string) || "Protocolo",
+    criadoEm: p.created_at as string,
+  }));
+}
+
+
 /**
  * Lê o treino de hoje do TrainingON do próprio usuário autenticado.
  * Retorna null quando não há protocolo estruturado.
  */
-export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
+export async function getTreinoDeHoje(protocoloId?: string): Promise<TreinoHoje | null> {
   const { data: auth } = await supabase.auth.getUser();
   const uid = auth?.user?.id;
   if (!uid) return null;
@@ -136,14 +167,16 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
   const hojeLocal = dataSaoPaulo();
   const dow = hojeLocal.dow;
 
+  let protoQuery = supabase
+    .from("training_protocols")
+    .select("protocol_text")
+    .eq("user_id", uid);
+  protoQuery = protocoloId
+    ? protoQuery.eq("id", protocoloId)
+    : protoQuery.order("created_at", { ascending: false }).limit(1);
+
   const [{ data: proto }, { data: agendaRows }] = await Promise.all([
-    supabase
-      .from("training_protocols")
-      .select("protocol_text")
-      .eq("user_id", uid)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+    protoQuery.maybeSingle(),
     supabase
       .from("workout_schedule")
       .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
@@ -164,10 +197,30 @@ export async function getTreinoDeHoje(): Promise<TreinoHoje | null> {
   if (!agendaHoje) return null;
 
   const agendaMusculacao = agenda.filter((row) => !ehCardio(row.workout_type));
+  const ordemSemana = (d: number) => (d + 6) % 7;
   const diasAgendados = Array.from(new Set(agendaMusculacao.map((row) => row.day_of_week)))
-    .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+    .sort((a, b) => ordemSemana(a) - ordemSemana(b));
   const indiceNaSemana = diasAgendados.indexOf(dow);
-  const selecionado = escolherDia(dias, agendaHoje.workout_type || undefined, indiceNaSemana);
+
+  // Quantas vezes esse mesmo tipo de treino já apareceu antes de hoje na semana.
+  const tipoHoje = norm(agendaHoje.workout_type || "");
+  const ocorrenciaDoTipo = Array.from(
+    new Set(
+      agendaMusculacao
+        .filter((row) => norm(row.workout_type || "") === tipoHoje)
+        .map((row) => row.day_of_week),
+    ),
+  )
+    .sort((a, b) => ordemSemana(a) - ordemSemana(b))
+    .indexOf(dow);
+
+  const selecionado = escolherDia(
+    dias,
+    agendaHoje.workout_type || undefined,
+    indiceNaSemana,
+    ocorrenciaDoTipo,
+  );
+
   if (!selecionado) return null;
   const { dia, sincronizado } = selecionado;
 
