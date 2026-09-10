@@ -51,10 +51,22 @@ const BiomechanicsVaultPage = () => {
   const [result, setResult] = useState<{ content: string; citations: string[] } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [treino, setTreino] = useState<TreinoHoje | null>(null);
+  const [sugestaoAtiva, setSugestaoAtiva] = useState<
+    { exercicio: string; angulo: SugestaoAngulo; formato: SugestaoFormato } | null
+  >(null);
 
   useEffect(() => {
     getTreinoDeHoje().then(setTreino).catch(() => setTreino(null));
   }, []);
+
+  /** Descobre o grupo muscular a partir do nome do exercício da sessão. */
+  const grupoDoExercicio = (nome: string) => {
+    const n = nome.toLowerCase();
+    const achado = Object.entries(popularExercises).find(([, lista]) =>
+      lista.some((ex) => n.includes(ex.toLowerCase()) || ex.toLowerCase().includes(n)),
+    );
+    return achado?.[0] || treino?.grupos?.[0] || "";
+  };
 
   const exercises = selectedMuscle ? (popularExercises[selectedMuscle] || []) : [];
   const filteredMuscles = muscleGroups.filter(m => m.toLowerCase().includes(searchQuery.toLowerCase()));
