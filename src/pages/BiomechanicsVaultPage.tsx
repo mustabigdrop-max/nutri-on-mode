@@ -101,6 +101,36 @@ const BiomechanicsVaultPage = () => {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 space-y-6">
+        {/* Treino real de hoje (TrainingON) */}
+        {treino?.exercicios?.length ? (
+          <div className="rounded-xl p-4" style={{ background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.25)" }}>
+            <div className="text-[10px] tracking-widest mb-2" style={{ color: "#EF9F27" }}>
+              TREINO DE HOJE — {treino.nomeTreino?.toUpperCase()}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {treino.exercicios.map((e) => (
+                <button
+                  key={e.nome}
+                  onClick={() => { setSelectedExercise(e.nome); setSelectedMuscle(selectedMuscle || treino.grupoPrincipal || ""); setResult(null); }}
+                  className="px-3 py-2 rounded-lg text-xs text-left"
+                  style={{
+                    background: selectedExercise === e.nome ? "rgba(232,160,32,0.16)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${selectedExercise === e.nome ? "#EF9F27" : "rgba(255,255,255,0.08)"}`,
+                    color: "#f0fdf4",
+                  }}
+                >
+                  {e.nome}
+                  <span className="ml-2">
+                    {potencialDoExercicio(e.nome).map((t) => (
+                      <span key={t} className="text-[9px] ml-1" style={{ color: POTENCIAL_COR[t] }}>{POTENCIAL_LABEL[t]}</span>
+                    ))}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {/* Muscle selector */}
         <div>
           <h2 className="text-sm font-semibold mb-3" style={{ color: "#9ca3af" }}>SELECIONAR GRUPO MUSCULAR</h2>
