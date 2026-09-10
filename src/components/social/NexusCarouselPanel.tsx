@@ -21,10 +21,9 @@ import {
   type NexusStatus,
 } from "@/lib/nexusCarouselTemplate";
 import { TECH_TPL, renderNexusTechCarousel } from "@/lib/nexusTechTemplate";
+import { useCarouselStyle, type CarouselStyle } from "@/hooks/useCarouselStyle";
 
-type NexusStyle = "classico" | "tech";
-
-const NEXUS_STYLES: { id: NexusStyle; label: string; hint: string }[] = [
+const NEXUS_STYLES: { id: CarouselStyle; label: string; hint: string }[] = [
   { id: "classico", label: "CLÁSSICO", hint: "âmbar nutriON" },
   { id: "tech", label: "TECH CIENTÍFICO", hint: "ciano + dourado · diagrama" },
 ];
@@ -92,10 +91,10 @@ export default function NexusCarouselPanel({
   const [legenda, setLegenda] = useState("");
   const [content, setContent] = useState<NexusCarouselContent | null>(null);
   const [active, setActive] = useState(0);
-  const [style, setStyle] = useState<NexusStyle>("classico");
+  const [style, setStyle] = useCarouselStyle();
 
   /** Renderiza no estilo escolhido (tech é assíncrono por causa das fontes). */
-  const renderWith = async (c: NexusCarouselContent, s: NexusStyle) =>
+  const renderWith = async (c: NexusCarouselContent, s: CarouselStyle) =>
     s === "tech" ? renderNexusTechCarousel(c) : Promise.resolve(renderNexusCarousel(c));
 
   const match = useMemo(() => findCompound(tema), [tema]);

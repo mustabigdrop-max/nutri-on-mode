@@ -11,6 +11,9 @@ import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 import { renderMceCarousel, type MceCarouselContent } from "@/lib/mceCarouselTemplate";
 import { renderStoryFrames, type StoryScript } from "@/lib/storyFrameTemplate";
 import { renderMitoMetodo, type MitoMetodoContent } from "@/lib/mitoMetodoTemplate";
+import { getCarouselStyle } from "@/hooks/useCarouselStyle";
+import { renderTechSlides } from "@/lib/techSlideTemplate";
+import { mitoToTech } from "@/lib/techAdapters";
 import { cleanCaption } from "@/lib/captionText";
 import type { PosSlidesResult, TipoCarrossel } from "@/lib/carouselPostConfig";
 import { montarPlanoDeHoje, totalMinutos, ICONE_DO_DIA, LEGENDA_SERIES } from "@/lib/socialWeeklyPlan";
@@ -206,6 +209,10 @@ function DailyCoach({
           fetchPosSlides("MITO_METODO", topic),
         ]);
         const content = { ...(r as MitoMetodoContent), handle: identity.handle || "diogo.mell0" };
+        const slideImages =
+          getCarouselStyle() === "tech"
+            ? await renderTechSlides(mitoToTech(content), { handle: content.handle })
+            : renderMitoMetodo(content);
         setReady((p) => ({
           ...p,
           [i]: {
@@ -214,7 +221,7 @@ function DailyCoach({
             caption: pos?.legenda || (r as ReadyContent)?.caption,
             hashtags: pos?.hashtags_15 || (r as ReadyContent)?.hashtags,
             self_comment: pos?.self_comment,
-            slideImages: renderMitoMetodo(content),
+            slideImages,
           },
         }));
         return;
