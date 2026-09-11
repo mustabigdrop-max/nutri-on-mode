@@ -301,7 +301,6 @@ export const renderBiomechCarousel = (content: BiomechCarouselContent, w = 1080,
     ctx.fillRect(0, 0, w, h);
     orb(ctx, px(20), h - px(60), px(125), BIOMECH_TPL.gold);
     let y = px(64);
-    y = pill(ctx, "O DADO", x, y, { color: BIOMECH_TPL.gold, border: `${BIOMECH_TPL.gold}40` });
     y += px(50);
     if (content.dado.numero) {
       ctx.font = font(900, 46);
