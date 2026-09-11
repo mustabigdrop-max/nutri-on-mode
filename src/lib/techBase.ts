@@ -232,20 +232,26 @@ export const techBackground = (ctx: CanvasRenderingContext2D, seed = 1) => {
   ctx.stroke();
 };
 
-/** Barra dourada da base: tagline + handle (desenhada por último). */
+/** Barra dourada da base: marca nutriON do clássico + handle (desenhada por último). */
 export const techFooter = (ctx: CanvasRenderingContext2D, handle: string) => {
   const y = H - FOOTER_H;
   ctx.fillStyle = TECH_TPL.gold;
   ctx.fillRect(0, y, W, FOOTER_H);
-  ctx.font = headFont(700, 20);
-  ctx.fillStyle = TECH_TPL.bg;
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText("TRANSFORMAÇÃO É SISTEMA.", PAD, y + FOOTER_H / 2);
+  // Marca igual ao rodapé clássico: "nutri" preto + "ON" itálico em destaque.
+  ctx.font = `700 30px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = TECH_TPL.bg;
+  ctx.fillText("nutri", PAD, y + FOOTER_H / 2 + 2);
+  const nutriW = ctx.measureText("nutri").width;
+  ctx.font = `italic 700 30px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillText("ON", PAD + nutriW, y + FOOTER_H / 2 + 2);
   ctx.font = monoFont(400, 13);
+  ctx.fillStyle = TECH_TPL.bg;
   ctx.globalAlpha = 0.65;
-  const hdl = `@${handle.replace(/^@/, "")}`;
-  ctx.fillText(`nutriON  ·  ${hdl}`, W - PAD - ctx.measureText(`nutriON  ·  ${hdl}`).width, y + FOOTER_H / 2);
+  const hdl = handle.startsWith("@") ? handle : `@${handle}`;
+  ctx.fillText(hdl, W - PAD - ctx.measureText(hdl).width, y + FOOTER_H / 2);
   ctx.globalAlpha = 1;
   ctx.textBaseline = "alphabetic";
 };
