@@ -370,8 +370,13 @@ const renderStory = (
   const { canvas, ctx } = createSlideCanvas(STORY_W, STORY_H, TREINO_TPL.bg);
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
-  if (tipo === "CAPA" && foto) drawFotoCover(ctx, foto, STORY_W, STORY_H);
-  else drawTextura(ctx, STORY_W, STORY_H);
+  // As três peças precisam manter a foto escolhida. Antes, apenas a CAPA
+  // recebia a imagem; SESSÃO e CTA eram renderizados somente com textura.
+  if (foto) {
+    drawFotoCover(ctx, foto, STORY_W, STORY_H, tipo === "CAPA" ? 0.9 : 1.08);
+  } else {
+    drawTextura(ctx, STORY_W, STORY_H);
+  }
 
   beginSlideContent(ctx, STORY_W, STORY_H);
   const maxW = STORY_W - SLIDE_PAD_X * 2;
