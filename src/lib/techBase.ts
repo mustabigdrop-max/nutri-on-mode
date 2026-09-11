@@ -256,6 +256,20 @@ export const techFooter = (ctx: CanvasRenderingContext2D, handle: string) => {
   ctx.textBaseline = "alphabetic";
 };
 
+/**
+ * Rótulos estruturais que nunca devem aparecer na arte final
+ * (HOOK, DADO, CAPA, CTA e similares).
+ */
+const LABELS_OCULTOS = new Set([
+  "HOOK", "GANCHO", "DADO", "O DADO", "DADOS", "PONTO-CHAVE", "PONTO CHAVE",
+  "CAPA", "COVER", "CONTEUDO", "CONTEÚDO", "CONTENT", "CTA", "TAKEAWAY",
+  "FECHAMENTO", "DESENVOLVIMENTO", "PROBLEMA", "O PROBLEMA", "SOLUCAO",
+  "SOLUÇÃO", "SLIDE", "INTRO", "ABERTURA", "MIOLO", "CARD", "BLOCO",
+]);
+
+export const rotuloOculto = (text?: string) =>
+  LABELS_OCULTOS.has((text || "").trim().toUpperCase().replace(/[.:—–-]+$/g, ""));
+
 /** Header: eyebrow mono espaçado + título grande + linha gradiente. */
 export const techHeader = (
   ctx: CanvasRenderingContext2D,
@@ -264,14 +278,17 @@ export const techHeader = (
   subtitle?: string,
 ) => {
   let y = 110;
-  ctx.font = monoFont(400, 14);
-  ctx.fillStyle = rgba(TECH_TPL.cyan, 0.7);
-  let lx = PAD;
-  for (const ch of (eyebrow || "").toUpperCase()) {
-    ctx.fillText(ch, lx, y);
-    lx += ctx.measureText(ch).width + 6;
+  const label = rotuloOculto(eyebrow) ? "" : (eyebrow || "").toUpperCase();
+  if (label) {
+    ctx.font = monoFont(400, 14);
+    ctx.fillStyle = rgba(TECH_TPL.cyan, 0.7);
+    let lx = PAD;
+    for (const ch of label) {
+      ctx.fillText(ch, lx, y);
+      lx += ctx.measureText(ch).width + 6;
+    }
+    y += 20;
   }
-  y += 20;
   const size = (title || "").length > 34 ? 50 : 62;
   const end = drawRich(ctx, (title || "").toUpperCase(), PAD, y + size, {
     size, weight: 700, color: TECH_TPL.ink, accent: TECH_TPL.cyan, lineHeight: 1.05, maxWidth: W - PAD * 2,

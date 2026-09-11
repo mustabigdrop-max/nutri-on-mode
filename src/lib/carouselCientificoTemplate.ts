@@ -1,6 +1,6 @@
 import {
   TECH_H, TECH_TPL, TECH_W, drawRich, ensureTechFonts, finishTechSlide, headFont,
-  monoFont, newTechSlide, rgba, techContentBottom, techHeader,
+  monoFont, newTechSlide, rgba, rotuloOculto, techContentBottom, techHeader,
 } from "@/lib/techBase";
 import type { CarouselEngineContent, CarouselEngineSlide, SVGElement } from "@/components/social-on/carousel-engine/carousel-engine.types";
 
@@ -41,9 +41,9 @@ const renderCover = (ctx:CanvasRenderingContext2D,s:Extract<CarouselEngineSlide,
 };
 const renderContent = (ctx:CanvasRenderingContext2D,s:Extract<CarouselEngineSlide,{type:"content"}>) => {
   let y=techHeader(ctx,s.category_tag||"EVIDÊNCIA",s.header); diagram(ctx,s.svg_element,600,55,390,220);
-  const items = s.cards?.length ? s.cards.map(x=>({title:x.title,text:x.description,ref:"",accent:x.accent})) : s.blocks?.length ? s.blocks.map(x=>({title:x.title,text:x.description,ref:x.reference||"",accent:"cyan" as const})) : (s.paragraphs||[]).map(x=>({title:x.title||"PONTO-CHAVE",text:x.text,ref:x.reference||"",accent:"cyan" as const}));
+  const items = s.cards?.length ? s.cards.map(x=>({title:x.title,text:x.description,ref:"",accent:x.accent})) : s.blocks?.length ? s.blocks.map(x=>({title:x.title,text:x.description,ref:x.reference||"",accent:"cyan" as const})) : (s.paragraphs||[]).map(x=>({title:x.title||"",text:x.text,ref:x.reference||"",accent:"cyan" as const}));
   const shown=items.slice(0,3); const gap=18; const h=Math.min(245,(BODY_BOTTOM-y-gap*(shown.length-1)-20)/Math.max(1,shown.length));
-  shown.forEach((it,i)=>{const yy=y+i*(h+gap);angularCard(ctx,PAD,yy,TECH_W-PAD*2,h,it.accent||"cyan");drawRich(ctx,it.title.toUpperCase(),PAD+28,yy+43,{size:19,weight:700,color:it.accent==="gold"?TECH_TPL.gold:TECH_TPL.cyan,family:"mono",maxWidth:850,maxHeight:28,minSize:14});drawRich(ctx,it.text,PAD+28,yy+86,{size:29,weight:500,color:TECH_TPL.ink,maxWidth:850,maxHeight:h-112,minSize:20,lineHeight:1.25});if(it.ref){ctx.font=monoFont(400,12);ctx.fillStyle=TECH_TPL.muted;ctx.fillText(it.ref.slice(0,100),PAD+28,yy+h-18);}});
+  shown.forEach((it,i)=>{const yy=y+i*(h+gap);angularCard(ctx,PAD,yy,TECH_W-PAD*2,h,it.accent||"cyan");if(it.title&&!rotuloOculto(it.title))drawRich(ctx,it.title.toUpperCase(),PAD+28,yy+43,{size:19,weight:700,color:it.accent==="gold"?TECH_TPL.gold:TECH_TPL.cyan,family:"mono",maxWidth:850,maxHeight:28,minSize:14});drawRich(ctx,it.text,PAD+28,yy+86,{size:29,weight:500,color:TECH_TPL.ink,maxWidth:850,maxHeight:h-112,minSize:20,lineHeight:1.25});if(it.ref){ctx.font=monoFont(400,12);ctx.fillStyle=TECH_TPL.muted;ctx.fillText(it.ref.slice(0,100),PAD+28,yy+h-18);}});
 };
 const renderCta=(ctx:CanvasRenderingContext2D,s:Extract<CarouselEngineSlide,{type:"cta"}>)=>{diagram(ctx,"neuronio",180,80,720,390);angularCard(ctx,PAD,500,TECH_W-PAD*2,420,"gold");drawRich(ctx,s.impact_phrase.toUpperCase(),PAD+45,595,{size:62,weight:700,color:TECH_TPL.ink,accent:TECH_TPL.gold,maxWidth:830,maxHeight:190,minSize:34,lineHeight:1.03});drawRich(ctx,s.cta_text,PAD+45,790,{size:31,weight:600,color:TECH_TPL.gold,maxWidth:830,maxHeight:90,minSize:22});ctx.font=monoFont(700,14);ctx.fillStyle=TECH_TPL.cyan;ctx.fillText("SALVE · COMPARTILHE · APROFUNDE",PAD+45,875);};
 
