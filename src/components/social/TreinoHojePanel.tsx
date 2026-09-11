@@ -195,12 +195,12 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
         </div>
       )}
 
-      {!!slides.length && (
+      {!!galeria.length && (
         <>
           <div className="flex gap-2 overflow-x-auto pb-1">
-            {[...labels, ...TREINO_STORY_LABELS.map((l) => `STORY ${l}`)].map((l, i) => (
+            {galeria.map((g, i) => (
               <button
-                key={`${l}-${i}`}
+                key={`${g.label}-${i}`}
                 onClick={() => setAtivo(i)}
                 className="shrink-0 rounded-full border px-3 py-1 text-[10px] uppercase tracking-wide"
                 style={{
@@ -208,15 +208,17 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
                   color: i === ativo ? AMBER : "#888",
                 }}
               >
-                {l}
+                {g.label}
               </button>
             ))}
           </div>
-          <img
-            src={[...slides, ...stories][ativo]}
-            alt={`Slide ${ativo + 1} do treino de hoje`}
-            className="w-full rounded-lg border border-white/10"
-          />
+          {atual && (
+            <img
+              src={atual.url}
+              alt={`${atual.label} do treino de hoje`}
+              className="w-full rounded-lg border border-white/10"
+            />
+          )}
           <SlideTextEditor
             content={treino}
             onApply={(next) => {
