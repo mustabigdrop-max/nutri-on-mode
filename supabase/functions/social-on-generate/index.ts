@@ -597,6 +597,21 @@ ${Array.isArray(body?.nuncaMencionar) && body.nuncaMencionar.length ? `- NUNCA m
 ${body?.disclaimer ? `- Inclua no campo disclaimer: "Conteúdo educacional. Não é prescrição. Procure acompanhamento profissional."` : ""}
 - Sem markdown. Nunca use as palavras "IA", "AI" ou "inteligência artificial".`
         : "",
+      body?.mode === "carousel_engine"
+        ? `MODO "CARROSSEL CIENTÍFICO" — gere EXATAMENTE cinco slides completos sobre o tema.
+Nicho: ${String(body?.niche || "livre")}. Tom: ${String(body?.tone || "cientifico")}.
+${body?.regenerateSlide ? `Refaça somente a proposta do slide ${body.regenerateSlide}, mantendo cinco posições no array e alterando de verdade estrutura, hook e texto desse slide. Base anterior: ${String(body?.baseline || "")}` : ""}
+REGRAS OBRIGATÓRIAS:
+- A pesquisa anexada é a ÚNICA fonte de achado, valor, estudo, mecanismo, risco e status. Não complete lacunas com memória.
+- Estrutura fixa: capa; três slides densos e diferentes (A cards, B parágrafos, C blocos); CTA. Exatamente 5.
+- Cada slide de conteúdo traz 2 ou 3 unidades completas. Nenhum slide vazio, raso ou com mera frase solta.
+- Use somente svg_element permitido e coerente: muscular (fibras/sarcomero/mtor), nutrição (mitocondria/krebs/cadeia_eletrons/glicolise), hormonal (receptor/eixo/feedback), comportamento (radar_mce/habito/neuronio).
+- Títulos curtos; descrições entre 35 e 65 palavras, explicando achado, mecanismo, limite e aplicação.
+- Para MCE use MENTALIDADE, COMPORTAMENTO e EXECUÇÃO, com autores já presentes na pesquisa.
+- Temas hormonais, peptídeos, esteroides ou PEDs: 18+, educação e redução de danos. Nunca ofereça dose, ciclo, empilhamento, horário, aquisição, PCT ou protocolo pessoal. Dê riscos equilibrados e orientação médica.
+- Caption com 500 a 800 caracteres, sem markdown, aprofundando o conteúdo e encerrando com CTA.
+- Sem emoji nos slides. Nunca use "IA", "AI" ou nomes internos de sistemas.`
+        : "",
       body?.mode === "reciclar_10"
         ? `MODO "RECICLADOR" — pegue o conteúdo original abaixo e gere 9 formatos diferentes sobre o MESMO tema, cada um otimizado para o seu formato. Nunca repita as mesmas frases entre formatos e nunca invente estudo, número, caloria, série ou dado científico que não esteja no original.
 
