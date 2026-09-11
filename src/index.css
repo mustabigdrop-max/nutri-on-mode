@@ -759,3 +759,11 @@
   .hero-caret { animation: none !important; }
   .hero-fade-up { opacity: 1 !important; animation: none !important; }
 }
+
+/* Carousel Engine: movimento só no preview; PNG exportado permanece estático. */
+@keyframes carousel-engine-pulse {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(0, 212, 255, .15)); opacity: .92; }
+  50% { filter: drop-shadow(0 0 12px rgba(0, 212, 255, .45)); opacity: 1; }
+}
+.carousel-engine-pulse { animation: carousel-engine-pulse 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .carousel-engine-pulse { animation: none; } }
