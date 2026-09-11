@@ -4,10 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CarouselNiche, CarouselTone } from "./carousel-engine.types";
 
-export default function CarouselInput({ topic, niche, tone, loading, onTopic, onNiche, onTone, onGenerate }: {
-  topic: string; niche: CarouselNiche; tone: CarouselTone; loading: boolean;
-  onTopic: (v: string) => void; onNiche: (v: CarouselNiche) => void; onTone: (v: CarouselTone) => void; onGenerate: () => void;
+export default function CarouselInput({ topic, niche, tone, loading, coverPhoto, onTopic, onNiche, onTone, onCoverPhoto, onGenerate }: {
+  topic: string; niche: CarouselNiche; tone: CarouselTone; loading: boolean; coverPhoto?: string | null;
+  onTopic: (v: string) => void; onNiche: (v: CarouselNiche) => void; onTone: (v: CarouselTone) => void;
+  onCoverPhoto?: (v: string | null) => void; onGenerate: () => void;
 }) {
+  const lerFoto = (file?: File | null) => {
+    if (!file || !onCoverPhoto) return;
+    const reader = new FileReader();
+    reader.onload = () => onCoverPhoto(String(reader.result || "") || null);
+    reader.readAsDataURL(file);
+  };
   return <section className="border border-accent/20 bg-card/60 p-5 space-y-4 rounded-none">
     <div><p className="font-tech text-[10px] tracking-[0.18em] text-accent">NOVO FORMATO · 1080 × 1350</p><h2 className="font-jarvis text-2xl uppercase text-foreground">Carousel Engine</h2><p className="text-sm text-muted-foreground">Digite o tema. A pesquisa e os cinco slides saem completos.</p></div>
     <label className="block space-y-2"><span className="font-tech text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Tema do carrossel</span><Input value={topic} onChange={(e) => onTopic(e.target.value)} placeholder='Ex: "Estresse oxidativo e exercício"' className="rounded-none" onKeyDown={(e) => e.key === "Enter" && onGenerate()} /></label>
