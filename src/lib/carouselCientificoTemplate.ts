@@ -24,7 +24,7 @@ const diagram = (ctx: CanvasRenderingContext2D, element: SVGElement, x: number, 
     ctx.beginPath(); ctx.ellipse(260,135,220,90,0,0,Math.PI*2);ctx.fill();ctx.stroke();
     ctx.strokeStyle=TECH_TPL.gold; for(let i=0;i<10;i++){ctx.beginPath();ctx.moveTo(90+i*36,75);ctx.lineTo(90+i*36,195);ctx.stroke();}
   }
-  ctx.font=monoFont(700,13);ctx.fillStyle=TECH_TPL.cyan;ctx.textAlign="center";ctx.fillText(element.replaceAll("_"," ").toUpperCase(),260,263);ctx.restore();ctx.textAlign="left";
+  ctx.font=monoFont(700,13);ctx.fillStyle=TECH_TPL.cyan;ctx.textAlign="center";ctx.fillText(element.replace(/_/g," ").toUpperCase(),260,263);ctx.restore();ctx.textAlign="left";
 };
 
 const angularCard = (ctx: CanvasRenderingContext2D, x:number,y:number,w:number,h:number, accent:"cyan"|"gold"="cyan") => {
