@@ -12,6 +12,7 @@
  */
 
 import { chunk, fitTextSize, limitWords, slideContentBottom, guardTextBounds } from "@/lib/slideBase";
+import { rotuloOculto } from "@/lib/techBase";
 import {
   MAX_BENEFICIOS_SLIDE,
   MAX_BENEFICIOS_TOTAL,
