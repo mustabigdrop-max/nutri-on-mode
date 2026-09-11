@@ -271,15 +271,17 @@ const techFooter = (ctx: CanvasRenderingContext2D, handle: string) => {
 /** Header: eyebrow mono + título grande + linha gradiente. */
 const techHeader = (ctx: CanvasRenderingContext2D, eyebrow: string, title: string, subtitle?: string) => {
   let y = 110;
-  ctx.font = monoFont(400, 14);
-  ctx.fillStyle = rgba(TECH_TPL.cyan, 0.7);
-  const label = eyebrow.toUpperCase();
-  let lx = PAD;
-  for (const ch of label) {
-    ctx.fillText(ch, lx, y);
-    lx += ctx.measureText(ch).width + 6;
+  const label = rotuloOculto(eyebrow) ? "" : (eyebrow || "").toUpperCase();
+  if (label) {
+    ctx.font = monoFont(400, 14);
+    ctx.fillStyle = rgba(TECH_TPL.cyan, 0.7);
+    let lx = PAD;
+    for (const ch of label) {
+      ctx.fillText(ch, lx, y);
+      lx += ctx.measureText(ch).width + 6;
+    }
+    y += 20;
   }
-  y += 20;
   const end = drawRich(ctx, title.toUpperCase(), PAD, y + 62, {
     size: 62, weight: 700, color: TECH_TPL.ink, accent: TECH_TPL.cyan, lineHeight: 1.05, maxWidth: W - PAD * 2,
   });
