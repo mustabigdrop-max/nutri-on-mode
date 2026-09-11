@@ -65,8 +65,9 @@ const renderContent = (ctx:CanvasRenderingContext2D,s:Extract<CarouselEngineSlid
 };
 const renderCta=(ctx:CanvasRenderingContext2D,s:Extract<CarouselEngineSlide,{type:"cta"}>)=>{diagram(ctx,"neuronio",180,80,720,390);angularCard(ctx,PAD,500,TECH_W-PAD*2,420,"gold");drawRich(ctx,s.impact_phrase.toUpperCase(),PAD+45,595,{size:62,weight:700,color:TECH_TPL.ink,accent:TECH_TPL.gold,maxWidth:830,maxHeight:190,minSize:34,lineHeight:1.03});drawRich(ctx,s.cta_text,PAD+45,790,{size:31,weight:600,color:TECH_TPL.gold,maxWidth:830,maxHeight:90,minSize:22});ctx.font=monoFont(700,14);ctx.fillStyle=TECH_TPL.cyan;ctx.fillText("SALVE · COMPARTILHE · APROFUNDE",PAD+45,875);};
 
-export async function renderCarouselCientifico(content:CarouselEngineContent, handle="diogo.mell0") {
+export async function renderCarouselCientifico(content:CarouselEngineContent, handle="diogo.mell0", coverPhoto?:string|null) {
   await ensureTechFonts(); const out:string[]=[];
-  for (const [i,s] of content.slides.slice(0,5).entries()) { const {canvas,ctx}=newTechSlide(i+41,{text:`${i+1}/5`,color:i===4?TECH_TPL.gold:TECH_TPL.cyan}); if(s.type==="cover") renderCover(ctx,s); else if(s.type==="content") renderContent(ctx,s); else renderCta(ctx,s); out.push(finishTechSlide(canvas,ctx,handle)); }
+  const photo = coverPhoto ? await loadImage(coverPhoto) : null;
+  for (const [i,s] of content.slides.slice(0,5).entries()) { const {canvas,ctx}=newTechSlide(i+41,{text:`${i+1}/5`,color:i===4?TECH_TPL.gold:TECH_TPL.cyan}); if(s.type==="cover") renderCover(ctx,s,photo); else if(s.type==="content") renderContent(ctx,s); else renderCta(ctx,s); out.push(finishTechSlide(canvas,ctx,handle)); }
   return out;
 }
