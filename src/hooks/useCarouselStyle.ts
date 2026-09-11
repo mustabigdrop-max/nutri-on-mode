@@ -7,7 +7,7 @@ const KEY = "nutrion:estilo-carrossel";
 const EVENT = "nutrion:estilo-carrossel-mudou";
 
 export const getCarouselStyle = (): CarouselStyle =>
-  (typeof localStorage !== "undefined" && localStorage.getItem(KEY) === "tech" ? "tech" : "classico");
+  (typeof localStorage !== "undefined" && localStorage.getItem(KEY) === "classico" ? "classico" : "tech");
 
 /**
  * Preferência de estilo compartilhada por todos os geradores de conteúdo.
