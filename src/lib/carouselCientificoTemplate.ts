@@ -33,8 +33,26 @@ const angularCard = (ctx: CanvasRenderingContext2D, x:number,y:number,w:number,h
   ctx.fillStyle=color;ctx.fillRect(x,y,6,h);ctx.fillRect(x,y,w*.18,3);
 };
 
-const renderCover = (ctx:CanvasRenderingContext2D,s:Extract<CarouselEngineSlide,{type:"cover"}>) => {
-  let y=techHeader(ctx,s.eyebrow,s.title,s.subtitle); diagram(ctx,s.svg_element,80,y+25,920,440);
+/** Carrega a foto de capa (dataURL ou URL) sem quebrar a geração. */
+const loadImage = (src:string) => new Promise<HTMLImageElement|null>((resolve)=>{
+  const img=new Image(); img.crossOrigin="anonymous";
+  img.onload=()=>resolve(img); img.onerror=()=>resolve(null); img.src=src;
+});
+
+/** Foto em cover-fit dentro de um retângulo, com véu escuro para o texto respirar. */
+const drawPhoto = (ctx:CanvasRenderingContext2D,img:HTMLImageElement,x:number,y:number,w:number,h:number) => {
+  ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+  const scale=Math.max(w/img.width,h/img.height); const dw=img.width*scale; const dh=img.height*scale;
+  ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
+  const g=ctx.createLinearGradient(0,y,0,y+h); g.addColorStop(0,rgba(TECH_TPL.bg,.25)); g.addColorStop(1,rgba(TECH_TPL.bg,.85));
+  ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.restore();
+  ctx.strokeStyle=rgba(TECH_TPL.cyan,.45); ctx.lineWidth=2; ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle=TECH_TPL.gold; ctx.fillRect(x,y,w*.16,4); ctx.fillRect(x,y,4,h*.16);
+};
+
+const renderCover = (ctx:CanvasRenderingContext2D,s:Extract<CarouselEngineSlide,{type:"cover"}>,photo?:HTMLImageElement|null) => {
+  let y=techHeader(ctx,s.eyebrow,s.title,s.subtitle);
+  if(photo) drawPhoto(ctx,photo,80,y+25,920,440); else diagram(ctx,s.svg_element,80,y+25,920,440);
   angularCard(ctx,PAD,880,TECH_W-PAD*2,175,"gold");
   drawRich(ctx,"CIÊNCIA QUE VOCÊ CONSEGUE APLICAR",PAD+32,940,{size:22,weight:700,color:TECH_TPL.gold,family:"mono",maxWidth:850});
   drawRich(ctx,s.subtitle,PAD+32,1000,{size:31,weight:600,color:TECH_TPL.ink,maxWidth:850,maxHeight:95,minSize:22});
