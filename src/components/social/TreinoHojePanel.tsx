@@ -105,6 +105,12 @@ export default function TreinoHojePanel({ file, handle }: { file?: File | null; 
     ...slides.map((url, i) => ({ url, filename: `treino-hoje-${String(i + 1).padStart(2, "0")}.png` })),
     ...stories.map((url, i) => ({ url, filename: `treino-hoje-story-${i + 1}.png` })),
   ];
+  /** Miniaturas e prévia sempre vêm da mesma lista, para nenhum story ficar sem imagem. */
+  const galeria = [
+    ...slides.map((url, i) => ({ url, label: labels[i] || `SLIDE ${i + 1}` })),
+    ...stories.map((url, i) => ({ url, label: `STORY ${TREINO_STORY_LABELS[i] || i + 1}` })),
+  ];
+  const atual = galeria[Math.min(ativo, Math.max(galeria.length - 1, 0))];
 
   if (carregando) {
     return (
