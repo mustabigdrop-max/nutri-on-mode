@@ -2083,9 +2083,11 @@ const ExerciseCard = memo(function ExerciseCard({
   const [swapHistory, setSwapHistory] = useState<string[]>([]);
 
   const baseStruct = currentExercise.structure || {};
-  const struct = weekPhase ? applyWeekProgression(baseStruct, weekPhase) : baseStruct;
+  const periodized = weekPhase ? applyWeekProgression(baseStruct, weekPhase) : baseStruct;
+  const struct = applyOverrideToStructure(periodized, override);
   const hasTopSet = !!struct.top_set;
-  const safeExerciseName = sanitizeRenderedText(currentExercise.name, "Exercício prescrito");
+  const overriddenName = override?.new_exercise_name || null;
+  const safeExerciseName = sanitizeRenderedText(overriddenName || currentExercise.name, "Exercício prescrito");
   const safeMuscleTarget = sanitizeRenderedText(currentExercise.muscle_target, "Alvo muscular ajustado");
   const safeExecutionCues = hasMeaningfulValue(currentExercise.execution_cues)
     ? sanitizeRenderedText(currentExercise.execution_cues, "Execução guiada pelo coach.")
