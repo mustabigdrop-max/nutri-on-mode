@@ -38,6 +38,8 @@ import { WorkoutLogRow, buildWeekPlan, rirForWeek } from "@/lib/mesocyclePlan";
 import MesocycleTracker from "@/components/training/MesocycleTracker";
 import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
 import TechniqueBadge from "@/components/training/TechniqueBadge";
+import TrainingIntelligencePanel from "@/components/training/TrainingIntelligencePanel";
+import { stretchCoverage } from "@/lib/trainingIntelligence";
 import { selectSessionTechniques, type TechniqueKey } from "@/lib/advancedTechniques";
 import CoachOverrideEditor from "@/components/training/CoachOverrideEditor";
 import CoachWeekControls from "@/components/training/CoachWeekControls";
@@ -1981,6 +1983,16 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
               />
               {/* Warm-up específico por grupamento muscular do dia */}
               <SmartWarmup exercises={day.exercises || []} dayKey={day.day_number ?? index} groupings={muscleTags} />
+              {(() => {
+                const cov = stretchCoverage((day.exercises || []).map((e: any) => ({ name: e?.name ?? e?.nome ?? "" })));
+                if (cov.hasStretchLoaded || !cov.suggestion) return null;
+                return (
+                  <div className="rounded-xl p-2.5" style={{ background: "rgba(239,159,39,0.06)", borderLeft: "3px solid #EF9F27" }}>
+                    <span className="text-[9px] font-black tracking-widest" style={{ color: "#EF9F27" }}>POSIÇÃO ALONGADA</span>
+                    <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{cov.suggestion}</p>
+                  </div>
+                );
+              })()}
 
 
               {/* Exercises */}
@@ -3184,6 +3196,15 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   storageKey={`trainingon:meso:${p.id}`}
                 />
               )}
+              <TrainingIntelligencePanel
+                logs={weekLogs}
+                totalWeeks={totalWeeks}
+                days={(parsed.training_days || []).map((d: any, i: number) => ({
+                  day_number: d?.day_number ?? i + 1,
+                  focus: d?.focus ?? d?.title ?? d?.name ?? "",
+                  exercises: d?.exercises || [],
+                }))}
+              />
               {coachId && p.id && (
                 <CoachWeekControls
                   coachId={coachId}
