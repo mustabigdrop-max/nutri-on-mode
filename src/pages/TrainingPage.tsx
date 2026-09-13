@@ -2153,6 +2153,7 @@ const ExerciseCard = memo(function ExerciseCard({
                 note={currentExercise.fiber_note}
               />
               <MuscleRegionBadge exerciseName={safeExerciseName} />
+              <TechniqueBadge technique={technique} />
               {(() => {
                 const isCompound = /supino|agachamento|terra|remada|desenvolvimento|barra fixa|puxada|leg press|paralel|afundo|b[úu]lgaro|stiff/i.test(safeExerciseName);
                 const weekRIR = (weekPhase
