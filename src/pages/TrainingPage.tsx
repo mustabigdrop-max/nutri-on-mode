@@ -37,6 +37,8 @@ import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgressio
 import { WorkoutLogRow, buildWeekPlan, rirForWeek } from "@/lib/mesocyclePlan";
 import MesocycleTracker from "@/components/training/MesocycleTracker";
 import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
+import TechniqueBadge from "@/components/training/TechniqueBadge";
+import { selectSessionTechniques, type TechniqueKey } from "@/lib/advancedTechniques";
 import CoachOverrideEditor from "@/components/training/CoachOverrideEditor";
 import CoachWeekControls from "@/components/training/CoachWeekControls";
 import {
@@ -1982,9 +1984,16 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
 
 
               {/* Exercises */}
-              {day.exercises?.map((ex: any, i: number) => (
+              {(() => {
+                const sessionTechniques = selectSessionTechniques({
+                  exercises: (day.exercises || []).map((e: any) => ({ name: e?.name ?? e?.nome ?? "" })),
+                  week: weekPhase?.week,
+                  isDeload: weekPhase?.isDeload,
+                });
+                return day.exercises?.map((ex: any, i: number) => (
                 <ExerciseCard
                   key={i}
+                  technique={sessionTechniques[String(ex?.name ?? ex?.nome ?? "").trim()] || null}
                   exercise={ex}
                   displayOrder={i + 1}
                   expanded={expandedExercise === `${index}-${i}`}
@@ -1999,7 +2008,8 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
                   override={overrides?.[overrideKey(weekPhase?.week || 1, day.day_number || index + 1, (ex?.name ?? ex?.nome ?? ""))]}
                   onOverrideSaved={onOverrideSaved}
                 />
-              ))}
+              ));
+              })()}
 
               {/* Session Notes */}
               {day.session_notes && (
@@ -2063,8 +2073,10 @@ const ExerciseCard = memo(function ExerciseCard({
   coachId,
   override,
   onOverrideSaved,
+  technique,
 }: {
   exercise: any;
+  technique?: TechniqueKey | null;
   displayOrder?: number;
   expanded: boolean;
   onToggle: () => void;
@@ -2141,6 +2153,7 @@ const ExerciseCard = memo(function ExerciseCard({
                 note={currentExercise.fiber_note}
               />
               <MuscleRegionBadge exerciseName={safeExerciseName} />
+              <TechniqueBadge technique={technique} />
               {(() => {
                 const isCompound = /supino|agachamento|terra|remada|desenvolvimento|barra fixa|puxada|leg press|paralel|afundo|b[úu]lgaro|stiff/i.test(safeExerciseName);
                 const weekRIR = (weekPhase
