@@ -2073,8 +2073,10 @@ const ExerciseCard = memo(function ExerciseCard({
   coachId,
   override,
   onOverrideSaved,
+  technique,
 }: {
   exercise: any;
+  technique?: TechniqueKey | null;
   displayOrder?: number;
   expanded: boolean;
   onToggle: () => void;
