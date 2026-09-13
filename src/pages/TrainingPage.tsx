@@ -34,6 +34,9 @@ import TrainingReadinessSection from "@/components/training/TrainingReadinessSec
 import WeekNavigator from "@/components/training/WeekNavigator";
 import ExerciseLogPanel from "@/components/training/ExerciseLogPanel";
 import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgression";
+import { WorkoutLogRow, buildWeekPlan, rirForWeek } from "@/lib/mesocyclePlan";
+import MesocycleTracker from "@/components/training/MesocycleTracker";
+import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
