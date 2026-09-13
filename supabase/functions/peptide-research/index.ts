@@ -36,7 +36,7 @@ serve(async (req) => {
   }
 
   try {
-    const { query, type } = await req.json();
+    const { query, type, vault } = await req.json();
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
     if (!PERPLEXITY_API_KEY) throw new Error("PERPLEXITY_API_KEY is not configured");
 
@@ -55,7 +55,15 @@ serve(async (req) => {
             role: "system",
             content: isAlertCheck
               ? "Você é um rastreador de estudos científicos sobre peptídeos. Liste os estudos mais recentes publicados sobre peptídeos terapêuticos, incluindo: data, journal, peptídeo, descoberta principal e nível de impacto (CRÍTICO/ALTO/MÉDIO). Formate cada alerta em uma linha. Responda em português brasileiro."
-              : SYSTEM_PROMPT,
+              : vault === "steroid"
+                ? `${STEROID_VAULT_PROMPT}
+
+${SYSTEM_PROMPT}`
+                : vault === "peptide"
+                  ? `${PEPTIDE_VAULT_PROMPT}
+
+${SYSTEM_PROMPT}`
+                  : SYSTEM_PROMPT,
           },
           { role: "user", content: query },
         ],
