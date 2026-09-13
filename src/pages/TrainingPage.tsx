@@ -1983,6 +1983,16 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
               />
               {/* Warm-up específico por grupamento muscular do dia */}
               <SmartWarmup exercises={day.exercises || []} dayKey={day.day_number ?? index} groupings={muscleTags} />
+              {(() => {
+                const cov = stretchCoverage((day.exercises || []).map((e: any) => ({ name: e?.name ?? e?.nome ?? "" })));
+                if (cov.hasStretchLoaded || !cov.suggestion) return null;
+                return (
+                  <div className="rounded-xl p-2.5" style={{ background: "rgba(239,159,39,0.06)", borderLeft: "3px solid #EF9F27" }}>
+                    <span className="text-[9px] font-black tracking-widest" style={{ color: "#EF9F27" }}>POSIÇÃO ALONGADA</span>
+                    <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{cov.suggestion}</p>
+                  </div>
+                );
+              })()}
 
 
               {/* Exercises */}
