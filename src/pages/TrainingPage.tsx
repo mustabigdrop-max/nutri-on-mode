@@ -3205,6 +3205,13 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   exercises: d?.exercises || [],
                 }))}
               />
+              <NutriTrainingBridge
+                athleteUserId={p.patient_user_id || p.user_id || userId}
+                weekPhaseId={weekPhase?.phase}
+                isDeloadWeek={weekPhase?.isDeload}
+                days={(parsed.training_days || []).map((d: any) => ({ exercises: d?.exercises || [] }))}
+              />
+
               {coachId && p.id && (
                 <CoachWeekControls
                   coachId={coachId}
