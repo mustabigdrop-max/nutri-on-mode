@@ -3205,6 +3205,10 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   focus: d?.focus ?? d?.title ?? d?.name ?? "",
                   exercises: d?.exercises || [],
                 }))}
+                coachId={coachId}
+                protocolId={p.id}
+                weekNumber={weekPhase?.week}
+                onChanged={refreshOverrides}
               />
               <NutriTrainingBridge
                 athleteUserId={p.patient_user_id || p.user_id || userId}
