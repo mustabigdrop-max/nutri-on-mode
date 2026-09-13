@@ -2223,6 +2223,25 @@ const ExerciseCard = memo(function ExerciseCard({
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
             <div className="px-3 pb-3 space-y-2">
+              {/* Ajuste manual do coach (visível apenas para o coach do protocolo) */}
+              {coachId && protocolId && (
+                <CoachOverrideEditor
+                  coachId={coachId}
+                  protocolId={protocolId}
+                  weekNumber={weekPhase?.week || 1}
+                  dayNumber={dayNumber || 1}
+                  exerciseName={currentExercise.name || safeExerciseName}
+                  totalWeeks={Math.max(1, totalWeeks || 1)}
+                  current={override}
+                  onSaved={onOverrideSaved}
+                />
+              )}
+              {!coachId && override?.coach_note && (
+                <div className="rounded-lg px-2.5 py-2" style={{ background: "rgba(93,202,165,0.06)", border: `1px solid ${BORDER}` }}>
+                  <p className="text-[8px] font-bold tracking-widest uppercase" style={{ color: GREEN }}>Recado do coach</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{override.coach_note}</p>
+                </div>
+              )}
               {/* Tracker — séries marcáveis */}
               <SetTrackerBlock
                 exerciseId={(currentExercise.id || currentExercise.name || `ex-${displayOrder ?? 0}`).toString().toLowerCase().replace(/\s+/g, "-").slice(0, 80)}
