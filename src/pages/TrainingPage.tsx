@@ -37,6 +37,17 @@ import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgressio
 import { WorkoutLogRow, buildWeekPlan, rirForWeek } from "@/lib/mesocyclePlan";
 import MesocycleTracker from "@/components/training/MesocycleTracker";
 import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
+import CoachOverrideEditor from "@/components/training/CoachOverrideEditor";
+import CoachWeekControls from "@/components/training/CoachWeekControls";
+import {
+  ExerciseOverride,
+  OverrideMap,
+  WeekOverride,
+  applyOverrideToStructure,
+  loadExerciseOverrides,
+  loadWeekOverrides,
+  overrideKey,
+} from "@/lib/coachOverrides";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
