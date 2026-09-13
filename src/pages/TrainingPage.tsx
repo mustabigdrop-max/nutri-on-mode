@@ -1995,6 +1995,9 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
                   dayNumber={day.day_number || index + 1}
                   weekLogs={weekLogs}
                   totalWeeks={totalWeeks}
+                  coachId={coachId}
+                  override={overrides?.[overrideKey(weekPhase?.week || 1, day.day_number || index + 1, (ex?.name ?? ex?.nome ?? ""))]}
+                  onOverrideSaved={onOverrideSaved}
                 />
               ))}
 
