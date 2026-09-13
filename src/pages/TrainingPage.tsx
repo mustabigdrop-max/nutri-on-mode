@@ -2127,6 +2127,9 @@ const ExerciseCard = memo(function ExerciseCard({
               {isSwapped && (
                 <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa" }}>SUBSTITUTO</span>
               )}
+              {override && (
+                <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: "rgba(93,202,165,0.15)", color: GREEN }}>AJUSTE DO COACH</span>
+              )}
             </div>
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
