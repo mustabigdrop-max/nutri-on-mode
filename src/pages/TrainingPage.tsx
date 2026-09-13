@@ -3051,8 +3051,8 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
               )}
               <p className="text-[10px]" style={{ color: TEXT_MUTED }}>
                 {PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase} · {p.weeks} sem · {new Date(p.created_at).toLocaleDateString("pt-BR")}
-                {isMello16 && (
-                  <> · <span style={{ color: weekPhase.color, fontWeight: 700 }}>Semana {weekPhase.week} de 16 — {weekPhase.label}</span></>
+                {totalWeeks > 1 && (
+                  <> · <span style={{ color: weekPhase.color, fontWeight: 700 }}>Semana {weekPhase.week} de {totalWeeks} — {weekPhase.label}</span></>
                 )}
               </p>
             </div>
