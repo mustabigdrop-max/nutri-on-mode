@@ -26,6 +26,19 @@ export interface ApexTrainingBridgeResult {
   contraindicados: ExercicioContraindicado[];
   musculosAlvo: string[];
   achadosAtivos: AchadoAtivo[];
+  bodyContext: ApexBodyContext | null;
+}
+
+export interface ApexBodyContext {
+  analysisId: string;
+  athleteId: string;
+  estimatedBodyFat: number | null;
+  targetBodyFat: number | null;
+  category: string | null;
+  priorities: string[];
+  assessedAt: string;
+  photoViews: number;
+  isCurrent: boolean;
 }
 
 const EMPTY: ApexTrainingBridgeResult = {
@@ -33,7 +46,76 @@ const EMPTY: ApexTrainingBridgeResult = {
   contraindicados: [],
   musculosAlvo: [],
   achadosAtivos: [],
+  bodyContext: null,
 };
+
+const MAX_CONTEXT_AGE_DAYS = 90;
+
+function toFiniteNumber(value: unknown): number | null {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function mapBodyContext(analysis: Record<string, unknown>): ApexBodyContext | null {
+  const analysisId = typeof analysis.id === "string" ? analysis.id : "";
+  const athleteId = typeof analysis.athlete_id === "string" ? analysis.athlete_id : "";
+  const assessedAt = typeof analysis.created_at === "string" ? analysis.created_at : "";
+  if (!analysisId || !athleteId || !assessedAt) return null;
+
+  const priorities = [analysis.priority_1, analysis.priority_2, analysis.priority_3]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .map((value) => value.trim().slice(0, 180));
+  const photoViews = [analysis.photo_front_url, analysis.photo_back_url, analysis.photo_side_url]
+    .filter((value) => typeof value === "string" && value.length > 0).length;
+  const ageMs = Date.now() - new Date(assessedAt).getTime();
+  const isCurrent = Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= MAX_CONTEXT_AGE_DAYS * 86_400_000;
+
+  return {
+    analysisId,
+    athleteId,
+    estimatedBodyFat: toFiniteNumber(analysis.bf_estimated),
+    targetBodyFat: toFiniteNumber(analysis.bf_target),
+    category: typeof analysis.category_label === "string" ? analysis.category_label : null,
+    priorities,
+    assessedAt,
+    photoViews,
+    isCurrent,
+  };
+}
+
+/**
+ * Resolve o registro competitivo pelo usuário e retorna somente o contexto
+ * corporal APEX persistido. Estimativas antigas ficam visíveis, mas não devem
+ * orientar automaticamente uma nova prescrição.
+ */
+export async function getLatestApexBodyContext(
+  patientUserId: string,
+): Promise<ApexBodyContext | null> {
+  try {
+    if (!patientUserId) return null;
+    const { data: athlete } = await supabase
+      .from("competition_athletes")
+      .select("id")
+      .eq("patient_user_id", patientUserId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!athlete?.id) return null;
+
+    const { data: analysis } = await supabase
+      .from("apex_analyses")
+      .select("id, athlete_id, bf_estimated, bf_target, category_label, priority_1, priority_2, priority_3, photo_front_url, photo_back_url, photo_side_url, created_at")
+      .eq("athlete_id", athlete.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    return analysis ? mapBodyContext(analysis as Record<string, unknown>) : null;
+  } catch (err) {
+    console.warn("[apexTrainingBridge] contexto corporal indisponível:", err);
+    return null;
+  }
+}
 
 /**
  * Lê a última análise APEX do atleta e cruza com a tabela
@@ -48,20 +130,23 @@ export async function getApexTrainingRules(
 
     const { data: analysis } = await supabase
       .from("apex_analyses")
-      .select("scores, created_at")
+      .select("id, athlete_id, scores, bf_estimated, bf_target, category_label, priority_1, priority_2, priority_3, photo_front_url, photo_back_url, photo_side_url, created_at")
       .eq("athlete_id", athleteId)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (!analysis?.scores) return EMPTY;
+    if (!analysis) return EMPTY;
+
+    const bodyContext = mapBodyContext(analysis as Record<string, unknown>);
+    if (!analysis.scores) return { ...EMPTY, bodyContext };
 
     const scores = analysis.scores as Record<string, unknown>;
     const achadosAtivos: AchadoAtivo[] = Object.entries(scores)
       .filter(([, grau]) => typeof grau === "number" && (grau as number) > 0)
       .map(([key, grau]) => ({ key, label: key, graus: grau as number }));
 
-    if (!achadosAtivos.length) return { ...EMPTY, achadosAtivos: [] };
+    if (!achadosAtivos.length) return { ...EMPTY, achadosAtivos: [], bodyContext };
 
     const { data: rules } = await supabase
       .from("apex_training_rules" as any)
@@ -72,7 +157,7 @@ export async function getApexTrainingRules(
       )
       .eq("ativo", true);
 
-    if (!rules?.length) return { ...EMPTY, achadosAtivos };
+    if (!rules?.length) return { ...EMPTY, achadosAtivos, bodyContext };
 
     const corretivos: ExercicioCorretivo[] = [];
     const contraindicados: ExercicioContraindicado[] = [];
@@ -106,6 +191,7 @@ export async function getApexTrainingRules(
       contraindicados,
       musculosAlvo: Array.from(musculosSet),
       achadosAtivos,
+      bodyContext,
     };
   } catch (err) {
     console.warn("[apexTrainingBridge] erro silencioso:", err);

@@ -92,6 +92,7 @@ import {
   SetTrackerBlock,
 } from "@/components/training/tracker/WorkoutTracker";
 import MceBanner from "@/components/mce/MceBanner";
+import { getLatestApexBodyContext, type ApexBodyContext } from "@/utils/apexTrainingBridge";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -275,6 +276,10 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [weeks, setWeeks] = useState("8");
   const [days, setDays] = useState("5");
   const [clientName, setClientName] = useState("");
+  const [patients, setPatients] = useState<any[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState("");
+  const [apexBodyContext, setApexBodyContext] = useState<ApexBodyContext | null>(null);
+  const [apexContextLoading, setApexContextLoading] = useState(false);
   const [trainingSystem, setTrainingSystem] = useState<string>("");
   const [clientSex, setClientSex] = useState<"F" | "M" | null>(null);
   const [showMethod, setShowMethod] = useState(false);
@@ -407,6 +412,23 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       });
   }, [userId]);
 
+  useEffect(() => {
+    if (!selectedPatient) {
+      setApexBodyContext(null);
+      return;
+    }
+    let active = true;
+    setApexContextLoading(true);
+    getLatestApexBodyContext(selectedPatient)
+      .then((context) => {
+        if (active) setApexBodyContext(context);
+      })
+      .finally(() => {
+        if (active) setApexContextLoading(false);
+      });
+    return () => { active = false; };
+  }, [selectedPatient]);
+
   const buildElitePrompt = () => {
     let readyScore = 7;
     if (readyCheckin) {
@@ -435,6 +457,18 @@ ${readyScore >= 8 ? "✅ Score ALTO — protocolo completo, RPE máximo permitid
 - Notas: ${fiberProfile.notas}
 ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), descanso 60-90s" : fiberProfile.dominancia === "tipo_iia" ? "→ 6-12 reps, tensão mecânica máxima, descanso 2-3min" : fiberProfile.dominancia === "tipo_iix" ? "→ 3-6 reps pesadas + finisher metabólico, descanso 3-5min" : "→ Periodização por bloco na sessão (pesado → metabólico)"}`
       : `━━━ PERFIL DE FIBRAS: não avaliado (usar padrão para o nível) ━━━`;
+
+    const apexBloco = apexBodyContext?.isCurrent
+      ? `
+━━━ CONTEXTO CORPORAL APEX — SECUNDÁRIO, NÃO DIAGNÓSTICO ━━━
+- Avaliação visual registrada em: ${new Date(apexBodyContext.assessedAt).toLocaleDateString("pt-BR")}
+- Categoria registrada: ${apexBodyContext.category || "não informada"}
+- Faixa/valor visual estimado salvo: ${apexBodyContext.estimatedBodyFat == null ? "não informado" : `${apexBodyContext.estimatedBodyFat}%`}
+- Meta registrada: ${apexBodyContext.targetBodyFat == null ? "não informada" : `${apexBodyContext.targetBodyFat}%`}
+- Ângulos fotográficos registrados: ${apexBodyContext.photoViews}/3
+- Prioridades observadas: ${apexBodyContext.priorities.length ? apexBodyContext.priorities.join("; ") : "não informadas"}
+REGRA: use este bloco apenas para contextualizar seleção e ordem dos grupamentos. Não altere calorias, volume, intensidade ou fase com base isolada na estimativa visual. Não trate como diagnóstico.`
+      : `━━━ CONTEXTO CORPORAL APEX: ${apexBodyContext ? "avaliação anterior a 90 dias — não usar automaticamente" : "sem avaliação salva para este atleta"} ━━━`;
 
     // Sistema energético/metodológico escolhido automaticamente a partir do objetivo e nível
     const autoSystemId = trainingSystem || autoSystem?.id || "";
@@ -471,6 +505,7 @@ Integre QUATRO fontes de inteligência em UM protocolo definitivo:
 - Cliente: ${clientName}
 ${prontidaoBloco}
 ${fibrasBloco}
+${apexBloco}
 ${sistemaBloco}
 
 ━━━ PROGRESSÃO DE RIR (Reps In Reserve) — OBRIGATÓRIO ━━━
@@ -544,6 +579,7 @@ Português. Específico. Científico. Zero genérico.`;
       trainingSystem ? `Sistema: ${TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || trainingSystem}` : "",
       fiberProfile ? `Fibras: ${fiberProfile.dominancia}` : "",
       readyCheckin ? `Prontidão: sono ${readyCheckin.sono}/10, energia ${readyCheckin.energia}/10` : "",
+      apexBodyContext?.isCurrent ? `APEX: avaliação ${new Date(apexBodyContext.assessedAt).toLocaleDateString("pt-BR")}${apexBodyContext.priorities.length ? `, prioridades ${apexBodyContext.priorities.join(", ")}` : ""}` : "",
     ].filter(Boolean).join(" · ");
 
   const generate = async () => {
@@ -714,9 +750,6 @@ Português. Específico. Científico. Zero genérico.`;
   };
 
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [patients, setPatients] = useState<any[]>([]);
-  const [selectedPatient, setSelectedPatient] = useState("");
-
   useEffect(() => {
     if (!userId) return;
     supabase.from("coach_patients").select("id, patient_user_id, status, notes").eq("status", "active")
@@ -736,6 +769,13 @@ Português. Específico. Científico. Zero genérico.`;
     const match = patients.find(p => (p.name || "").toLowerCase().trim() === clientName.toLowerCase().trim());
     if (match?.sex) setClientSex(String(match.sex).toUpperCase().startsWith("F") ? "F" : "M");
   }, [clientName, patients]);
+
+  const selectPrescriptionPatient = (patientUserId: string) => {
+    setSelectedPatient(patientUserId);
+    const patient = patients.find((item) => item.patient_user_id === patientUserId);
+    if (patient?.name) setClientName(patient.name);
+    if (patient?.sex) setClientSex(String(patient.sex).toUpperCase().startsWith("F") ? "F" : "M");
+  };
 
   const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
@@ -784,6 +824,44 @@ Português. Específico. Científico. Zero genérico.`;
     return (
       <div className="space-y-4 mt-3">
         <StepHeader step={1} total={2} title="Anamnese de Treino" subtitle="Dados do cliente para prescrição personalizada" />
+
+        {patients.length > 0 && (
+          <Field label="Atleta para sincronizar">
+            <StyledSelect
+              value={selectedPatient}
+              onValueChange={selectPrescriptionPatient}
+              placeholder="Selecione o atleta"
+              options={patients.map((patient) => ({ value: patient.patient_user_id, label: patient.name }))}
+            />
+            <div className="mt-2 rounded-xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+              {apexContextLoading ? (
+                <p className="text-[10px]" style={{ color: TEXT_MUTED }}>Consultando a avaliação APEX mais recente…</p>
+              ) : apexBodyContext ? (
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-bold" style={{ color: apexBodyContext.isCurrent ? GREEN : "#fbbf24" }}>
+                      {apexBodyContext.isCurrent ? "APEX SINCRONIZADO" : "APEX DESATUALIZADO"}
+                    </span>
+                    <span className="text-[10px]" style={{ color: TEXT_DIM }}>
+                      {new Date(apexBodyContext.assessedAt).toLocaleDateString("pt-BR")} · {apexBodyContext.photoViews}/3 ângulos
+                    </span>
+                  </div>
+                  <p className="text-[10px] leading-relaxed" style={{ color: TEXT_DIM }}>
+                    {apexBodyContext.estimatedBodyFat == null ? "Estimativa visual não registrada" : `Estimativa visual salva: ${apexBodyContext.estimatedBodyFat}%`}
+                    {apexBodyContext.priorities.length ? ` · Prioridades: ${apexBodyContext.priorities.join(" · ")}` : ""}
+                  </p>
+                  <p className="text-[9px]" style={{ color: TEXT_MUTED }}>
+                    Contexto secundário; não substitui avaliação presencial e não altera volume ou intensidade isoladamente.
+                  </p>
+                </div>
+              ) : selectedPatient ? (
+                <p className="text-[10px]" style={{ color: TEXT_MUTED }}>Sem avaliação APEX salva. A geração seguirá apenas com os dados preenchidos.</p>
+              ) : (
+                <p className="text-[10px]" style={{ color: TEXT_MUTED }}>Selecione um atleta para integrar os dados reais do APEX.</p>
+              )}
+            </div>
+          </Field>
+        )}
 
         <Field label="Histórico de lesões ou restrições">
           <Textarea value={injuries} onChange={e => setInjuries(e.target.value)} placeholder="Ex: joelho direito, hérnia L4-L5, ombro com impingement" className="bg-transparent text-sm min-h-[60px]" style={{ borderColor: BORDER, color: TEXT }} />
@@ -1028,7 +1106,7 @@ Português. Específico. Científico. Zero genérico.`;
                   <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
                 ) : blockedByTime ? (
                   <span className="flex items-center gap-2">⛔ TEMPO INSUFICIENTE — ESTOURA {Math.abs(durEst.diff)}MIN</span>
-                ) : (fiberProfile || readyCheckin) ? (
+                ) : (fiberProfile || readyCheckin || apexBodyContext?.isCurrent) ? (
                   <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO ELITE SINCRONIZADO</span>
                 ) : (
                   <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
