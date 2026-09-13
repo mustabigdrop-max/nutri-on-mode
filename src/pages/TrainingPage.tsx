@@ -38,6 +38,8 @@ import { WorkoutLogRow, buildWeekPlan, rirForWeek } from "@/lib/mesocyclePlan";
 import MesocycleTracker from "@/components/training/MesocycleTracker";
 import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
 import TechniqueBadge from "@/components/training/TechniqueBadge";
+import TrainingIntelligencePanel from "@/components/training/TrainingIntelligencePanel";
+import { stretchCoverage } from "@/lib/trainingIntelligence";
 import { selectSessionTechniques, type TechniqueKey } from "@/lib/advancedTechniques";
 import CoachOverrideEditor from "@/components/training/CoachOverrideEditor";
 import CoachWeekControls from "@/components/training/CoachWeekControls";
