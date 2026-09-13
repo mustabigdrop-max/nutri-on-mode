@@ -40,6 +40,7 @@ import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
 import TechniqueBadge from "@/components/training/TechniqueBadge";
 import TrainingIntelligencePanel from "@/components/training/TrainingIntelligencePanel";
 import NutriTrainingBridge from "@/components/training/NutriTrainingBridge";
+import WeakPointIntelligence from "@/components/training/WeakPointIntelligence";
 import { stretchCoverage } from "@/lib/trainingIntelligence";
 import { selectSessionTechniques, type TechniqueKey } from "@/lib/advancedTechniques";
 import CoachOverrideEditor from "@/components/training/CoachOverrideEditor";
@@ -3318,6 +3319,14 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                 weekPhaseId={weekPhase?.phase}
                 isDeloadWeek={weekPhase?.isDeload}
                 days={(parsed.training_days || []).map((d: any) => ({ exercises: d?.exercises || [] }))}
+              />
+              <WeakPointIntelligence
+                athleteUserId={p.patient_user_id || p.user_id || userId}
+                days={(parsed.training_days || []).map((d: any, i: number) => ({
+                  day_number: d?.day_number ?? i + 1,
+                  exercises: d?.exercises || [],
+                }))}
+                logs={weekLogs}
               />
 
               {coachId && p.id && (
