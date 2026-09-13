@@ -1114,6 +1114,11 @@ serve(async (req) => {
 
 BLOCO: ${ctx.title || ""} · split ${ctx.split_type || ""} · progressão ${ctx.progression_model || ""}
 
+REGRAS DETERMINÍSTICAS DO BLOCO:
+${ctx.decision_rules || "Respeitar estritamente zona, RIR, volume e segurança definidos no esqueleto."}
+
+REGRA DE AUTORIDADE: decisões e overrides do coach prevalecem. Não invente cargas, macros, pontos fracos, exames ou medições ausentes.
+
 DIA A PRESCREVER:
 ${JSON.stringify(spec)}
 

@@ -105,6 +105,8 @@ export interface TechniqueSelectionInput {
   week?: number | null;
   isDeload?: boolean;
   level?: "iniciante" | "intermediario" | "avancado" | string | null;
+  goal?: string | null;
+  phase?: string | null;
 }
 
 /** Retorna um mapa nome do exercício → técnica programada (máximo 2 por sessão). */
@@ -115,6 +117,9 @@ export function selectSessionTechniques(input: TechniqueSelectionInput): Record<
   if (input.isDeload) return {};
   if (level.startsWith("inici")) return {};
 
+  const goal = String(input.goal || "hipertrofia").toLowerCase();
+  const phase = String(input.phase || "acumulação").toLowerCase();
+
   const names = (input.exercises || [])
     .map((e) => String(e?.name ?? e?.nome ?? "").trim())
     .filter(Boolean);
@@ -123,18 +128,25 @@ export function selectSessionTechniques(input: TechniqueSelectionInput): Record<
   const isolators = names.filter((n) => !isCompoundExercise(n));
   const compounds = names.filter((n) => isCompoundExercise(n));
 
-  // Prioriza isoladores (mais seguros para falha), depois compostos com cluster
-  const candidates = [...isolators.slice(-2), ...compounds.slice(0, 1)].slice(0, 2);
+  // Força usa cluster somente em compostos durante transmutação/realização.
+  if (/for[cç]a|strength/.test(goal)) {
+    if (!/transmuta|realiza|intensifica|peak/.test(phase)) return {};
+    return compounds.slice(0, 2).reduce<Record<string, TechniqueKey>>((out, name) => {
+      out[name] = "CLUSTER_SET";
+      return out;
+    }, {});
+  }
+
+  // Hipertrofia: técnicas metabólicas somente em isoladores/máquinas.
+  if (!/hipertrof|bulk|massa|cut|defini/.test(goal) || !/acumula|volume/.test(phase)) return {};
+  const candidates = isolators.slice(-2);
 
   const isolatorPool: TechniqueKey[] = ["REST_PAUSE", "DROP_SET", "MYOREPS", "BISET"];
   const out: Record<string, TechniqueKey> = {};
 
   candidates.forEach((name, i) => {
-    if (isCompoundExercise(name)) {
-      out[name] = "CLUSTER_SET";
-      return;
-    }
-    const idx = (hashName(name) + week + i) % isolatorPool.length;
+    // REST-PAUSE é a primeira escolha; as demais rotacionam sem repetir a sessão anterior.
+    const idx = i === 0 ? 0 : (hashName(name) + week + i) % isolatorPool.length;
     out[name] = isolatorPool[idx];
   });
 

@@ -28,6 +28,7 @@ import StratumBadges from "@/components/training/StratumBadges";
 import FiberBadge from "@/components/training/FiberBadge";
 import { buildFiberInstruction, fiberMap, fiberColor } from "@/lib/fiberEngine";
 import { runStratum, buildStratumInstruction } from "@/lib/stratumEngine";
+import { buildStratumDecisionInstruction } from "@/lib/stratumDecisionEngine";
 import StratumGenerationProgress from "@/components/training/StratumGenerationProgress";
 import DayLoadingCard from "@/components/training/DayLoadingCard";
 import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
@@ -550,6 +551,21 @@ ${competicaoBloco}
 
 ${buildStratumInstruction(stratum)}
 
+${buildStratumDecisionInstruction({
+  phase,
+  goal: specificGoal,
+  level,
+  week: 1,
+  totalWeeks: Math.max(parseInt(String(weeks)) || 8, 1),
+  frequency: Number(days) || 3,
+  hasOtherSport: Boolean(cardio && !/não|nao/i.test(cardio)),
+  weakPoints: apexTrainingContext?.musculosAlvo?.length
+    ? apexTrainingContext.musculosAlvo
+    : weakPoints.split(/[,;/]/).map((item) => item.trim()).filter(Boolean),
+  hasBfrContraindication: Boolean(injuries && /hipertens|vascular|trombo|circula/i.test(injuries)),
+  hasBfrSupervision: false,
+})}
+
 ${buildFiberInstruction(muscles, fiberCtx)}
 
 ${buildDarksideFinalInstruction()}
@@ -656,6 +672,20 @@ Português. Específico. Científico. Zero genérico.`;
         title: skeleton.block_overview.title,
         split_type: skeleton.block_overview.split_type,
         progression_model: skeleton.block_overview.progression_model,
+        decision_rules: buildStratumDecisionInstruction({
+          phase,
+          goal: specificGoal,
+          level,
+          week: 1,
+          totalWeeks: Math.max(parseInt(String(weeks)) || 8, 1),
+          frequency: Number(days) || 3,
+          hasOtherSport: Boolean(cardio && !/não|nao/i.test(cardio)),
+          weakPoints: apexTrainingContext?.musculosAlvo?.length
+            ? apexTrainingContext.musculosAlvo
+            : weakPoints.split(/[,;/]/).map((item) => item.trim()).filter(Boolean),
+          hasBfrContraindication: Boolean(injuries && /hipertens|vascular|trombo|circula/i.test(injuries)),
+          hasBfrSupervision: false,
+        }),
       };
 
       const results = await Promise.allSettled(
