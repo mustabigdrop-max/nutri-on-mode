@@ -65,6 +65,7 @@ import React from "react";
 import ApexMarkdown from "@/components/apex/ApexMarkdown";
 import PalcoNPCTab from "@/components/coach/PalcoNPCTab";
 import { Button } from "@/components/ui/button";
+import ApexBFCalibration from "@/components/coach/ApexBFCalibration";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -1325,7 +1326,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       setFeminineProfile((data as any) || null);
     })();
   }, [isFemAthlete, athlete?.patient_user_id]);
-  const [apexMode, setApexMode] = useState<"analise" | "evolucao" | "guiada">("analise");
+  const [apexMode, setApexMode] = useState<"analise" | "evolucao" | "guiada" | "calibracao">("analise");
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
@@ -2612,12 +2613,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         )}
       </div>
 
-      {/* ━━━ MODE TOGGLE: Análise vs Evolução Fotográfica ━━━ */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      {/* ━━━ MODE TOGGLE ━━━ */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8, marginBottom: 16 }}>
         {([
           { k: "analise" as const,  l: "Análise APEX",            icon: ScanLine },
           { k: "guiada" as const,   l: "Sessão Guiada",         icon: Crosshair },
           { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
+          { k: "calibracao" as const, l: "Calibração BF%",       icon: Target },
         ]).map(({ k, l, icon: Ic }) => {
           const active = apexMode === k;
           return (
@@ -2640,6 +2642,12 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           );
         })}
       </div>
+
+      {apexMode === "calibracao" && (
+        <div style={{ marginBottom: 16 }}>
+          <ApexBFCalibration />
+        </div>
+      )}
 
       {apexMode === "evolucao" && (
         <div style={{ marginBottom: 16 }}>
