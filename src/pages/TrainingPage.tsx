@@ -3088,20 +3088,25 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
           {parsed?.block_overview ? (
             <>
               <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} trainingDays={parsed.training_days} />
-              {isMello16 && (
-                <WeekNavigator
-                  protocolKey={`history-${p.id}`}
-                  initialWeek={initialWeek}
-                  weekSummaries={weekSummaries}
+              {totalWeeks > 1 && (
+                <MesocycleTracker
+                  weeks={p.weeks}
+                  phaseLabel={p.phase}
+                  daysPerWeek={daysPerWeek}
+                  logs={weekLogs}
+                  selectedWeek={initialWeek}
                   onWeekChange={handleWeekChange}
+                  storageKey={`trainingon:meso:${p.id}`}
                 />
               )}
               {parsed.training_days?.map((day: any, idx: number) => (
                 <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} setExpandedDay={setExpandedDay}
                   expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
-                  weekPhase={isMello16 ? weekPhase : null}
+                  weekPhase={weekPhase}
                   athleteId={userId}
-                  protocolId={p.id} />
+                  protocolId={p.id}
+                  weekLogs={weekLogs}
+                  totalWeeks={totalWeeks} />
               ))}
             </>
           ) : rawMarkdown ? (
