@@ -2041,6 +2041,8 @@ const ExerciseCard = memo(function ExerciseCard({
   athleteId,
   protocolId,
   dayNumber,
+  weekLogs,
+  totalWeeks,
 }: {
   exercise: any;
   displayOrder?: number;
@@ -2050,6 +2052,8 @@ const ExerciseCard = memo(function ExerciseCard({
   athleteId?: string | null;
   protocolId?: string | null;
   dayNumber?: number;
+  weekLogs?: WorkoutLogRow[];
+  totalWeeks?: number;
 }) {
   const [showSubs, setShowSubs] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(exercise);
