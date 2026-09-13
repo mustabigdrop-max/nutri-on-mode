@@ -2126,6 +2126,7 @@ const ExerciseCard = memo(function ExerciseCard({
                 return (
                   <>
                     <RepZoneBadge reps={repsValue} compact />
+                    <LoadDeltaBadge logs={weekLogs || []} exerciseName={safeExerciseName} week={weekPhase?.week} />
                     <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />
                     <TripleCoherenceMarker exerciseName={safeExerciseName} reps={repsValue} rir={effectiveRIR} />
                     {athleteId && (
