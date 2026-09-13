@@ -1982,9 +1982,16 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
 
 
               {/* Exercises */}
-              {day.exercises?.map((ex: any, i: number) => (
+              {(() => {
+                const sessionTechniques = selectSessionTechniques({
+                  exercises: (day.exercises || []).map((e: any) => ({ name: e?.name ?? e?.nome ?? "" })),
+                  week: weekPhase?.week,
+                  isDeload: weekPhase?.isDeload,
+                });
+                return day.exercises?.map((ex: any, i: number) => (
                 <ExerciseCard
                   key={i}
+                  technique={sessionTechniques[String(ex?.name ?? ex?.nome ?? "").trim()] || null}
                   exercise={ex}
                   displayOrder={i + 1}
                   expanded={expandedExercise === `${index}-${i}`}
