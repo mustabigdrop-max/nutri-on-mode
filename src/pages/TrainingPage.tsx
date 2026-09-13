@@ -2060,6 +2060,9 @@ const ExerciseCard = memo(function ExerciseCard({
   dayNumber,
   weekLogs,
   totalWeeks,
+  coachId,
+  override,
+  onOverrideSaved,
 }: {
   exercise: any;
   displayOrder?: number;
@@ -2071,6 +2074,9 @@ const ExerciseCard = memo(function ExerciseCard({
   dayNumber?: number;
   weekLogs?: WorkoutLogRow[];
   totalWeeks?: number;
+  coachId?: string | null;
+  override?: ExerciseOverride | null;
+  onOverrideSaved?: () => void;
 }) {
   const [showSubs, setShowSubs] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(exercise);
