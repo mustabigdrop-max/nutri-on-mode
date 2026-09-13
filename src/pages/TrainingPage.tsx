@@ -1979,6 +1979,8 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
                   athleteId={athleteId}
                   protocolId={protocolId}
                   dayNumber={day.day_number || index + 1}
+                  weekLogs={weekLogs}
+                  totalWeeks={totalWeeks}
                 />
               ))}
 
