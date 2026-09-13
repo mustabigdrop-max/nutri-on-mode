@@ -784,8 +784,11 @@ Português. Específico. Científico. Zero genérico.`;
   useEffect(() => {
     if (!clientName.trim() || !patients.length) return;
     const match = patients.find(p => (p.name || "").toLowerCase().trim() === clientName.toLowerCase().trim());
+    if (match?.patient_user_id && selectedPatient !== match.patient_user_id) {
+      setSelectedPatient(match.patient_user_id);
+    }
     if (match?.sex) setClientSex(String(match.sex).toUpperCase().startsWith("F") ? "F" : "M");
-  }, [clientName, patients]);
+  }, [clientName, patients, selectedPatient]);
 
   const selectPrescriptionPatient = (patientUserId: string) => {
     setSelectedPatient(patientUserId);
@@ -811,7 +814,7 @@ Português. Específico. Científico. Zero genérico.`;
       anatomy_text: textResults.anatomia || "",
       tecnica_text: textResults.tecnica || "",
       periodizacao_text: textResults.periodizacao || "",
-      patient_user_id: patientId || null,
+      patient_user_id: patientId || selectedPatient || null,
     }).select("id").single();
     if (error) { toast.error("Erro ao salvar"); setShowSaveModal(false); return; }
     if (inserted?.id) setSavedProtocolId(inserted.id);
