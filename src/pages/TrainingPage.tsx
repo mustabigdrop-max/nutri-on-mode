@@ -3186,6 +3186,15 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   storageKey={`trainingon:meso:${p.id}`}
                 />
               )}
+              <TrainingIntelligencePanel
+                logs={weekLogs}
+                totalWeeks={totalWeeks}
+                days={(parsed.training_days || []).map((d: any, i: number) => ({
+                  day_number: d?.day_number ?? i + 1,
+                  focus: d?.focus ?? d?.title ?? d?.name ?? "",
+                  exercises: d?.exercises || [],
+                }))}
+              />
               {coachId && p.id && (
                 <CoachWeekControls
                   coachId={coachId}
