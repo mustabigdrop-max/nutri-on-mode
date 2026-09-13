@@ -3171,14 +3171,27 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   storageKey={`trainingon:meso:${p.id}`}
                 />
               )}
+              {coachId && p.id && (
+                <CoachWeekControls
+                  coachId={coachId}
+                  protocolId={p.id}
+                  weekNumber={weekPhase.week}
+                  isPlannedDeload={weekPhase.isDeload}
+                  current={weekOverrides[weekPhase.week]}
+                  onChanged={refreshOverrides}
+                />
+              )}
               {parsed.training_days?.map((day: any, idx: number) => (
                 <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} setExpandedDay={setExpandedDay}
                   expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
-                  weekPhase={weekPhase}
+                  weekPhase={effectiveWeekPhase}
                   athleteId={userId}
                   protocolId={p.id}
                   weekLogs={weekLogs}
-                  totalWeeks={totalWeeks} />
+                  totalWeeks={totalWeeks}
+                  coachId={coachId}
+                  overrides={overrides}
+                  onOverrideSaved={refreshOverrides} />
               ))}
             </>
           ) : rawMarkdown ? (
