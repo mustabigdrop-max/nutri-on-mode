@@ -12464,6 +12464,71 @@ export type Database = {
           },
         ]
       }
+      training_exercise_overrides: {
+        Row: {
+          action: string
+          coach_id: string
+          coach_note: string | null
+          created_at: string
+          day_number: number
+          exercise_name: string
+          id: string
+          new_exercise_name: string | null
+          protocol_id: string
+          reps: string | null
+          rest: string | null
+          rir: string | null
+          rpe: string | null
+          sets: string | null
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          action?: string
+          coach_id: string
+          coach_note?: string | null
+          created_at?: string
+          day_number: number
+          exercise_name: string
+          id?: string
+          new_exercise_name?: string | null
+          protocol_id: string
+          reps?: string | null
+          rest?: string | null
+          rir?: string | null
+          rpe?: string | null
+          sets?: string | null
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          action?: string
+          coach_id?: string
+          coach_note?: string | null
+          created_at?: string
+          day_number?: number
+          exercise_name?: string
+          id?: string
+          new_exercise_name?: string | null
+          protocol_id?: string
+          reps?: string | null
+          rest?: string | null
+          rir?: string | null
+          rpe?: string | null
+          sets?: string | null
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_exercise_overrides_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "training_protocols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_feedback: {
         Row: {
           athlete_id: string
@@ -12813,6 +12878,47 @@ export type Database = {
           weeks?: string | null
         }
         Relationships: []
+      }
+      training_week_overrides: {
+        Row: {
+          coach_id: string
+          coach_note: string | null
+          created_at: string
+          forced_deload: boolean
+          id: string
+          protocol_id: string
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          coach_id: string
+          coach_note?: string | null
+          created_at?: string
+          forced_deload?: boolean
+          id?: string
+          protocol_id: string
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          coach_id?: string
+          coach_note?: string | null
+          created_at?: string
+          forced_deload?: boolean
+          id?: string
+          protocol_id?: string
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_week_overrides_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "training_protocols"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_badges: {
         Row: {

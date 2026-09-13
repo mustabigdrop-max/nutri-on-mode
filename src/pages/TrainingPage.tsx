@@ -37,6 +37,17 @@ import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgressio
 import { WorkoutLogRow, buildWeekPlan, rirForWeek } from "@/lib/mesocyclePlan";
 import MesocycleTracker from "@/components/training/MesocycleTracker";
 import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
+import CoachOverrideEditor from "@/components/training/CoachOverrideEditor";
+import CoachWeekControls from "@/components/training/CoachWeekControls";
+import {
+  ExerciseOverride,
+  OverrideMap,
+  WeekOverride,
+  applyOverrideToStructure,
+  loadExerciseOverrides,
+  loadWeekOverrides,
+  overrideKey,
+} from "@/lib/coachOverrides";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
@@ -1900,7 +1911,7 @@ function extractDayMuscleTags(day: any): string[] {
 }
 
 /* ── Training Day Card ── */
-const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId, weekLogs, totalWeeks }: any) {
+const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId, weekLogs, totalWeeks, coachId, overrides, onOverrideSaved }: any) {
   const muscleTags = useMemo(() => extractDayMuscleTags(day), [day]);
   const onToggle = useCallback(
     () => setExpandedDay((cur: number | null) => (cur === index ? null : index)),
@@ -1984,6 +1995,9 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
                   dayNumber={day.day_number || index + 1}
                   weekLogs={weekLogs}
                   totalWeeks={totalWeeks}
+                  coachId={coachId}
+                  override={overrides?.[overrideKey(weekPhase?.week || 1, day.day_number || index + 1, (ex?.name ?? ex?.nome ?? ""))]}
+                  onOverrideSaved={onOverrideSaved}
                 />
               ))}
 
@@ -2046,6 +2060,9 @@ const ExerciseCard = memo(function ExerciseCard({
   dayNumber,
   weekLogs,
   totalWeeks,
+  coachId,
+  override,
+  onOverrideSaved,
 }: {
   exercise: any;
   displayOrder?: number;
@@ -2057,15 +2074,20 @@ const ExerciseCard = memo(function ExerciseCard({
   dayNumber?: number;
   weekLogs?: WorkoutLogRow[];
   totalWeeks?: number;
+  coachId?: string | null;
+  override?: ExerciseOverride | null;
+  onOverrideSaved?: () => void;
 }) {
   const [showSubs, setShowSubs] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(exercise);
   const [swapHistory, setSwapHistory] = useState<string[]>([]);
 
   const baseStruct = currentExercise.structure || {};
-  const struct = weekPhase ? applyWeekProgression(baseStruct, weekPhase) : baseStruct;
+  const periodized = weekPhase ? applyWeekProgression(baseStruct, weekPhase) : baseStruct;
+  const struct = applyOverrideToStructure(periodized, override);
   const hasTopSet = !!struct.top_set;
-  const safeExerciseName = sanitizeRenderedText(currentExercise.name, "Exercício prescrito");
+  const overriddenName = override?.new_exercise_name || null;
+  const safeExerciseName = sanitizeRenderedText(overriddenName || currentExercise.name, "Exercício prescrito");
   const safeMuscleTarget = sanitizeRenderedText(currentExercise.muscle_target, "Alvo muscular ajustado");
   const safeExecutionCues = hasMeaningfulValue(currentExercise.execution_cues)
     ? sanitizeRenderedText(currentExercise.execution_cues, "Execução guiada pelo coach.")
@@ -2104,6 +2126,9 @@ const ExerciseCard = memo(function ExerciseCard({
               <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
               {isSwapped && (
                 <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa" }}>SUBSTITUTO</span>
+              )}
+              {override && (
+                <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: "rgba(93,202,165,0.15)", color: GREEN }}>AJUSTE DO COACH</span>
               )}
             </div>
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -2198,6 +2223,25 @@ const ExerciseCard = memo(function ExerciseCard({
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
             <div className="px-3 pb-3 space-y-2">
+              {/* Ajuste manual do coach (visível apenas para o coach do protocolo) */}
+              {coachId && protocolId && (
+                <CoachOverrideEditor
+                  coachId={coachId}
+                  protocolId={protocolId}
+                  weekNumber={weekPhase?.week || 1}
+                  dayNumber={dayNumber || 1}
+                  exerciseName={currentExercise.name || safeExerciseName}
+                  totalWeeks={Math.max(1, totalWeeks || 1)}
+                  current={override}
+                  onSaved={onOverrideSaved}
+                />
+              )}
+              {!coachId && override?.coach_note && (
+                <div className="rounded-lg px-2.5 py-2" style={{ background: "rgba(93,202,165,0.06)", border: `1px solid ${BORDER}` }}>
+                  <p className="text-[8px] font-bold tracking-widest uppercase" style={{ color: GREEN }}>Recado do coach</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{override.coach_note}</p>
+                </div>
+              )}
               {/* Tracker — séries marcáveis */}
               <SetTrackerBlock
                 exerciseId={(currentExercise.id || currentExercise.name || `ex-${displayOrder ?? 0}`).toString().toLowerCase().replace(/\s+/g, "-").slice(0, 80)}
@@ -2976,6 +3020,34 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
     }
   }, [p.id]);
 
+  // ── Fase 2: ajustes manuais do coach ──
+  const coachId = userId && (!p.user_id || p.user_id === userId) ? userId : null;
+  const [overrides, setOverrides] = useState<OverrideMap>({});
+  const [weekOverrides, setWeekOverrides] = useState<Record<number, WeekOverride>>({});
+  const refreshOverrides = useCallback(async () => {
+    if (!p.id) return;
+    const [ex, wk] = await Promise.all([loadExerciseOverrides(p.id), loadWeekOverrides(p.id)]);
+    setOverrides(ex);
+    setWeekOverrides(wk);
+  }, [p.id]);
+  useEffect(() => { refreshOverrides(); }, [refreshOverrides]);
+
+  // Descarga forçada pelo coach sobrepõe a fase planejada da semana
+  const effectiveWeekPhase: WeekPhase = useMemo(() => {
+    if (!weekOverrides[weekPhase.week]?.forced_deload || weekPhase.isDeload) return weekPhase;
+    return {
+      ...weekPhase,
+      phase: "DELOAD",
+      label: "DESCARGA (ajuste do coach)",
+      rpe: 6,
+      rir: null,
+      setsAdd: 0,
+      isDeload: true,
+      color: "#94a3b8",
+      bg: "rgba(148,163,184,0.12)",
+    };
+  }, [weekPhase, weekOverrides]);
+
   const updateProtocol = async () => {
     const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
     if (error) toast.error("Erro ao atualizar");
@@ -3099,14 +3171,27 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   storageKey={`trainingon:meso:${p.id}`}
                 />
               )}
+              {coachId && p.id && (
+                <CoachWeekControls
+                  coachId={coachId}
+                  protocolId={p.id}
+                  weekNumber={weekPhase.week}
+                  isPlannedDeload={weekPhase.isDeload}
+                  current={weekOverrides[weekPhase.week]}
+                  onChanged={refreshOverrides}
+                />
+              )}
               {parsed.training_days?.map((day: any, idx: number) => (
                 <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} setExpandedDay={setExpandedDay}
                   expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
-                  weekPhase={weekPhase}
+                  weekPhase={effectiveWeekPhase}
                   athleteId={userId}
                   protocolId={p.id}
                   weekLogs={weekLogs}
-                  totalWeeks={totalWeeks} />
+                  totalWeeks={totalWeeks}
+                  coachId={coachId}
+                  overrides={overrides}
+                  onOverrideSaved={refreshOverrides} />
               ))}
             </>
           ) : rawMarkdown ? (
