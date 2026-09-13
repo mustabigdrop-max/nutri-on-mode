@@ -23,7 +23,7 @@ const SCORE_LABELS: Record<string, string> = {
 const norm = (value: unknown) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const fmt = (value: number) => Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ",");
 
-function relatedExercises(label: string, days: Array<{ exercises?: any[] }>) {
+function relatedExercises(label: string, days: Array<{ day_number?: number | null; exercises?: any[] }>) {
   const words = norm(label).split(/\s+/).filter((word) => word.length > 3);
   return days.flatMap((day, dayIndex) => (day.exercises || []).map((exercise) => ({
     day: Number(day?.day_number) || dayIndex + 1,
