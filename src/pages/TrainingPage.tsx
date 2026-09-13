@@ -92,7 +92,12 @@ import {
   SetTrackerBlock,
 } from "@/components/training/tracker/WorkoutTracker";
 import MceBanner from "@/components/mce/MceBanner";
-import { getLatestApexBodyContext, type ApexBodyContext } from "@/utils/apexTrainingBridge";
+import {
+  getApexTrainingRules,
+  getLatestApexBodyContext,
+  type ApexBodyContext,
+  type ApexTrainingBridgeResult,
+} from "@/utils/apexTrainingBridge";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -279,6 +284,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [patients, setPatients] = useState<any[]>([]);
   const [selectedPatient, setSelectedPatient] = useState("");
   const [apexBodyContext, setApexBodyContext] = useState<ApexBodyContext | null>(null);
+  const [apexTrainingContext, setApexTrainingContext] = useState<ApexTrainingBridgeResult | null>(null);
   const [apexContextLoading, setApexContextLoading] = useState(false);
   const [trainingSystem, setTrainingSystem] = useState<string>("");
   const [clientSex, setClientSex] = useState<"F" | "M" | null>(null);
@@ -382,14 +388,18 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     systemName: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome,
   }), [phase, level, days, weeks, muscles, weakPoints, specificGoal, correctivePrompt, clientSex, trainingSystem]);
 
-  // Carrega perfil de fibras + último STRATUM Ready check-in
+  const contextUserId = selectedPatient || userId;
+
+  // Carrega perfil de fibras + último STRATUM Ready check-in do atleta selecionado
   useEffect(() => {
-    if (!userId) return;
+    if (!contextUserId) return;
+    setFiberProfile(null);
+    setReadyCheckin(null);
 
     (supabase
       .from("fiber_profiles" as any)
       .select("dominancia, notas")
-      .eq("user_id", userId)
+      .eq("user_id", contextUserId)
       .maybeSingle() as any)
       .then(({ data }: any) => {
         if (data) setFiberProfile({ dominancia: data.dominancia, notas: data.notas });
@@ -398,7 +408,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     (supabase
       .from("stratum_checkins" as any)
       .select("sono, energia, dor_muscular, estresse_hoje")
-      .eq("user_id", userId)
+      .eq("user_id", contextUserId)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle() as any)
@@ -410,18 +420,22 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
           estresseHoje: data.estresse_hoje,
         });
       });
-  }, [userId]);
+  }, [contextUserId]);
 
   useEffect(() => {
     if (!selectedPatient) {
       setApexBodyContext(null);
+      setApexTrainingContext(null);
       return;
     }
     let active = true;
     setApexContextLoading(true);
     getLatestApexBodyContext(selectedPatient)
-      .then((context) => {
-        if (active) setApexBodyContext(context);
+      .then(async (context) => {
+        if (!active) return;
+        setApexBodyContext(context);
+        const trainingContext = context ? await getApexTrainingRules(context.athleteId) : null;
+        if (active) setApexTrainingContext(trainingContext);
       })
       .finally(() => {
         if (active) setApexContextLoading(false);
@@ -467,7 +481,10 @@ ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), des
 - Meta registrada: ${apexBodyContext.targetBodyFat == null ? "não informada" : `${apexBodyContext.targetBodyFat}%`}
 - Ângulos fotográficos registrados: ${apexBodyContext.photoViews}/3
 - Prioridades observadas: ${apexBodyContext.priorities.length ? apexBodyContext.priorities.join("; ") : "não informadas"}
-REGRA: use este bloco apenas para contextualizar seleção e ordem dos grupamentos. Não altere calorias, volume, intensidade ou fase com base isolada na estimativa visual. Não trate como diagnóstico.`
+- Ativações prioritárias validadas: ${apexTrainingContext?.musculosAlvo.length ? apexTrainingContext.musculosAlvo.join("; ") : "não informadas"}
+- Corretivos registrados: ${apexTrainingContext?.corretivos.length ? apexTrainingContext.corretivos.map((item) => `${item.nome} (${item.series}x${item.reps}; ${item.foco})`).join("; ") : "nenhum"}
+- Padrões a monitorar: ${apexTrainingContext?.contraindicados.length ? apexTrainingContext.contraindicados.map((item) => `${item.padrao}: ${item.motivo}`).join("; ") : "nenhum"}
+REGRA: use este bloco apenas para contextualizar seleção, ordem dos grupamentos, aquecimento e segurança biomecânica. Não altere calorias, volume, intensidade ou fase com base isolada na estimativa visual. Não trate como diagnóstico; a decisão final é do coach.`
       : `━━━ CONTEXTO CORPORAL APEX: ${apexBodyContext ? "avaliação anterior a 90 dias — não usar automaticamente" : "sem avaliação salva para este atleta"} ━━━`;
 
     // Sistema energético/metodológico escolhido automaticamente a partir do objetivo e nível
@@ -489,7 +506,7 @@ Objetivo identificado como competição/palco. Estruture em blocos:
 
     return `Você é o Motor de Prescrição de Elite do TrainingON — camada máxima do sistema STRATUM.
 
-Integre QUATRO fontes de inteligência em UM protocolo definitivo:
+Integre as fontes de contexto disponíveis em UM protocolo definitivo:
 
 ━━━ DADOS DO CLIENTE ━━━
 - Lesões: ${injuries || "nenhuma"}
@@ -850,6 +867,11 @@ Português. Específico. Científico. Zero genérico.`;
                     {apexBodyContext.estimatedBodyFat == null ? "Estimativa visual não registrada" : `Estimativa visual salva: ${apexBodyContext.estimatedBodyFat}%`}
                     {apexBodyContext.priorities.length ? ` · Prioridades: ${apexBodyContext.priorities.join(" · ")}` : ""}
                   </p>
+                  {!!apexTrainingContext?.corretivos.length && (
+                    <p className="text-[10px] leading-relaxed" style={{ color: GREEN }}>
+                      {apexTrainingContext.corretivos.length} corretivo{apexTrainingContext.corretivos.length > 1 ? "s" : ""} e {apexTrainingContext.contraindicados.length} padrão{apexTrainingContext.contraindicados.length !== 1 ? "ões" : ""} de atenção integrados ao treino.
+                    </p>
+                  )}
                   <p className="text-[9px]" style={{ color: TEXT_MUTED }}>
                     Contexto secundário; não substitui avaliação presencial e não altera volume ou intensidade isoladamente.
                   </p>
