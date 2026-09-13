@@ -139,6 +139,7 @@ const CoachHub = lazy(() => import("./pages/CoachHub"));
 const CoachApexVisualPage = lazy(() => import("./pages/coach/CoachApexVisualPage"));
 const ApexCheckinPage = lazy(() => import("./pages/coach/ApexCheckinPage"));
 const ApexVisualIAPage = lazy(() => import("./pages/coach/ApexVisualIAPage"));
+const ApexVisualAutoPage = lazy(() => import("./pages/coach/ApexVisualAutoPage"));
 const CoachTrainingOnPage = lazy(() => import("./pages/coach/CoachTrainingOnPage"));
 const GapAnalysisPage = lazy(() => import("./pages/GapAnalysisPage"));
 const CoachLabExamsPage = lazy(() => import("./pages/coach/CoachLabExamsPage"));
