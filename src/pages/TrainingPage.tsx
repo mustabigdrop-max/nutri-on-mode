@@ -34,6 +34,9 @@ import TrainingReadinessSection from "@/components/training/TrainingReadinessSec
 import WeekNavigator from "@/components/training/WeekNavigator";
 import ExerciseLogPanel from "@/components/training/ExerciseLogPanel";
 import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgression";
+import { WorkoutLogRow, buildWeekPlan, rirForWeek } from "@/lib/mesocyclePlan";
+import MesocycleTracker from "@/components/training/MesocycleTracker";
+import LoadDeltaBadge from "@/components/training/LoadDeltaBadge";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
@@ -1897,7 +1900,7 @@ function extractDayMuscleTags(day: any): string[] {
 }
 
 /* ── Training Day Card ── */
-const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
+const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId, weekLogs, totalWeeks }: any) {
   const muscleTags = useMemo(() => extractDayMuscleTags(day), [day]);
   const onToggle = useCallback(
     () => setExpandedDay((cur: number | null) => (cur === index ? null : index)),
@@ -1979,6 +1982,8 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
                   athleteId={athleteId}
                   protocolId={protocolId}
                   dayNumber={day.day_number || index + 1}
+                  weekLogs={weekLogs}
+                  totalWeeks={totalWeeks}
                 />
               ))}
 
@@ -2039,6 +2044,8 @@ const ExerciseCard = memo(function ExerciseCard({
   athleteId,
   protocolId,
   dayNumber,
+  weekLogs,
+  totalWeeks,
 }: {
   exercise: any;
   displayOrder?: number;
@@ -2048,6 +2055,8 @@ const ExerciseCard = memo(function ExerciseCard({
   athleteId?: string | null;
   protocolId?: string | null;
   dayNumber?: number;
+  weekLogs?: WorkoutLogRow[];
+  totalWeeks?: number;
 }) {
   const [showSubs, setShowSubs] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(exercise);
@@ -2108,12 +2117,16 @@ const ExerciseCard = memo(function ExerciseCard({
               />
               <MuscleRegionBadge exerciseName={safeExerciseName} />
               {(() => {
-                const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
+                const isCompound = /supino|agachamento|terra|remada|desenvolvimento|barra fixa|puxada|leg press|paralel|afundo|b[úu]lgaro|stiff/i.test(safeExerciseName);
+                const weekRIR = (weekPhase
+                  ? Math.min(3, rirForWeek(weekPhase, isCompound ? "composto" : "isolador"))
+                  : calcWeekRIR(1, Math.max(1, totalWeeks || 8))) as 0 | 1 | 2 | 3;
                 const effectiveRIR = resolveRIRForExercise(safeExerciseName, weekRIR);
                 const repsValue = exercise?.reps ?? exercise?.sets_reps ?? exercise?.work_sets?.reps ?? "10";
                 return (
                   <>
                     <RepZoneBadge reps={repsValue} compact />
+                    <LoadDeltaBadge logs={weekLogs || []} exerciseName={safeExerciseName} week={weekPhase?.week} />
                     <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />
                     <TripleCoherenceMarker exerciseName={safeExerciseName} reps={repsValue} rir={effectiveRIR} />
                     {athleteId && (
@@ -2929,48 +2942,39 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
 
   const { json: parsed, markdown: rawMarkdown } = parseProtocolText(p.protocol_text);
 
-  // ── Mello 16 wk navigator (apenas se 16 semanas + bulking) ──
-  const isMello16 = String(p.weeks) === "16" && String(p.phase || "").toLowerCase().includes("bulk");
-  const initialWeek = (typeof p.last_viewed_week === "number" && p.last_viewed_week >= 1 && p.last_viewed_week <= 16) ? p.last_viewed_week : undefined;
-  const [weekPhase, setWeekPhase] = useState<WeekPhase>(WEEK_PLAN[(initialWeek ?? 1) - 1]);
-  const [weekSummaries, setWeekSummaries] = useState<Record<number, { count: number; avgTop: number | null; avgRpe: number | null }>>({});
+  // ── Mesociclo: navegação semana-a-semana para QUALQUER protocolo ──
+  const weekPlan = useMemo(() => buildWeekPlan(p.weeks, p.phase), [p.weeks, p.phase]);
+  const totalWeeks = weekPlan.length;
+  const daysPerWeek = useMemo(() => {
+    const fromDays = parseInt(String(p.days ?? "")) || 0;
+    if (fromDays > 0) return fromDays;
+    const fromProtocol = parsed?.training_days?.length || 0;
+    return fromProtocol > 0 ? fromProtocol : 4;
+  }, [p.days, parsed]);
+  const initialWeek = (typeof p.last_viewed_week === "number" && p.last_viewed_week >= 1 && p.last_viewed_week <= totalWeeks)
+    ? p.last_viewed_week
+    : 1;
+  const [weekPhase, setWeekPhase] = useState<WeekPhase>(weekPlan[initialWeek - 1] || weekPlan[0] || WEEK_PLAN[0]);
+  const [weekLogs, setWeekLogs] = useState<WorkoutLogRow[]>([]);
 
-  // Carrega resumos por semana (workout_logs) para exibir badges "Concluída"
+  // Registros reais de carga/RPE do protocolo (workout_logs)
   useEffect(() => {
-    if (!isMello16 || !p.id) return;
+    if (!p.id) return;
     (async () => {
       const { data } = await (supabase.from as any)("workout_logs")
-        .select("week_number, top_set_kg, rpe_felt")
+        .select("week_number, day_number, exercise_name, top_set_kg, rpe_felt")
         .eq("protocol_id", p.id);
-      if (!data) return;
-      const map: Record<number, { count: number; sumTop: number; sumRpe: number; nTop: number; nRpe: number }> = {};
-      for (const r of data as any[]) {
-        const w = Number(r.week_number);
-        if (!w) continue;
-        if (!map[w]) map[w] = { count: 0, sumTop: 0, sumRpe: 0, nTop: 0, nRpe: 0 };
-        map[w].count++;
-        if (typeof r.top_set_kg === "number") { map[w].sumTop += r.top_set_kg; map[w].nTop++; }
-        if (typeof r.rpe_felt === "number") { map[w].sumRpe += r.rpe_felt; map[w].nRpe++; }
-      }
-      const summary: Record<number, { count: number; avgTop: number | null; avgRpe: number | null }> = {};
-      Object.entries(map).forEach(([w, v]) => {
-        summary[Number(w)] = {
-          count: v.count,
-          avgTop: v.nTop ? v.sumTop / v.nTop : null,
-          avgRpe: v.nRpe ? v.sumRpe / v.nRpe : null,
-        };
-      });
-      setWeekSummaries(summary);
+      setWeekLogs((data as WorkoutLogRow[]) || []);
     })();
-  }, [isMello16, p.id]);
+  }, [p.id]);
 
   // Persiste última semana visualizada
   const handleWeekChange = useCallback((wp: WeekPhase) => {
     setWeekPhase(wp);
-    if (isMello16 && p.id) {
+    if (p.id) {
       (supabase.from("training_protocols") as any).update({ last_viewed_week: wp.week }).eq("id", p.id).then(() => {});
     }
-  }, [isMello16, p.id]);
+  }, [p.id]);
 
   const updateProtocol = async () => {
     const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
@@ -3047,8 +3051,8 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
               )}
               <p className="text-[10px]" style={{ color: TEXT_MUTED }}>
                 {PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase} · {p.weeks} sem · {new Date(p.created_at).toLocaleDateString("pt-BR")}
-                {isMello16 && (
-                  <> · <span style={{ color: weekPhase.color, fontWeight: 700 }}>Semana {weekPhase.week} de 16 — {weekPhase.label}</span></>
+                {totalWeeks > 1 && (
+                  <> · <span style={{ color: weekPhase.color, fontWeight: 700 }}>Semana {weekPhase.week} de {totalWeeks} — {weekPhase.label}</span></>
                 )}
               </p>
             </div>
@@ -3084,20 +3088,25 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
           {parsed?.block_overview ? (
             <>
               <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} trainingDays={parsed.training_days} />
-              {isMello16 && (
-                <WeekNavigator
-                  protocolKey={`history-${p.id}`}
-                  initialWeek={initialWeek}
-                  weekSummaries={weekSummaries}
+              {totalWeeks > 1 && (
+                <MesocycleTracker
+                  weeks={p.weeks}
+                  phaseLabel={p.phase}
+                  daysPerWeek={daysPerWeek}
+                  logs={weekLogs}
+                  selectedWeek={initialWeek}
                   onWeekChange={handleWeekChange}
+                  storageKey={`trainingon:meso:${p.id}`}
                 />
               )}
               {parsed.training_days?.map((day: any, idx: number) => (
                 <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} setExpandedDay={setExpandedDay}
                   expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
-                  weekPhase={isMello16 ? weekPhase : null}
+                  weekPhase={weekPhase}
                   athleteId={userId}
-                  protocolId={p.id} />
+                  protocolId={p.id}
+                  weekLogs={weekLogs}
+                  totalWeeks={totalWeeks} />
               ))}
             </>
           ) : rawMarkdown ? (
