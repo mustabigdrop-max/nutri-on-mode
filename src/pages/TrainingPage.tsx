@@ -1911,7 +1911,7 @@ function extractDayMuscleTags(day: any): string[] {
 }
 
 /* ── Training Day Card ── */
-const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId, weekLogs, totalWeeks }: any) {
+const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId, weekLogs, totalWeeks, coachId, overrides, onOverrideSaved }: any) {
   const muscleTags = useMemo(() => extractDayMuscleTags(day), [day]);
   const onToggle = useCallback(
     () => setExpandedDay((cur: number | null) => (cur === index ? null : index)),
