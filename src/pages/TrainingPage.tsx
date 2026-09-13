@@ -3020,6 +3020,34 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
     }
   }, [p.id]);
 
+  // ── Fase 2: ajustes manuais do coach ──
+  const coachId = userId && (!p.user_id || p.user_id === userId) ? userId : null;
+  const [overrides, setOverrides] = useState<OverrideMap>({});
+  const [weekOverrides, setWeekOverrides] = useState<Record<number, WeekOverride>>({});
+  const refreshOverrides = useCallback(async () => {
+    if (!p.id) return;
+    const [ex, wk] = await Promise.all([loadExerciseOverrides(p.id), loadWeekOverrides(p.id)]);
+    setOverrides(ex);
+    setWeekOverrides(wk);
+  }, [p.id]);
+  useEffect(() => { refreshOverrides(); }, [refreshOverrides]);
+
+  // Descarga forçada pelo coach sobrepõe a fase planejada da semana
+  const effectiveWeekPhase: WeekPhase = useMemo(() => {
+    if (!weekOverrides[weekPhase.week]?.forced_deload || weekPhase.isDeload) return weekPhase;
+    return {
+      ...weekPhase,
+      phase: "DELOAD",
+      label: "DESCARGA (ajuste do coach)",
+      rpe: 6,
+      rir: null,
+      setsAdd: 0,
+      isDeload: true,
+      color: "#94a3b8",
+      bg: "rgba(148,163,184,0.12)",
+    };
+  }, [weekPhase, weekOverrides]);
+
   const updateProtocol = async () => {
     const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
     if (error) toast.error("Erro ao atualizar");
