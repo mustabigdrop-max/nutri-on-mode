@@ -2006,7 +2006,8 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
                   override={overrides?.[overrideKey(weekPhase?.week || 1, day.day_number || index + 1, (ex?.name ?? ex?.nome ?? ""))]}
                   onOverrideSaved={onOverrideSaved}
                 />
-              ))}
+              ));
+              })()}
 
               {/* Session Notes */}
               {day.session_notes && (
