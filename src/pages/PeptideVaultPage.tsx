@@ -494,7 +494,7 @@ function ResearchTab({ userId }: { userId?: string }) {
     setResult("");
     setCitations([]);
     try {
-      const { data, error } = await supabase.functions.invoke("peptide-research", { body: { query: q.trim(), type: "research" } });
+      const { data, error } = await supabase.functions.invoke("peptide-research", { body: { query: q.trim(), type: "research", vault: "peptide" } });
       if (error) throw error;
       setResult(data.content);
       setCitations(data.citations || []);
