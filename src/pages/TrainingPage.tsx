@@ -2117,7 +2117,10 @@ const ExerciseCard = memo(function ExerciseCard({
               />
               <MuscleRegionBadge exerciseName={safeExerciseName} />
               {(() => {
-                const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
+                const isCompound = /supino|agachamento|terra|remada|desenvolvimento|barra fixa|puxada|leg press|paralel|afundo|b[úu]lgaro|stiff/i.test(safeExerciseName);
+                const weekRIR = weekPhase
+                  ? rirForWeek(weekPhase, isCompound ? "composto" : "isolador")
+                  : calcWeekRIR(1, Math.max(1, totalWeeks || 8));
                 const effectiveRIR = resolveRIRForExercise(safeExerciseName, weekRIR);
                 const repsValue = exercise?.reps ?? exercise?.sets_reps ?? exercise?.work_sets?.reps ?? "10";
                 return (
