@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Copy, Dna, Flame, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
 import NexusContentCreator from "@/components/nexus/NexusContentCreator";
+import FracionamentoPanel from "@/components/nexus/FracionamentoPanel";
 import {
   steroidItems,
   steroidStats,
@@ -168,6 +169,8 @@ export default function SteroidVaultPage() {
               </div>
 
               <CurvaMenosEMais />
+
+              <FracionamentoPanel />
 
               <Card className="border border-gray-800 bg-gray-900/50">
                 <CardHeader className="pb-2 pt-4 px-4">
