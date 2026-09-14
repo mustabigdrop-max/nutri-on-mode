@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Copy, Check, Loader2, ImagePlus, X } from "lucide-react";
+import { Copy, Check, Loader2, ImagePlus, X, Download, Image as ImageIcon } from "lucide-react";
 import { compressImageFile } from "@/lib/socialMediaFrames";
 import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
+import { renderMealPhotoOverlay, loadImageFromUrl, type MealOverlayFormat } from "@/lib/mealPhotoOverlay";
+
 import {
   getDadosRefeicao,
   getDadosDeRegistro,
@@ -65,6 +67,24 @@ const boxStyle: React.CSSProperties = {
   padding: 14,
 };
 
+const fotoBtnStyle: React.CSSProperties = {
+  flex: 1,
+  padding: 9,
+  borderRadius: 8,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  background: "transparent",
+  border: `1px solid ${C.gold}`,
+  color: C.gold,
+  fontFamily: mono,
+  fontSize: 9,
+  fontWeight: 700,
+};
+
+
 export default function MealPostPanel({ handle }: { handle?: string }) {
   const [dados, setDados] = useState<DadosRefeicao | null>(null);
   const [registros, setRegistros] = useState<RefeicaoRegistrada[]>([]);
@@ -78,6 +98,8 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [foto, setFoto] = useState<string | null>(null);
+  const [previa, setPrevia] = useState<{ url: string; nome: string; formato: MealOverlayFormat } | null>(null);
+
 
   const [treino, setTreino] = useState<TreinoHoje | null>(null);
 
@@ -122,6 +144,45 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     setCopiado(id);
     setTimeout(() => setCopiado(null), 2000);
   };
+
+  const baixar = (url: string, nome: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nome;
+    a.click();
+  };
+
+  /** Grava o texto escolhido NA FOTO do prato, no formato de feed ou de stories. */
+  const gravarNaFoto = async (
+    formato: MealOverlayFormat,
+    conteudo: { titulo?: string; texto: string },
+    nomeArquivo: string,
+  ) => {
+    const img = foto ? await loadImageFromUrl(foto) : null;
+    if (foto && !img) { toast.error("Não consegui usar essa foto."); return; }
+    const url = renderMealPhotoOverlay({
+      format: formato,
+      photo: img,
+      eyebrow: [dados?.tag, dados?.horario].filter(Boolean).join(" · ") || undefined,
+      titulo: conteudo.titulo,
+      texto: conteudo.texto,
+      dados:
+        [
+          dados?.calorias ? `${Math.round(dados.calorias)} kcal` : null,
+          dados?.macros.proteina ? `${Math.round(dados.macros.proteina)}g PTN` : null,
+          dados?.macros.carbo ? `${Math.round(dados.macros.carbo)}g CHO` : null,
+          dados?.macros.gordura ? `${Math.round(dados.macros.gordura)}g FAT` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ") || undefined,
+
+      handle,
+    });
+    if (!url) { toast.error("Não consegui montar a imagem."); return; }
+    setPrevia({ url, nome: nomeArquivo, formato });
+    if (!foto) toast.info("Adicione a foto do prato para o texto sair sobre a imagem.");
+  };
+
 
   /** Minutos entre o horário da refeição e o horário real do treino agendado. */
   const emMinutos = (h?: string) => {
@@ -395,9 +456,56 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
           )}
         </div>
         <p style={{ fontSize: 11, color: C.textMid, margin: "8px 0 0", lineHeight: 1.6 }}>
-          A foto fica aqui do lado da legenda pra você postar as duas juntas.
+          A foto entra na imagem final: o texto escolhido é gravado por cima dela, no formato de carrossel (4:5) ou de
+          stories (9:16).
         </p>
       </div>
+
+      {previa && (
+        <div style={boxStyle}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+            <p style={{ fontFamily: mono, fontSize: 9, color: C.gold, letterSpacing: 1, margin: 0 }}>
+              IMAGEM PRONTA · {previa.formato === "story" ? "STORIES 1080x1920" : "CARROSSEL 1080x1350"}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPrevia(null)}
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: C.textDim }}
+            >
+              <X style={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+          <img
+            src={previa.url}
+            alt="Prévia da imagem com a legenda gravada na foto do prato"
+            style={{ width: "100%", maxWidth: 240, borderRadius: 10, marginTop: 10, border: `1px solid ${C.border}` }}
+          />
+          <button
+            type="button"
+            onClick={() => baixar(previa.url, previa.nome)}
+            style={{
+              width: "100%",
+              marginTop: 10,
+              padding: 10,
+              borderRadius: 8,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              background: C.cyanDim,
+              border: `1px solid ${C.cyan}`,
+              color: C.cyan,
+              fontFamily: mono,
+              fontSize: 10,
+              fontWeight: 700,
+            }}
+          >
+            <Download style={{ width: 12, height: 12 }} /> BAIXAR IMAGEM
+          </button>
+        </div>
+      )}
+
 
       {/* Abas */}
       <div style={{ display: "flex", gap: 6 }}>
@@ -551,7 +659,24 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
                   {copiado === id ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
                   {copiado === id ? "COPIADO" : "COPIAR LEGENDA"}
                 </button>
+                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => gravarNaFoto("feed", { titulo: dados?.nome, texto: cap.texto || "" }, `refeicao-feed-${i + 1}.png`)}
+                    style={fotoBtnStyle}
+                  >
+                    <ImageIcon style={{ width: 12, height: 12 }} /> LEGENDA NA FOTO · CARROSSEL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => gravarNaFoto("story", { titulo: dados?.nome, texto: cap.texto || "" }, `refeicao-story-${i + 1}.png`)}
+                    style={fotoBtnStyle}
+                  >
+                    <ImageIcon style={{ width: 12, height: 12 }} /> STORY
+                  </button>
+                </div>
               </div>
+
             );
           })}
         </div>
@@ -656,7 +781,21 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
                   {copiado === id ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
                   {copiado === id ? "COPIADO" : "COPIAR ROTEIRO"}
                 </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    gravarNaFoto(
+                      "story",
+                      { titulo: s.nome, texto: [s.desc, s.cta ? `Interação: ${s.cta}` : ""].filter(Boolean).join("\n\n") },
+                      `story-${tipoAtivo + 1}-${i + 1}.png`,
+                    )
+                  }
+                  style={{ ...fotoBtnStyle, width: "100%", marginTop: 6 }}
+                >
+                  <ImageIcon style={{ width: 12, height: 12 }} /> GRAVAR TEXTO NA FOTO
+                </button>
               </div>
+
             );
           })}
         </div>
