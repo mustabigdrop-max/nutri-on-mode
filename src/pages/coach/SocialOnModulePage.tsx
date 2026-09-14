@@ -49,6 +49,7 @@ import SocialOnVideoContentPanel from "@/components/social/SocialOnVideoContentP
 import SocialOnOverlayStudio from "@/components/social/SocialOnOverlayStudio";
 import SocialOnBreakdownStudio from "@/components/social/SocialOnBreakdownStudio";
 import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerator";
+import MealPostPanel from "@/components/social/MealPostPanel";
 import ContentPackTodayPanel from "@/components/social/ContentPackTodayPanel";
 import MceCarouselPanel from "@/components/social/MceCarouselPanel";
 import NexusCarouselPanel from "@/components/social/NexusCarouselPanel";
@@ -480,6 +481,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="overlay_studio" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Overlay Studio</TabsTrigger>
             <TabsTrigger value="breakdown_studio" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Breakdown Studio</TabsTrigger>
             <TabsTrigger value="content_generator" className="text-xs gap-1"><Target className="w-3 h-3" />Gerador de Conteúdo</TabsTrigger>
+            <TabsTrigger value="postar_refeicao" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Postar Refeição</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
 
             <TabGroupLabel>🧭 Estratégia e planejamento</TabGroupLabel>
@@ -1136,6 +1138,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="content_generator" className="mt-4">
             <SocialOnContentGenerator handle={handle} />
+          </TabsContent>
+          <TabsContent value="postar_refeicao" className="mt-4">
+            <MealPostPanel handle={handle} />
           </TabsContent>
           <TabsContent value="pro" className="mt-4">
             <SocialOnProPanel ctx={aiCtx} />
