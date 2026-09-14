@@ -453,6 +453,42 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
             {ESTILOS.find((s) => s.id === estilo)?.desc}
           </p>
 
+          {estilo === "ponto_fraco" && (
+            <div style={boxStyle}>
+              <p style={{ fontFamily: mono, fontSize: 9, color: C.cyan, letterSpacing: 1, margin: 0 }}>
+                TREINO DE HOJE · TRAININGON
+              </p>
+              {!treino && (
+                <p style={{ fontSize: 11, color: C.textMid, lineHeight: 1.6, margin: "8px 0 0" }}>
+                  Não encontrei sessão de treino para hoje no TrainingON. A legenda sai falando da refeição, sem citar
+                  treino.
+                </p>
+              )}
+              {treino && (
+                <div style={{ display: "grid", gap: 4, marginTop: 8 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, margin: 0 }}>{treino.nomeTreino}</p>
+                  <p style={{ fontFamily: mono, fontSize: 10, color: C.textDim, margin: 0 }}>
+                    {[treino.diaSemana, treino.duracao, treino.grupos.join(" · "), horarioTreino ? `Treino ${horarioTreino}` : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                  {!!treino.exercicios.length && (
+                    <p style={{ fontSize: 11, color: C.textMid, lineHeight: 1.6, margin: 0 }}>
+                      {treino.exercicios.slice(0, 5).map((ex) => ex.nome).join(", ")}
+                    </p>
+                  )}
+                  {janelaTreino && (
+                    <p style={{ fontFamily: mono, fontSize: 10, color: C.green, margin: 0 }}>
+                      {janelaTreino.posicao === "pre"
+                        ? `Refeição ${janelaTreino.minutos} min ANTES do treino`
+                        : `Refeição ${janelaTreino.minutos} min DEPOIS do treino`}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             type="button"
             onClick={gerarLegendas}
