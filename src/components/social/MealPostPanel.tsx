@@ -123,6 +123,38 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     setTimeout(() => setCopiado(null), 2000);
   };
 
+  /** Minutos entre o horário da refeição e o horário real do treino agendado. */
+  const emMinutos = (h?: string) => {
+    const m = /^(\d{1,2}):(\d{2})/.exec((h || "").trim());
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  };
+  const horarioTreino = treino?.agenda?.horario || dados?.treinoHoje?.horario;
+  const minRefeicao = emMinutos(dados?.horario);
+  const minTreino = emMinutos(horarioTreino);
+  const diffMin = minRefeicao !== null && minTreino !== null ? minTreino - minRefeicao : null;
+  const janelaTreino =
+    diffMin === null
+      ? null
+      : {
+          minutos: Math.abs(diffMin),
+          posicao: diffMin >= 0 ? ("pre" as const) : ("pos" as const),
+          refeicaoHorario: dados?.horario,
+          treinoHorario: horarioTreino,
+        };
+
+  const treinoPayload = treino
+    ? {
+        nomeTreino: treino.nomeTreino,
+        duracao: treino.duracao,
+        grupos: treino.grupos,
+        agenda: treino.agenda,
+        sincronizado: treino.sincronizado,
+        diaSemana: treino.diaSemana,
+        nutricao: treino.nutricao,
+        exercicios: treino.exercicios.slice(0, 8).map((ex) => ({ nome: ex.nome, alvo: ex.alvo })),
+      }
+    : undefined;
+
   const gerarLegendas = async () => {
     if (!dados) return;
     const e = ESTILOS.find((s) => s.id === estilo);
@@ -136,6 +168,8 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
           refeicaoData: dados,
           estiloId: e?.id,
           estiloBrief: e?.brief,
+          treinoDetalhado: treinoPayload,
+          janelaTreino,
         },
       });
       if (error) throw error;
