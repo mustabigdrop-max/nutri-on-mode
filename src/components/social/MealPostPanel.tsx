@@ -189,7 +189,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     setLoading("stories");
     try {
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
-        body: { mode: "meal_story_plan", topic: dados.nome, handle, refeicaoData: dados },
+        body: { mode: "meal_story_plan", topic: dados.nome, handle, refeicaoData: dados, treinoDetalhado: treinoPayload, janelaTreino },
       });
       if (error) throw error;
       const result = (data as { result?: { tipos?: TipoStory[] } })?.result || {};
