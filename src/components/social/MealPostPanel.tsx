@@ -148,7 +148,16 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
       eyebrow: [dados?.tag, dados?.horario].filter(Boolean).join(" · ") || undefined,
       titulo: conteudo.titulo,
       texto: conteudo.texto,
-      dados: macrosLinha || undefined,
+      dados:
+        [
+          dados?.calorias ? `${Math.round(dados.calorias)} kcal` : null,
+          dados?.macros.proteina ? `${Math.round(dados.macros.proteina)}g PTN` : null,
+          dados?.macros.carbo ? `${Math.round(dados.macros.carbo)}g CHO` : null,
+          dados?.macros.gordura ? `${Math.round(dados.macros.gordura)}g FAT` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ") || undefined,
+
       handle,
     });
     if (!url) { toast.error("Não consegui montar a imagem."); return; }
