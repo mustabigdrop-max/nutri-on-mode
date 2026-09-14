@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Copy, Check, Loader2, ImagePlus, X } from "lucide-react";
 import { compressImageFile } from "@/lib/socialMediaFrames";
+import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
@@ -78,11 +79,18 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   const [copiado, setCopiado] = useState<string | null>(null);
   const [foto, setFoto] = useState<string | null>(null);
 
+  const [treino, setTreino] = useState<TreinoHoje | null>(null);
+
   useEffect(() => {
     (async () => {
       setCarregando(true);
       try {
-        const [doPlano, logs] = await Promise.all([getDadosRefeicao(), getRefeicoesRegistradasHoje()]);
+        const [doPlano, logs, sessao] = await Promise.all([
+          getDadosRefeicao(),
+          getRefeicoesRegistradasHoje(),
+          getTreinoDeHoje().catch(() => null),
+        ]);
+        setTreino(sessao);
         setRegistros(logs);
         const igual = doPlano ? logs.find((l) => l.slotKey === doPlano.slotKey) : logs[0];
         if (igual) {
@@ -115,6 +123,38 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     setTimeout(() => setCopiado(null), 2000);
   };
 
+  /** Minutos entre o horário da refeição e o horário real do treino agendado. */
+  const emMinutos = (h?: string) => {
+    const m = /^(\d{1,2}):(\d{2})/.exec((h || "").trim());
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  };
+  const horarioTreino = treino?.agenda?.horario || dados?.treinoHoje?.horario;
+  const minRefeicao = emMinutos(dados?.horario);
+  const minTreino = emMinutos(horarioTreino);
+  const diffMin = minRefeicao !== null && minTreino !== null ? minTreino - minRefeicao : null;
+  const janelaTreino =
+    diffMin === null
+      ? null
+      : {
+          minutos: Math.abs(diffMin),
+          posicao: diffMin >= 0 ? ("pre" as const) : ("pos" as const),
+          refeicaoHorario: dados?.horario,
+          treinoHorario: horarioTreino,
+        };
+
+  const treinoPayload = treino
+    ? {
+        nomeTreino: treino.nomeTreino,
+        duracao: treino.duracao,
+        grupos: treino.grupos,
+        agenda: treino.agenda,
+        sincronizado: treino.sincronizado,
+        diaSemana: treino.diaSemana,
+        nutricao: treino.nutricao,
+        exercicios: treino.exercicios.slice(0, 8).map((ex) => ({ nome: ex.nome, alvo: ex.alvo })),
+      }
+    : undefined;
+
   const gerarLegendas = async () => {
     if (!dados) return;
     const e = ESTILOS.find((s) => s.id === estilo);
@@ -128,6 +168,8 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
           refeicaoData: dados,
           estiloId: e?.id,
           estiloBrief: e?.brief,
+          treinoDetalhado: treinoPayload,
+          janelaTreino,
         },
       });
       if (error) throw error;
@@ -147,7 +189,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     setLoading("stories");
     try {
       const { data, error } = await supabase.functions.invoke("social-on-generate", {
-        body: { mode: "meal_story_plan", topic: dados.nome, handle, refeicaoData: dados },
+        body: { mode: "meal_story_plan", topic: dados.nome, handle, refeicaoData: dados, treinoDetalhado: treinoPayload, janelaTreino },
       });
       if (error) throw error;
       const result = (data as { result?: { tipos?: TipoStory[] } })?.result || {};
@@ -410,6 +452,42 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
           <p style={{ fontSize: 11, color: C.textMid, margin: 0 }}>
             {ESTILOS.find((s) => s.id === estilo)?.desc}
           </p>
+
+          {estilo === "ponto_fraco" && (
+            <div style={boxStyle}>
+              <p style={{ fontFamily: mono, fontSize: 9, color: C.cyan, letterSpacing: 1, margin: 0 }}>
+                TREINO DE HOJE · TRAININGON
+              </p>
+              {!treino && (
+                <p style={{ fontSize: 11, color: C.textMid, lineHeight: 1.6, margin: "8px 0 0" }}>
+                  Não encontrei sessão de treino para hoje no TrainingON. A legenda sai falando da refeição, sem citar
+                  treino.
+                </p>
+              )}
+              {treino && (
+                <div style={{ display: "grid", gap: 4, marginTop: 8 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, margin: 0 }}>{treino.nomeTreino}</p>
+                  <p style={{ fontFamily: mono, fontSize: 10, color: C.textDim, margin: 0 }}>
+                    {[treino.diaSemana, treino.duracao, treino.grupos.join(" · "), horarioTreino ? `Treino ${horarioTreino}` : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                  {!!treino.exercicios.length && (
+                    <p style={{ fontSize: 11, color: C.textMid, lineHeight: 1.6, margin: 0 }}>
+                      {treino.exercicios.slice(0, 5).map((ex) => ex.nome).join(", ")}
+                    </p>
+                  )}
+                  {janelaTreino && (
+                    <p style={{ fontFamily: mono, fontSize: 10, color: C.green, margin: 0 }}>
+                      {janelaTreino.posicao === "pre"
+                        ? `Refeição ${janelaTreino.minutos} min ANTES do treino`
+                        : `Refeição ${janelaTreino.minutos} min DEPOIS do treino`}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             type="button"

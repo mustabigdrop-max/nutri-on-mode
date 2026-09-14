@@ -535,6 +535,19 @@ Estilo pedido: ${String(body?.estiloId || "direto")} — ${String(body?.estiloBr
 - Se o estilo for MCE, use MENTALIDADE, COMPORTAMENTO e EXECUÇÃO em português (nunca "mindset").
 - Termine sempre com um CTA de conversa (comentário ou DM). Sem markdown.`
         : "",
+      ["meal_post_caption", "meal_story_plan"].includes(body?.mode)
+        ? `TREINO REAL DE HOJE (TrainingON — fonte única; nunca invente sessão, exercício, grupo muscular, duração, série ou carga fora daqui): ${body?.treinoDetalhado ? JSON.stringify(body.treinoDetalhado).slice(0, 2500) : "sem treino sincronizado para hoje"}
+JANELA REAL entre a refeição e o treino (calculada dos horários reais): ${body?.janelaTreino ? JSON.stringify(body.janelaTreino) : "não calculável — nenhum horário de treino agendado"}
+REGRAS DE NUTRIÇÃO APLICADA (quando o estilo pedido envolve treino, ou quando o treino aparece nos dados):
+- Cite o treino pelo nome real da sessão, os grupos reais e os exercícios reais que vieram acima. Sem treino sincronizado, não fale de treino.
+- Use a JANELA REAL para orientar o tempo: se a refeição está X minutos antes do treino, diga esse X e explique o que fazer com ele. Nunca invente um horário ou uma janela que não veio nos dados.
+- Explique a lógica da digestão de forma prática: refeição muito próxima do treino ainda está sendo digerida, o sangue fica repartido entre estômago e músculo e isso costuma dar peso no estômago, refluxo e queda de rendimento. Quanto mais volume, gordura e fibra no prato, mais devagar ele sai do estômago; quanto mais perto do treino, mais leve e mais líquido o prato precisa ser.
+- Diga o que priorizar e o que evitar perto do treino usando SÓ os alimentos que estão no prato real: proteína magra e carboidrato de digestão mais fácil ganham espaço; excesso de gordura, fritura, volume enorme e prato muito fibroso ficam pra longe do treino.
+- Fibras: fale de quantidade e forma de comer sem inventar gramas — só cite um número de fibra se ele vier nos dados. Ensine o princípio: fibra alta é excelente no dia (saciedade, glicemia mais estável, intestino), mas concentrada perto do treino atrasa o esvaziamento gástrico; então a maior parte das fibras vai nas refeições mais distantes do treino, mastigando bem e com água ao longo do dia, e subindo a quantidade de forma gradual pra não dar gases e desconforto.
+- Se a refeição vier DEPOIS do treino, mude o eixo: reposição de carboidrato, proteína para reparo e hidratação, sempre usando só os alimentos e números reais do prato.
+- Você pode explicar mecanismo fisiológico geral (digestão, esvaziamento gástrico, saciedade, glicemia, reposição de glicogênio) sem número. O que não pode é inventar valor, percentual, grama, estudo, autor ou fonte.
+- Nada de prescrição médica ou de medicamento. Tudo em português, sem markdown, sem "IA", "AI" ou "inteligência artificial".`
+        : "",
       body?.mode === "meal_story_plan"
         ? `MODO "POSTAR REFEIÇÃO — STORIES": monte estratégias de stories pra essa refeição, agrupadas em 3 tipos: "FOTO ÚNICA" (1 story), "SEQUÊNCIA (2-4 stories)" e "SEQUÊNCIA EDUCATIVA (5+ stories)".
 - O campo "layout" é a instrução de montagem: uma linha por story, dizendo o que aparece na tela e qual texto sobrepor, já com os números reais da refeição quando existirem.
