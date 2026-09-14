@@ -594,7 +594,24 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
                   {copiado === id ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
                   {copiado === id ? "COPIADO" : "COPIAR LEGENDA"}
                 </button>
+                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => gravarNaFoto("feed", { titulo: dados?.nome, texto: cap.texto || "" }, `refeicao-feed-${i + 1}.png`)}
+                    style={fotoBtnStyle}
+                  >
+                    <ImageIcon style={{ width: 12, height: 12 }} /> LEGENDA NA FOTO · CARROSSEL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => gravarNaFoto("story", { titulo: dados?.nome, texto: cap.texto || "" }, `refeicao-story-${i + 1}.png`)}
+                    style={fotoBtnStyle}
+                  >
+                    <ImageIcon style={{ width: 12, height: 12 }} /> STORY
+                  </button>
+                </div>
               </div>
+
             );
           })}
         </div>
