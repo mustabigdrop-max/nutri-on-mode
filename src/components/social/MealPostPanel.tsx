@@ -488,9 +488,29 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
             </button>
           )}
         </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => gerarFoto("feed")}
+            disabled={!dados || gerandoFoto}
+            style={{ ...fotoBtnStyle, borderColor: C.cyan, color: C.cyan, opacity: !dados || gerandoFoto ? 0.5 : 1, cursor: !dados || gerandoFoto ? "not-allowed" : "pointer" }}
+          >
+            {gerandoFoto ? <Loader2 style={{ width: 12, height: 12 }} className="animate-spin" /> : <ImageIcon style={{ width: 12, height: 12 }} />}
+            GERAR FOTO NOVA · 4:5
+          </button>
+          <button
+            type="button"
+            onClick={() => gerarFoto("story")}
+            disabled={!dados || gerandoFoto}
+            style={{ ...fotoBtnStyle, borderColor: C.cyan, color: C.cyan, opacity: !dados || gerandoFoto ? 0.5 : 1, cursor: !dados || gerandoFoto ? "not-allowed" : "pointer" }}
+          >
+            {gerandoFoto ? <Loader2 style={{ width: 12, height: 12 }} className="animate-spin" /> : <ImageIcon style={{ width: 12, height: 12 }} />}
+            GERAR FOTO NOVA · 9:16
+          </button>
+        </div>
         <p style={{ fontSize: 11, color: C.textMid, margin: "8px 0 0", lineHeight: 1.6 }}>
-          A foto entra na imagem final: o texto escolhido é gravado por cima dela, no formato de carrossel (4:5) ou de
-          stories (9:16).
+          Use a sua foto ou gere uma foto nova do prato a partir da refeição e do estilo selecionados. O texto escolhido
+          é gravado por cima dela, no formato de carrossel (4:5) ou de stories (9:16).
         </p>
       </div>
 
