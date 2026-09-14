@@ -127,6 +127,36 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     setTimeout(() => setCopiado(null), 2000);
   };
 
+  const baixar = (url: string, nome: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nome;
+    a.click();
+  };
+
+  /** Grava o texto escolhido NA FOTO do prato, no formato de feed ou de stories. */
+  const gravarNaFoto = async (
+    formato: MealOverlayFormat,
+    conteudo: { titulo?: string; texto: string },
+    nomeArquivo: string,
+  ) => {
+    const img = foto ? await loadImageFromUrl(foto) : null;
+    if (foto && !img) { toast.error("Não consegui usar essa foto."); return; }
+    const url = renderMealPhotoOverlay({
+      format: formato,
+      photo: img,
+      eyebrow: [dados?.tag, dados?.horario].filter(Boolean).join(" · ") || undefined,
+      titulo: conteudo.titulo,
+      texto: conteudo.texto,
+      dados: macrosLinha || undefined,
+      handle,
+    });
+    if (!url) { toast.error("Não consegui montar a imagem."); return; }
+    setPrevia({ url, nome: nomeArquivo, formato });
+    if (!foto) toast.info("Adicione a foto do prato para o texto sair sobre a imagem.");
+  };
+
+
   /** Minutos entre o horário da refeição e o horário real do treino agendado. */
   const emMinutos = (h?: string) => {
     const m = /^(\d{1,2}):(\d{2})/.exec((h || "").trim());
