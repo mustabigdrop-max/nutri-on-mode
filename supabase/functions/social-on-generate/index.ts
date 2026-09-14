@@ -516,7 +516,7 @@ REGRAS:
       body?.mode === "resultado_reels"
         ? `FORMATO: roteiro de Reels de 30 segundos com 6 cortes (0-3s, 3-8s, 8-15s, 15-22s, 22-27s, 27-30s). "texto_tela" é o que aparece na tela: caixa alta, curtíssimo, legível sem som (pode ter \\n para 2 linhas). "fala" é o que o coach diz em 1 frase. "acao" é a direção de gravação. Cortes na ordem: gancho no resultado, aquecimento do protocolo, top set com RPE, back-off, nutrição do dia e CTA final pro protocolo.`
         : "",
-      ["refeicao_carrossel", "refeicao_stories", "refeicao_reels"].includes(body?.mode)
+      ["refeicao_carrossel", "refeicao_stories", "refeicao_reels", "meal_post_caption", "meal_story_plan"].includes(body?.mode)
         ? `MODO "REFEIÇÃO + CIÊNCIA": o coach postou uma foto de REFEIÇÃO. Você recebeu os dados REAIS da refeição correspondente no plano alimentar (NutriPlan), o contexto do dia (NutrySync) e a ciência curada de cada alimento.
 Dados REAIS (fonte única — NUNCA invente alimento, porção, caloria, macro, estudo, mecanismo, percentual ou ajuste fora daqui): ${body?.refeicaoData ? JSON.stringify(body.refeicaoData).slice(0, 4000) : "sem dados de refeição disponíveis"}
 REGRAS:
@@ -526,6 +526,21 @@ REGRAS:
 - Explique COMO o prato conversa com o treino e com a meta do dia usando só o que veio em "nutrisync" e "treinoHoje".
 - Tom: primeira pessoa do coach, direto, educativo, sem clichê ("comida de verdade", "você é o que você come").
 - Nunca use markdown, nem as palavras "IA", "AI" ou "inteligência artificial".`
+        : "",
+      body?.mode === "meal_post_caption"
+        ? `MODO "POSTAR REFEIÇÃO — LEGENDAS": gere legendas prontas pra copiar sobre essa refeição, no estilo pedido.
+Estilo pedido: ${String(body?.estiloId || "direto")} — ${String(body?.estiloBrief || "direto e sem enrolação")}.
+- Escreva no estilo pedido de ponta a ponta; se o estilo for CIÊNCIA, use só mecanismo/nutriente/dado que vieram no campo "ciencia" dos dados e nunca cite autor, ano ou journal.
+- Se o estilo for PONTO FRACO ou depender de treino, use apenas o que veio em "treinoHoje", "nutrisync" e no contexto do treino; sem esses dados, escreva sem citar treino nem ponto fraco.
+- Se o estilo for MCE, use MENTALIDADE, COMPORTAMENTO e EXECUÇÃO em português (nunca "mindset").
+- Termine sempre com um CTA de conversa (comentário ou DM). Sem markdown.`
+        : "",
+      body?.mode === "meal_story_plan"
+        ? `MODO "POSTAR REFEIÇÃO — STORIES": monte estratégias de stories pra essa refeição, agrupadas em 3 tipos: "FOTO ÚNICA" (1 story), "SEQUÊNCIA (2-4 stories)" e "SEQUÊNCIA EDUCATIVA (5+ stories)".
+- O campo "layout" é a instrução de montagem: uma linha por story, dizendo o que aparece na tela e qual texto sobrepor, já com os números reais da refeição quando existirem.
+- O campo "cta" traz o sticker sugerido do Instagram com o texto pronto.
+- Nunca invente caloria, macro, alimento, estudo ou percentual fora dos dados reais. Sem dado, use a instrução sem número.
+- Sem markdown e sem as palavras "IA", "AI" ou "inteligência artificial".`
         : "",
       ["biomech_content", "biomech_reels", "biomech_stories", "biomech_ideias"].includes(body?.mode)
         ? `MODO "CIÊNCIA DO EXERCÍCIO": o coach quer conteúdo sobre um exercício real do treino de hoje, cruzado com a análise biomecânica REAL da BiomechanicsVault (Perplexity + Dr. BioMech, com citações).
