@@ -181,7 +181,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     });
     if (!url) { toast.error("Não consegui montar a imagem."); return; }
     setPrevia({ url, nome: nomeArquivo, formato });
-    if (!foto) toast.info("Adicione a foto do prato para o texto sair sobre a imagem.");
+    if (!foto) toast.info("Sem foto: o texto saiu em fundo escuro. Adicione ou gere uma foto para sair sobre a imagem.");
   };
 
 
