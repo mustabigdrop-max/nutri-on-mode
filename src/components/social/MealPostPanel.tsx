@@ -76,6 +76,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   const [tipoAtivo, setTipoAtivo] = useState(0);
   const [loading, setLoading] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
+  const [foto, setFoto] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
