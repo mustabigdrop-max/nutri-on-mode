@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Copy, Check, Loader2 } from "lucide-react";
+import { Copy, Check, Loader2, ImagePlus, X } from "lucide-react";
+import { compressImageFile } from "@/lib/socialMediaFrames";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
@@ -75,6 +76,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   const [tipoAtivo, setTipoAtivo] = useState(0);
   const [loading, setLoading] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
+  const [foto, setFoto] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -283,6 +285,76 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
             )}
           </div>
         )}
+      </div>
+
+      {/* Foto do prato */}
+      <div style={boxStyle}>
+        <p style={{ fontFamily: mono, fontSize: 9, color: C.gold, letterSpacing: 1, margin: 0 }}>FOTO DO PRATO</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+          {foto && (
+            <img
+              src={foto}
+              alt="Foto da refeição escolhida para o post"
+              style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.border}` }}
+            />
+          )}
+          <label
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "9px 12px",
+              borderRadius: 8,
+              cursor: "pointer",
+              background: C.cyanDim,
+              border: `1px solid ${C.cyan}`,
+              color: C.cyan,
+              fontFamily: mono,
+              fontSize: 10,
+              fontWeight: 700,
+            }}
+          >
+            <ImagePlus style={{ width: 12, height: 12 }} />
+            {foto ? "TROCAR FOTO" : "ADICIONAR FOTO"}
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                const url = await compressImageFile(file);
+                if (!url) { toast.error("Não consegui ler essa imagem."); return; }
+                setFoto(url);
+              }}
+            />
+          </label>
+          {foto && (
+            <button
+              type="button"
+              onClick={() => setFoto(null)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 12px",
+                borderRadius: 8,
+                cursor: "pointer",
+                background: "transparent",
+                border: `1px solid ${C.border}`,
+                color: C.textDim,
+                fontFamily: mono,
+                fontSize: 10,
+              }}
+            >
+              <X style={{ width: 12, height: 12 }} /> REMOVER
+            </button>
+          )}
+        </div>
+        <p style={{ fontSize: 11, color: C.textMid, margin: "8px 0 0", lineHeight: 1.6 }}>
+          A foto fica aqui do lado da legenda pra você postar as duas juntas.
+        </p>
       </div>
 
       {/* Abas */}
