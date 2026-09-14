@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Copy, Check, Loader2, ImagePlus, X } from "lucide-react";
 import { compressImageFile } from "@/lib/socialMediaFrames";
+import { getTreinoDeHoje, type TreinoHoje } from "@/lib/treinoHojeData";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
