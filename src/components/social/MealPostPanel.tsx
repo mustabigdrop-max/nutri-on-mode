@@ -456,9 +456,56 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
           )}
         </div>
         <p style={{ fontSize: 11, color: C.textMid, margin: "8px 0 0", lineHeight: 1.6 }}>
-          A foto fica aqui do lado da legenda pra você postar as duas juntas.
+          A foto entra na imagem final: o texto escolhido é gravado por cima dela, no formato de carrossel (4:5) ou de
+          stories (9:16).
         </p>
       </div>
+
+      {previa && (
+        <div style={boxStyle}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+            <p style={{ fontFamily: mono, fontSize: 9, color: C.gold, letterSpacing: 1, margin: 0 }}>
+              IMAGEM PRONTA · {previa.formato === "story" ? "STORIES 1080x1920" : "CARROSSEL 1080x1350"}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPrevia(null)}
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: C.textDim }}
+            >
+              <X style={{ width: 14, height: 14 }} />
+            </button>
+          </div>
+          <img
+            src={previa.url}
+            alt="Prévia da imagem com a legenda gravada na foto do prato"
+            style={{ width: "100%", maxWidth: 240, borderRadius: 10, marginTop: 10, border: `1px solid ${C.border}` }}
+          />
+          <button
+            type="button"
+            onClick={() => baixar(previa.url, previa.nome)}
+            style={{
+              width: "100%",
+              marginTop: 10,
+              padding: 10,
+              borderRadius: 8,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              background: C.cyanDim,
+              border: `1px solid ${C.cyan}`,
+              color: C.cyan,
+              fontFamily: mono,
+              fontSize: 10,
+              fontWeight: 700,
+            }}
+          >
+            <Download style={{ width: 12, height: 12 }} /> BAIXAR IMAGEM
+          </button>
+        </div>
+      )}
+
 
       {/* Abas */}
       <div style={{ display: "flex", gap: 6 }}>
