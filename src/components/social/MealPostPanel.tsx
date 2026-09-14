@@ -78,11 +78,18 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   const [copiado, setCopiado] = useState<string | null>(null);
   const [foto, setFoto] = useState<string | null>(null);
 
+  const [treino, setTreino] = useState<TreinoHoje | null>(null);
+
   useEffect(() => {
     (async () => {
       setCarregando(true);
       try {
-        const [doPlano, logs] = await Promise.all([getDadosRefeicao(), getRefeicoesRegistradasHoje()]);
+        const [doPlano, logs, sessao] = await Promise.all([
+          getDadosRefeicao(),
+          getRefeicoesRegistradasHoje(),
+          getTreinoDeHoje().catch(() => null),
+        ]);
+        setTreino(sessao);
         setRegistros(logs);
         const igual = doPlano ? logs.find((l) => l.slotKey === doPlano.slotKey) : logs[0];
         if (igual) {
