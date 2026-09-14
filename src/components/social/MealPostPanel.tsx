@@ -426,7 +426,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
       {/* Foto do prato */}
       <div style={boxStyle}>
         <p style={{ fontFamily: mono, fontSize: 9, color: C.gold, letterSpacing: 1, margin: 0 }}>FOTO DO PRATO</p>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
           {foto && (
             <img
               src={foto}
