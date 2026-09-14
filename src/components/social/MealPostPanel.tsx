@@ -67,6 +67,24 @@ const boxStyle: React.CSSProperties = {
   padding: 14,
 };
 
+const fotoBtnStyle: React.CSSProperties = {
+  flex: 1,
+  padding: 9,
+  borderRadius: 8,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  background: "transparent",
+  border: `1px solid ${C.gold}`,
+  color: C.gold,
+  fontFamily: mono,
+  fontSize: 9,
+  fontWeight: 700,
+};
+
+
 export default function MealPostPanel({ handle }: { handle?: string }) {
   const [dados, setDados] = useState<DadosRefeicao | null>(null);
   const [registros, setRegistros] = useState<RefeicaoRegistrada[]>([]);
