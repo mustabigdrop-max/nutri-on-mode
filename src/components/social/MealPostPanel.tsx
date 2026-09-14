@@ -80,6 +80,8 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [foto, setFoto] = useState<string | null>(null);
+  const [previa, setPrevia] = useState<{ url: string; nome: string; formato: MealOverlayFormat } | null>(null);
+
 
   const [treino, setTreino] = useState<TreinoHoje | null>(null);
 
