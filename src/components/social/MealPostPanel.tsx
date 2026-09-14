@@ -185,6 +185,38 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   };
 
 
+  /** Gera uma FOTO NOVA do prato a partir do que está selecionado (refeição + estilo). */
+  const gerarFoto = async (formato: MealOverlayFormat) => {
+    if (!dados) { toast.error("Selecione uma refeição primeiro."); return; }
+    setGerandoFoto(true);
+    try {
+      const e = ESTILOS.find((s) => s.id === estilo);
+      const { data, error } = await supabase.functions.invoke("social-meal-photo", {
+        body: {
+          nome: dados.nome,
+          tag: dados.tag,
+          horario: dados.horario,
+          alimentos: dados.alimentos.map((a) => ({ nome: a.nome, porcao: a.porcao })),
+          estiloId: e?.id,
+          estiloBrief: e?.brief,
+          janelaTreino,
+          formato,
+        },
+      });
+      if (error) throw error;
+      const result = (data as { result?: { foto?: string }; error?: boolean; message?: string });
+      if (result?.error || !result?.result?.foto) {
+        throw new Error(result?.message || "A geração não devolveu imagem.");
+      }
+      setFoto(result.result.foto);
+      toast.success("Foto nova gerada a partir da refeição selecionada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não consegui gerar a foto agora.");
+    } finally {
+      setGerandoFoto(false);
+    }
+  };
+
   /** Minutos entre o horário da refeição e o horário real do treino agendado. */
   const emMinutos = (h?: string) => {
     const m = /^(\d{1,2}):(\d{2})/.exec((h || "").trim());
