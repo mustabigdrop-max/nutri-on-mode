@@ -98,6 +98,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
   const [foto, setFoto] = useState<string | null>(null);
+  const [gerandoFoto, setGerandoFoto] = useState(false);
   const [previa, setPrevia] = useState<{ url: string; nome: string; formato: MealOverlayFormat } | null>(null);
 
 
@@ -180,9 +181,41 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
     });
     if (!url) { toast.error("Não consegui montar a imagem."); return; }
     setPrevia({ url, nome: nomeArquivo, formato });
-    if (!foto) toast.info("Adicione a foto do prato para o texto sair sobre a imagem.");
+    if (!foto) toast.info("Sem foto: o texto saiu em fundo escuro. Adicione ou gere uma foto para sair sobre a imagem.");
   };
 
+
+  /** Gera uma FOTO NOVA do prato a partir do que está selecionado (refeição + estilo). */
+  const gerarFoto = async (formato: MealOverlayFormat) => {
+    if (!dados) { toast.error("Selecione uma refeição primeiro."); return; }
+    setGerandoFoto(true);
+    try {
+      const e = ESTILOS.find((s) => s.id === estilo);
+      const { data, error } = await supabase.functions.invoke("social-meal-photo", {
+        body: {
+          nome: dados.nome,
+          tag: dados.tag,
+          horario: dados.horario,
+          alimentos: dados.alimentos.map((a) => ({ nome: a.nome, porcao: a.porcao })),
+          estiloId: e?.id,
+          estiloBrief: e?.brief,
+          janelaTreino,
+          formato,
+        },
+      });
+      if (error) throw error;
+      const result = (data as { result?: { foto?: string }; error?: boolean; message?: string });
+      if (result?.error || !result?.result?.foto) {
+        throw new Error(result?.message || "A geração não devolveu imagem.");
+      }
+      setFoto(result.result.foto);
+      toast.success("Foto nova gerada a partir da refeição selecionada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não consegui gerar a foto agora.");
+    } finally {
+      setGerandoFoto(false);
+    }
+  };
 
   /** Minutos entre o horário da refeição e o horário real do treino agendado. */
   const emMinutos = (h?: string) => {
@@ -393,7 +426,7 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
       {/* Foto do prato */}
       <div style={boxStyle}>
         <p style={{ fontFamily: mono, fontSize: 9, color: C.gold, letterSpacing: 1, margin: 0 }}>FOTO DO PRATO</p>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
           {foto && (
             <img
               src={foto}
@@ -455,9 +488,29 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
             </button>
           )}
         </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => gerarFoto("feed")}
+            disabled={!dados || gerandoFoto}
+            style={{ ...fotoBtnStyle, borderColor: C.cyan, color: C.cyan, opacity: !dados || gerandoFoto ? 0.5 : 1, cursor: !dados || gerandoFoto ? "not-allowed" : "pointer" }}
+          >
+            {gerandoFoto ? <Loader2 style={{ width: 12, height: 12 }} className="animate-spin" /> : <ImageIcon style={{ width: 12, height: 12 }} />}
+            GERAR FOTO NOVA · 4:5
+          </button>
+          <button
+            type="button"
+            onClick={() => gerarFoto("story")}
+            disabled={!dados || gerandoFoto}
+            style={{ ...fotoBtnStyle, borderColor: C.cyan, color: C.cyan, opacity: !dados || gerandoFoto ? 0.5 : 1, cursor: !dados || gerandoFoto ? "not-allowed" : "pointer" }}
+          >
+            {gerandoFoto ? <Loader2 style={{ width: 12, height: 12 }} className="animate-spin" /> : <ImageIcon style={{ width: 12, height: 12 }} />}
+            GERAR FOTO NOVA · 9:16
+          </button>
+        </div>
         <p style={{ fontSize: 11, color: C.textMid, margin: "8px 0 0", lineHeight: 1.6 }}>
-          A foto entra na imagem final: o texto escolhido é gravado por cima dela, no formato de carrossel (4:5) ou de
-          stories (9:16).
+          Use a sua foto ou gere uma foto nova do prato a partir da refeição e do estilo selecionados. O texto escolhido
+          é gravado por cima dela, no formato de carrossel (4:5) ou de stories (9:16).
         </p>
       </div>
 
