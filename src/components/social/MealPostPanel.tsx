@@ -734,7 +734,21 @@ export default function MealPostPanel({ handle }: { handle?: string }) {
                   {copiado === id ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
                   {copiado === id ? "COPIADO" : "COPIAR ROTEIRO"}
                 </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    gravarNaFoto(
+                      "story",
+                      { titulo: s.nome, texto: [s.desc, s.cta ? `Interação: ${s.cta}` : ""].filter(Boolean).join("\n\n") },
+                      `story-${tipoAtivo + 1}-${i + 1}.png`,
+                    )
+                  }
+                  style={{ ...fotoBtnStyle, width: "100%", marginTop: 6 }}
+                >
+                  <ImageIcon style={{ width: 12, height: 12 }} /> GRAVAR TEXTO NA FOTO
+                </button>
               </div>
+
             );
           })}
         </div>
