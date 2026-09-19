@@ -360,6 +360,10 @@ export default function ApexFunctionalAssessment() {
               proxima={diagnostico.proxima_reavaliacao}
             />
 
+            {/* ACTIVATE / CORRECT / PRESCRIBE */}
+            {diagnostico.grupos.length > 0 && <Prescricao prescricao={prescricao} />}
+
+
             <button
               onClick={salvar}
               disabled={saving || !entradas.length}
