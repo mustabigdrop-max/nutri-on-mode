@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { normalizeResearchSources, researchSourceLabel, SEM_FONTE_REAL } from "@/lib/researchSources";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
@@ -95,17 +96,8 @@ const HASHTAGS = [
 ];
 const CTA_SAVE = "Salva esse conteúdo — evidência aplicada, não achismo.";
 
-const normalizarFontes = (fontes: string[]) =>
-  [...new Set((fontes || []).filter((fonte) => typeof fonte === "string").map((fonte) => fonte.trim()).filter(Boolean))];
-
-const rotuloFonte = (fonte: string) => {
-  try {
-    const url = new URL(fonte);
-    return url.hostname.replace(/^www\./i, "");
-  } catch {
-    return fonte.length > 90 ? `${fonte.slice(0, 87)}…` : fonte;
-  }
-};
+const normalizarFontes = normalizeResearchSources;
+const rotuloFonte = researchSourceLabel;
 
 const Bloco = ({ titulo, cor, children }: { titulo: string; cor: string; children: React.ReactNode }) => (
   <div style={{ background: C.s2, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16, marginBottom: 14 }}>
@@ -182,7 +174,7 @@ export default function ScienceContentHubPanel({
 
   const exigirFontes = () => {
     if (fontesReais.length > 0) return true;
-    toast.error("Nenhuma fonte verificável foi retornada. Faça uma pesquisa com fontes antes de gerar o conteúdo.");
+    toast.error(SEM_FONTE_REAL);
     return false;
   };
 

@@ -565,6 +565,7 @@ Conteúdo de pesquisa REAL (fonte única — NUNCA invente estudo, dado, percent
 Citações reais dessa pesquisa (não invente outras): ${body?.biomechData?.citations ? JSON.stringify(body.biomechData.citations).slice(0, 1500) : "sem citações"}
 REGRAS:
 - Só gere quando houver ao menos uma citação real na pesquisa. A fonte deve acompanhar o conteúdo em todos os formatos; nunca substitua uma fonte ausente por texto genérico ou referência inventada.
+- Toda fonte citada tem de estar copiada literalmente da pesquisa recebida e ser rastreável (link, DOI, PMID ou autor + ano). É proibido escrever fonte genérica ("estudos mostram", "literatura", "consenso"), inventar autor, revista, ano ou número de amostra, e completar uma citação incompleta. Se um dado da pesquisa não vier com fonte rastreável, deixe o campo de fonte como string vazia e não apresente o dado como resultado de estudo.
 - Use SOMENTE o conteúdo de pesquisa acima. Se um dado, percentual ou achado não está lá, não afirme — fale do princípio geral sem número.
 - Tom: professor de biomecânica que fala como personal na academia — linguagem acessível mas com dado concreto, nunca genérico.
 - Nunca cite nome de journal nem "Autor et al., ano" — prefira "a ciência já mostrou" ou nomeie o pesquisador por extenso quando relevante.
