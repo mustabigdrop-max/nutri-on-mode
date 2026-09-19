@@ -337,6 +337,41 @@ export default function ScienceContentHubPanel({
         )}
       </Bloco>
 
+      <Bloco titulo="📷 FOTO (OPCIONAL)" cor={C.green}>
+        <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 10 }}>
+          Sua foto entra como slide logo após a capa do carrossel e como primeiro story.
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {foto && (
+            <img
+              src={foto}
+              alt="Foto escolhida para o post"
+              style={{ width: 56, height: 70, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.border}` }}
+            />
+          )}
+          <label style={{ ...acao(C.green), display: "inline-flex", alignItems: "center", gap: 6 }}>
+            {foto ? "TROCAR FOTO" : "ADICIONAR FOTO"}
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                const url = await compressImageFile(file, 1600);
+                if (!url) { toast.error("Não consegui ler essa imagem."); return; }
+                setFoto(url);
+                toast.success("Foto adicionada — ela entra no próximo conteúdo gerado.");
+              }}
+            />
+          </label>
+          {foto && (
+            <button onClick={() => setFoto(null)} style={acao(C.muted)}>REMOVER</button>
+          )}
+        </div>
+      </Bloco>
+
       <Bloco titulo="OU GERE MANUALMENTE" cor={C.purple}>
         <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.muted, marginBottom: 6 }}>ÂNGULO</div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
