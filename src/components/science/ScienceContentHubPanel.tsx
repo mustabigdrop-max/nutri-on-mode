@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { normalizeResearchSources, researchSourceLabel, SEM_FONTE_REAL } from "@/lib/researchSources";
+import { extractResearchSources, normalizeResearchSources, researchSourceLabel, SEM_FONTE_REAL } from "@/lib/researchSources";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
@@ -146,7 +146,14 @@ export default function ScienceContentHubPanel({
   const [style, setStyle] = useCarouselStyle();
   const [pesquisa, setPesquisa] = usePesquisaAtiva();
   const [foto, setFoto] = useState<string | null>(null);
-  const fontesReais = normalizarFontes(citacoes);
+  // Fontes reais: citações da consulta + pesquisa científica ativa + referências
+  // rastreáveis já presentes no próprio texto da análise.
+  const fontesReais = normalizarFontes([
+    ...(citacoes || []),
+    ...((pesquisa?.brief?.fontes as string[] | undefined) || []),
+    ...(pesquisa?.citations || []),
+    ...extractResearchSources(pesquisaTexto),
+  ]);
 
   useEffect(() => {
     setIdeias(null); setSlides([]); setContent(null);

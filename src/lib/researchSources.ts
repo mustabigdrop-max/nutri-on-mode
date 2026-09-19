@@ -58,5 +58,26 @@ export const researchSourceLabel = (fonte: string): string => {
   return fonte.length > 90 ? `${fonte.slice(0, 87)}…` : fonte;
 };
 
+/**
+ * Extrai do corpo da análise as referências rastreáveis já citadas no texto:
+ * links, DOIs, PMIDs e citações do tipo "Autor et al., 2021".
+ */
+export const extractResearchSources = (texto: unknown): string[] => {
+  if (typeof texto !== "string" || !texto.trim()) return [];
+  const achados: string[] = [];
+
+  for (const m of texto.matchAll(/https?:\/\/[^\s)\]]+/gi)) achados.push(m[0].replace(/[.,;:]+$/, ""));
+  for (const m of texto.matchAll(/\b10\.\d{4,9}\/[^\s)\]]+/gi)) achados.push(`DOI ${m[0].replace(/[.,;:]+$/, "")}`);
+  for (const m of texto.matchAll(/\bPMID[:\s]*\d{5,}/gi)) achados.push(m[0]);
+  // Citação com autor e ano: "Schoenfeld et al., 2019" / "Schoenfeld & Grgic (2020)"
+  for (const m of texto.matchAll(
+    /\b([A-ZÀ-Þ][A-Za-zÀ-ÿ'-]{2,}(?:\s*(?:et al\.?|&|e)\s*[A-ZÀ-Þ]?[A-Za-zÀ-ÿ'-]*)?)[,\s]*\(?((?:19|20)\d{2})\)?/g,
+  )) {
+    achados.push(`${m[1].trim()}, ${m[2]}`);
+  }
+
+  return normalizeResearchSources(achados);
+};
+
 export const SEM_FONTE_REAL =
   "Nenhuma fonte de pesquisa rastreável foi retornada (link, DOI, PMID ou autor e ano). Refaça a pesquisa científica antes de gerar o conteúdo.";
