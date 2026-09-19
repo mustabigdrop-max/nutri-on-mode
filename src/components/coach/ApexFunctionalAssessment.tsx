@@ -15,6 +15,7 @@ import {
   type Severidade,
 } from "@/lib/apexDeficitDiagnose";
 import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
+import { gerarRelatorioAtleta } from "@/lib/apexAthleteReport";
 
 const C = {
   bg: "#020205",
@@ -365,6 +366,12 @@ export default function ApexFunctionalAssessment() {
             {/* ACTIVATE / CORRECT / PRESCRIBE */}
             {diagnostico.grupos.length > 0 && <Prescricao prescricao={prescricao} />}
 
+            {/* RELATÓRIO DO ATLETA */}
+            {diagnostico.grupos.length > 0 && (
+              <RelatorioAtleta texto={gerarRelatorioAtleta(athlete?.nome || "atleta", diagnostico, prescricao)} />
+            )}
+
+
 
             <button
               onClick={salvar}
@@ -660,6 +667,44 @@ function Prescricao({ prescricao }: { prescricao: PrescricaoApex }) {
           </div>
         </Secao>
       )}
+    </div>
+  );
+}
+
+function RelatorioAtleta({ texto }: { texto: string }) {
+  if (!texto) return null;
+  return (
+    <div style={{ marginTop: 18, background: C.surface, border: `1px solid ${C.border}`, padding: 16 }}>
+      <div style={{ ...LABEL, color: C.gold, marginBottom: 10 }}>Relatório para o atleta</div>
+      <pre
+        style={{
+          whiteSpace: "pre-wrap",
+          fontFamily: "'Space Mono', monospace",
+          fontSize: 12,
+          lineHeight: 1.7,
+          color: C.text,
+          margin: 0,
+        }}
+      >
+        {texto}
+      </pre>
+      <button
+        onClick={() => {
+          navigator.clipboard.writeText(texto);
+          toast({ title: "Relatório copiado", description: "Pronto para enviar ao atleta." });
+        }}
+        style={{
+          ...LABEL,
+          marginTop: 12,
+          padding: "10px 16px",
+          background: "transparent",
+          border: `1px solid ${C.cyan}`,
+          color: C.cyan,
+          cursor: "pointer",
+        }}
+      >
+        Copiar relatório
+      </button>
     </div>
   );
 }

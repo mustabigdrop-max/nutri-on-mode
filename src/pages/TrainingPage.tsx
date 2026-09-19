@@ -100,6 +100,11 @@ import {
   type ApexBodyContext,
   type ApexTrainingBridgeResult,
 } from "@/utils/apexTrainingBridge";
+import {
+  formatApexAssessmentBlock,
+  getLatestApexAssessment,
+  type ApexAssessmentContext,
+} from "@/lib/apexAssessmentBridge";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -287,6 +292,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [selectedPatient, setSelectedPatient] = useState("");
   const [apexBodyContext, setApexBodyContext] = useState<ApexBodyContext | null>(null);
   const [apexTrainingContext, setApexTrainingContext] = useState<ApexTrainingBridgeResult | null>(null);
+  const [apexAssessment, setApexAssessment] = useState<ApexAssessmentContext | null>(null);
   const [apexContextLoading, setApexContextLoading] = useState(false);
   const [trainingSystem, setTrainingSystem] = useState<string>("");
   const [clientSex, setClientSex] = useState<"F" | "M" | null>(null);
@@ -438,6 +444,8 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
         setApexBodyContext(context);
         const trainingContext = context ? await getApexTrainingRules(context.athleteId) : null;
         if (active) setApexTrainingContext(trainingContext);
+        const assessment = context ? await getLatestApexAssessment(context.athleteId) : null;
+        if (active) setApexAssessment(assessment);
       })
       .finally(() => {
         if (active) setApexContextLoading(false);
@@ -489,6 +497,8 @@ ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), des
 REGRA: use este bloco apenas para contextualizar seleção, ordem dos grupamentos, aquecimento e segurança biomecânica. Não altere calorias, volume, intensidade ou fase com base isolada na estimativa visual. Não trate como diagnóstico; a decisão final é do coach.`
       : `━━━ CONTEXTO CORPORAL APEX: ${apexBodyContext ? "avaliação anterior a 90 dias — não usar automaticamente" : "sem avaliação salva para este atleta"} ━━━`;
 
+    const apexAssessmentBloco = formatApexAssessmentBlock(apexAssessment);
+
     // Sistema energético/metodológico escolhido automaticamente a partir do objetivo e nível
     const autoSystemId = trainingSystem || autoSystem?.id || "";
     const sistemaBloco = autoSystemId
@@ -525,6 +535,7 @@ Integre as fontes de contexto disponíveis em UM protocolo definitivo:
 ${prontidaoBloco}
 ${fibrasBloco}
 ${apexBloco}
+${apexAssessmentBloco}
 ${sistemaBloco}
 
 ━━━ PROGRESSÃO DE RIR (Reps In Reserve) — OBRIGATÓRIO ━━━
