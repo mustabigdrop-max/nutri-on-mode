@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { normalizeResearchSources, SEM_FONTE_REAL } from "@/lib/researchSources";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
@@ -230,7 +231,9 @@ export default function BiomechHubPanel({
       if (data?.content) partes.push(`### ${tab.toUpperCase()}\n${data.content}`);
       if (Array.isArray(data?.citations)) cits.push(...data.citations);
     }
-    const biomechData = { content: partes.join("\n\n"), citations: Array.from(new Set(cits)) };
+    const fontesReais = normalizeResearchSources(cits);
+    if (!fontesReais.length) throw new Error(SEM_FONTE_REAL);
+    const biomechData = { content: partes.join("\n\n"), citations: fontesReais };
     setCitacoes(biomechData.citations);
     return biomechData;
   }, [exercicio, grupo]);
