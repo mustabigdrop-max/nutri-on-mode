@@ -244,7 +244,7 @@ export default function BiomechHubPanel({
     const biomechData = { content: corpo, citations: fontesReais };
     setCitacoes(biomechData.citations);
     return biomechData;
-  }, [exercicio, grupo]);
+  }, [exercicio, grupo, pesquisa]);
 
   const chamarModo = async (
     mode: string,
