@@ -289,6 +289,10 @@ export default function ScienceContentHubPanel({
   const legendaBase = legenda ? `${legenda}\n\n${blocoFontes}\n\n${CTA_SAVE}\n\n${HASHTAGS.join(" ")}` : "";
   const legendaFinal = legendaEditada ?? legendaBase;
 
+  const slideLabels = foto
+    ? [BIOMECH_SLIDE_LABELS[0], "Foto", ...BIOMECH_SLIDE_LABELS.slice(1)]
+    : BIOMECH_SLIDE_LABELS;
+
   const CardSugestao = ({ tag, cor, s }: { tag: string; cor: string; s?: Sugestao }) => {
     if (!s?.titulo) return null;
     return (
@@ -367,7 +371,7 @@ export default function ScienceContentHubPanel({
           <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
             {slides.map((_, i) => (
               <button key={i} onClick={() => setActive(i)} style={{ ...acao(i === active ? C.gold : C.muted), fontSize: 9, padding: "5px 8px" }}>
-                {i + 1} · {BIOMECH_SLIDE_LABELS[i]}
+                {i + 1} · {slideLabels[i]}
               </button>
             ))}
           </div>
