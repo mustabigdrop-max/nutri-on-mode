@@ -24,6 +24,29 @@ import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { biomechToTech } from "@/lib/techAdapters";
+import { compressImageFile } from "@/lib/socialMediaFrames";
+
+/** Foto do coach como slide 4:5 (1080x1350) no padrão do carrossel — a imagem preenche o slide. */
+const fotoParaSlide = async (url: string, w = 1080, h = 1350): Promise<string | null> => {
+  const img = await new Promise<HTMLImageElement | null>((res) => {
+    const i = new window.Image();
+    i.onload = () => res(i);
+    i.onerror = () => res(null);
+    i.src = url;
+  });
+  if (!img) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillRect(0, 0, w, h);
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale;
+  const dh = img.height * scale;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return canvas.toDataURL("image/png");
+};
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", border: "#ffffff14",
@@ -130,6 +153,7 @@ export default function ScienceContentHubPanel({
   const [legendaEditada, setLegendaEditada] = useState<string | null>(null);
   const [style, setStyle] = useCarouselStyle();
   const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  const [foto, setFoto] = useState<string | null>(null);
   const fontesReais = normalizarFontes(citacoes);
 
   useEffect(() => {
@@ -141,13 +165,17 @@ export default function ScienceContentHubPanel({
     if (!content) return;
     let vivo = true;
     (async () => {
-      const imgs = style === "tech"
+      let imgs = style === "tech"
         ? await renderTechSlides(biomechToTech(content), { handle: content.handle || at })
         : renderBiomechCarousel(content);
+      if (foto) {
+        const fotoSlide = await fotoParaSlide(foto);
+        if (fotoSlide) imgs = [imgs[0], fotoSlide, ...imgs.slice(1)];
+      }
       if (vivo) setSlides(imgs);
     })();
     return () => { vivo = false; };
-  }, [content, style, at]);
+  }, [content, style, at, foto]);
 
   const pesquisaBase = { content: pesquisaTexto, citations: fontesReais };
 
@@ -222,7 +250,7 @@ export default function ScienceContentHubPanel({
       if (quer("stories")) {
         const r = (await chamarModo("biomech_stories", ang)) as StoryScript & { legenda?: string };
         const fonteStory = fontesReais.slice(0, 3).map(rotuloFonte).join(" · ");
-        setStoriesImgs(renderStoryFrames({
+        const framesRenderizados = renderStoryFrames({
           tema: r.tema,
           frames: [
             ...(r.frames || []),
@@ -233,7 +261,8 @@ export default function ScienceContentHubPanel({
               destaque: `${fontesReais.length} fonte${fontesReais.length === 1 ? "" : "s"} consultada${fontesReais.length === 1 ? "" : "s"}`,
             },
           ],
-        }, at));
+        }, at);
+        setStoriesImgs(foto ? [foto, ...framesRenderizados] : framesRenderizados);
         legendaFinalTxt = legendaFinalTxt || cleanCaption(r.legenda || "");
       }
 
@@ -259,6 +288,10 @@ export default function ScienceContentHubPanel({
     : "";
   const legendaBase = legenda ? `${legenda}\n\n${blocoFontes}\n\n${CTA_SAVE}\n\n${HASHTAGS.join(" ")}` : "";
   const legendaFinal = legendaEditada ?? legendaBase;
+
+  const slideLabels = foto
+    ? [BIOMECH_SLIDE_LABELS[0], "Foto", ...BIOMECH_SLIDE_LABELS.slice(1)]
+    : BIOMECH_SLIDE_LABELS;
 
   const CardSugestao = ({ tag, cor, s }: { tag: string; cor: string; s?: Sugestao }) => {
     if (!s?.titulo) return null;
@@ -304,6 +337,41 @@ export default function ScienceContentHubPanel({
         )}
       </Bloco>
 
+      <Bloco titulo="📷 FOTO (OPCIONAL)" cor={C.green}>
+        <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 10 }}>
+          Sua foto entra como slide logo após a capa do carrossel e como primeiro story.
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {foto && (
+            <img
+              src={foto}
+              alt="Foto escolhida para o post"
+              style={{ width: 56, height: 70, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.border}` }}
+            />
+          )}
+          <label style={{ ...acao(C.green), display: "inline-flex", alignItems: "center", gap: 6 }}>
+            {foto ? "TROCAR FOTO" : "ADICIONAR FOTO"}
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                const url = await compressImageFile(file, 1600);
+                if (!url) { toast.error("Não consegui ler essa imagem."); return; }
+                setFoto(url);
+                toast.success("Foto adicionada — ela entra no próximo conteúdo gerado.");
+              }}
+            />
+          </label>
+          {foto && (
+            <button onClick={() => setFoto(null)} style={acao(C.muted)}>REMOVER</button>
+          )}
+        </div>
+      </Bloco>
+
       <Bloco titulo="OU GERE MANUALMENTE" cor={C.purple}>
         <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.muted, marginBottom: 6 }}>ÂNGULO</div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
@@ -338,7 +406,7 @@ export default function ScienceContentHubPanel({
           <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
             {slides.map((_, i) => (
               <button key={i} onClick={() => setActive(i)} style={{ ...acao(i === active ? C.gold : C.muted), fontSize: 9, padding: "5px 8px" }}>
-                {i + 1} · {BIOMECH_SLIDE_LABELS[i]}
+                {i + 1} · {slideLabels[i]}
               </button>
             ))}
           </div>
