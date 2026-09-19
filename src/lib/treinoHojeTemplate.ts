@@ -11,6 +11,7 @@ import {
   SLIDE_PAD_X,
   beginSlideContent,
   createSlideCanvas,
+  drawFittedText,
   drawSlideFooter,
   slideContentBottom,
 } from "@/lib/slideBase";
@@ -51,22 +52,10 @@ const wrap = (
   lh: number,
   maxLines = 20,
 ): number => {
-  const words = (text || "").split(/\s+/).filter(Boolean);
-  let line = "";
-  let cursor = y;
-  let lines = 0;
-  for (const w of words) {
-    const test = line ? `${line} ${w}` : w;
-    if (ctx.measureText(test).width > maxW && line) {
-      ctx.fillText(line, x, cursor);
-      lines += 1;
-      if (lines >= maxLines) return cursor;
-      cursor += lh;
-      line = w;
-    } else line = test;
-  }
-  if (line) ctx.fillText(line, x, cursor);
-  return cursor;
+  return drawFittedText(ctx, text, x, y, maxW, lh, {
+    maxHeight: Math.max(lh, slideContentBottom(SLIDE_H) - y),
+    maxLines,
+  });
 };
 
 const drawTextura = (ctx: CanvasRenderingContext2D, w: number, h: number) => {

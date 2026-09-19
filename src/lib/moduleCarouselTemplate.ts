@@ -9,6 +9,7 @@ import {
   SLIDE_PAD_X,
   SLIDE_W,
   beginSlideContent,
+  drawFittedText,
   drawSlideFooter,
   slideContentBottom,
   guardTextBounds,
@@ -36,22 +37,6 @@ export type ModuleSlide = {
 const font = (weight: number, size: number, italic = false) =>
   `${italic ? "italic " : ""}${weight} ${size}px Inter, 'Inter var', system-ui, -apple-system, sans-serif`;
 
-const wrap = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number) => {
-  const lines: string[] = [];
-  for (const paragraph of String(text || "").split("\n")) {
-    let line = "";
-    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
-      const test = line ? `${line} ${word}` : word;
-      if (ctx.measureText(test).width > maxWidth && line) {
-        lines.push(line);
-        line = word;
-      } else line = test;
-    }
-    lines.push(line);
-  }
-  return lines.filter((l, i, arr) => l !== "" || i < arr.length - 1);
-};
-
 const drawText = (
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -61,14 +46,10 @@ const drawText = (
 ) => {
   ctx.font = font(o.weight, o.size);
   ctx.fillStyle = o.color;
-  const lines = wrap(ctx, text, o.maxWidth);
-  let cursor = y;
-  for (const line of lines) {
-    if (cursor > slideContentBottom()) break;
-    ctx.fillText(line, x, cursor);
-    cursor += o.lineHeight;
-  }
-  return cursor;
+  const lastBaseline = drawFittedText(ctx, text, x, y, o.maxWidth, o.lineHeight, {
+    maxHeight: Math.max(o.lineHeight, slideContentBottom() - y),
+  });
+  return lastBaseline + o.lineHeight;
 };
 
 const accentFor = (tipo?: string) =>

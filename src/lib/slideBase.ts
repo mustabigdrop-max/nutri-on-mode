@@ -142,6 +142,89 @@ export const fitTextSize = (
   return Math.max(min, size);
 };
 
+const fontSizeFrom = (font: string) => {
+  const match = font.match(/(\d+(?:\.\d+)?)px/);
+  return match ? Number(match[1]) : 16;
+};
+
+const withFontSize = (font: string, size: number) =>
+  font.replace(/(\d+(?:\.\d+)?)px/, `${Math.max(1, size)}px`);
+
+const splitLongWord = (ctx: CanvasRenderingContext2D, word: string, maxWidth: number) => {
+  if (ctx.measureText(word).width <= maxWidth) return [word];
+  const parts: string[] = [];
+  let current = "";
+  for (const character of Array.from(word)) {
+    if (current && ctx.measureText(current + character).width > maxWidth) {
+      parts.push(current);
+      current = character;
+    } else {
+      current += character;
+    }
+  }
+  if (current) parts.push(current);
+  return parts;
+};
+
+/**
+ * Desenha texto completo, reduzindo a fonte proporcionalmente até todas as
+ * linhas caberem na largura e altura informadas. Nunca remove palavras.
+ * Retorna a linha-base final para manter compatibilidade com os templates.
+ */
+export const drawFittedText = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  options: { maxHeight?: number; maxLines?: number; minSize?: number } = {},
+) => {
+  const originalFont = ctx.font;
+  const initialSize = fontSizeFrom(originalFont);
+  const minSize = options.minSize ?? Math.max(7, initialSize * 0.42);
+  const initialLineHeight = Math.max(1, lineHeight);
+
+  const layout = (size: number) => {
+    ctx.font = withFontSize(originalFont, size);
+    const lines: string[] = [];
+    for (const paragraph of String(text || "").split("\n")) {
+      const words = paragraph.split(/\s+/).filter(Boolean).flatMap((word) => splitLongWord(ctx, word, maxWidth));
+      let current = "";
+      for (const word of words) {
+        const test = current ? `${current} ${word}` : word;
+        if (current && ctx.measureText(test).width > maxWidth) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = test;
+        }
+      }
+      if (current) lines.push(current);
+      else if (!paragraph) lines.push("");
+    }
+    return lines;
+  };
+
+  let size = initialSize;
+  let lines = layout(size);
+  const fits = () => {
+    const scaledLineHeight = initialLineHeight * (size / initialSize);
+    const height = Math.max(0, lines.length - 1) * scaledLineHeight + size;
+    return (!options.maxLines || lines.length <= options.maxLines)
+      && (!options.maxHeight || height <= options.maxHeight);
+  };
+  while (size > minSize && !fits()) {
+    size = Math.max(minSize, size - 0.5);
+    lines = layout(size);
+  }
+
+  ctx.font = withFontSize(originalFont, size);
+  const scaledLineHeight = initialLineHeight * (size / initialSize);
+  lines.forEach((line, index) => ctx.fillText(line, x, y + index * scaledLineHeight));
+  return y + Math.max(0, lines.length - 1) * scaledLineHeight;
+};
+
 
 /** Corta um texto para no máximo `max` palavras (sem reticências agressivas). */
 export const limitWords = (text: string, max: number) => {
@@ -159,9 +242,8 @@ export const chunk = <T,>(items: T[], size: number): T[][] => {
 
 /**
  * Trava de segurança global: nenhuma palavra pode ultrapassar a borda da arte.
- * Substitui `fillText` por uma versão que sempre recebe a largura máxima
- * disponível a partir do ponto de desenho (respeitando o alinhamento atual),
- * de modo que o texto é condensado em vez de vazar para fora do slide.
+ * Em vez do `maxWidth` nativo (que achata as letras), reduz a fonte de forma
+ * proporcional apenas durante aquela linha e restaura a fonte em seguida.
  */
 export const guardTextBounds = (ctx: CanvasRenderingContext2D, w: number, padX = 24) => {
   const original = ctx.fillText.bind(ctx);
@@ -171,6 +253,16 @@ export const guardTextBounds = (ctx: CanvasRenderingContext2D, w: number, padX =
     else if (ctx.textAlign === "right" || ctx.textAlign === "end") disponivel = x - padX;
     else disponivel = w - padX - x;
     disponivel = Math.max(40, disponivel);
-    original(texto, x, y, maxWidth && maxWidth < disponivel ? maxWidth : disponivel);
+    const limite = maxWidth && maxWidth < disponivel ? maxWidth : disponivel;
+    const largura = ctx.measureText(texto).width;
+    if (largura <= limite) {
+      original(texto, x, y);
+      return;
+    }
+    const originalFont = ctx.font;
+    const size = fontSizeFrom(originalFont);
+    ctx.font = withFontSize(originalFont, size * (limite / largura) * 0.995);
+    original(texto, x, y);
+    ctx.font = originalFont;
   };
 };

@@ -4,7 +4,7 @@
  * alternativa prática e CTA fixo. Sem emoji.
  */
 
-import { beginSlideContent, drawSlideFooter, fitTextSize, slideContentBottom, guardTextBounds } from "@/lib/slideBase";
+import { beginSlideContent, drawFittedText, drawSlideFooter, fitTextSize, slideContentBottom, guardTextBounds } from "@/lib/slideBase";
 
 export const MM_TPL = {
   bg: "#0A0A0A",
@@ -78,24 +78,11 @@ const wrap = (
   ctx.font = font(o.weight, o.size, o.italic);
   ctx.fillStyle = o.color;
   const lh = px(o.size) * o.lineHeight;
-  const words = text.split(/\s+/).filter(Boolean);
-  let line = "";
-  let cursor = y;
-  for (const word of words) {
-    const test = line ? `${line} ${word}` : word;
-    if (ctx.measureText(test).width > o.maxWidth && line) {
-      ctx.fillText(line, x, cursor);
-      cursor += lh;
-      line = word;
-    } else {
-      line = test;
-    }
-  }
-  if (line) {
-    ctx.fillText(line, x, cursor);
-    cursor += lh;
-  }
-  return cursor;
+  const lastBaseline = drawFittedText(ctx, text, x, y, o.maxWidth, lh, {
+    maxHeight: Math.max(lh, slideContentBottom() - y),
+    minSize: px(7),
+  });
+  return lastBaseline + lh;
 };
 
 const badge = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string, filled = true) => {
