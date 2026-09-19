@@ -239,7 +239,6 @@ export default function BiomechHubPanel({
       ...(pesquisa?.brief?.fontes ?? []),
       ...(pesquisa?.citations ?? []),
       ...extractResearchSources(pesquisa?.brief?.resumo),
-      ...extractResearchSources(pesquisa?.texto),
     ]);
     if (!fontesReais.length) throw new Error(SEM_FONTE_REAL);
     const biomechData = { content: corpo, citations: fontesReais };
