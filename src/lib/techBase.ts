@@ -8,7 +8,7 @@
  * Nada aqui inventa conteúdo — só desenha o que o gerador entrega.
  */
 
-import { fitTextSize, guardTextBounds } from "@/lib/slideBase";
+import { drawFittedText, fitTextSize, guardTextBounds } from "@/lib/slideBase";
 
 export const TECH_TPL = {
   bg: "#020205",
@@ -134,14 +134,13 @@ export const drawRich = (
   };
 
   // A figura manda: o texto encolhe até caber dentro do card.
-  const size = o.maxHeight
-    ? fitTextSize((s2) => layout(s2).length, {
+  const availableHeight = o.maxHeight ?? Math.max(o.size * ratio, techContentBottom() - y);
+  const size = fitTextSize((s2) => layout(s2).length, {
         size: o.size,
         lineHeight: ratio,
-        maxHeight: o.maxHeight,
+        maxHeight: availableHeight,
         min: o.minSize,
-      })
-    : o.size;
+      });
 
   const lh = size * ratio;
   const lines = layout(size);
@@ -282,11 +281,7 @@ export const techHeader = (
   if (label) {
     ctx.font = monoFont(400, 14);
     ctx.fillStyle = rgba(TECH_TPL.cyan, 0.7);
-    let lx = PAD;
-    for (const ch of label) {
-      ctx.fillText(ch, lx, y);
-      lx += ctx.measureText(ch).width + 6;
-    }
+    drawFittedText(ctx, label.split("").join(" "), PAD, y, W - PAD * 2, 18, { maxHeight: 22, maxLines: 1, minSize: 9 });
     y += 20;
   }
   const size = (title || "").length > 34 ? 50 : 62;
