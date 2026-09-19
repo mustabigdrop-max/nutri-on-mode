@@ -158,7 +158,8 @@ export default function NexusCarouselPanel({
       };
       setContent(content);
       setImages(await renderWith(content, style));
-      setLabels(nexusSlideLabels(content));
+      const baseLabels = nexusSlideLabels(content);
+      setLabels(foto ? [...baseLabels.slice(0, 6), "FOTO", ...baseLabels.slice(6)] : baseLabels);
       setLegenda(cleanCaption(content.legenda));
       setActive(0);
     } catch (e) {
