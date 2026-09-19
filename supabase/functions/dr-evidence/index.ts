@@ -17,9 +17,12 @@ serve(async (req) => {
     // PASSO 1 — Perplexity busca estudos recentes (com fallback se falhar/quota)
     let rawScience = "";
     let citations: unknown[] = [];
-    let liveSearch = true;
+    let liveSearch = !!PERPLEXITY_API_KEY;
+
+    if (!PERPLEXITY_API_KEY) console.error("PERPLEXITY_API_KEY não configurada — usando fallback.");
 
     try {
+      if (!PERPLEXITY_API_KEY) throw new Error("sem chave");
       const perplexityResponse = await fetch("https://api.perplexity.ai/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
