@@ -16,6 +16,8 @@ import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { mceToTech } from "@/lib/techAdapters";
+import ContentPhotoPicker from "@/components/social/ContentPhotoPicker";
+import { photoToFrame } from "@/lib/socialMediaFrames";
 
 const SLIDE_LABELS = ["CAPA", "A DOR", "PILAR M", "PILAR C", "PILAR E", "INTEGRAÇÃO", "CTA"];
 
@@ -41,22 +43,25 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
   const horarioHoje = melhorHorario("CARROSSEL_MCE");
   const [style, setStyle] = useCarouselStyle();
   const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  const [foto, setFoto] = useState<string | null>(null);
 
   // re-renderiza sempre que o conteúdo ou o estilo mudam
   useEffect(() => {
     if (!content) return;
     let vivo = true;
     (async () => {
-      const imgs =
+      let imgs =
         style === "tech"
           ? await renderTechSlides(mceToTech(content), { handle: content.handle || handle || undefined })
           : renderMceCarousel(content);
+      const fotoSlide = foto ? await photoToFrame(foto) : null;
+      if (fotoSlide) imgs = [...imgs.slice(0, 6), fotoSlide, ...imgs.slice(6)];
       if (vivo) setImages(imgs);
     })();
     return () => {
       vivo = false;
     };
-  }, [content, style, handle]);
+  }, [content, style, handle, foto]);
 
   const generate = async () => {
     if (!tema.trim()) return toast.error("Escreva o tema do carrossel.");
@@ -93,6 +98,13 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
 
       <CarouselStyleSwitch style={style} onChange={setStyle} disabled={loading} />
 
+      <ContentPhotoPicker
+        value={foto}
+        onChange={setFoto}
+        disabled={loading}
+        description="Entra após o slide 6, antes do convite final."
+      />
+
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input
           value={tema}
@@ -109,7 +121,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
       {images.length > 0 && (
         <div className="space-y-3">
           <div className="mx-auto max-w-sm overflow-hidden rounded-xl border" style={{ borderColor: "#EF9F2733" }}>
-            <img src={images[active]} alt={`Slide ${active + 1} — ${SLIDE_LABELS[active]}`} className="w-full" />
+              <img src={images[active]} alt={`Slide ${active + 1} — ${foto && active === 6 ? "FOTO" : SLIDE_LABELS[foto && active > 6 ? active - 1 : active]}`} className="w-full" />
           </div>
           <div className="flex flex-wrap justify-center gap-1.5">
             {images.map((src, i) => (
@@ -123,7 +135,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
                   color: i === active ? "#EF9F27" : undefined,
                 }}
               >
-                {i + 1} · {SLIDE_LABELS[i]}
+                  {i + 1} · {foto && i === 6 ? "FOTO" : SLIDE_LABELS[foto && i > 6 ? i - 1 : i]}
               </button>
             ))}
           </div>
@@ -136,9 +148,9 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
           <SaveShareButtons
             items={images.map((url, i) => ({
               url,
-              filename: `mce-carrossel-${i + 1}-${SLIDE_LABELS[i].toLowerCase().replace(/\s+/g, "-")}.png`,
+               filename: `mce-carrossel-${i + 1}-${(foto && i === 6 ? "foto" : SLIDE_LABELS[foto && i > 6 ? i - 1 : i]).toLowerCase().replace(/\s+/g, "-")}.png`,
             }))}
-            labelSalvar="Salvar os 7 slides no álbum"
+             labelSalvar={`Salvar os ${images.length} slides no álbum`}
             texto={tema}
           />
           <div className="rounded-xl border p-4" style={{ borderColor: "#5DCAA533", background: "#5DCAA50A" }}>

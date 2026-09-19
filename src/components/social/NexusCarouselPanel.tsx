@@ -25,6 +25,8 @@ import { useCarouselStyle, type CarouselStyle } from "@/hooks/useCarouselStyle";
 import DualResearchField from "@/components/social/DualResearchField";
 import { comPesquisa } from "@/lib/dualResearch";
 import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
+import ContentPhotoPicker from "@/components/social/ContentPhotoPicker";
+import { photoToFrame } from "@/lib/socialMediaFrames";
 
 const NEXUS_STYLES: { id: CarouselStyle; label: string; hint: string }[] = [
   { id: "classico", label: "CLÁSSICO", hint: "âmbar nutriON" },
@@ -96,10 +98,15 @@ export default function NexusCarouselPanel({
   const [active, setActive] = useState(0);
   const [style, setStyle] = useCarouselStyle();
   const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  const [foto, setFoto] = useState<string | null>(null);
 
   /** Renderiza no estilo escolhido (tech é assíncrono por causa das fontes). */
-  const renderWith = async (c: NexusCarouselContent, s: CarouselStyle) =>
-    s === "tech" ? renderNexusTechCarousel(c) : Promise.resolve(renderNexusCarousel(c));
+  const renderWith = async (c: NexusCarouselContent, s: CarouselStyle) => {
+    let rendered = s === "tech" ? await renderNexusTechCarousel(c) : renderNexusCarousel(c);
+    const fotoSlide = foto ? await photoToFrame(foto) : null;
+    if (fotoSlide) rendered = [...rendered.slice(0, 6), fotoSlide, ...rendered.slice(6)];
+    return rendered;
+  };
 
   const match = useMemo(() => findCompound(tema), [tema]);
 
@@ -195,6 +202,22 @@ export default function NexusCarouselPanel({
         disabled={loading}
       />
 
+      <ContentPhotoPicker
+        value={foto}
+        onChange={async (next) => {
+          setFoto(next);
+          if (!content) return;
+          let rendered = style === "tech" ? await renderNexusTechCarousel(content) : renderNexusCarousel(content);
+          const fotoSlide = next ? await photoToFrame(next) : null;
+          if (fotoSlide) rendered = [...rendered.slice(0, 6), fotoSlide, ...rendered.slice(6)];
+          setImages(rendered);
+          const baseLabels = nexusSlideLabels(content);
+          setLabels(next ? [...baseLabels.slice(0, 6), "FOTO", ...baseLabels.slice(6)] : baseLabels);
+        }}
+        disabled={loading}
+        description="Entra após o slide 6 do carrossel."
+      />
+
       <div className="flex flex-wrap gap-1.5">
         {NEXUS_STYLES.map((s) => {
           const ativo = style === s.id;
@@ -255,7 +278,8 @@ export default function NexusCarouselPanel({
               onApply={async (next) => {
                 setContent(next);
                 setImages(await renderWith(next, style));
-                setLabels(nexusSlideLabels(next));
+                const baseLabels = nexusSlideLabels(next);
+                setLabels(foto ? [...baseLabels.slice(0, 6), "FOTO", ...baseLabels.slice(6)] : baseLabels);
               }}
             />
           )}

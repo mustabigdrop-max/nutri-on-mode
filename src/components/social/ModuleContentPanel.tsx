@@ -15,6 +15,8 @@ import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { moduleToTech } from "@/lib/techAdapters";
 import { renderStoryFrames, type StoryFrame } from "@/lib/storyFrameTemplate";
+import ContentPhotoPicker from "@/components/social/ContentPhotoPicker";
+import { photoToFrame } from "@/lib/socialMediaFrames";
 import {
   CONFIGS_MODULO,
   TIPOS_POR_MODULO,
@@ -89,6 +91,7 @@ export default function ModuleContentPanel({
   const [stories, setStories] = useState<string[]>([]);
   const [slidesBrutos, setSlidesBrutos] = useState<ModuleSlide[] | null>(null);
   const [style, setStyle] = useCarouselStyle();
+  const [foto, setFoto] = useState<string | null>(null);
   
 
   /** Desenha os slides do módulo no estilo escolhido. */
@@ -102,12 +105,14 @@ export default function ModuleContentPanel({
     if (!slidesBrutos?.length) return;
     let vivo = true;
     void (async () => {
-      const imgs = await renderSlidesModulo(slidesBrutos, style);
+      let imgs = await renderSlidesModulo(slidesBrutos, style);
+      const fotoSlide = foto ? await photoToFrame(foto) : null;
+      if (fotoSlide) imgs = [...imgs.slice(0, 6), fotoSlide, ...imgs.slice(6)];
       if (vivo) setSlides(imgs);
     })();
     return () => { vivo = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slidesBrutos, style]);
+  }, [slidesBrutos, style, foto]);
 
   useEffect(() => {
     let vivo = true;
@@ -158,7 +163,9 @@ export default function ModuleContentPanel({
         setSlidesBrutos(res.carrossel.slides);
       }
       if (formatos.includes("stories") && res.stories?.frames?.length) {
-        setStories(renderStoryFrames({ frames: paraStoryFrames(res.stories.frames) }, handle));
+        const frames = renderStoryFrames({ frames: paraStoryFrames(res.stories.frames) }, handle);
+        const fotoStory = foto ? await photoToFrame(foto, 1080, 1920) : null;
+        setStories(fotoStory ? [fotoStory, ...frames] : frames);
       }
       toast.success("Conteúdo gerado com os dados reais desta tela.");
     } catch (e) {
@@ -181,6 +188,13 @@ export default function ModuleContentPanel({
 
 
       <CarouselStyleSwitch style={style} onChange={setStyle} disabled={!!gerando} />
+
+      <ContentPhotoPicker
+        value={foto}
+        onChange={setFoto}
+        disabled={!!gerando}
+        description="Entra após o slide 6 do carrossel e como primeiro story."
+      />
 
       <div className="rounded-lg border border-primary/40 bg-primary/5 p-3">
         <p className="text-xs font-bold uppercase tracking-wide text-primary">⚡ Melhor pra hoje</p>
