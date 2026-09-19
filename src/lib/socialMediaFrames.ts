@@ -21,6 +21,29 @@ export function compressImageFile(file: File, max = 1024): Promise<string | null
   });
 }
 
+/** Converte uma foto escolhida em um frame preenchido, pronto para carrossel ou story. */
+export async function photoToFrame(url: string, width = 1080, height = 1350): Promise<string | null> {
+  const img = await new Promise<HTMLImageElement | null>((resolve) => {
+    const element = new window.Image();
+    element.onload = () => resolve(element);
+    element.onerror = () => resolve(null);
+    element.src = url;
+  });
+  if (!img) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillRect(0, 0, width, height);
+  const scale = Math.max(width / img.width, height / img.height);
+  const renderedWidth = img.width * scale;
+  const renderedHeight = img.height * scale;
+  ctx.drawImage(img, (width - renderedWidth) / 2, (height - renderedHeight) / 2, renderedWidth, renderedHeight);
+  return canvas.toDataURL("image/png");
+}
+
 /** Frações da duração onde os frames são capturados — cobre abertura, desenvolvimento e fechamento do vídeo. */
 export const STORYBOARD_FRACTIONS = [0.06, 0.28, 0.5, 0.72, 0.92];
 
