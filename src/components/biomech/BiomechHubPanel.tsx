@@ -26,9 +26,32 @@ import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { biomechToTech } from "@/lib/techAdapters";
+import { compressImageFile } from "@/lib/socialMediaFrames";
 import {
   historicoDoExercicio, registrarGeracao, dataCurta, type BiomechHistoricoItem,
 } from "@/lib/biomechHistorico";
+
+const fotoParaSlide = async (url: string, w = 1080, h = 1350): Promise<string | null> => {
+  const img = await new Promise<HTMLImageElement | null>((resolve) => {
+    const element = new window.Image();
+    element.onload = () => resolve(element);
+    element.onerror = () => resolve(null);
+    element.src = url;
+  });
+  if (!img) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillRect(0, 0, w, h);
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale;
+  const dh = img.height * scale;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return canvas.toDataURL("image/png");
+};
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", border: "#ffffff14",
@@ -151,6 +174,7 @@ export default function BiomechHubPanel({
   const [reels, setReels] = useState<BiomechAI | null>(null);
   const [legenda, setLegenda] = useState("");
   const [historico, setHistorico] = useState<BiomechHistoricoItem[]>([]);
+  const [foto, setFoto] = useState<string | null>(null);
 
   useEffect(() => {
     setIdeias(null);
@@ -175,13 +199,18 @@ export default function BiomechHubPanel({
     if (!bioContent) return;
     let vivo = true;
     (async () => {
-      const imgs = style === "tech"
+      let imgs = style === "tech"
         ? await renderTechSlides(biomechToTech(bioContent), { handle: bioContent.handle || at })
         : renderBiomechCarousel(bioContent);
+      if (foto) {
+        const fotoSlide = await fotoParaSlide(foto);
+        // FONTES permanece sempre no slide 6; a foto entra antes do CTA.
+        if (fotoSlide) imgs = [...imgs.slice(0, 6), fotoSlide, ...imgs.slice(6)];
+      }
       if (vivo) setSlides(imgs);
     })();
     return () => { vivo = false; };
-  }, [bioContent, style, at]);
+  }, [bioContent, style, at, foto]);
 
   /** Pesquisa real da vault: uma aba, ou as 5 quando o foco é "completo". */
   const buscarPesquisa = useCallback(async (f: Foco) => {
@@ -280,7 +309,8 @@ export default function BiomechHubPanel({
 
       if (quer("stories")) {
         const r = (await chamarModo("biomech_stories", f, ang, bio)) as StoryScript & { legenda?: string };
-        setStoriesImgs(renderStoryFrames({ tema: r.tema, frames: r.frames || [] }, at));
+        const frames = renderStoryFrames({ tema: r.tema, frames: r.frames || [] }, at);
+        setStoriesImgs(foto ? [foto, ...frames] : frames);
         legendaFinalTxt = legendaFinalTxt || cleanCaption(r.legenda || "");
         registrarGeracao({ exercicio, formato: "stories", foco: f, angulo: ang });
       }
@@ -309,6 +339,9 @@ export default function BiomechHubPanel({
   const hashtags = hashtagsBiomech([grupo], grupo);
   const legendaBase = legenda ? `${legenda}\n\n${CONFIG_BIOMECH.cta_save}\n\n${hashtags.join(" ")}` : "";
   const legendaFinal = legendaEditada ?? legendaBase;
+  const slideLabels = foto
+    ? [...BIOMECH_SLIDE_LABELS.slice(0, 6), "Foto", ...BIOMECH_SLIDE_LABELS.slice(6)]
+    : BIOMECH_SLIDE_LABELS;
 
   const CardSugestao = ({ tag, cor, s }: { tag: string; cor: string; s?: Sugestao }) => {
     if (!s?.titulo) return null;
@@ -357,6 +390,42 @@ export default function BiomechHubPanel({
         )}
       </Bloco>
 
+      <Bloco titulo="📷 FOTO (OPCIONAL)" cor={C.green}>
+        <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 10 }}>
+          Sua foto entra depois do slide 6 de fontes e como primeiro story.
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {foto && (
+            <img
+              src={foto}
+              alt="Foto escolhida para o conteúdo"
+              style={{ width: 56, height: 70, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.border}` }}
+            />
+          )}
+          <label style={{ ...acao(C.green), display: "inline-flex", alignItems: "center", gap: 6 }}>
+            {foto ? "TROCAR FOTO" : "ADICIONAR FOTO"}
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (!file) return;
+                const url = await compressImageFile(file, 1600);
+                if (!url) {
+                  toast.error("Não consegui ler essa imagem.");
+                  return;
+                }
+                setFoto(url);
+                toast.success("Foto adicionada ao conteúdo.");
+              }}
+            />
+          </label>
+          {foto && <button onClick={() => setFoto(null)} style={acao(C.muted)}>REMOVER</button>}
+        </div>
+      </Bloco>
+
       <Bloco titulo="OU GERE MANUALMENTE" cor={C.purple}>
         <div style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 2, color: C.muted, marginBottom: 6 }}>FOCO</div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
@@ -401,7 +470,7 @@ export default function BiomechHubPanel({
           <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
             {slides.map((_, i) => (
               <button key={i} onClick={() => setActive(i)} style={{ ...acao(i === active ? C.gold : C.muted), fontSize: 9, padding: "5px 8px" }}>
-                {i + 1} · {BIOMECH_SLIDE_LABELS[i]}
+                {i + 1} · {slideLabels[i]}
               </button>
             ))}
           </div>
