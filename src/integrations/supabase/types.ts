@@ -538,6 +538,57 @@ export type Database = {
           },
         ]
       }
+      apex_deficit_diagnoses: {
+        Row: {
+          athlete_id: string
+          avaliado_em: string
+          coach_id: string
+          created_at: string
+          encaminhamentos: Json
+          grupos: Json
+          id: string
+          prioridades: Json
+          proxima_reavaliacao: Json
+        }
+        Insert: {
+          athlete_id: string
+          avaliado_em?: string
+          coach_id: string
+          created_at?: string
+          encaminhamentos?: Json
+          grupos?: Json
+          id?: string
+          prioridades?: Json
+          proxima_reavaliacao?: Json
+        }
+        Update: {
+          athlete_id?: string
+          avaliado_em?: string
+          coach_id?: string
+          created_at?: string
+          encaminhamentos?: Json
+          grupos?: Json
+          id?: string
+          prioridades?: Json
+          proxima_reavaliacao?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apex_deficit_diagnoses_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_progress_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "apex_deficit_diagnoses_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apex_fms_scores: {
         Row: {
           active_slr_l: number | null
@@ -599,6 +650,60 @@ export type Database = {
             columns: ["assessment_id"]
             isOneToOne: false
             referencedRelation: "apex_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apex_functional_checklists: {
+        Row: {
+          athlete_id: string
+          avaliado_em: string
+          coach_id: string
+          created_at: string
+          grupo_key: string
+          id: string
+          observacoes: string | null
+          respostas: Json
+          updated_at: string
+          visual_score: number | null
+        }
+        Insert: {
+          athlete_id: string
+          avaliado_em?: string
+          coach_id: string
+          created_at?: string
+          grupo_key: string
+          id?: string
+          observacoes?: string | null
+          respostas?: Json
+          updated_at?: string
+          visual_score?: number | null
+        }
+        Update: {
+          athlete_id?: string
+          avaliado_em?: string
+          coach_id?: string
+          created_at?: string
+          grupo_key?: string
+          id?: string
+          observacoes?: string | null
+          respostas?: Json
+          updated_at?: string
+          visual_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apex_functional_checklists_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_progress_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "apex_functional_checklists_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "competition_athletes"
             referencedColumns: ["id"]
           },
         ]

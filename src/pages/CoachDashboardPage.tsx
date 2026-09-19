@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Users, AlertTriangle, AlertCircle, FileText, Search, Settings, ArrowLeft, Library,
   UtensilsCrossed, Dumbbell, FlaskConical, Camera, Sparkles, Bone, Flame, Activity,
-  CalendarDays, ChevronRight, Building2, Instagram, Mic2, Link2, Copy, Check,
+  CalendarDays, ChevronRight, Building2, Instagram, Mic2, Link2, Copy, Check, ClipboardList,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
@@ -28,6 +28,7 @@ const ADVANCED_MODULES = [
   { label: "nutriON GYM", icon: Building2, route: "/mce/business", color: "#E8A020" },
   { label: "TrainingON", icon: Dumbbell, route: "/coach/trainingon", color: "#E8A020" },
   { label: "APEX Visual", icon: Camera, route: "/coach/apex-visual", color: "#E8A020" },
+  { label: "APEX Assessment", icon: ClipboardList, route: "/coach/apex-assessment", color: "#00D4FF" },
   { label: "VERA", icon: Sparkles, route: "/coach/vera", color: "#A78BFA" },
   { label: "LAB Exames", icon: FlaskConical, route: "/coach/exames", color: "#4ade80" },
   { label: "RunON", icon: Activity, route: "/runon", color: "#00D4FF" },
