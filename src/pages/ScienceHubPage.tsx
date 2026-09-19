@@ -242,6 +242,7 @@ const ScienceHubPage = () => {
                     <Bookmark className="w-3 h-3" /> Salvar Estudo
                   </Button>
                 </div>
+                <ScienceContentHubPanel tema={question} area="Ciência do exercício" pesquisaTexto={`${evidenceResult.answer}\n\n${evidenceResult.rawScience || ""}`} citacoes={evidenceResult.citations || []} />
               </motion.div>
             )}
           </TabsContent>
@@ -291,6 +292,7 @@ const ScienceHubPage = () => {
                     {renderContent(pubmedResult.analysis)}
                   </CardContent>
                 </Card>
+                <ScienceContentHubPanel tema={pubmedSearch} area={pubmedArea} pesquisaTexto={pubmedResult.analysis} citacoes={pubmedResult.citations || []} />
               </motion.div>
             )}
           </TabsContent>
@@ -352,6 +354,7 @@ const ScienceHubPage = () => {
                     {renderContent(suppResult.analysis)}
                   </CardContent>
                 </Card>
+                <ScienceContentHubPanel tema={supplement} area="Suplementação" pesquisaTexto={suppResult.analysis} citacoes={suppResult.citations || []} />
               </motion.div>
             )}
           </TabsContent>
@@ -399,6 +402,7 @@ const ScienceHubPage = () => {
                     {renderContent(mythResult.analysis)}
                   </CardContent>
                 </Card>
+                <ScienceContentHubPanel tema={myth} area="Mitos e verdades" pesquisaTexto={mythResult.analysis} citacoes={mythResult.citations || []} />
               </motion.div>
             )}
           </TabsContent>
