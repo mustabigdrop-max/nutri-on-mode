@@ -342,6 +342,7 @@ const App = () => (
             <Route path="/coach/apex-checkin" element={<CoachToolRoute><ProtectedRoute><ApexCheckinPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-visual-ia" element={<CoachToolRoute><ProtectedRoute><ApexVisualIAPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-visual-auto" element={<CoachToolRoute><ProtectedRoute><ApexVisualAutoPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/apex-assessment" element={<CoachToolRoute><ProtectedRoute><ApexAssessmentPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/trainingon" element={<CoachToolRoute><ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/gap-analysis" element={<CoachToolRoute><ProtectedRoute><GapAnalysisPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/lab-exams" element={<CoachToolRoute><ProtectedRoute><CoachLabExamsPage /></ProtectedRoute></CoachToolRoute>} />
