@@ -37,7 +37,7 @@ describe("APEX PRESCRIBE", () => {
   });
 
   it("ajustes nutricionais saem como sugestão para revisão profissional", () => {
-    const diag = diagnosticarAtleta([{ grupo_key: "biceps", respostas: { B1: "c" } }]);
+    const diag = diagnosticarAtleta([{ grupo_key: "dorsal", respostas: { D1: "b" } }]);
     const p = prescreverApex(diag);
     expect(p.nutricao.length).toBeGreaterThan(0);
     for (const n of p.nutricao) expect(n.detalhe).toContain("revisão profissional");
