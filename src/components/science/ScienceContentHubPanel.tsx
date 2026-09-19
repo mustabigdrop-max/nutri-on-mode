@@ -153,6 +153,7 @@ export default function ScienceContentHubPanel({
   const [legendaEditada, setLegendaEditada] = useState<string | null>(null);
   const [style, setStyle] = useCarouselStyle();
   const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  const [foto, setFoto] = useState<string | null>(null);
   const fontesReais = normalizarFontes(citacoes);
 
   useEffect(() => {
