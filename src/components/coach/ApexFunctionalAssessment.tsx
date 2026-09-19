@@ -15,6 +15,7 @@ import {
   type Severidade,
 } from "@/lib/apexDeficitDiagnose";
 import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
+import { gerarRelatorioAtleta } from "@/lib/apexAthleteReport";
 
 const C = {
   bg: "#020205",
@@ -364,6 +365,12 @@ export default function ApexFunctionalAssessment() {
 
             {/* ACTIVATE / CORRECT / PRESCRIBE */}
             {diagnostico.grupos.length > 0 && <Prescricao prescricao={prescricao} />}
+
+            {/* RELATÓRIO DO ATLETA */}
+            {diagnostico.grupos.length > 0 && (
+              <RelatorioAtleta texto={gerarRelatorioAtleta(athlete?.nome || "atleta", diagnostico, prescricao)} />
+            )}
+
 
 
             <button
