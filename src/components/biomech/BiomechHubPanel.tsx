@@ -231,9 +231,18 @@ export default function BiomechHubPanel({
       if (data?.content) partes.push(`### ${tab.toUpperCase()}\n${data.content}`);
       if (Array.isArray(data?.citations)) cits.push(...data.citations);
     }
-    const fontesReais = normalizeResearchSources(cits);
+    const corpo = partes.join("\n\n");
+    // Também valem as referências já citadas no corpo da pesquisa e na pesquisa ativa.
+    const fontesReais = normalizeResearchSources([
+      ...cits,
+      ...extractResearchSources(corpo),
+      ...(pesquisa?.brief?.fontes ?? []),
+      ...(pesquisa?.citations ?? []),
+      ...extractResearchSources(pesquisa?.brief?.resumo),
+      ...extractResearchSources(pesquisa?.texto),
+    ]);
     if (!fontesReais.length) throw new Error(SEM_FONTE_REAL);
-    const biomechData = { content: partes.join("\n\n"), citations: fontesReais };
+    const biomechData = { content: corpo, citations: fontesReais };
     setCitacoes(biomechData.citations);
     return biomechData;
   }, [exercicio, grupo]);
