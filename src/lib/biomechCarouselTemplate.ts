@@ -368,7 +368,7 @@ export const renderBiomechCarousel = (content: BiomechCarouselContent, w = 1080,
     const fontes = content.fontes.length ? content.fontes.slice(0, 5) : [];
     const colW = w - x * 2;
     if (!fontes.length) {
-      drawRich(ctx, "Pesquisa em andamento — as referências completas ficam no app.", x, y + px(4), {
+      drawRich(ctx, "Conteúdo sem fonte verificável. Gere novamente após consultar a pesquisa científica.", x, y + px(4), {
         size: 11, weight: 300, color: BIOMECH_TPL.soft, accent: BIOMECH_TPL.green, lineHeight: 1.6, maxWidth: colW,
       });
     }

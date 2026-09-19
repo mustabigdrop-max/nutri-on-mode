@@ -72,6 +72,18 @@ const HASHTAGS = [
 ];
 const CTA_SAVE = "Salva esse conteúdo — evidência aplicada, não achismo.";
 
+const normalizarFontes = (fontes: string[]) =>
+  [...new Set((fontes || []).filter((fonte) => typeof fonte === "string").map((fonte) => fonte.trim()).filter(Boolean))];
+
+const rotuloFonte = (fonte: string) => {
+  try {
+    const url = new URL(fonte);
+    return url.hostname.replace(/^www\./i, "");
+  } catch {
+    return fonte.length > 90 ? `${fonte.slice(0, 87)}…` : fonte;
+  }
+};
+
 const Bloco = ({ titulo, cor, children }: { titulo: string; cor: string; children: React.ReactNode }) => (
   <div style={{ background: C.s2, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16, marginBottom: 14 }}>
     <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 2, color: cor, marginBottom: 12 }}>{titulo}</div>
@@ -118,6 +130,7 @@ export default function ScienceContentHubPanel({
   const [legendaEditada, setLegendaEditada] = useState<string | null>(null);
   const [style, setStyle] = useCarouselStyle();
   const [pesquisa, setPesquisa] = usePesquisaAtiva();
+  const fontesReais = normalizarFontes(citacoes);
 
   useEffect(() => {
     setIdeias(null); setSlides([]); setContent(null);
@@ -136,7 +149,13 @@ export default function ScienceContentHubPanel({
     return () => { vivo = false; };
   }, [content, style, at]);
 
-  const pesquisaBase = { content: pesquisaTexto, citations: citacoes };
+  const pesquisaBase = { content: pesquisaTexto, citations: fontesReais };
+
+  const exigirFontes = () => {
+    if (fontesReais.length > 0) return true;
+    toast.error("Nenhuma fonte verificável foi retornada. Faça uma pesquisa com fontes antes de gerar o conteúdo.");
+    return false;
+  };
 
   const chamarModo = async (mode: string, ang: Angulo) => {
     const { data, error } = await supabase.functions.invoke("social-on-generate", {
@@ -151,6 +170,7 @@ export default function ScienceContentHubPanel({
   };
 
   const gerarSugestoes = async () => {
+    if (!exigirFontes()) return;
     setLoadingIdeias(true);
     try {
       setIdeias((await chamarModo("biomech_ideias", angulo)) as Ideias);
@@ -162,6 +182,7 @@ export default function ScienceContentHubPanel({
   };
 
   const gerar = async (ang: Angulo = angulo, fm: Formato = formato) => {
+    if (!exigirFontes()) return;
     setLoading(true);
     setSlides([]); setContent(null); setStoriesImgs([]); setReels(null);
     try {
@@ -186,7 +207,7 @@ export default function ScienceContentHubPanel({
           },
           pontos: (r.pontos || []).slice(0, 4).map((p) => ({ titulo: p.titulo || "", corpo: p.corpo || "" })),
           aplicacao: { titulo: r.aplicacao?.titulo || "Como aplicar na prática", corpo: r.aplicacao?.corpo || "" },
-          fontes: citacoes,
+          fontes: fontesReais,
         });
         setActive(0);
         legendaFinalTxt = cleanCaption(r.legenda || "");
@@ -200,7 +221,19 @@ export default function ScienceContentHubPanel({
 
       if (quer("stories")) {
         const r = (await chamarModo("biomech_stories", ang)) as StoryScript & { legenda?: string };
-        setStoriesImgs(renderStoryFrames({ tema: r.tema, frames: r.frames || [] }, at));
+        const fonteStory = fontesReais.slice(0, 3).map(rotuloFonte).join(" · ");
+        setStoriesImgs(renderStoryFrames({
+          tema: r.tema,
+          frames: [
+            ...(r.frames || []),
+            {
+              tipo: "FONTES",
+              texto_principal: "Conteúdo baseado em fontes verificáveis",
+              texto_secundario: fonteStory,
+              destaque: `${fontesReais.length} fonte${fontesReais.length === 1 ? "" : "s"} consultada${fontesReais.length === 1 ? "" : "s"}`,
+            },
+          ],
+        }, at));
         legendaFinalTxt = legendaFinalTxt || cleanCaption(r.legenda || "");
       }
 
@@ -221,7 +254,10 @@ export default function ScienceContentHubPanel({
     void gerar(ang, fm);
   };
 
-  const legendaBase = legenda ? `${legenda}\n\n${CTA_SAVE}\n\n${HASHTAGS.join(" ")}` : "";
+  const blocoFontes = fontesReais.length
+    ? `Fontes:\n${fontesReais.map((fonte) => `• ${fonte}`).join("\n")}`
+    : "";
+  const legendaBase = legenda ? `${legenda}\n\n${blocoFontes}\n\n${CTA_SAVE}\n\n${HASHTAGS.join(" ")}` : "";
   const legendaFinal = legendaEditada ?? legendaBase;
 
   const CardSugestao = ({ tag, cor, s }: { tag: string; cor: string; s?: Sugestao }) => {
@@ -251,7 +287,7 @@ export default function ScienceContentHubPanel({
 
       <Bloco titulo="💡 SUGESTÕES INTELIGENTES" cor={C.gold}>
         <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 12 }}>
-          Escrito em cima da evidência real desta consulta ({citacoes.length} fonte{citacoes.length === 1 ? "" : "s"}) — nunca dado inventado.
+          Escrito em cima da evidência real desta consulta ({fontesReais.length} fonte{fontesReais.length === 1 ? "" : "s"}) — nunca dado inventado.
         </div>
         {!ideias && (
           <button onClick={gerarSugestoes} disabled={loadingIdeias || loading} style={{ ...acao(C.gold), width: "100%" }}>
@@ -343,8 +379,12 @@ export default function ScienceContentHubPanel({
               {c.acao && <div style={{ fontFamily: F.b, fontSize: 10, color: C.muted }}>{c.acao}</div>}
             </div>
           ))}
+          <div style={{ ...card, marginTop: 12, color: C.text, fontFamily: F.b, fontSize: 11 }}>
+            <strong style={{ color: C.green }}>FONTES CONSULTADAS</strong>
+            {fontesReais.map((fonte) => <div key={fonte} style={{ marginTop: 5, overflowWrap: "anywhere" }}>{fonte}</div>)}
+          </div>
           <button
-            onClick={() => copiar((reels.cortes || []).map((c) => `${c.segundo}\n${c.texto_tela}\n${c.fala || ""}`).join("\n\n"), "Roteiro")}
+            onClick={() => copiar(`${(reels.cortes || []).map((c) => `${c.segundo}\n${c.texto_tela}\n${c.fala || ""}`).join("\n\n")}\n\n${blocoFontes}`, "Roteiro")}
             style={acao(C.gold)}
           >
             📋 COPIAR ROTEIRO
