@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { normalizeResearchSources, SEM_FONTE_REAL } from "@/lib/researchSources";
+import { extractResearchSources, normalizeResearchSources, SEM_FONTE_REAL } from "@/lib/researchSources";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
