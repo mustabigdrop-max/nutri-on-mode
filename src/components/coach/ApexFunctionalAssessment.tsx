@@ -742,3 +742,45 @@ function RelatorioAtleta({ texto }: { texto: string }) {
     </div>
   );
 }
+
+const EVOL_COR: Record<Evolucao, string> = {
+  MELHOROU: C.green,
+  RESOLVIDO: C.green,
+  ESTAVEL: C.textSec,
+  PIOROU: C.red,
+  NOVO: C.gold,
+};
+
+function Comparacao({ comparacao }: { comparacao: ComparacaoAvaliacoes }) {
+  const fmt = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString("pt-BR");
+  return (
+    <div style={{ marginTop: 18, background: C.surface, border: `1px solid ${C.border}`, padding: 16 }}>
+      <div style={{ ...LABEL, color: C.cyan, marginBottom: 4 }}>Comparação com a avaliação anterior</div>
+      <div style={{ color: C.textSec, fontSize: 12, marginBottom: 12 }}>
+        {fmt(comparacao.data_anterior)} → {fmt(comparacao.data_atual)} · {comparacao.resumo.melhoraram} melhoraram ·{" "}
+        {comparacao.resumo.resolvidos} resolvidos · {comparacao.resumo.estaveis} estáveis · {comparacao.resumo.pioraram}{" "}
+        pioraram · {comparacao.resumo.novos} novos
+      </div>
+      <div style={{ display: "grid", gap: 8 }}>
+        {comparacao.grupos.map((g) => (
+          <div
+            key={g.grupo_key}
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              alignItems: "baseline",
+              borderTop: `1px solid ${C.border}`,
+              paddingTop: 8,
+            }}
+          >
+            <span style={{ ...TITLE, fontSize: 16, minWidth: 140 }}>{g.grupo}</span>
+            <span style={{ ...LABEL, color: EVOL_COR[g.evolucao] }}>{g.evolucao}</span>
+            <span style={{ color: C.textDim, fontSize: 12 }}>antes: {g.antes}</span>
+            <span style={{ color: C.text, fontSize: 12 }}>agora: {g.agora}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
