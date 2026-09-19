@@ -14,6 +14,7 @@ import {
   type GrupoDiagnostico,
   type Severidade,
 } from "@/lib/apexDeficitDiagnose";
+import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 
 const C = {
   bg: "#020205",
