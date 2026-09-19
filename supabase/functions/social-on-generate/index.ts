@@ -556,8 +556,11 @@ REGRAS DE NUTRIÇÃO APLICADA (quando o estilo pedido envolve treino, ou quando 
 - Sem markdown e sem as palavras "IA", "AI" ou "inteligência artificial".`
         : "",
       ["biomech_content", "biomech_reels", "biomech_stories", "biomech_ideias"].includes(body?.mode)
-        ? `MODO "CIÊNCIA DO EXERCÍCIO": o coach quer conteúdo sobre um exercício real do treino de hoje, cruzado com a análise biomecânica REAL da BiomechanicsVault (Perplexity + Dr. BioMech, com citações).
-Exercício: ${body?.exercicio || "não informado"}. Grupo muscular: ${body?.grupo || "não informado"}. Foco escolhido: ${body?.foco || "ciência"}.${body?.angulo ? `\nÂngulo editorial escolhido: ${body.angulo}. Todo o conteúdo precisa respeitar esse ângulo.` : ""}
+        ? (body?.cientifico
+          ? `MODO "CIÊNCIA APLICADA": o coach quer conteúdo sobre um tema científico real consultado no ScienceHub (busca científica em tempo real, com citações). O tema NÃO é necessariamente um exercício — trate-o como assunto (nutriente, suplemento, mito, protocolo, marcador, comportamento) e nunca invente exercício, série, repetição ou dado que não esteja na pesquisa.
+Tema: ${body?.exercicio || "não informado"}. Área: ${body?.grupo || "ciência do exercício"}.${body?.angulo ? `\nÂngulo editorial escolhido: ${body.angulo}. Todo o conteúdo precisa respeitar esse ângulo.` : ""}`
+          : `MODO "CIÊNCIA DO EXERCÍCIO": o coach quer conteúdo sobre um exercício real do treino de hoje, cruzado com a análise biomecânica REAL da BiomechanicsVault (Perplexity + Dr. BioMech, com citações).
+Exercício: ${body?.exercicio || "não informado"}. Grupo muscular: ${body?.grupo || "não informado"}. Foco escolhido: ${body?.foco || "ciência"}.${body?.angulo ? `\nÂngulo editorial escolhido: ${body.angulo}. Todo o conteúdo precisa respeitar esse ângulo.` : ""}`) + `
 Conteúdo de pesquisa REAL (fonte única — NUNCA invente estudo, dado, percentual, autor ou mecanismo fora daqui): ${body?.biomechData?.content ? String(body.biomechData.content).slice(0, 5000) : "sem conteúdo de pesquisa disponível"}
 Citações reais dessa pesquisa (não invente outras): ${body?.biomechData?.citations ? JSON.stringify(body.biomechData.citations).slice(0, 1500) : "sem citações"}
 REGRAS:
