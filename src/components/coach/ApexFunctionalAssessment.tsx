@@ -16,6 +16,8 @@ import {
 } from "@/lib/apexDeficitDiagnose";
 import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 import { gerarRelatorioAtleta } from "@/lib/apexAthleteReport";
+import { compararAvaliacoes, type ComparacaoAvaliacoes, type Evolucao } from "@/lib/apexReassess";
+import type { DiagnosticoCompleto } from "@/lib/apexDeficitDiagnose";
 
 const C = {
   bg: "#020205",
@@ -66,6 +68,7 @@ export default function ApexFunctionalAssessment() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ultimaData, setUltimaData] = useState<string | null>(null);
+  const [comparacao, setComparacao] = useState<ComparacaoAvaliacoes | null>(null);
 
   const grupo = useMemo(
     () => APEX_CHECKLISTS.find((g) => g.key === grupoAtivo) || APEX_CHECKLISTS[0],
@@ -102,6 +105,32 @@ export default function ApexFunctionalAssessment() {
     setScores(s);
     setObservacoes(obs);
     setUltimaData(ultima);
+
+    // REASSESS: compara as duas últimas avaliações já registradas
+    const { data: diags } = await supabase
+      .from("apex_deficit_diagnoses")
+      .select("avaliado_em, grupos, prioridades, encaminhamentos, proxima_reavaliacao")
+      .eq("athlete_id", athlete.id)
+      .order("avaliado_em", { ascending: false })
+      .limit(2);
+    if (diags && diags.length === 2) {
+      const toDiag = (row: (typeof diags)[number]): DiagnosticoCompleto => ({
+        grupos: Array.isArray(row.grupos) ? (row.grupos as unknown as DiagnosticoCompleto["grupos"]) : [],
+        prioridades: Array.isArray(row.prioridades)
+          ? (row.prioridades as unknown as DiagnosticoCompleto["prioridades"])
+          : [],
+        encaminhamentos: Array.isArray(row.encaminhamentos) ? (row.encaminhamentos as string[]) : [],
+        proxima_reavaliacao: { checklist_semanas: null, visual_semanas: null },
+      });
+      setComparacao(
+        compararAvaliacoes(
+          { avaliado_em: diags[1].avaliado_em, diagnostico: toDiag(diags[1]) },
+          { avaliado_em: diags[0].avaliado_em, diagnostico: toDiag(diags[0]) },
+        ),
+      );
+    } else {
+      setComparacao(null);
+    }
     setLoading(false);
   }, [athlete?.id]);
 
@@ -370,6 +399,11 @@ export default function ApexFunctionalAssessment() {
             {diagnostico.grupos.length > 0 && (
               <RelatorioAtleta texto={gerarRelatorioAtleta(athlete?.nome || "atleta", diagnostico, prescricao)} />
             )}
+
+            {/* REASSESS */}
+            {comparacao && <Comparacao comparacao={comparacao} />}
+
+
 
 
 
@@ -705,6 +739,48 @@ function RelatorioAtleta({ texto }: { texto: string }) {
       >
         Copiar relatório
       </button>
+    </div>
+  );
+}
+
+const EVOL_COR: Record<Evolucao, string> = {
+  MELHOROU: C.green,
+  RESOLVIDO: C.green,
+  ESTAVEL: C.textSec,
+  PIOROU: C.red,
+  NOVO: C.gold,
+};
+
+function Comparacao({ comparacao }: { comparacao: ComparacaoAvaliacoes }) {
+  const fmt = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString("pt-BR");
+  return (
+    <div style={{ marginTop: 18, background: C.surface, border: `1px solid ${C.border}`, padding: 16 }}>
+      <div style={{ ...LABEL, color: C.cyan, marginBottom: 4 }}>Comparação com a avaliação anterior</div>
+      <div style={{ color: C.textSec, fontSize: 12, marginBottom: 12 }}>
+        {fmt(comparacao.data_anterior)} → {fmt(comparacao.data_atual)} · {comparacao.resumo.melhoraram} melhoraram ·{" "}
+        {comparacao.resumo.resolvidos} resolvidos · {comparacao.resumo.estaveis} estáveis · {comparacao.resumo.pioraram}{" "}
+        pioraram · {comparacao.resumo.novos} novos
+      </div>
+      <div style={{ display: "grid", gap: 8 }}>
+        {comparacao.grupos.map((g) => (
+          <div
+            key={g.grupo_key}
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              alignItems: "baseline",
+              borderTop: `1px solid ${C.border}`,
+              paddingTop: 8,
+            }}
+          >
+            <span style={{ ...TITLE, fontSize: 16, minWidth: 140 }}>{g.grupo}</span>
+            <span style={{ ...LABEL, color: EVOL_COR[g.evolucao] }}>{g.evolucao}</span>
+            <span style={{ color: C.textDim, fontSize: 12 }}>antes: {g.antes}</span>
+            <span style={{ color: C.text, fontSize: 12 }}>agora: {g.agora}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
