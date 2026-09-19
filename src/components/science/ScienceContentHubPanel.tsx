@@ -261,7 +261,8 @@ export default function ScienceContentHubPanel({
               destaque: `${fontesReais.length} fonte${fontesReais.length === 1 ? "" : "s"} consultada${fontesReais.length === 1 ? "" : "s"}`,
             },
           ],
-        }, at));
+        }, at);
+        setStoriesImgs(foto ? [foto, ...framesRenderizados] : framesRenderizados);
         legendaFinalTxt = legendaFinalTxt || cleanCaption(r.legenda || "");
       }
 
