@@ -16,6 +16,8 @@ import {
 } from "@/lib/apexDeficitDiagnose";
 import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 import { gerarRelatorioAtleta } from "@/lib/apexAthleteReport";
+import { compararAvaliacoes, type ComparacaoAvaliacoes, type Evolucao } from "@/lib/apexReassess";
+import type { DiagnosticoCompleto } from "@/lib/apexDeficitDiagnose";
 
 const C = {
   bg: "#020205",
