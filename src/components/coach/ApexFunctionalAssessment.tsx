@@ -68,6 +68,7 @@ export default function ApexFunctionalAssessment() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ultimaData, setUltimaData] = useState<string | null>(null);
+  const [comparacao, setComparacao] = useState<ComparacaoAvaliacoes | null>(null);
 
   const grupo = useMemo(
     () => APEX_CHECKLISTS.find((g) => g.key === grupoAtivo) || APEX_CHECKLISTS[0],
@@ -104,6 +105,32 @@ export default function ApexFunctionalAssessment() {
     setScores(s);
     setObservacoes(obs);
     setUltimaData(ultima);
+
+    // REASSESS: compara as duas últimas avaliações já registradas
+    const { data: diags } = await supabase
+      .from("apex_deficit_diagnoses")
+      .select("avaliado_em, grupos, prioridades, encaminhamentos, proxima_reavaliacao")
+      .eq("athlete_id", athlete.id)
+      .order("avaliado_em", { ascending: false })
+      .limit(2);
+    if (diags && diags.length === 2) {
+      const toDiag = (row: (typeof diags)[number]): DiagnosticoCompleto => ({
+        grupos: Array.isArray(row.grupos) ? (row.grupos as unknown as DiagnosticoCompleto["grupos"]) : [],
+        prioridades: Array.isArray(row.prioridades)
+          ? (row.prioridades as unknown as DiagnosticoCompleto["prioridades"])
+          : [],
+        encaminhamentos: Array.isArray(row.encaminhamentos) ? (row.encaminhamentos as string[]) : [],
+        proxima_reavaliacao: { checklist_semanas: null, visual_semanas: null },
+      });
+      setComparacao(
+        compararAvaliacoes(
+          { avaliado_em: diags[1].avaliado_em, diagnostico: toDiag(diags[1]) },
+          { avaliado_em: diags[0].avaliado_em, diagnostico: toDiag(diags[0]) },
+        ),
+      );
+    } else {
+      setComparacao(null);
+    }
     setLoading(false);
   }, [athlete?.id]);
 
