@@ -96,11 +96,15 @@ import {
 import MceBanner from "@/components/mce/MceBanner";
 import {
   getApexTrainingRules,
-  // eslint-disable-next-line no-irregular-whitespace
   getLatestApexBodyContext,
   type ApexBodyContext,
   type ApexTrainingBridgeResult,
 } from "@/utils/apexTrainingBridge";
+import {
+  formatApexAssessmentBlock,
+  getLatestApexAssessment,
+  type ApexAssessmentContext,
+} from "@/lib/apexAssessmentBridge";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
