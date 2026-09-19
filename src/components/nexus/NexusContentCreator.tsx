@@ -6,6 +6,7 @@ import { Copy, Film, Layers, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
+import ContentPhotoPicker from "@/components/social/ContentPhotoPicker";
 
 const AMBER = "#EF9F27";
 
@@ -86,6 +87,7 @@ export default function NexusContentCreator({
   const [loading, setLoading] = useState<string | null>(null);
   const [reels, setReels] = useState<Reels | null>(null);
   const [stories, setStories] = useState<Stories | null>(null);
+  const [foto, setFoto] = useState<string | null>(null);
 
   const anguloLabel = NEXUS_ANGULOS.find((a) => a.id === angulo)?.label ?? "Educativo";
   const crossHint =
@@ -192,6 +194,13 @@ export default function NexusContentCreator({
             </Button>
           ))}
         </div>
+
+        <ContentPhotoPicker
+          value={foto}
+          onChange={setFoto}
+          disabled={!!loading}
+          description="Use a foto como referência visual enquanto prepara Reels e Stories. No carrossel, você também poderá adicioná-la no editor."
+        />
 
         <p className="text-[10px] text-gray-500">
           O ângulo Cross-Vault cruza este composto com{" "}
