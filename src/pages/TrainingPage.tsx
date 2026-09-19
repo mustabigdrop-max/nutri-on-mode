@@ -96,6 +96,7 @@ import {
 import MceBanner from "@/components/mce/MceBanner";
 import {
   getApexTrainingRules,
+  // eslint-disable-next-line no-irregular-whitespace
   getLatestApexBodyContext,
   type ApexBodyContext,
   type ApexTrainingBridgeResult,
@@ -287,6 +288,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [selectedPatient, setSelectedPatient] = useState("");
   const [apexBodyContext, setApexBodyContext] = useState<ApexBodyContext | null>(null);
   const [apexTrainingContext, setApexTrainingContext] = useState<ApexTrainingBridgeResult | null>(null);
+  const [apexAssessment, setApexAssessment] = useState<ApexAssessmentContext | null>(null);
   const [apexContextLoading, setApexContextLoading] = useState(false);
   const [trainingSystem, setTrainingSystem] = useState<string>("");
   const [clientSex, setClientSex] = useState<"F" | "M" | null>(null);
@@ -438,6 +440,8 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
         setApexBodyContext(context);
         const trainingContext = context ? await getApexTrainingRules(context.athleteId) : null;
         if (active) setApexTrainingContext(trainingContext);
+        const assessment = context ? await getLatestApexAssessment(context.athleteId) : null;
+        if (active) setApexAssessment(assessment);
       })
       .finally(() => {
         if (active) setApexContextLoading(false);
@@ -488,6 +492,8 @@ ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), des
 - Padrões a monitorar: ${apexTrainingContext?.contraindicados.length ? apexTrainingContext.contraindicados.map((item) => `${item.padrao}: ${item.motivo}`).join("; ") : "nenhum"}
 REGRA: use este bloco apenas para contextualizar seleção, ordem dos grupamentos, aquecimento e segurança biomecânica. Não altere calorias, volume, intensidade ou fase com base isolada na estimativa visual. Não trate como diagnóstico; a decisão final é do coach.`
       : `━━━ CONTEXTO CORPORAL APEX: ${apexBodyContext ? "avaliação anterior a 90 dias — não usar automaticamente" : "sem avaliação salva para este atleta"} ━━━`;
+
+    const apexAssessmentBloco = formatApexAssessmentBlock(apexAssessment);
 
     // Sistema energético/metodológico escolhido automaticamente a partir do objetivo e nível
     const autoSystemId = trainingSystem || autoSystem?.id || "";
