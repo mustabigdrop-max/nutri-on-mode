@@ -140,14 +140,6 @@ const drawRich = (ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   return cursorY;
 };
 
-/** Corta o texto na largura disponível, sempre com reticências — nunca vaza. */
-const truncar = (ctx: CanvasRenderingContext2D, texto: string, maxWidth: number) => {
-  if (ctx.measureText(texto).width <= maxWidth) return texto;
-  let corte = texto;
-  while (corte.length > 1 && ctx.measureText(`${corte}…`).width > maxWidth) corte = corte.slice(0, -1);
-  return `${corte}…`;
-};
-
 /** Transforma a URL da pesquisa em domínio legível + caminho curto. */
 const fonteInfo = (fonte: string): { dominio: string; resto: string } => {
   const bruto = (fonte || "").trim();
@@ -390,12 +382,22 @@ export const renderBiomechCarousel = (content: BiomechCarouselContent, w = 1080,
 
       ctx.font = font(700, 11);
       ctx.fillStyle = BIOMECH_TPL.ink;
-      ctx.fillText(truncar(ctx, dominio, colW - px(60)), x + px(40), y + px(19));
+      const dominioSize = fitTextSize((size) => {
+        ctx.font = font(700, size);
+        return { linhas: 1, largura: ctx.measureText(dominio).width };
+      }, { size: 11, lineHeight: 1, maxHeight: 11, maxWidth: colW - px(60), min: 7 });
+      ctx.font = font(700, dominioSize);
+      ctx.fillText(dominio, x + px(40), y + px(19));
 
       if (resto) {
         ctx.font = font(300, 9);
         ctx.fillStyle = BIOMECH_TPL.muted;
-        ctx.fillText(truncar(ctx, resto, colW - px(60)), x + px(40), y + px(33));
+        const restoSize = fitTextSize((size) => {
+          ctx.font = font(300, size);
+          return { linhas: 1, largura: ctx.measureText(resto).width };
+        }, { size: 9, lineHeight: 1, maxHeight: 9, maxWidth: colW - px(60), min: 5 });
+        ctx.font = font(300, restoSize);
+        ctx.fillText(resto, x + px(40), y + px(33));
       }
       y += cardH + px(8);
     });

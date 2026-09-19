@@ -8,6 +8,7 @@
  */
 
 import { sanitizarConteudoPublico } from "@/lib/publicLanguage";
+import { drawFittedText } from "@/lib/slideBase";
 import {
   TECH_PAD as PAD,
   TECH_TPL,
@@ -64,26 +65,29 @@ const drawCapa = (ctx: CanvasRenderingContext2D, s: TechSlide, accent: string) =
   if (s.eyebrow) {
     ctx.font = monoFont(400, 15);
     ctx.fillStyle = rgba(accent, 0.75);
-    let lx = PAD;
-    for (const ch of s.eyebrow.toUpperCase()) {
-      ctx.fillText(ch, lx, y);
-      lx += ctx.measureText(ch).width + 6;
-    }
+    drawFittedText(ctx, s.eyebrow.toUpperCase().split("").join(" "), PAD, y, W - PAD * 2, 20, {
+      maxHeight: 24,
+      maxLines: 1,
+      minSize: 9,
+    });
     y += 40;
   }
   const titulo = (s.titulo || "").toUpperCase();
   const size = titulo.length > 44 ? 66 : titulo.length > 22 ? 82 : 96;
   y = drawRich(ctx, titulo, PAD, y + size, {
     size, weight: 700, color: TECH_TPL.ink, accent, lineHeight: 1.02, maxWidth: W - PAD * 2,
+    maxHeight: Math.max(size, bottom() - y - 190), minSize: 30,
   });
   if (s.subtitulo) {
     y = drawRich(ctx, s.subtitulo, PAD, y + 40, {
       size: 30, weight: 500, color: accent, lineHeight: 1.35, maxWidth: W - PAD * 2,
+      maxHeight: Math.max(40, bottom() - y - 120), minSize: 17,
     });
   }
   if (s.texto) {
     y = drawRich(ctx, s.texto, PAD, y + 34, {
       size: 26, weight: 400, color: TECH_TPL.soft, lineHeight: 1.5, maxWidth: W - PAD * 2,
+      maxHeight: Math.max(40, bottom() - y - 50), minSize: 15,
     });
   }
   // marcador de arraste
@@ -149,8 +153,8 @@ const drawConteudo = (ctx: CanvasRenderingContext2D, s: TechSlide, accent: strin
     if (c.nota) {
       ctx.font = monoFont(400, 13);
       ctx.fillStyle = TECH_TPL.muted;
-      ctx.fillText(c.nota.slice(0, 70), PAD + 30, end + 18);
-      end += 28;
+      const notaEnd = drawFittedText(ctx, c.nota, PAD + 30, end + 18, maxW - 60, 18, { maxHeight: 36, maxLines: 2, minSize: 8 });
+      end = notaEnd + 10;
     }
     const h = Math.max(72, end - top + 14);
     infoCard(ctx, PAD, top, maxW, h, color);
@@ -175,7 +179,7 @@ const drawConteudo = (ctx: CanvasRenderingContext2D, s: TechSlide, accent: strin
     if (c.nota) {
       ctx.font = monoFont(400, 13);
       ctx.fillStyle = TECH_TPL.muted;
-      ctx.fillText(c.nota.slice(0, 70), PAD + 30, ry + 18);
+      drawFittedText(ctx, c.nota, PAD + 30, ry + 18, maxW - 60, 18, { maxHeight: 36, maxLines: 2, minSize: 8 });
     }
     y = top + h + 18;
   });

@@ -9,6 +9,7 @@ import {
   SLIDE_PAD_X,
   SLIDE_W,
   beginSlideContent,
+  drawFittedText,
   drawSlideFooter,
   slideContentBottom,
   guardTextBounds,
@@ -36,22 +37,6 @@ export type ModuleSlide = {
 const font = (weight: number, size: number, italic = false) =>
   `${italic ? "italic " : ""}${weight} ${size}px Inter, 'Inter var', system-ui, -apple-system, sans-serif`;
 
-const wrap = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number) => {
-  const lines: string[] = [];
-  for (const paragraph of String(text || "").split("\n")) {
-    let line = "";
-    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
-      const test = line ? `${line} ${word}` : word;
-      if (ctx.measureText(test).width > maxWidth && line) {
-        lines.push(line);
-        line = word;
-      } else line = test;
-    }
-    lines.push(line);
-  }
-  return lines.filter((l, i, arr) => l !== "" || i < arr.length - 1);
-};
-
 const drawText = (
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -61,14 +46,10 @@ const drawText = (
 ) => {
   ctx.font = font(o.weight, o.size);
   ctx.fillStyle = o.color;
-  const lines = wrap(ctx, text, o.maxWidth);
-  let cursor = y;
-  for (const line of lines) {
-    if (cursor > slideContentBottom()) break;
-    ctx.fillText(line, x, cursor);
-    cursor += o.lineHeight;
-  }
-  return cursor;
+  const lastBaseline = drawFittedText(ctx, text, x, y, o.maxWidth, o.lineHeight, {
+    maxHeight: Math.max(o.lineHeight, slideContentBottom() - y),
+  });
+  return lastBaseline + o.lineHeight;
 };
 
 const accentFor = (tipo?: string) =>
@@ -128,7 +109,7 @@ const renderSlide = (slide: ModuleSlide, index: number, total: number, handle: s
   if (slide.destaque) {
     ctx.font = font(900, 96);
     ctx.fillStyle = accent;
-    ctx.fillText(String(slide.destaque).slice(0, 18), x, y + 70);
+    drawFittedText(ctx, String(slide.destaque), x, y + 70, maxW, 100, { maxHeight: 100, maxLines: 1, minSize: 28 });
     y += 140;
   }
 
@@ -151,10 +132,10 @@ const renderSlide = (slide: ModuleSlide, index: number, total: number, handle: s
     ctx.fillRect(x, y, 6, 96);
     ctx.font = font(600, 26);
     ctx.fillStyle = cta ? "#633806" : MOD_TPL.muted;
-    ctx.fillText(String(item.label || "").toUpperCase().slice(0, 42), x + 32, y + 40);
+    drawFittedText(ctx, String(item.label || "").toUpperCase(), x + 32, y + 40, maxW - 64, 28, { maxHeight: 28, maxLines: 1, minSize: 13 });
     ctx.font = font(800, 38);
     ctx.fillStyle = ink;
-    ctx.fillText(String(item.valor || "").slice(0, 40), x + 32, y + 80);
+    drawFittedText(ctx, String(item.valor || ""), x + 32, y + 80, maxW - 64, 40, { maxHeight: 40, maxLines: 1, minSize: 16 });
     y += 116;
   }
 
