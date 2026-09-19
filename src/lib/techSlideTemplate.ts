@@ -153,8 +153,8 @@ const drawConteudo = (ctx: CanvasRenderingContext2D, s: TechSlide, accent: strin
     if (c.nota) {
       ctx.font = monoFont(400, 13);
       ctx.fillStyle = TECH_TPL.muted;
-      ctx.fillText(c.nota.slice(0, 70), PAD + 30, end + 18);
-      end += 28;
+      const notaEnd = drawFittedText(ctx, c.nota, PAD + 30, end + 18, maxW - 60, 18, { maxHeight: 36, maxLines: 2, minSize: 8 });
+      end = notaEnd + 10;
     }
     const h = Math.max(72, end - top + 14);
     infoCard(ctx, PAD, top, maxW, h, color);
@@ -179,7 +179,7 @@ const drawConteudo = (ctx: CanvasRenderingContext2D, s: TechSlide, accent: strin
     if (c.nota) {
       ctx.font = monoFont(400, 13);
       ctx.fillStyle = TECH_TPL.muted;
-      ctx.fillText(c.nota.slice(0, 70), PAD + 30, ry + 18);
+      drawFittedText(ctx, c.nota, PAD + 30, ry + 18, maxW - 60, 18, { maxHeight: 36, maxLines: 2, minSize: 8 });
     }
     y = top + h + 18;
   });

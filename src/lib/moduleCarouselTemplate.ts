@@ -109,7 +109,7 @@ const renderSlide = (slide: ModuleSlide, index: number, total: number, handle: s
   if (slide.destaque) {
     ctx.font = font(900, 96);
     ctx.fillStyle = accent;
-    ctx.fillText(String(slide.destaque).slice(0, 18), x, y + 70);
+    drawFittedText(ctx, String(slide.destaque), x, y + 70, maxW, 100, { maxHeight: 100, maxLines: 1, minSize: 28 });
     y += 140;
   }
 
@@ -132,10 +132,10 @@ const renderSlide = (slide: ModuleSlide, index: number, total: number, handle: s
     ctx.fillRect(x, y, 6, 96);
     ctx.font = font(600, 26);
     ctx.fillStyle = cta ? "#633806" : MOD_TPL.muted;
-    ctx.fillText(String(item.label || "").toUpperCase().slice(0, 42), x + 32, y + 40);
+    drawFittedText(ctx, String(item.label || "").toUpperCase(), x + 32, y + 40, maxW - 64, 28, { maxHeight: 28, maxLines: 1, minSize: 13 });
     ctx.font = font(800, 38);
     ctx.fillStyle = ink;
-    ctx.fillText(String(item.valor || "").slice(0, 40), x + 32, y + 80);
+    drawFittedText(ctx, String(item.valor || ""), x + 32, y + 80, maxW - 64, 40, { maxHeight: 40, maxLines: 1, minSize: 16 });
     y += 116;
   }
 
