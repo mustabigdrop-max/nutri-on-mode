@@ -170,7 +170,8 @@ export default function ScienceContentHubPanel({
         : renderBiomechCarousel(content);
       if (foto) {
         const fotoSlide = await fotoParaSlide(foto);
-        if (fotoSlide) imgs = [imgs[0], fotoSlide, ...imgs.slice(1)];
+        // Mantém FONTES invariavelmente no slide 6; a foto entra depois dele.
+        if (fotoSlide) imgs = [...imgs.slice(0, 6), fotoSlide, ...imgs.slice(6)];
       }
       if (vivo) setSlides(imgs);
     })();
@@ -290,7 +291,7 @@ export default function ScienceContentHubPanel({
   const legendaFinal = legendaEditada ?? legendaBase;
 
   const slideLabels = foto
-    ? [BIOMECH_SLIDE_LABELS[0], "Foto", ...BIOMECH_SLIDE_LABELS.slice(1)]
+    ? [...BIOMECH_SLIDE_LABELS.slice(0, 6), "Foto", ...BIOMECH_SLIDE_LABELS.slice(6)]
     : BIOMECH_SLIDE_LABELS;
 
   const CardSugestao = ({ tag, cor, s }: { tag: string; cor: string; s?: Sugestao }) => {
@@ -339,7 +340,7 @@ export default function ScienceContentHubPanel({
 
       <Bloco titulo="📷 FOTO (OPCIONAL)" cor={C.green}>
         <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 10 }}>
-          Sua foto entra como slide logo após a capa do carrossel e como primeiro story.
+          Sua foto entra após o slide de fontes do carrossel e como primeiro story.
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {foto && (

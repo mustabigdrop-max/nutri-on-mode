@@ -103,51 +103,54 @@ export const mitoToTech = (c: MitoMetodoContent): TechSlide[] => {
 };
 
 /* ── BiomechanicsVault ───────────────────────────────── */
-export const biomechToTech = (c: BiomechCarouselContent): TechSlide[] => [
-  {
-    tipo: "capa",
-    eyebrow: c.capa?.tag || "ANÁLISE BIOMECÂNICA",
-    titulo: c.capa?.titulo || c.exercicio,
-    subtitulo: c.capa?.subtitulo,
-  },
-  {
+export const biomechToTech = (c: BiomechCarouselContent): TechSlide[] => {
+  const pontos = (c.pontos || []).slice(0, 4);
+  const slideCiencia = (itens: typeof pontos, numero: number): TechSlide => ({
     tipo: "conteudo",
-    eyebrow: "O QUE A CIÊNCIA MOSTRA",
-    titulo: c.dado?.titulo || "",
-    cards: [{ destaque: c.dado?.numero, texto: c.dado?.corpo }],
-    pill: { text: "PESQUISA" },
-  },
-  ...(c.pontos || []).map((p) => ({
-    tipo: "conteudo" as const,
-    eyebrow: "EXECUÇÃO",
-    titulo: p.titulo || "",
-    texto: p.corpo,
-  })),
-  {
-    tipo: "conteudo",
-    eyebrow: "NA PRÁTICA",
-    titulo: c.aplicacao?.titulo || "",
-    texto: c.aplicacao?.corpo,
-  },
-  ...(c.fontes?.length
-    ? [
-        {
-          tipo: "conteudo" as const,
-          eyebrow: "REFERÊNCIAS",
-          titulo: "FONTES",
-          cards: c.fontes.slice(0, 5).map((f) => ({ texto: f })),
-        },
-      ]
-    : []),
-  {
-    tipo: "cta",
-    eyebrow: BIOMECH_CTA_SLIDE.tag,
-    titulo: BIOMECH_CTA_SLIDE.titulo,
-    subtitulo: BIOMECH_CTA_SLIDE.subtitulo,
-    faixa: { texto: BIOMECH_CTA_SLIDE.caixa },
-    nota: CTA_NOTA,
-  },
-];
+    eyebrow: `O QUE A CIÊNCIA MOSTRA ${numero}`,
+    titulo: itens[0]?.titulo || "EVIDÊNCIA APLICADA",
+    cards: itens.map((p) => ({ titulo: p.titulo || "", texto: p.corpo })),
+  });
+
+  // Ordem fixa: o slide 6 é sempre FONTES, inclusive no estilo Tech.
+  return [
+    {
+      tipo: "capa",
+      eyebrow: c.capa?.tag || "ANÁLISE BIOMECÂNICA",
+      titulo: c.capa?.titulo || c.exercicio,
+      subtitulo: c.capa?.subtitulo,
+    },
+    {
+      tipo: "conteudo",
+      eyebrow: "O QUE A CIÊNCIA MOSTRA",
+      titulo: c.dado?.titulo || "",
+      cards: [{ destaque: c.dado?.numero, texto: c.dado?.corpo }],
+      pill: { text: "PESQUISA" },
+    },
+    slideCiencia(pontos.slice(0, 2), 1),
+    slideCiencia(pontos.slice(2, 4), 2),
+    {
+      tipo: "conteudo",
+      eyebrow: "NA PRÁTICA",
+      titulo: c.aplicacao?.titulo || "",
+      texto: c.aplicacao?.corpo,
+    },
+    {
+      tipo: "conteudo",
+      eyebrow: "REFERÊNCIAS",
+      titulo: "FONTES",
+      cards: (c.fontes || []).slice(0, 5).map((f) => ({ texto: f })),
+    },
+    {
+      tipo: "cta",
+      eyebrow: BIOMECH_CTA_SLIDE.tag,
+      titulo: BIOMECH_CTA_SLIDE.titulo,
+      subtitulo: BIOMECH_CTA_SLIDE.subtitulo,
+      faixa: { texto: BIOMECH_CTA_SLIDE.caixa },
+      nota: CTA_NOTA,
+    },
+  ];
+};
 
 /* ── Conteúdo de módulo (botão 📲) ───────────────────── */
 export const moduleToTech = (slides: ModuleSlide[], tituloModulo: string): TechSlide[] =>
