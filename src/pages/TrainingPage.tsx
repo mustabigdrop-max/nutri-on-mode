@@ -535,6 +535,7 @@ Integre as fontes de contexto disponíveis em UM protocolo definitivo:
 ${prontidaoBloco}
 ${fibrasBloco}
 ${apexBloco}
+${apexAssessmentBloco}
 ${sistemaBloco}
 
 ━━━ PROGRESSÃO DE RIR (Reps In Reserve) — OBRIGATÓRIO ━━━
