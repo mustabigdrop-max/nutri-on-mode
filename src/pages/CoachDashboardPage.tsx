@@ -28,6 +28,7 @@ const ADVANCED_MODULES = [
   { label: "nutriON GYM", icon: Building2, route: "/mce/business", color: "#E8A020" },
   { label: "TrainingON", icon: Dumbbell, route: "/coach/trainingon", color: "#E8A020" },
   { label: "APEX Visual", icon: Camera, route: "/coach/apex-visual", color: "#E8A020" },
+  { label: "APEX Assessment", icon: ClipboardList, route: "/coach/apex-assessment", color: "#00D4FF" },
   { label: "VERA", icon: Sparkles, route: "/coach/vera", color: "#A78BFA" },
   { label: "LAB Exames", icon: FlaskConical, route: "/coach/exames", color: "#4ade80" },
   { label: "RunON", icon: Activity, route: "/runon", color: "#00D4FF" },
