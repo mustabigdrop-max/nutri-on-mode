@@ -163,8 +163,8 @@ export default function ApexFunctionalAssessment() {
         coach_id: user.id,
         athlete_id: athlete.id,
         avaliado_em: hoje,
-        grupos: diagnostico.grupos as unknown as Record<string, unknown>[],
-        prioridades: diagnostico.prioridades as unknown as Record<string, unknown>[],
+        grupos: JSON.parse(JSON.stringify(diagnostico.grupos)),
+        prioridades: JSON.parse(JSON.stringify(diagnostico.prioridades)),
         encaminhamentos: diagnostico.encaminhamentos,
         proxima_reavaliacao: {
           checklist_semanas: checklistSemanas,
