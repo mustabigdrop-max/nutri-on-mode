@@ -55,7 +55,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
           ? await renderTechSlides(mceToTech(content), { handle: content.handle || handle || undefined })
           : renderMceCarousel(content);
       const fotoSlide = foto ? await photoToFrame(foto) : null;
-      if (fotoSlide) imgs = [...imgs.slice(0, 6), fotoSlide, ...imgs.slice(6)];
+      if (fotoSlide) imgs = [fotoSlide, ...imgs.slice(1)];
       if (vivo) setImages(imgs);
     })();
     return () => {
@@ -102,7 +102,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
         value={foto}
         onChange={setFoto}
         disabled={loading}
-        description="Entra após o slide 6, antes do convite final."
+        description="Será a capa do carrossel."
       />
 
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -121,7 +121,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
       {images.length > 0 && (
         <div className="space-y-3">
           <div className="mx-auto max-w-sm overflow-hidden rounded-xl border" style={{ borderColor: "#EF9F2733" }}>
-              <img src={images[active]} alt={`Slide ${active + 1} — ${foto && active === 6 ? "FOTO" : SLIDE_LABELS[foto && active > 6 ? active - 1 : active]}`} className="w-full" />
+              <img src={images[active]} alt={`Slide ${active + 1} — ${SLIDE_LABELS[active]}`} className="w-full" />
           </div>
           <div className="flex flex-wrap justify-center gap-1.5">
             {images.map((src, i) => (
@@ -135,7 +135,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
                   color: i === active ? "#EF9F27" : undefined,
                 }}
               >
-                  {i + 1} · {foto && i === 6 ? "FOTO" : SLIDE_LABELS[foto && i > 6 ? i - 1 : i]}
+                  {i + 1} · {SLIDE_LABELS[i]}
               </button>
             ))}
           </div>
@@ -148,7 +148,7 @@ export default function MceCarouselPanel({ handle, initialTema }: { handle?: str
           <SaveShareButtons
             items={images.map((url, i) => ({
               url,
-               filename: `mce-carrossel-${i + 1}-${(foto && i === 6 ? "foto" : SLIDE_LABELS[foto && i > 6 ? i - 1 : i]).toLowerCase().replace(/\s+/g, "-")}.png`,
+               filename: `mce-carrossel-${i + 1}-${SLIDE_LABELS[i].toLowerCase().replace(/\s+/g, "-")}.png`,
             }))}
              labelSalvar={`Salvar os ${images.length} slides no álbum`}
             texto={tema}
