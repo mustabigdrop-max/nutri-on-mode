@@ -24,13 +24,13 @@ export async function getLatestApexAssessment(athleteId: string): Promise<ApexAs
 
   if (error || !data) return null;
 
-  const grupos = Array.isArray(data.grupos) ? (data.grupos as DiagnosticoCompleto["grupos"]) : [];
+  const grupos = Array.isArray(data.grupos) ? (data.grupos as unknown as DiagnosticoCompleto["grupos"]) : [];
   if (!grupos.length) return null;
 
   const proxima = (data.proxima_reavaliacao || {}) as Record<string, number | null>;
   const diagnostico: DiagnosticoCompleto = {
     grupos,
-    prioridades: Array.isArray(data.prioridades) ? (data.prioridades as DiagnosticoCompleto["prioridades"]) : [],
+    prioridades: Array.isArray(data.prioridades) ? (data.prioridades as unknown as DiagnosticoCompleto["prioridades"]) : [],
     encaminhamentos: Array.isArray(data.encaminhamentos) ? (data.encaminhamentos as string[]) : [],
     proxima_reavaliacao: {
       checklist_semanas: proxima.checklist_semanas ?? null,
