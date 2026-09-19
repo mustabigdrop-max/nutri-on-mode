@@ -81,7 +81,7 @@ serve(async (req) => {
     const aiData = await claudeResponse.json();
     const answer = aiData.choices?.[0]?.message?.content || "";
 
-    return new Response(JSON.stringify({ answer, rawScience, citations }), {
+    return new Response(JSON.stringify({ answer, rawScience, citations, liveSearch }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
