@@ -14,6 +14,7 @@ import {
   type GrupoDiagnostico,
   type Severidade,
 } from "@/lib/apexDeficitDiagnose";
+import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 
 const C = {
   bg: "#020205",
@@ -124,6 +125,7 @@ export default function ApexFunctionalAssessment() {
   );
 
   const diagnostico = useMemo(() => diagnosticarAtleta(entradas), [entradas]);
+  const prescricao = useMemo(() => prescreverApex(diagnostico), [diagnostico]);
 
   const responder = (perguntaId: string, opcao: string) => {
     setRespostas((prev) => ({
@@ -360,6 +362,10 @@ export default function ApexFunctionalAssessment() {
               proxima={diagnostico.proxima_reavaliacao}
             />
 
+            {/* ACTIVATE / CORRECT / PRESCRIBE */}
+            {diagnostico.grupos.length > 0 && <Prescricao prescricao={prescricao} />}
+
+
             <button
               onClick={salvar}
               disabled={saving || !entradas.length}
@@ -507,6 +513,153 @@ function Diagnostico({
         {" · "}
         {proxima.visual_semanas ? `visual em ${proxima.visual_semanas} semanas` : "visual sem pendência"}
       </div>
+    </div>
+  );
+}
+
+function Secao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12, marginTop: 12 }}>
+      <div style={{ ...LABEL, color: C.cyan, marginBottom: 8 }}>{titulo}</div>
+      {children}
+    </div>
+  );
+}
+
+function Prescricao({ prescricao }: { prescricao: PrescricaoApex }) {
+  const vazio =
+    !prescricao.warmup.length &&
+    !prescricao.correcao.length &&
+    !prescricao.ativacao.length &&
+    !prescricao.priorizacao.length;
+
+  if (vazio) return null;
+
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: 16, marginTop: 18 }}>
+      <div style={{ ...TITLE, fontSize: 20, letterSpacing: "0.02em" }}>PROTOCOLO PRESCRITO</div>
+      <div style={{ color: C.textSec, fontSize: 12, marginTop: 4 }}>
+        Gerado a partir do diagnóstico registrado. Exercícios de ativação não contam como treino: volume baixo, carga
+        leve, sem falha.
+      </div>
+
+      {prescricao.warmup.length > 0 && (
+        <Secao titulo="aquecimento prescrito">
+          <div style={{ display: "grid", gap: 6 }}>
+            {prescricao.warmup.map((w, i) => (
+              <div key={i} style={{ display: "flex", gap: 8, fontSize: 13 }}>
+                <span style={{ ...LABEL, color: w.tag === "[CORRECT]" ? C.red : C.cyan }}>{w.tag}</span>
+                <span>{w.descricao}</span>
+              </div>
+            ))}
+          </div>
+        </Secao>
+      )}
+
+      {prescricao.correcao.map((c) => (
+        <Secao key={c.grupo_key} titulo={`correção · ${c.grupo} — ${c.regiao} (${c.regiao_subtitulo})`}>
+          <div style={{ fontSize: 12, color: C.textSec, marginBottom: 8 }}>
+            Dominante: {c.dominante}
+            <br />
+            Inibido: {c.inibido}
+          </div>
+          <div style={{ display: "grid", gap: 6 }}>
+            {c.itens.map((it, i) => (
+              <div key={`${it.exercicio}-${i}`} style={{ fontSize: 13 }}>
+                <span style={{ ...LABEL, color: C.gold }}>{it.fase_nome}</span>{" "}
+                <strong>{it.exercicio}</strong>{" "}
+                <span style={{ color: C.textSec }}>
+                  — {it.alvo}
+                  {it.series ? ` · ${it.series}` : ""}
+                  {it.repsOuDuracao ? ` · ${it.repsOuDuracao}` : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+          {c.contraindicados.length > 0 && (
+            <div style={{ marginTop: 10, fontSize: 12, color: C.textSec }}>
+              <div style={{ ...LABEL, color: C.red }}>evitar nesta fase</div>
+              <ul style={{ margin: "6px 0 0", paddingLeft: 16 }}>
+                {c.contraindicados.map((x, i) => (
+                  <li key={i}>
+                    {x.item} — {x.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Secao>
+      ))}
+
+      {prescricao.ativacao.length > 0 && (
+        <Secao titulo="ativação pré-treino">
+          <div style={{ display: "grid", gap: 6 }}>
+            {prescricao.ativacao.map((a) => (
+              <div key={a.grupo_key} style={{ fontSize: 13 }}>
+                <strong>{a.grupo}</strong>{" "}
+                <span style={{ color: C.textSec }}>
+                  — ativar {a.alvo}: {a.series}, {a.reps}, {a.carga}, {a.tecnica}. {a.momento}.
+                </span>
+              </div>
+            ))}
+          </div>
+        </Secao>
+      )}
+
+      {prescricao.priorizacao.length > 0 && (
+        <Secao titulo="priorização na sessão">
+          <div style={{ display: "grid", gap: 4, fontSize: 13 }}>
+            {prescricao.priorizacao.map((p, i) => (
+              <div key={i}>{p}</div>
+            ))}
+          </div>
+        </Secao>
+      )}
+
+      {prescricao.tecnicas.length > 0 && (
+        <Secao titulo="técnicas indicadas">
+          <div style={{ display: "grid", gap: 6, fontSize: 13 }}>
+            {prescricao.tecnicas.map((t, i) => (
+              <div key={i}>
+                <strong>{t.grupo}</strong>{" "}
+                <span style={{ color: DEFICIT_COR[t.deficit] }}>{DEFICIT_LABEL[t.deficit]}</span>{" "}
+                <span style={{ color: SEV_COR[t.severidade], fontSize: 11 }}>{t.severidade}</span>
+                <div style={{ color: C.textSec, fontSize: 12 }}>
+                  {t.tecnica} — {t.justificativa}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Secao>
+      )}
+
+      {prescricao.feeders.length > 0 && (
+        <Secao titulo="sessões extras (feeder)">
+          <div style={{ display: "grid", gap: 6, fontSize: 13 }}>
+            {prescricao.feeders.map((f, i) => (
+              <div key={i}>
+                <span style={{ ...LABEL, color: C.gold }}>[FEEDER]</span> <strong>{f.grupo}</strong>{" "}
+                <span style={{ color: C.textSec }}>
+                  — {f.alvo} · {f.frequencia} · {f.detalhe}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Secao>
+      )}
+
+      {prescricao.nutricao.length > 0 && (
+        <Secao titulo="ajustes nutricionais sugeridos">
+          <div style={{ display: "grid", gap: 6, fontSize: 13 }}>
+            {prescricao.nutricao.map((n, i) => (
+              <div key={i}>
+                <strong>{n.titulo}</strong>
+                <div style={{ color: C.textSec, fontSize: 12 }}>{n.detalhe}</div>
+              </div>
+            ))}
+          </div>
+        </Secao>
+      )}
     </div>
   );
 }
