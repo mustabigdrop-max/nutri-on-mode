@@ -66,21 +66,40 @@ export async function saveExerciseOverride(
   if (options.propagate && options.totalWeeks) {
     for (let w = override.week_number + 1; w <= options.totalWeeks; w++) weeks.push(w);
   }
-  const rows = weeks.map((week_number) => ({
-    coach_id: coachId,
-    protocol_id: override.protocol_id,
-    week_number,
-    day_number: override.day_number,
-    exercise_name: override.exercise_name,
-    action: override.action,
-    new_exercise_name: override.new_exercise_name || null,
-    sets: override.sets || null,
-    reps: override.reps || null,
-    rpe: override.rpe || null,
-    rir: override.rir || null,
-    rest: override.rest || null,
-    coach_note: override.coach_note || null,
-  }));
+  // Preserva ajustes já salvos pelo coach: campos não informados nesta chamada
+  // mantêm o valor gravado anteriormente em cada semana.
+  const { data: existentes } = await (supabase.from as any)("training_exercise_overrides")
+    .select("*")
+    .eq("protocol_id", override.protocol_id)
+    .eq("day_number", override.day_number)
+    .eq("exercise_name", override.exercise_name)
+    .in("week_number", weeks);
+
+  const porSemana = new Map<number, any>(
+    ((existentes || []) as any[]).map((r) => [Number(r.week_number), r])
+  );
+
+  const manter = (novo: any, antigo: any) =>
+    novo === undefined || novo === null || novo === "" ? (antigo ?? null) : novo;
+
+  const rows = weeks.map((week_number) => {
+    const ant = porSemana.get(week_number) || {};
+    return {
+      coach_id: coachId,
+      protocol_id: override.protocol_id,
+      week_number,
+      day_number: override.day_number,
+      exercise_name: override.exercise_name,
+      action: override.action,
+      new_exercise_name: manter(override.new_exercise_name, ant.new_exercise_name),
+      sets: manter(override.sets, ant.sets),
+      reps: manter(override.reps, ant.reps),
+      rpe: manter(override.rpe, ant.rpe),
+      rir: manter(override.rir, ant.rir),
+      rest: manter(override.rest, ant.rest),
+      coach_note: manter(override.coach_note, ant.coach_note),
+    };
+  });
   const { error } = await (supabase.from as any)("training_exercise_overrides")
     .upsert(rows, { onConflict: "protocol_id,week_number,day_number,exercise_name" });
   return { error: error?.message || null, weeks };

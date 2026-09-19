@@ -15,19 +15,40 @@ const OCULTAR = ["/", "/auth", "/modulos", "/diagnostico", "/onboarding", "/coac
  */
 export default function ModuleContentFab() {
   const { pathname } = useLocation();
-  const [logado, setLogado] = useState(false);
+  const [ehCoach, setEhCoach] = useState(false);
   const [aberto, setAberto] = useState(false);
 
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => setLogado(!!data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setLogado(!!session));
-    return () => sub.subscription.unsubscribe();
+    let ativo = true;
+
+    const verificar = async (userId?: string | null) => {
+      if (!userId) {
+        if (ativo) setEhCoach(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("coach_profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (ativo) setEhCoach(!!data);
+    };
+
+    void supabase.auth.getSession().then(({ data }) => verificar(data.session?.user?.id));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      void verificar(session?.user?.id);
+    });
+    return () => {
+      ativo = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => setAberto(false), [pathname]);
 
   const modulo = detectarModulo(pathname);
-  if (!logado || !modulo || OCULTAR.includes(pathname)) return null;
+  // Ferramenta de conteúdo é exclusiva do coach: alunos nunca veem o botão.
+  if (!ehCoach || !modulo || OCULTAR.includes(pathname)) return null;
 
   return (
     <>
