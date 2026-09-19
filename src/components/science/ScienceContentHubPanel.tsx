@@ -250,7 +250,7 @@ export default function ScienceContentHubPanel({
       if (quer("stories")) {
         const r = (await chamarModo("biomech_stories", ang)) as StoryScript & { legenda?: string };
         const fonteStory = fontesReais.slice(0, 3).map(rotuloFonte).join(" · ");
-        setStoriesImgs(renderStoryFrames({
+        const framesRenderizados = renderStoryFrames({
           tema: r.tema,
           frames: [
             ...(r.frames || []),
