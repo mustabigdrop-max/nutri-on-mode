@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import CitationBadge from "@/components/science/CitationBadge";
 import ScienceIndicator from "@/components/science/ScienceIndicator";
 import ReactMarkdown from "react-markdown";
+import ScienceContentHubPanel from "@/components/science/ScienceContentHubPanel";
 
 const quickQuestions = [
   "Volume ótimo para hipertrofia de peitoral 2024",
