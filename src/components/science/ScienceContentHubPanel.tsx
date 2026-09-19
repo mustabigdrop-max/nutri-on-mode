@@ -24,6 +24,29 @@ import { usePesquisaAtiva } from "@/hooks/usePesquisaAtiva";
 import { useCarouselStyle } from "@/hooks/useCarouselStyle";
 import { renderTechSlides } from "@/lib/techSlideTemplate";
 import { biomechToTech } from "@/lib/techAdapters";
+import { compressImageFile } from "@/lib/socialMediaFrames";
+
+/** Foto do coach como slide 4:5 (1080x1350) no padrão do carrossel — a imagem preenche o slide. */
+const fotoParaSlide = async (url: string, w = 1080, h = 1350): Promise<string | null> => {
+  const img = await new Promise<HTMLImageElement | null>((res) => {
+    const i = new window.Image();
+    i.onload = () => res(i);
+    i.onerror = () => res(null);
+    i.src = url;
+  });
+  if (!img) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillRect(0, 0, w, h);
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale;
+  const dh = img.height * scale;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return canvas.toDataURL("image/png");
+};
 
 const C = {
   s1: "#0B0B12", s2: "#10101A", border: "#ffffff14",
