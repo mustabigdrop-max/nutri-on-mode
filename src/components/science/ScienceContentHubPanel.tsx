@@ -165,13 +165,17 @@ export default function ScienceContentHubPanel({
     if (!content) return;
     let vivo = true;
     (async () => {
-      const imgs = style === "tech"
+      let imgs = style === "tech"
         ? await renderTechSlides(biomechToTech(content), { handle: content.handle || at })
         : renderBiomechCarousel(content);
+      if (foto) {
+        const fotoSlide = await fotoParaSlide(foto);
+        if (fotoSlide) imgs = [imgs[0], fotoSlide, ...imgs.slice(1)];
+      }
       if (vivo) setSlides(imgs);
     })();
     return () => { vivo = false; };
-  }, [content, style, at]);
+  }, [content, style, at, foto]);
 
   const pesquisaBase = { content: pesquisaTexto, citations: fontesReais };
 
