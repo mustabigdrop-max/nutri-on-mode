@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { normalizeResearchSources, SEM_FONTE_REAL } from "@/lib/researchSources";
+import { extractResearchSources, normalizeResearchSources, SEM_FONTE_REAL } from "@/lib/researchSources";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanCaption } from "@/lib/captionText";
 import SaveShareButtons from "@/components/social/SaveShareButtons";
@@ -231,12 +231,20 @@ export default function BiomechHubPanel({
       if (data?.content) partes.push(`### ${tab.toUpperCase()}\n${data.content}`);
       if (Array.isArray(data?.citations)) cits.push(...data.citations);
     }
-    const fontesReais = normalizeResearchSources(cits);
+    const corpo = partes.join("\n\n");
+    // Também valem as referências já citadas no corpo da pesquisa e na pesquisa ativa.
+    const fontesReais = normalizeResearchSources([
+      ...cits,
+      ...extractResearchSources(corpo),
+      ...(pesquisa?.brief?.fontes ?? []),
+      ...(pesquisa?.citations ?? []),
+      ...extractResearchSources(pesquisa?.brief?.resumo),
+    ]);
     if (!fontesReais.length) throw new Error(SEM_FONTE_REAL);
-    const biomechData = { content: partes.join("\n\n"), citations: fontesReais };
+    const biomechData = { content: corpo, citations: fontesReais };
     setCitacoes(biomechData.citations);
     return biomechData;
-  }, [exercicio, grupo]);
+  }, [exercicio, grupo, pesquisa]);
 
   const chamarModo = async (
     mode: string,
