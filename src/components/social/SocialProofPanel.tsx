@@ -7,6 +7,7 @@ import { Loader2, Download, Copy, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { isMobileDevice, saveImage } from "@/lib/socialImageKit";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
+import ContentPhotoPicker from "./ContentPhotoPicker";
 
 type Athlete = { userId: string; name: string };
 
@@ -41,6 +42,7 @@ const SocialProofPanel = ({
   const [busy, setBusy] = useState<string | null>(null);
   const [authorized, setAuthorized] = useState(false);
   const [caption, setCaption] = useState<string | null>(null);
+  const [clientPhoto, setClientPhoto] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -129,6 +131,12 @@ const SocialProofPanel = ({
           {athletes.map((a) => <option key={a.userId} value={a.userId} className="bg-background">{a.name}</option>)}
         </select>
         {busy === "load" && <p className="text-xs font-mono text-muted-foreground flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin" /> Carregando dados…</p>}
+        <ContentPhotoPicker
+          value={clientPhoto}
+          onChange={setClientPhoto}
+          description="Use somente uma foto autorizada pelo cliente."
+          disabled={busy === "load"}
+        />
       </Section>
 
       {stats && (
@@ -137,6 +145,9 @@ const SocialProofPanel = ({
             <div ref={cardRef} className="w-[340px] h-[340px] p-6 flex flex-col justify-between"
               style={{ background: "#020205", border: `1px solid ${ACCENT}55` }}>
               <div>
+                {clientPhoto && (
+                  <img src={clientPhoto} alt="Foto autorizada do cliente" className="mb-3 h-24 w-full rounded-md object-cover" />
+                )}
                 <div className="w-9 h-1.5 rounded-full mb-3" style={{ background: ACCENT }} />
                 <p className="text-lg font-bold text-white">RESULTADO REAL 📊</p>
                 <p className="text-xs text-white/60 mt-1">

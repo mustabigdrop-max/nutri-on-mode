@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, Section } from "./socialUi";
 import SaveShareButtons from "./SaveShareButtons";
 import { renderModuleCarousel, type ModuleSlide } from "@/lib/moduleCarouselTemplate";
+import ContentPhotoPicker from "./ContentPhotoPicker";
+import { photoToFrame } from "@/lib/socialMediaFrames";
 
 type Lead = {
   id: string;
@@ -30,6 +32,7 @@ export default function TransformacaoPanel() {
   const [sel, setSel] = useState<string>("");
   const [depoimento, setDepoimento] = useState("");
   const [slides, setSlides] = useState<string[]>([]);
+  const [foto, setFoto] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -62,7 +65,7 @@ export default function TransformacaoPanel() {
 
   const pessoa = pessoas.find((p) => p.chave === sel);
 
-  const gerar = () => {
+  const gerar = async () => {
     if (!pessoa) return;
     const i = pessoa.inicial;
     const a = pessoa.atual;
@@ -124,7 +127,10 @@ export default function TransformacaoPanel() {
         destaque: "14 perguntas · 4 minutos · resultado imediato",
       },
     ];
-    setSlides(renderModuleCarousel(slidesData, "diogo.mell0", "Transformação"));
+    let rendered = renderModuleCarousel(slidesData, "diogo.mell0", "Transformação");
+    const fotoSlide = foto ? await photoToFrame(foto) : null;
+    if (fotoSlide) rendered = [...rendered.slice(0, 6), fotoSlide, ...rendered.slice(6)];
+    setSlides(rendered);
     toast.success("Carrossel de prova social gerado");
   };
 
@@ -151,7 +157,8 @@ export default function TransformacaoPanel() {
               </div>
             )}
             <Textarea rows={4} placeholder="Depoimento da pessoa (opcional)" value={depoimento} onChange={(e) => setDepoimento(e.target.value)} />
-            <Button disabled={!pessoa} onClick={gerar} className="gap-2" style={{ background: ACCENT }}>✦ Gerar conteúdo de prova social</Button>
+            <ContentPhotoPicker value={foto} onChange={setFoto} description="Adicione uma foto autorizada da transformação ao carrossel." />
+            <Button disabled={!pessoa} onClick={() => void gerar()} className="gap-2" style={{ background: ACCENT }}>✦ Gerar conteúdo de prova social</Button>
           </>
         )}
       </Section>

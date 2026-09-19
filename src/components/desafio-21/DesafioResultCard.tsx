@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { Share2, Download } from "lucide-react";
 import { BADGES, DesafioConfig, getPlan, getStats } from "@/lib/desafio21";
+import ContentPhotoPicker from "@/components/social/ContentPhotoPicker";
+import { Button } from "@/components/ui/button";
 
 const mono = (s: number, c: string, sp = 1.5): React.CSSProperties => ({
   fontFamily: "'Space Mono', monospace", fontSize: s, color: c, letterSpacing: `${sp}px`,
@@ -12,6 +14,7 @@ const raj = (s: number, w = 700, c = "#F5F0E8"): React.CSSProperties => ({
 export default function DesafioResultCard({ cfg }: { cfg: DesafioConfig }) {
   const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
+  const [photo, setPhoto] = useState<string | null>(null);
   const stats = getStats(cfg);
   const plan = getPlan(cfg);
 
@@ -68,6 +71,9 @@ export default function DesafioResultCard({ cfg }: { cfg: DesafioConfig }) {
             }}
           >
             <div style={{ textAlign: "center" }}>
+              {photo && (
+                <img src={photo} alt="Foto do desafio" style={{ width: 180, height: 180, borderRadius: 90, objectFit: "cover", margin: "0 auto 24px", border: "4px solid #00D4FF" }} />
+              )}
               <p style={raj(56, 700, "#00D4FF")}>nutriON</p>
               <p style={{ ...mono(26, "#F5F0E8", 3), marginTop: 16 }}>DESAFIO 21 DIAS — ATLETA HÍBRIDO</p>
               <p style={{ ...mono(24, "#00FF88", 4), marginTop: 14 }}>✅ COMPLETADO</p>
@@ -111,8 +117,12 @@ export default function DesafioResultCard({ cfg }: { cfg: DesafioConfig }) {
         </div>
       </div>
 
+      <div className="mt-3">
+        <ContentPhotoPicker value={photo} onChange={setPhoto} description="A foto aparece no card final do desafio." disabled={busy} />
+      </div>
+
       <div className="flex gap-2 mt-3">
-        <button
+        <Button
           type="button"
           aria-label="Compartilhar card do desafio"
           onClick={share}
@@ -122,7 +132,7 @@ export default function DesafioResultCard({ cfg }: { cfg: DesafioConfig }) {
         >
           {busy ? <Download style={{ width: 15, height: 15 }} /> : <Share2 style={{ width: 15, height: 15 }} />}
           {busy ? "GERANDO..." : "COMPARTILHAR"}
-        </button>
+        </Button>
       </div>
     </div>
   );
