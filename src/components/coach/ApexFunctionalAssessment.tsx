@@ -124,6 +124,7 @@ export default function ApexFunctionalAssessment() {
   );
 
   const diagnostico = useMemo(() => diagnosticarAtleta(entradas), [entradas]);
+  const prescricao = useMemo(() => prescreverApex(diagnostico), [diagnostico]);
 
   const responder = (perguntaId: string, opcao: string) => {
     setRespostas((prev) => ({
