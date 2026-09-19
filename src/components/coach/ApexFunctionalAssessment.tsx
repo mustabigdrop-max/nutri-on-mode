@@ -400,6 +400,11 @@ export default function ApexFunctionalAssessment() {
               <RelatorioAtleta texto={gerarRelatorioAtleta(athlete?.nome || "atleta", diagnostico, prescricao)} />
             )}
 
+            {/* REASSESS */}
+            {comparacao && <Comparacao comparacao={comparacao} />}
+
+
+
 
 
             <button
