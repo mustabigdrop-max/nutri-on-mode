@@ -204,8 +204,8 @@ export default function BiomechHubPanel({
         : renderBiomechCarousel(bioContent);
       if (foto) {
         const fotoSlide = await fotoParaSlide(foto);
-        // FONTES permanece sempre no slide 6; a foto entra antes do CTA.
-        if (fotoSlide) imgs = [...imgs.slice(0, 6), fotoSlide, ...imgs.slice(6)];
+        // A foto ocupa a capa sem criar um slide extra; FONTES permanece no slide 6.
+        if (fotoSlide) imgs = [fotoSlide, ...imgs.slice(1)];
       }
       if (vivo) setSlides(imgs);
     })();
@@ -339,9 +339,7 @@ export default function BiomechHubPanel({
   const hashtags = hashtagsBiomech([grupo], grupo);
   const legendaBase = legenda ? `${legenda}\n\n${CONFIG_BIOMECH.cta_save}\n\n${hashtags.join(" ")}` : "";
   const legendaFinal = legendaEditada ?? legendaBase;
-  const slideLabels = foto
-    ? [...BIOMECH_SLIDE_LABELS.slice(0, 6), "Foto", ...BIOMECH_SLIDE_LABELS.slice(6)]
-    : BIOMECH_SLIDE_LABELS;
+  const slideLabels = BIOMECH_SLIDE_LABELS;
 
   const CardSugestao = ({ tag, cor, s }: { tag: string; cor: string; s?: Sugestao }) => {
     if (!s?.titulo) return null;
@@ -392,7 +390,7 @@ export default function BiomechHubPanel({
 
       <Bloco titulo="📷 FOTO (OPCIONAL)" cor={C.green}>
         <div style={{ fontFamily: F.b, fontSize: 11, color: C.text, marginBottom: 10 }}>
-          Sua foto entra depois do slide 6 de fontes e como primeiro story.
+          Sua foto será a capa do carrossel e o primeiro story.
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {foto && (

@@ -129,7 +129,7 @@ export default function TransformacaoPanel() {
     ];
     let rendered = renderModuleCarousel(slidesData, "diogo.mell0", "Transformação");
     const fotoSlide = foto ? await photoToFrame(foto) : null;
-    if (fotoSlide) rendered = [...rendered.slice(0, 6), fotoSlide, ...rendered.slice(6)];
+    if (fotoSlide) rendered = [fotoSlide, ...rendered.slice(1)];
     setSlides(rendered);
     toast.success("Carrossel de prova social gerado");
   };
@@ -157,7 +157,7 @@ export default function TransformacaoPanel() {
               </div>
             )}
             <Textarea rows={4} placeholder="Depoimento da pessoa (opcional)" value={depoimento} onChange={(e) => setDepoimento(e.target.value)} />
-            <ContentPhotoPicker value={foto} onChange={setFoto} description="Adicione uma foto autorizada da transformação ao carrossel." />
+            <ContentPhotoPicker value={foto} onChange={setFoto} description="A foto autorizada da transformação será a capa do carrossel." />
             <Button disabled={!pessoa} onClick={() => void gerar()} className="gap-2" style={{ background: ACCENT }}>✦ Gerar conteúdo de prova social</Button>
           </>
         )}

@@ -104,7 +104,7 @@ export default function NexusCarouselPanel({
   const renderWith = async (c: NexusCarouselContent, s: CarouselStyle) => {
     let rendered = s === "tech" ? await renderNexusTechCarousel(c) : renderNexusCarousel(c);
     const fotoSlide = foto ? await photoToFrame(foto) : null;
-    if (fotoSlide) rendered = [...rendered.slice(0, 6), fotoSlide, ...rendered.slice(6)];
+    if (fotoSlide) rendered = [fotoSlide, ...rendered.slice(1)];
     return rendered;
   };
 
@@ -159,7 +159,7 @@ export default function NexusCarouselPanel({
       setContent(content);
       setImages(await renderWith(content, style));
       const baseLabels = nexusSlideLabels(content);
-      setLabels(foto ? [...baseLabels.slice(0, 6), "FOTO", ...baseLabels.slice(6)] : baseLabels);
+      setLabels(baseLabels);
       setLegenda(cleanCaption(content.legenda));
       setActive(0);
     } catch (e) {
@@ -210,13 +210,13 @@ export default function NexusCarouselPanel({
           if (!content) return;
           let rendered = style === "tech" ? await renderNexusTechCarousel(content) : renderNexusCarousel(content);
           const fotoSlide = next ? await photoToFrame(next) : null;
-          if (fotoSlide) rendered = [...rendered.slice(0, 6), fotoSlide, ...rendered.slice(6)];
+           if (fotoSlide) rendered = [fotoSlide, ...rendered.slice(1)];
           setImages(rendered);
           const baseLabels = nexusSlideLabels(content);
-          setLabels(next ? [...baseLabels.slice(0, 6), "FOTO", ...baseLabels.slice(6)] : baseLabels);
+           setLabels(baseLabels);
         }}
         disabled={loading}
-        description="Entra após o slide 6 do carrossel."
+        description="Será a capa do carrossel."
       />
 
       <div className="flex flex-wrap gap-1.5">
@@ -280,7 +280,7 @@ export default function NexusCarouselPanel({
                 setContent(next);
                 setImages(await renderWith(next, style));
                 const baseLabels = nexusSlideLabels(next);
-                setLabels(foto ? [...baseLabels.slice(0, 6), "FOTO", ...baseLabels.slice(6)] : baseLabels);
+                setLabels(baseLabels);
               }}
             />
           )}

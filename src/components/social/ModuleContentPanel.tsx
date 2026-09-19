@@ -107,7 +107,7 @@ export default function ModuleContentPanel({
     void (async () => {
       let imgs = await renderSlidesModulo(slidesBrutos, style);
       const fotoSlide = foto ? await photoToFrame(foto) : null;
-      if (fotoSlide) imgs = [...imgs.slice(0, 6), fotoSlide, ...imgs.slice(6)];
+      if (fotoSlide) imgs = [fotoSlide, ...imgs.slice(1)];
       if (vivo) setSlides(imgs);
     })();
     return () => { vivo = false; };
@@ -193,7 +193,7 @@ export default function ModuleContentPanel({
         value={foto}
         onChange={setFoto}
         disabled={!!gerando}
-        description="Entra após o slide 6 do carrossel e como primeiro story."
+        description="Será a capa do carrossel e o primeiro story."
       />
 
       <div className="rounded-lg border border-primary/40 bg-primary/5 p-3">
