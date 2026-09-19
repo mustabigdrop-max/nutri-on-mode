@@ -56,9 +56,11 @@ export const beginSlideContent = (ctx: CanvasRenderingContext2D, w: number, h: n
   // Os templates foram originalmente desenhados ocupando quase toda a altura.
   // Compactamos a camada de conteúdo, sem alterar o rodapé, para preservar
   // títulos, cards e listas completos dentro da nova área segura.
-  // Compacta apenas na vertical: escalar também na horizontal deixava faixas
-  // vazias nas laterais (o fundo do template não alcançava as bordas).
-  ctx.scale(1, slideContentBottom(h) / h);
+  // Escala uniforme (mesmo fator em X e Y) centralizada na horizontal: mantém
+  // a proporção de letras, círculos e cards — nunca achatar na vertical.
+  const s = slideContentBottom(h) / h;
+  ctx.translate((w - w * s) / 2, 0);
+  ctx.scale(s, s);
 };
 
 export type SlideFooterOpts = {
