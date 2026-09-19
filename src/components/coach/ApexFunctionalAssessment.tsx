@@ -670,3 +670,41 @@ function Prescricao({ prescricao }: { prescricao: PrescricaoApex }) {
     </div>
   );
 }
+
+function RelatorioAtleta({ texto }: { texto: string }) {
+  if (!texto) return null;
+  return (
+    <div style={{ marginTop: 18, background: C.surface, border: `1px solid ${C.border}`, padding: 16 }}>
+      <div style={{ ...LABEL, color: C.gold, marginBottom: 10 }}>Relatório para o atleta</div>
+      <pre
+        style={{
+          whiteSpace: "pre-wrap",
+          fontFamily: "'Space Mono', monospace",
+          fontSize: 12,
+          lineHeight: 1.7,
+          color: C.text,
+          margin: 0,
+        }}
+      >
+        {texto}
+      </pre>
+      <button
+        onClick={() => {
+          navigator.clipboard.writeText(texto);
+          toast({ title: "Relatório copiado", description: "Pronto para enviar ao atleta." });
+        }}
+        style={{
+          ...LABEL,
+          marginTop: 12,
+          padding: "10px 16px",
+          background: "transparent",
+          border: `1px solid ${C.cyan}`,
+          color: C.cyan,
+          cursor: "pointer",
+        }}
+      >
+        Copiar relatório
+      </button>
+    </div>
+  );
+}
