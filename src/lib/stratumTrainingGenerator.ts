@@ -17,6 +17,9 @@ import type {
 import { ORDEM_TRATAMENTO } from "@/lib/apexDeficitDiagnose";
 import { ATIVACAO_REGRA, prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 import type { StratumLevelKey } from "@/lib/stratumEngine";
+import { exerciciosDoGrupo } from "@/lib/kinesisAtlas";
+import { substituirPorUnilateral } from "@/lib/kinesisAsymmetry";
+import type { ExercicioKinesis } from "@/lib/kinesisTypes";
 
 export type Mesociclo = "acumulacao" | "intensificacao" | "transmutacao" | "realizacao" | "deload";
 
