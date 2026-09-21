@@ -10,6 +10,7 @@ import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-re
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { getPoseLandmarker, analyzeFrame, countReps, detectExercise, type FrameAnalysis } from "@/lib/poseAnalysis";
+import { calcularMovementScore, roteiroReelMovementScore, type MovementScoreResult } from "@/lib/movementScore";
 import { useFFmpegConvert } from "@/hooks/useFFmpegConvert";
 
 const EXERCISES = [
@@ -31,6 +32,7 @@ const VideoFormPage = () => {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{ content: string; reps: number; frames: number } | null>(null);
+  const [movement, setMovement] = useState<MovementScoreResult | null>(null);
   const [conversionError, setConversionError] = useState<string | null>(null);
   const { convert: ffmpegConvert, needsConversion, isConverting: ffmpegConverting, isLoading: ffmpegLoading, progress: ffmpegProgress } = useFFmpegConvert();
 
@@ -142,6 +144,7 @@ const VideoFormPage = () => {
     setProgress(5);
     setStatusText("Carregando modelo de pose estimation...");
     setResult(null);
+    setMovement(null);
 
     try {
       setStatusText("Analisando frames do vídeo...");
@@ -160,6 +163,8 @@ const VideoFormPage = () => {
 
       const reps = countReps(frames);
       const clientHint = exercise === "auto" ? detectExercise(frames) : null;
+      const exercicioAvaliado = exercise === "auto" ? clientHint?.name || "" : exercise;
+      setMovement(exercicioAvaliado ? calcularMovementScore(exercicioAvaliado, frames) : null);
       setStatusText("Enviando para o VideoForm AI...");
       setProgress(96);
 
@@ -300,6 +305,64 @@ const VideoFormPage = () => {
               </ul>
             </CardContent>
           </Card>
+        )}
+
+        {movement && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-primary/30">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-end justify-between gap-3 pb-3 border-b border-border">
+                  <div>
+                    <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Movement Score</p>
+                    <p className="text-4xl font-bold leading-none">{movement.score}<span className="text-base text-muted-foreground">/100</span></p>
+                    <p className="text-xs font-mono text-primary mt-1">{movement.classificacao}</p>
+                  </div>
+                  <p className="text-xs font-mono text-muted-foreground text-right">
+                    {movement.exercicio}<br />referência {movement.referencia}
+                  </p>
+                </div>
+
+                {movement.alertaSeguranca && (
+                  <p className="text-xs text-destructive border border-destructive/40 bg-destructive/10 p-3">
+                    {movement.alertaSeguranca}
+                  </p>
+                )}
+
+                <div className="space-y-1.5">
+                  {movement.componentes.map((c) => (
+                    <div key={c.metrica} className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-muted-foreground">{c.label}</span>
+                      <span className={c.dentro ? "text-primary" : "text-destructive"}>
+                        {c.medido}° ({c.faixa[0]}–{c.faixa[1]}°) · {c.score}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {movement.errosDetectados.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Correções KINESIS</p>
+                    {movement.errosDetectados.map((e) => (
+                      <p key={e.label} className="text-sm">
+                        <strong>{e.label}</strong> — {e.desvioGraus}° fora da faixa. {e.correcao}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(roteiroReelMovementScore(movement));
+                    toast({ title: "Roteiro copiado", description: "Reel do Movement Score pronto para gravar." });
+                  }}
+                >
+                  Copiar roteiro de Reel
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
 
         {result && (
