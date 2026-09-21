@@ -10,7 +10,7 @@ import {
   type DeficitKey,
 } from "@/lib/quizDeficit";
 
-const COACH_WHATSAPP = ""; // preenchido pelo coach nas configurações públicas
+const COACH_WHATSAPP = "5521965802847";
 
 const C = {
   bg: "#020205",
