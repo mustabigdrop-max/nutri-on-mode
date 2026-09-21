@@ -136,6 +136,8 @@ export interface PlanoStratum {
   encaminhamentos: string[];
   resumo_ajustes: string[];
   prescricao_apex: PrescricaoApex | null;
+  /** Exercícios com cue obrigatório vindos do KINESIS (vazio sem diagnóstico). */
+  selecao_kinesis: SelecaoKinesis[];
 }
 
 // ── PASSO 1: divisão ────────────────────────────────────────────────────────
