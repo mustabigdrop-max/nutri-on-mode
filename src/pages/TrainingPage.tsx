@@ -586,6 +586,8 @@ ${competicaoBloco}
 
 ${buildStratumInstruction(stratum)}
 
+${stratumGeneratorBloco}
+
 ${buildStratumDecisionInstruction({
   phase,
   goal: specificGoal,
