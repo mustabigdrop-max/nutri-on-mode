@@ -475,9 +475,19 @@ export default function CoachTrainingOnPage() {
 
   return (
     <div className="space-y-4 max-w-5xl">
-      <Button variant="ghost" size="sm" onClick={() => navigate("/coach/dashboard")} className="gap-2 -ml-2">
-        <ArrowLeft className="h-4 w-4" /> Voltar
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/coach/dashboard")} className="gap-2 -ml-2">
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/kinesis")}
+          className="border-emerald-500/40 text-emerald-400 hover:text-emerald-300"
+        >
+          KINESIS · Ciência do Exercício
+        </Button>
+      </div>
       <Card className="border-blue-500/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
