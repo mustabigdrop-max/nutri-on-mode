@@ -57,6 +57,13 @@
       "when": 1790010677243,
       "tag": "0007_restrict_challenge_participant_pii",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790010783698,
+      "tag": "0008_harden_privilege_columns",
+      "breakpoints": true
     }
   ]
 }
