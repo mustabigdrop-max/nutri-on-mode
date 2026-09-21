@@ -338,6 +338,70 @@ function criterioProgressao(g: GrupoPrioritario): string {
   }
 }
 
+function prescricaoKinesis(ex: ExercicioKinesis, tipo: DeficitTipo): { texto: string; tempo: string } {
+  const p = ex.prescricao_por_objetivo;
+  if (tipo === "BIOMECANICO") {
+    const c = p.correcao_biomecanica;
+    return {
+      texto: `${c.series} · ${c.reps} · ${c.rpe} · descanso ${c.descanso}${c.nota ? ` — ${c.nota}` : ""}`,
+      tempo: ex.execucao.tempo_recomendado.padrao,
+    };
+  }
+  if (tipo === "ATIVACAO") {
+    const a = p.ativacao_neuromuscular;
+    return {
+      texto: `${a.series} · ${a.reps} · ${a.rpe} · descanso ${a.descanso}${a.nota ? ` — ${a.nota}` : ""}`,
+      tempo: ex.execucao.tempo_recomendado.ativacao,
+    };
+  }
+  const h = p.hipertrofia;
+  return {
+    texto: `${h.series} · ${h.reps} · ${h.rpe} · descanso ${h.descanso}${h.nota ? ` — ${h.nota}` : ""}`,
+    tempo: ex.execucao.tempo_recomendado.padrao,
+  };
+}
+
+/**
+ * Seleção de exercícios do KINESIS para os grupos priorizados: cada item sai
+ * com cue obrigatório, prescrição pelo tipo de deficit, variação indicada e o
+ * erro comum a vigiar. Nada é inventado: só o que está no atlas.
+ */
+export function selecionarExerciciosKinesis(prioritarios: GrupoPrioritario[]): SelecaoKinesis[] {
+  const out: SelecaoKinesis[] = [];
+  for (const g of prioritarios) {
+    const candidatos = exerciciosDoGrupo(g.grupo).slice(0, 3);
+    for (const ex of candidatos) {
+      // Deficit biomecânico não recebe composto pesado de cadeia aberta.
+      if (g.tipo === "BIOMECANICO" && ex.classificacao.tipo === "composto" && ex.classificacao.cadeia_cinetica === "aberta") {
+        continue;
+      }
+      const { texto, tempo } = prescricaoKinesis(ex, g.tipo);
+      const variacaoDeficit = ex.variacoes_e_quando_usar.find((v) =>
+        g.assimetria
+          ? /unilater|um bra|uma pern|halter/i.test(v.variacao)
+          : g.tipo === "BIOMECANICO"
+            ? /m[aá]quina|apoiad|suportad|cabo|smith/i.test(v.variacao)
+            : false,
+      );
+      const nomeFinal = g.assimetria ? substituirPorUnilateral(ex.exercicio) || ex.exercicio : ex.exercicio;
+      out.push({
+        grupo: g.grupo,
+        tipo: g.tipo,
+        exercicio: nomeFinal,
+        tag: g.assimetria ? "[ASSIMETRIA]" : `[DEFICIT: ${g.tipo}]`,
+        cue: ex.cues_coaching.cue_primario,
+        cue_conexao: ex.cues_coaching.cue_conexao_mente_musculo,
+        prescricao: texto,
+        variacao: variacaoDeficit ? `${variacaoDeficit.variacao} — ${variacaoDeficit.quando}` : null,
+        erro_vigiado: ex.erros_comuns[0] ? `${ex.erros_comuns[0].erro} → ${ex.erros_comuns[0].correcao}` : null,
+        tempo,
+      });
+    }
+  }
+  return out;
+}
+
+
 /** Monta as camadas do plano a partir do diagnóstico real do APEX. */
 export function gerarPlanoStratum(input: StratumGeneratorInput): PlanoStratum {
   const diag = input.diagnostico;
