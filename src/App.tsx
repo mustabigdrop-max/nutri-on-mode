@@ -35,6 +35,7 @@ const GamificationPage = lazy(() => import("./pages/GamificationPage"));
 const PhysiqueCardPage = lazy(() => import("./pages/PhysiqueCardPage"));
 const QuizDeficitPage = lazy(() => import("./pages/QuizDeficitPage"));
 const TransformationTimelinePage = lazy(() => import("./pages/TransformationTimelinePage"));
+const ApexMapaPage = lazy(() => import("./pages/ApexMapaPage"));
 const TransformationPage = lazy(() => import("./pages/TransformationPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ProfessionalDashboard = lazy(() => import("./pages/ProfessionalDashboard"));
@@ -254,6 +255,7 @@ const App = () => (
             <Route path="/gamification" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Gamificação"><GamificationPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/physique-card" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Physique Card"><PhysiqueCardPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/roteiros-evolucao" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Roteiros de Evolução"><TransformationTimelinePage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/apex-mapa" element={<ProtectedRoute><ApexMapaPage /></ProtectedRoute>} />
             <Route path="/transformation" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Transformação"><TransformationPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/shopping-list" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Lista de Compras"><ShoppingListPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/meal-history" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Histórico de Refeições"><MealHistoryPage /></PlanGateWrapper></ProtectedRoute>} />
