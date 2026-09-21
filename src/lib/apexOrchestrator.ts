@@ -11,7 +11,7 @@ import { diagnosticarAtletaCruzado, type DiagnosticoCruzado, type EntradaCruzada
 import { prescreverIntegrado } from "@/lib/apexIntegratedPrescription";
 import { avaliarAchievements } from "@/lib/apexAchievements";
 import { detectRankChange, mensagemPromocao, rankForScore, statusDoDelta } from "@/lib/apexRanks";
-import { buildMensagemPraxis, gerarPlanoStratum, type Mesociclo, type PlanoStratum } from "@/lib/stratumTrainingGenerator";
+import { gerarPlanoStratum, type Mesociclo, type PlanoStratum } from "@/lib/stratumTrainingGenerator";
 import { ZONE_META, weightedScore, type ApexZonesAnalysis, type ZoneKey } from "@/lib/apexVisualZones";
 
 export type OrchestratorStatus = "waiting_checklist" | "partial_ready" | "ready_for_approval" | "approved" | "published" | "error";
@@ -249,6 +249,7 @@ function visualReport(input: BuildOrchestratorInput, flaggedGroups: string[]): R
   const currentScore = scoreTo100(input.visualAnalysis.weighted_score ?? weightedScore(input.visualAnalysis.zones));
   const previousScore = scoreTo100(input.previousVisualAnalysis?.weighted_score ?? (input.previousVisualAnalysis ? weightedScore(input.previousVisualAnalysis.zones) : null));
   return {
+    analysis: input.visualAnalysis,
     assessment_id: input.visualAssessmentId ?? null,
     score_geral: currentScore,
     score_anterior: previousScore,
