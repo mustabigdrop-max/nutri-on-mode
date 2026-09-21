@@ -412,7 +412,7 @@ const KinesisPage = () => {
                 </Chip>
                 <Chip
                   ativo={fonteConteudo.tipo === "SUBGRUPO"}
-                  onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: dossie.grupo, subgrupo: dossie.subgrupos[0].nome })}
+                  onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: dossie.grupo, subgrupo: dossie.subgrupos[0].subgrupo })}
                 >
                   Subgrupo do Laboratório
                 </Chip>
@@ -442,7 +442,7 @@ const KinesisPage = () => {
                       <Chip
                         key={d.grupo}
                         ativo={fonteConteudo.grupo === d.grupo}
-                        onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: d.grupo, subgrupo: d.subgrupos[0].nome })}
+                        onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: d.grupo, subgrupo: d.subgrupos[0].subgrupo })}
                       >
                         {d.grupo}
                       </Chip>
@@ -451,9 +451,9 @@ const KinesisPage = () => {
                   <div className="flex flex-wrap gap-2">
                     {(KINESIS_LAB.find((d) => d.grupo === fonteConteudo.grupo)?.subgrupos ?? []).map((s) => (
                       <Chip
-                        key={s.nome}
-                        ativo={fonteConteudo.subgrupo === s.nome}
-                        onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: fonteConteudo.grupo, subgrupo: s.nome })}
+                        key={s.subgrupo}
+                        ativo={fonteConteudo.subgrupo === s.subgrupo}
+                        onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: fonteConteudo.grupo, subgrupo: s.subgrupo })}
                       >
                         {s.nome}
                       </Chip>
