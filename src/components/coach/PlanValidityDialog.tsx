@@ -25,7 +25,7 @@ const PlanValidityDialog = ({ open, onOpenChange, linkId, athleteId, athleteName
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState("");
   const [isLocked, setIsLocked] = useState(false);
-  const [historico, setHistorico] = useState<unknown[]>([]);
+  const [historico, setHistorico] = useState<Record<string, string>[]>([]);
 
   useEffect(() => {
     if (!open || !linkId) return;
@@ -39,7 +39,7 @@ const PlanValidityDialog = ({ open, onOpenChange, linkId, athleteId, athleteName
       if (error) toast({ title: "Erro ao carregar", description: error.message, variant: "destructive" });
       setData(paraInput((row?.plan_expires_at as string) ?? null));
       setIsLocked(!!row?.is_locked);
-      setHistorico(Array.isArray(row?.lock_history) ? (row?.lock_history as unknown[]) : []);
+      setHistorico(Array.isArray(row?.lock_history) ? (row?.lock_history as Record<string, string>[]) : []);
       setLoading(false);
     })();
   }, [open, linkId]);
