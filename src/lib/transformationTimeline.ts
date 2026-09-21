@@ -133,15 +133,7 @@ export function gerarTimeline(params: {
 
   pontosIntermediarios.forEach((p, i) => {
     push({
-      segundos: 0.4,
-      tipo: "transicao",
-      titulo: "TRANSIÇÃO",
-      legenda: `${i === 0 ? primeiro.rotulo : pontosIntermediarios[i - 1].rotulo} → ${p.rotulo}`,
-      dados: [],
-      direcao: i % 2 === 0 ? "Morphing rápido entre as fotos" : "Corte glitch de 3 frames com flash do accent ciano",
-    });
-    push({
-      segundos: 2.2,
+      segundos: 4.5,
       tipo: "mes",
       titulo: p.rotulo,
       legenda: `APEX SCORE ${p.score}${p.delta !== null ? ` (${p.delta >= 0 ? "+" : ""}${p.delta})` : ""}`,
@@ -151,8 +143,8 @@ export function gerarTimeline(params: {
         p.fracos.length ? `Ainda em atraso: ${p.fracos.join(", ")}` : "Nenhum grupo abaixo de 50",
       ],
       direcao: p.promocao
-        ? `Badge de promoção ${p.rank.nome} entra com glow dourado; grupos que subiram acendem em verde`
-        : "Grupos que subiram acendem em verde; número do score contando para cima",
+        ? `${i === 0 ? "Morphing" : "Glitch sutil"} a partir do frame anterior; badge de promoção ${p.rank.nome} entra com glow dourado; grupos que subiram acendem em verde`
+        : `${i === 0 ? "Morphing" : "Glitch sutil"} a partir do frame anterior; grupos que subiram acendem em verde; número do score contando para cima`,
     });
   });
 
