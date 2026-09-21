@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AcessoPausadoPage from "@/pages/AcessoPausadoPage";
 import { AthleteDashboardGate, CoachToolRoute, AthleteOnlyRoute } from "@/components/athlete/AthleteRouteGuard";
 import PlanGateWrapper from "@/components/PlanGateWrapper";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
@@ -225,6 +226,7 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
             <Route path="/first-meal" element={<ProtectedRoute><FirstMealScreen /></ProtectedRoute>} />
             <Route path="/activation-tour" element={<ProtectedRoute><ActivationTourPage /></ProtectedRoute>} />
+            <Route path="/acesso-pausado" element={<ProtectedRoute><AcessoPausadoPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><AthleteDashboardGate><DashboardPage /></AthleteDashboardGate></ProtectedRoute>} />
             <Route path="/my-plan" element={<ProtectedRoute><AthleteOnlyRoute><NutriPlanErrorBoundary><Suspense fallback={<NutriPlanLoading />}><MyPlanPage /></Suspense></NutriPlanErrorBoundary></AthleteOnlyRoute></ProtectedRoute>} />
             <Route path="/my-training" element={<ProtectedRoute><AthleteOnlyRoute><MyTrainingPage /></AthleteOnlyRoute></ProtectedRoute>} />
