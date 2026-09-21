@@ -390,6 +390,28 @@ export default function ApexFunctionalAssessment() {
                     />
                   </div>
                   <div>
+                    <div style={{ ...LABEL, color: C.gold }}>
+                      assimetria d/e registrada no apex visual (%, opcional)
+                    </div>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={assimetrias[grupo.key] ?? ""}
+                      onChange={(e) => setAssimetrias((p) => ({ ...p, [grupo.key]: e.target.value }))}
+                      placeholder="acima de 8% entra como assimetria"
+                      style={{
+                        width: "100%",
+                        marginTop: 6,
+                        padding: "10px 12px",
+                        background: C.bg,
+                        border: `1px solid ${C.border}`,
+                        color: C.text,
+                        fontSize: 13,
+                      }}
+                    />
+                  </div>
+                  <div>
                     <div style={{ ...LABEL, color: C.gold }}>observações do coach</div>
                     <textarea
                       rows={2}
