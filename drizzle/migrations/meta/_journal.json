@@ -36,6 +36,13 @@
       "when": 1790010153840,
       "tag": "0004_restrict_funnel_events_select_to_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790010241165,
+      "tag": "0005_restrict_shared_cache_writes",
+      "breakpoints": true
     }
   ]
 }
