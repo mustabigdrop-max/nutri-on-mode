@@ -71,7 +71,7 @@ export const emptyMceDailyNotes = (): MceDailyNotes => ({
 });
 
 export function parseMceDailyNotes(raw?: string | null): MceDailyNotes {
-  if (!raw) return emptyMceDailyNotes();
+  if (!raw) return { ...emptyMceDailyNotes(), manualScores: undefined };
   try {
     const parsed = JSON.parse(raw) as MceDailyNotes;
     return { ...emptyMceDailyNotes(), ...parsed, manualScores: { ...emptyMceDailyNotes().manualScores, ...parsed.manualScores } };
