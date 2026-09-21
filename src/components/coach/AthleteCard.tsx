@@ -1,11 +1,12 @@
 import { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2, KeyRound, Smartphone } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2, KeyRound, Smartphone, Lock, CalendarClock } from "lucide-react";
 import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import EditAthleteDialog from "@/components/coach/EditAthleteDialog";
 import DeleteAthleteDialog from "@/components/coach/DeleteAthleteDialog";
 import ClientCredentialsDialog from "@/components/coach/ClientCredentialsDialog";
 import WelcomeMessageDialog from "@/components/coach/WelcomeMessageDialog";
+import PlanValidityDialog from "@/components/coach/PlanValidityDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
@@ -14,6 +15,9 @@ const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
   attention: "#FFD700",
   risk: "#FF4444",
 };
+
+const diasAte = (iso: string) => Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
+const expirou = (iso: string) => new Date(iso).getTime() <= Date.now();
 
 const fmt = (iso?: string | null) =>
   iso ? new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—";
@@ -33,6 +37,7 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
   const [credOpen, setCredOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [welcomeSentAt, setWelcomeSentAt] = useState<string | null>(null);
+  const [validadeOpen, setValidadeOpen] = useState(false);
   const color = RISK_COLOR[a.riskLevel];
 
   useEffect(() => {
@@ -70,7 +75,23 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
               <p className="font-semibold text-foreground truncate">{a.name}</p>
-              {a.accessStatus === "pendente" ? (
+              {a.isLocked ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded shrink-0"
+                  style={{ background: "rgba(255,68,68,0.12)", color: "#FF4444", border: "1px solid rgba(255,68,68,0.3)", fontFamily: "Space Mono, monospace" }}
+                  title="Acesso pausado — plano expirado ou bloqueado pelo coach"
+                >
+                  <Lock className="w-3 h-3" /> BLOQUEADO
+                </span>
+              ) : a.planExpiresAt && !expirou(a.planExpiresAt) && diasAte(a.planExpiresAt) <= 7 ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded shrink-0"
+                  style={{ background: "rgba(255,215,0,0.12)", color: "#FFD700", border: "1px solid rgba(255,215,0,0.3)", fontFamily: "Space Mono, monospace" }}
+                  title="Plano perto do vencimento"
+                >
+                  <CalendarClock className="w-3 h-3" /> EXPIRANDO
+                </span>
+              ) : a.accessStatus === "pendente" ? (
                 <span
                   className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded shrink-0"
                   style={{ background: "rgba(255,215,0,0.12)", color: "#FFD700", border: "1px solid rgba(255,215,0,0.3)" }}
@@ -141,6 +162,18 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         </p>
       </div>
 
+      {a.planExpiresAt && (
+        <p className="text-xs mb-3" style={{ fontFamily: "Space Mono, monospace", color: "#888" }}>
+          Plano válido até{" "}
+          <span style={{ color: expirou(a.planExpiresAt) ? "#FF4444" : diasAte(a.planExpiresAt) <= 7 ? "#FFD700" : "#00FF88" }}>
+            {new Date(a.planExpiresAt).toLocaleDateString("pt-BR")}
+          </span>
+          {!expirou(a.planExpiresAt) && diasAte(a.planExpiresAt) <= 7
+            ? ` · expira em ${diasAte(a.planExpiresAt)} dia(s)`
+            : ""}
+        </p>
+      )}
+
       <div className="flex flex-wrap gap-2">
         <button className="quick-action-sm" onClick={() => onSendMeal(a)}>
           <UtensilsCrossed className="w-3.5 h-3.5" /> Enviar Plano
@@ -162,6 +195,14 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         </button>
         <button className="quick-action-sm" onClick={() => setAnamneseOpen(true)}>
           <ClipboardList className="w-3.5 h-3.5" /> Anamnese
+        </button>
+        <button
+          className="quick-action-sm"
+          onClick={() => setValidadeOpen(true)}
+          style={a.isLocked ? { color: "#00D4FF", border: "1px solid rgba(0,212,255,0.4)", background: "transparent" } : undefined}
+        >
+          {a.isLocked ? <Lock className="w-3.5 h-3.5" /> : <CalendarClock className="w-3.5 h-3.5" />}
+          {a.isLocked ? "Liberar acesso" : "Validade do plano"}
         </button>
         <button className="quick-action-sm" onClick={() => setEditOpen(true)}>
           <Pencil className="w-3.5 h-3.5" /> Editar dados
@@ -215,6 +256,15 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         athleteId={a.userId}
         athleteName={a.name}
         onSendWelcome={() => setWelcomeOpen(true)}
+      />
+
+      <PlanValidityDialog
+        open={validadeOpen}
+        onOpenChange={setValidadeOpen}
+        linkId={a.id}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onSaved={onUpdated}
       />
 
       <WelcomeMessageDialog
