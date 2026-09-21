@@ -103,6 +103,20 @@ export interface CriterioProgressao {
   criterio: string;
 }
 
+/** Exercício sugerido pelo KINESIS para um grupo priorizado, com cue obrigatório. */
+export interface SelecaoKinesis {
+  grupo: string;
+  tipo: DeficitTipo;
+  exercicio: string;
+  tag: string;
+  cue: string;
+  cue_conexao: string;
+  prescricao: string;
+  variacao: string | null;
+  erro_vigiado: string | null;
+  tempo: string;
+}
+
 export interface PlanoStratum {
   divisao: DivisaoStratum;
   prioritarios: GrupoPrioritario[];
