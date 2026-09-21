@@ -262,7 +262,8 @@ export default function ScienceContentHubPanel({
             },
           ],
         }, at);
-        setStoriesImgs(foto ? [foto, ...framesRenderizados] : framesRenderizados);
+        const fotoStory = foto ? await fotoParaSlide(foto, 1080, 1920) : null;
+        setStoriesImgs(fotoStory ? [fotoStory, ...framesRenderizados] : framesRenderizados);
         legendaFinalTxt = legendaFinalTxt || cleanCaption(r.legenda || "");
       }
 
