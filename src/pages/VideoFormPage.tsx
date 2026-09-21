@@ -144,6 +144,7 @@ const VideoFormPage = () => {
     setProgress(5);
     setStatusText("Carregando modelo de pose estimation...");
     setResult(null);
+    setMovement(null);
 
     try {
       setStatusText("Analisando frames do vídeo...");
