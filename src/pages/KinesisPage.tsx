@@ -405,12 +405,86 @@ const KinesisPage = () => {
 
           {/* 5 — GERADOR DE CONTEÚDO */}
           <TabsContent value="conteudo" className="space-y-4 pt-4">
-            <Secao titulo="ITEM SELECIONADO">
-              <div>{conteudo ? conteudo.titulo : "Escolha um item no Atlas, no Laboratório ou nas Assimetrias."}</div>
-              <div className="flex flex-wrap gap-2 pt-2">
+            <Secao titulo="1. DE ONDE VEM O CONTEÚDO">
+              <div className="flex flex-wrap gap-2">
+                <Chip ativo={fonteConteudo.tipo === "EXERCICIO"} onClick={() => setFonteConteudo({ tipo: "EXERCICIO", ref: exId })}>
+                  Exercício do Atlas
+                </Chip>
+                <Chip
+                  ativo={fonteConteudo.tipo === "SUBGRUPO"}
+                  onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: dossie.grupo, subgrupo: dossie.subgrupos[0].nome })}
+                >
+                  Subgrupo do Laboratório
+                </Chip>
+                <Chip ativo={fonteConteudo.tipo === "ASSIMETRIA"} onClick={() => setFonteConteudo({ tipo: "ASSIMETRIA", grupo: grupoAss })}>
+                  Protocolo de assimetria
+                </Chip>
+              </div>
+
+              {fonteConteudo.tipo === "EXERCICIO" && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {KINESIS_ATLAS.map((e) => (
+                    <Chip
+                      key={e.id}
+                      ativo={fonteConteudo.ref === e.id}
+                      onClick={() => setFonteConteudo({ tipo: "EXERCICIO", ref: e.id })}
+                    >
+                      {e.exercicio}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+
+              {fonteConteudo.tipo === "SUBGRUPO" && (
+                <div className="space-y-2 pt-1">
+                  <div className="flex flex-wrap gap-2">
+                    {KINESIS_LAB.map((d) => (
+                      <Chip
+                        key={d.grupo}
+                        ativo={fonteConteudo.grupo === d.grupo}
+                        onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: d.grupo, subgrupo: d.subgrupos[0].nome })}
+                      >
+                        {d.grupo}
+                      </Chip>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(KINESIS_LAB.find((d) => d.grupo === fonteConteudo.grupo)?.subgrupos ?? []).map((s) => (
+                      <Chip
+                        key={s.nome}
+                        ativo={fonteConteudo.subgrupo === s.nome}
+                        onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: fonteConteudo.grupo, subgrupo: s.nome })}
+                      >
+                        {s.nome}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {fonteConteudo.tipo === "ASSIMETRIA" && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {ASSIMETRIA_POR_GRUPO.map((a) => (
+                    <Chip
+                      key={a.grupo}
+                      ativo={fonteConteudo.grupo === a.grupo}
+                      onClick={() => setFonteConteudo({ tipo: "ASSIMETRIA", grupo: a.grupo })}
+                    >
+                      {a.grupo}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+            </Secao>
+
+            <Secao titulo="2. FORMATO">
+              <div className="flex flex-wrap gap-2">
                 {(Object.keys(FORMATO_LABEL) as FormatoConteudo[]).map((f) => (
                   <Chip key={f} ativo={f === formato} onClick={() => setFormato(f)}>{FORMATO_LABEL[f]}</Chip>
                 ))}
+              </div>
+              <div className="pt-2 text-xs" style={{ color: MUTED }}>
+                {conteudo ? conteudo.titulo : "Sem material cadastrado para esta combinação."}
               </div>
             </Secao>
 
