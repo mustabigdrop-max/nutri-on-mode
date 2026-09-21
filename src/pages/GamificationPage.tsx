@@ -40,6 +40,12 @@ const GamificationPage = () => {
           PHYSIQUE CARD
         </button>
         <button
+          onClick={() => navigate("/roteiros-evolucao")}
+          className="px-3 py-2 text-[10px] font-bold font-mono border border-primary/40 text-primary"
+        >
+          ROTEIROS
+        </button>
+        <button
           onClick={() => setShowShare(true)}
           className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
         >
