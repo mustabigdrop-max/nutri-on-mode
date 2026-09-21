@@ -181,6 +181,15 @@ function corStatus(status: ComponenteScore["status"]): string {
   return "#FF4444";
 }
 
+function escapeSvg(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function buildOverlayImageUrl(params: {
   exercicio: string;
   score: number;
@@ -188,12 +197,14 @@ function buildOverlayImageUrl(params: {
   componentes: ComponenteScore[];
 }): string {
   const linhas = params.componentes.slice(0, 5);
+  const exercicio = escapeSvg(params.exercicio.toUpperCase());
+  const classificacao = escapeSvg(params.classificacao);
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
       <rect width="1080" height="1920" fill="#020205"/>
       <rect x="52" y="52" width="976" height="1816" fill="none" stroke="#00D4FF" stroke-opacity="0.35" stroke-width="2"/>
       <text x="80" y="136" fill="#F5F0E8" font-family="Rajdhani, Arial, sans-serif" font-size="58" font-weight="700">MOVEMENT SCORE</text>
-      <text x="80" y="190" fill="#888888" font-family="Space Mono, monospace" font-size="26">${params.exercicio.toUpperCase()} · ${params.classificacao}</text>
+      <text x="80" y="190" fill="#888888" font-family="Space Mono, monospace" font-size="26">${exercicio} · ${classificacao}</text>
       <text x="80" y="390" fill="#00D4FF" font-family="Rajdhani, Arial, sans-serif" font-size="220" font-weight="700">${params.score}</text>
       <text x="360" y="370" fill="#F5F0E8" fill-opacity="0.42" font-family="Space Mono, monospace" font-size="42">/100</text>
       ${linhas.map((c, i) => {
@@ -202,7 +213,7 @@ function buildOverlayImageUrl(params: {
         const cor = corStatus(c.status);
         return `
           <g>
-            <text x="80" y="${y}" fill="#F5F0E8" font-family="Space Mono, monospace" font-size="28">${c.label.toUpperCase()}</text>
+            <text x="80" y="${y}" fill="#F5F0E8" font-family="Space Mono, monospace" font-size="28">${escapeSvg(c.label.toUpperCase())}</text>
             <text x="80" y="${y + 42}" fill="#888888" font-family="Space Mono, monospace" font-size="22">${c.medido}° · alvo ${c.faixa[0]}–${c.faixa[1]}° · ${c.status}</text>
             <rect x="80" y="${y + 70}" width="760" height="22" fill="#F5F0E8" fill-opacity="0.08"/>
             <rect x="80" y="${y + 70}" width="${Math.round(760 * pct / 100)}" height="22" fill="${cor}"/>

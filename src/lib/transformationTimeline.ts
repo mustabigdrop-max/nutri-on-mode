@@ -109,6 +109,13 @@ export function gerarTimeline(params: {
   const frames: TimelineFrame[] = [];
   let ordem = 1;
   const push = (f: Omit<TimelineFrame, "ordem">) => frames.push({ ordem: ordem++, ...f });
+  const pontosIntermediarios = pontos.length <= 4
+    ? pontos.slice(1)
+    : [
+        pontos[1],
+        pontos[Math.floor((pontos.length - 1) / 2)],
+        ultimo,
+      ].filter((p, i, arr) => arr.findIndex((x) => x.data === p.data) === i);
 
   push({
     segundos: 2.5,
@@ -124,12 +131,12 @@ export function gerarTimeline(params: {
       : "Mapa muscular em vermelho/cinza nos grupos em atraso (sem foto registrada nesta data)",
   });
 
-  pontos.slice(1).forEach((p, i) => {
+  pontosIntermediarios.forEach((p, i) => {
     push({
       segundos: 0.4,
       tipo: "transicao",
       titulo: "TRANSIÇÃO",
-      legenda: `${pontos[i].rotulo} → ${p.rotulo}`,
+      legenda: `${i === 0 ? primeiro.rotulo : pontosIntermediarios[i - 1].rotulo} → ${p.rotulo}`,
       dados: [],
       direcao: i % 2 === 0 ? "Morphing rápido entre as fotos" : "Corte glitch de 3 frames com flash do accent ciano",
     });
@@ -167,7 +174,7 @@ export function gerarTimeline(params: {
     tipo: "fecho",
     titulo: "nutriON",
     legenda: "Transformação é sistema.",
-    dados: ["Coach Diogo Mello", "nutrion.app.br"],
+    dados: ["Coach Diogo Mello", "Link na bio"],
     direcao: "Logo centralizado sobre fundo #020205, CTA no rodapé",
   });
 

@@ -21,7 +21,7 @@ export const STREAK_MILESTONES: StreakMilestone[] = [
   { dias: 14, badge: "🔥×14", titulo: "EM CHAMAS", mensagem: "14 dias! Seu corpo já está se adaptando ao ritmo." },
   { dias: 21, badge: "🔥×21", titulo: "HÁBITO", mensagem: "21 dias — o hábito virou execução. Você provou." },
   { dias: 30, badge: "🔥×30", titulo: "MAQUINÁRIO", mensagem: "30 dias. Você é uma máquina. Isso não é sorte, é sistema." },
-  { dias: 60, badge: "🔥×60", titulo: "IMPARÁVEL", mensagem: "60 dias seguidos. Pouquíssimos alunos chegam aqui." },
+  { dias: 60, badge: "🔥×60", titulo: "IMPARÁVEL", mensagem: "60 dias seguidos. Consistência virou identidade." },
   { dias: 90, badge: "🔥×90", titulo: "LENDA", mensagem: "90 dias. Você é referência. Seu antes/depois conta uma história." },
   { dias: 180, badge: "🔥×180", titulo: "TITÂNIO", mensagem: "6 meses sem falhar. Nível de disciplina militar." },
   { dias: 365, badge: "🔥×365", titulo: "APEX IMMORTAL", mensagem: "365 dias. 1 ano. Sem interrupção. Você é o sistema." },
