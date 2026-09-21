@@ -175,6 +175,49 @@ export interface MovementScoreResult {
   overlayImageUrl: string | null;
 }
 
+function corStatus(status: ComponenteScore["status"]): string {
+  if (status === "OK") return "#00FF88";
+  if (status === "ATENÇÃO") return "#B8922A";
+  return "#FF4444";
+}
+
+function buildOverlayImageUrl(params: {
+  exercicio: string;
+  score: number;
+  classificacao: Classificacao;
+  componentes: ComponenteScore[];
+}): string {
+  const linhas = params.componentes.slice(0, 5);
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+      <rect width="1080" height="1920" fill="#020205"/>
+      <rect x="52" y="52" width="976" height="1816" fill="none" stroke="#00D4FF" stroke-opacity="0.35" stroke-width="2"/>
+      <text x="80" y="136" fill="#F5F0E8" font-family="Rajdhani, Arial, sans-serif" font-size="58" font-weight="700">MOVEMENT SCORE</text>
+      <text x="80" y="190" fill="#888888" font-family="Space Mono, monospace" font-size="26">${params.exercicio.toUpperCase()} · ${params.classificacao}</text>
+      <text x="80" y="390" fill="#00D4FF" font-family="Rajdhani, Arial, sans-serif" font-size="220" font-weight="700">${params.score}</text>
+      <text x="360" y="370" fill="#F5F0E8" fill-opacity="0.42" font-family="Space Mono, monospace" font-size="42">/100</text>
+      ${linhas.map((c, i) => {
+        const y = 600 + i * 180;
+        const pct = Math.max(0, Math.min(100, c.score));
+        const cor = corStatus(c.status);
+        return `
+          <g>
+            <text x="80" y="${y}" fill="#F5F0E8" font-family="Space Mono, monospace" font-size="28">${c.label.toUpperCase()}</text>
+            <text x="80" y="${y + 42}" fill="#888888" font-family="Space Mono, monospace" font-size="22">${c.medido}° · alvo ${c.faixa[0]}–${c.faixa[1]}° · ${c.status}</text>
+            <rect x="80" y="${y + 70}" width="760" height="22" fill="#F5F0E8" fill-opacity="0.08"/>
+            <rect x="80" y="${y + 70}" width="${Math.round(760 * pct / 100)}" height="22" fill="${cor}"/>
+            <circle cx="${80 + Math.round(760 * pct / 100)}" cy="${y + 81}" r="18" fill="${cor}" fill-opacity="0.9"/>
+            <text x="880" y="${y + 88}" fill="${cor}" font-family="Rajdhani, Arial, sans-serif" font-size="54" font-weight="700">${c.score}</text>
+          </g>
+        `;
+      }).join("")}
+      <text x="80" y="1770" fill="#B8922A" font-family="Space Mono, monospace" font-size="24">Coach Diogo Mello · nutrion.app.br</text>
+      <text x="80" y="1816" fill="#F5F0E8" fill-opacity="0.64" font-family="Rajdhani, Arial, sans-serif" font-size="42" font-weight="700">Transformação é sistema.</text>
+    </svg>
+  `.trim();
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 function medir(metrica: MetricaId, frames: FrameAnalysis[]): number | null {
   if (!frames.length) return null;
   const joelho = frames.map((f) => (f.angles.leftKnee + f.angles.rightKnee) / 2);
@@ -242,7 +285,7 @@ export function calcularMovementScore(exercicio: string, frames: FrameAnalysis[]
   }
   score = Math.max(0, Math.min(100, score));
 
-  return {
+  const result = {
     exercicio: exercicio,
     referencia: ref.exercicio,
     score,
@@ -253,6 +296,26 @@ export function calcularMovementScore(exercicio: string, frames: FrameAnalysis[]
     correcoesKinesis: erros.map((e) => e.correcao),
     alertaSeguranca,
     overlayImageUrl: null,
+  };
+  return { ...result, overlayImageUrl: buildOverlayImageUrl(result) };
+}
+
+export function movementScoreToJson(r: MovementScoreResult) {
+  return {
+    exercicio: r.exercicio,
+    score: r.score,
+    classificacao: r.classificacao,
+    componentes: r.componentes.map((c) => ({
+      articulacao: c.label,
+      angulo_medido: c.medido,
+      range_ideal: c.faixa,
+      status: c.status,
+      score: c.score,
+      correcao: r.errosDetectados.find((e) => e.label === c.label)?.correcao || null,
+    })),
+    erros_detectados: r.errosDetectados,
+    correcoes_kinesis: r.correcoesKinesis,
+    overlay_image_url: r.overlayImageUrl,
   };
 }
 
