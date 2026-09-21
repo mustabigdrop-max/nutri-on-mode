@@ -18,13 +18,11 @@ export default function ChallengeRankingPage() {
   useEffect(() => {
     if (!participant) return;
     supabase
-      .from("challenge_participants")
-      .select("id,full_name,mce_score,streak,tier,user_id")
-      .eq("challenge_id", participant.challenge_id)
-      .eq("status", "active")
-      .order(sort, { ascending: false })
-      .limit(200)
-      .then(({ data }) => setRows((data as Row[]) ?? []));
+      .rpc("challenge_leaderboard", { _challenge_id: participant.challenge_id })
+      .then(({ data }) => {
+        const list = ((data as Row[]) ?? []).slice().sort((a, b) => (b[sort] ?? 0) - (a[sort] ?? 0));
+        setRows(list);
+      });
   }, [participant, sort]);
 
   if (!participant) return null;
