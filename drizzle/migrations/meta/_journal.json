@@ -71,6 +71,13 @@
       "when": 1790011011560,
       "tag": "0009_restrict_lead_tables_to_owner_coach",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790011088095,
+      "tag": "0010_harden_public_signup_inserts",
+      "breakpoints": true
     }
   ]
 }
