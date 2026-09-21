@@ -900,6 +900,96 @@ export type Database = {
         }
         Relationships: []
       }
+      apex_orchestrator_runs: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          athlete_id: string
+          checklist_mode: string
+          checklist_results: Json
+          coach_profile_id: string | null
+          coach_report: Json
+          coach_user_id: string
+          created_at: string
+          diagnostico: Json
+          evolution_snapshot: Json
+          execution_log: Json
+          flagged_groups: string[]
+          gamification_updates: Json
+          id: string
+          nutriplan_sync: Json
+          patient_user_id: string | null
+          plano_treino: Json
+          praxis_messages: Json
+          protocolos_ativos: Json
+          published_at: string | null
+          published_reference: Json | null
+          status: string
+          trigger_source: string
+          updated_at: string
+          visual_assessment_id: string | null
+          visual_report: Json
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          athlete_id: string
+          checklist_mode?: string
+          checklist_results?: Json
+          coach_profile_id?: string | null
+          coach_report?: Json
+          coach_user_id: string
+          created_at?: string
+          diagnostico?: Json
+          evolution_snapshot?: Json
+          execution_log?: Json
+          flagged_groups?: string[]
+          gamification_updates?: Json
+          id?: string
+          nutriplan_sync?: Json
+          patient_user_id?: string | null
+          plano_treino?: Json
+          praxis_messages?: Json
+          protocolos_ativos?: Json
+          published_at?: string | null
+          published_reference?: Json | null
+          status?: string
+          trigger_source?: string
+          updated_at?: string
+          visual_assessment_id?: string | null
+          visual_report?: Json
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          athlete_id?: string
+          checklist_mode?: string
+          checklist_results?: Json
+          coach_profile_id?: string | null
+          coach_report?: Json
+          coach_user_id?: string
+          created_at?: string
+          diagnostico?: Json
+          evolution_snapshot?: Json
+          execution_log?: Json
+          flagged_groups?: string[]
+          gamification_updates?: Json
+          id?: string
+          nutriplan_sync?: Json
+          patient_user_id?: string | null
+          plano_treino?: Json
+          praxis_messages?: Json
+          protocolos_ativos?: Json
+          published_at?: string | null
+          published_reference?: Json | null
+          status?: string
+          trigger_source?: string
+          updated_at?: string
+          visual_assessment_id?: string | null
+          visual_report?: Json
+        }
+        Relationships: []
+      }
       apex_pain_entries: {
         Row: {
           behavior: string | null
