@@ -307,6 +307,64 @@ const VideoFormPage = () => {
           </Card>
         )}
 
+        {movement && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-primary/30">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-end justify-between gap-3 pb-3 border-b border-border">
+                  <div>
+                    <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Movement Score</p>
+                    <p className="text-4xl font-bold leading-none">{movement.score}<span className="text-base text-muted-foreground">/100</span></p>
+                    <p className="text-xs font-mono text-primary mt-1">{movement.classificacao}</p>
+                  </div>
+                  <p className="text-xs font-mono text-muted-foreground text-right">
+                    {movement.exercicio}<br />referência {movement.referencia}
+                  </p>
+                </div>
+
+                {movement.alertaSeguranca && (
+                  <p className="text-xs text-destructive border border-destructive/40 bg-destructive/10 p-3">
+                    {movement.alertaSeguranca}
+                  </p>
+                )}
+
+                <div className="space-y-1.5">
+                  {movement.componentes.map((c) => (
+                    <div key={c.metrica} className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-muted-foreground">{c.label}</span>
+                      <span className={c.dentro ? "text-primary" : "text-destructive"}>
+                        {c.medido}° ({c.faixa[0]}–{c.faixa[1]}°) · {c.score}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {movement.errosDetectados.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Correções KINESIS</p>
+                    {movement.errosDetectados.map((e) => (
+                      <p key={e.label} className="text-sm">
+                        <strong>{e.label}</strong> — {e.desvioGraus}° fora da faixa. {e.correcao}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(roteiroReelMovementScore(movement));
+                    toast({ title: "Roteiro copiado", description: "Reel do Movement Score pronto para gravar." });
+                  }}
+                >
+                  Copiar roteiro de Reel
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {result && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-primary/30">
