@@ -28,10 +28,10 @@ export const QUIZ_PERGUNTAS: QuizPergunta[] = [
     id: "q1",
     pergunta: "Quando você agacha, o que sente trabalhar MAIS?",
     opcoes: [
+      { texto: "Glúteos trabalhando junto", pontos: {} },
       { texto: "Quadríceps queimando, glúteo quase nada", pontos: { ativacao_gluteo: 1 } },
-      { texto: "Glúteos e quadríceps juntos", pontos: {} },
-      { texto: "Lombar no final da série", pontos: { biomecanico: 1 } },
-      { texto: "Joelho incomoda durante o movimento", pontos: { biomecanico: 1 } },
+      { texto: "Joelho incomoda ou entra para dentro", pontos: { biomecanico: 2 } },
+      { texto: "Lombar aparece no final da série", pontos: { ativacao_gluteo: 2, biomecanico: 2 } },
     ],
   },
   {
@@ -39,46 +39,49 @@ export const QUIZ_PERGUNTAS: QuizPergunta[] = [
     pergunta: "Na puxada ou remada, você sente as costas ou os braços?",
     opcoes: [
       { texto: "Costas claramente", pontos: {} },
-      { texto: "Bíceps e antebraço cansam primeiro", pontos: { ativacao_dorsal: 1 } },
-      { texto: "Não sinto nada específico", pontos: { ativacao_dorsal: 1 } },
+      { texto: "Bíceps cansa primeiro", pontos: { ativacao_dorsal: 2 } },
+      { texto: "Trapézio sobe e domina", pontos: { ativacao_dorsal: 1 } },
+      { texto: "Não sinto nada específico", pontos: { ativacao_dorsal: 3 } },
     ],
   },
   {
     id: "q3",
-    pergunta: "No hip thrust ou elevação pélvica, onde você sente mais?",
+    pergunta: "Você consegue contrair o glúteo voluntariamente, parado?",
     opcoes: [
-      { texto: "Glúteos, como deveria ser", pontos: {} },
-      { texto: "Posterior de coxa", pontos: { ativacao_gluteo: 1 } },
-      { texto: "Lombar", pontos: { biomecanico: 1, ativacao_gluteo: 1 } },
+      { texto: "Sim, forte dos dois lados", pontos: {} },
+      { texto: "Sim, mas fraco", pontos: { ativacao_gluteo: 1 } },
+      { texto: "Não consigo contrair direito", pontos: { ativacao_gluteo: 3 } },
+      { texto: "Nunca tentei", pontos: { ativacao_gluteo: 2 } },
     ],
   },
   {
     id: "q4",
-    pergunta: "Você sente dor ou desconforto articular em algum exercício?",
+    pergunta: "Seus ombros caem para frente na postura?",
     opcoes: [
       { texto: "Não", pontos: {} },
-      { texto: "Joelho", pontos: { biomecanico: 1 } },
-      { texto: "Ombro", pontos: { biomecanico: 1 } },
-      { texto: "Lombar", pontos: { biomecanico: 1 } },
+      { texto: "Levemente", pontos: { biomecanico: 1 } },
+      { texto: "Visivelmente", pontos: { biomecanico: 2, ativacao_peitoral: 2 } },
+      { texto: "Não sei avaliar", pontos: { biomecanico: 1 } },
     ],
   },
   {
     id: "q5",
-    pergunta: "Olhando no espelho, suas costas ou posteriores parecem atrasados em relação ao resto do corpo?",
+    pergunta: "Quantos exercícios reais de posterior de coxa você faz na semana?",
     opcoes: [
-      { texto: "Não, está proporcional", pontos: {} },
-      { texto: "Costas, sim", pontos: { volume_posterior: 1 } },
-      { texto: "Posterior de coxa / glúteos, sim", pontos: { volume_posterior: 1 } },
+      { texto: "Dois ou mais", pontos: {} },
+      { texto: "Um", pontos: { volume_posterior: 1 } },
+      { texto: "Raramente", pontos: { volume_posterior: 2 } },
+      { texto: "Nunca", pontos: { volume_posterior: 3 } },
     ],
   },
   {
     id: "q6",
-    pergunta: "Um lado do seu corpo é visivelmente mais forte ou maior que o outro?",
+    pergunta: "No espelho, um lado parece mais forte ou maior que o outro?",
     opcoes: [
-      { texto: "Não", pontos: {} },
-      { texto: "Sim, braços", pontos: { assimetria: 1 } },
-      { texto: "Sim, pernas", pontos: { assimetria: 1 } },
-      { texto: "Sim, peito ou costas", pontos: { assimetria: 1 } },
+      { texto: "Parece simétrico", pontos: {} },
+      { texto: "Diferença leve", pontos: { assimetria: 1 } },
+      { texto: "Diferença visível", pontos: { assimetria: 2 } },
+      { texto: "Não sei avaliar", pontos: { assimetria: 1 } },
     ],
   },
   {
@@ -88,33 +91,37 @@ export const QUIZ_PERGUNTAS: QuizPergunta[] = [
       { texto: "Peito", pontos: {} },
       { texto: "Ombros", pontos: { ativacao_peitoral: 1 } },
       { texto: "Tríceps", pontos: { ativacao_peitoral: 1 } },
+      { texto: "Não sinto o peito", pontos: { ativacao_peitoral: 3 } },
     ],
   },
   {
     id: "q8",
-    pergunta: "Quantas horas por dia você passa sentado?",
+    pergunta: "Seus joelhos entram para dentro no agachamento?",
     opcoes: [
-      { texto: "Menos de 4h", pontos: {} },
-      { texto: "Entre 4h e 8h", pontos: { ativacao_gluteo: 1, biomecanico: 1 } },
-      { texto: "Mais de 8h", pontos: { ativacao_gluteo: 2, biomecanico: 1 } },
+      { texto: "Não", pontos: {} },
+      { texto: "Levemente", pontos: { ativacao_gluteo: 1, biomecanico: 1 } },
+      { texto: "Visivelmente", pontos: { ativacao_gluteo: 2, biomecanico: 2 } },
+      { texto: "Não sei avaliar", pontos: { ativacao_gluteo: 1, biomecanico: 1 } },
     ],
   },
   {
     id: "q9",
-    pergunta: "Você já teve lesão que atrapalhou seus treinos?",
+    pergunta: "Você sente dor no ombro no supino ou desenvolvimento?",
     opcoes: [
       { texto: "Nunca", pontos: {} },
-      { texto: "Sim, leve e pontual", pontos: { biomecanico: 1 } },
-      { texto: "Sim, grave ou recorrente", pontos: { biomecanico: 2 } },
+      { texto: "Às vezes", pontos: { biomecanico: 1 } },
+      { texto: "Frequentemente", pontos: { biomecanico: 2 } },
+      { texto: "Sempre", pontos: { biomecanico: 3 } },
     ],
   },
   {
     id: "q10",
-    pergunta: "Você consegue sentir suas costas contraindo quando treina costas?",
+    pergunta: "Na pose de duplo bíceps de costas, você consegue abrir a dorsal?",
     opcoes: [
-      { texto: "Sim, sempre", pontos: {} },
-      { texto: "Às vezes", pontos: { ativacao_dorsal: 1 } },
+      { texto: "Sim", pontos: {} },
+      { texto: "Fraca", pontos: { ativacao_dorsal: 1 } },
       { texto: "Nunca", pontos: { ativacao_dorsal: 2 } },
+      { texto: "Nunca tentei", pontos: { ativacao_dorsal: 2 } },
     ],
   },
 ];
@@ -162,6 +169,7 @@ export const DEFICIT_CARDS: Record<DeficitKey, DeficitCard> = {
       "Fazer exercícios de ativação de glúteo ANTES de cada treino de pernas",
       "Glute bridge com pausa de 5s no topo, todos os dias",
       "Treinar glúteo PRIMEIRO na sessão, não no final",
+      "Fazer a avaliação completa para confirmar o padrão",
     ],
   },
   ativacao_dorsal: {
@@ -217,5 +225,5 @@ export const DEFICIT_CARDS: Record<DeficitKey, DeficitCard> = {
 };
 
 export function buildWhatsappMessage(card: DeficitCard): string {
-  return `Oi Coach Diogo! Fiz o quiz de deficit no nutriON e meu resultado foi ${card.titulo}. Quero fazer a avaliação completa do APEX!`;
+  return `Oi Coach Diogo! Fiz o quiz de deficit no nutriON e meu resultado foi ${card.titulo}. Quero fazer a avaliação completa do APEX! 🔬`;
 }

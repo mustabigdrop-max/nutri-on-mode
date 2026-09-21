@@ -109,6 +109,13 @@ export function gerarTimeline(params: {
   const frames: TimelineFrame[] = [];
   let ordem = 1;
   const push = (f: Omit<TimelineFrame, "ordem">) => frames.push({ ordem: ordem++, ...f });
+  const pontosIntermediarios = pontos.length <= 4
+    ? pontos.slice(1)
+    : [
+        pontos[1],
+        pontos[Math.floor((pontos.length - 1) / 2)],
+        ultimo,
+      ].filter((p, i, arr) => arr.findIndex((x) => x.data === p.data) === i);
 
   push({
     segundos: 2.5,
@@ -124,17 +131,9 @@ export function gerarTimeline(params: {
       : "Mapa muscular em vermelho/cinza nos grupos em atraso (sem foto registrada nesta data)",
   });
 
-  pontos.slice(1).forEach((p, i) => {
+  pontosIntermediarios.forEach((p, i) => {
     push({
-      segundos: 0.4,
-      tipo: "transicao",
-      titulo: "TRANSIÇÃO",
-      legenda: `${pontos[i].rotulo} → ${p.rotulo}`,
-      dados: [],
-      direcao: i % 2 === 0 ? "Morphing rápido entre as fotos" : "Corte glitch de 3 frames com flash do accent ciano",
-    });
-    push({
-      segundos: 2.2,
+      segundos: 4.5,
       tipo: "mes",
       titulo: p.rotulo,
       legenda: `APEX SCORE ${p.score}${p.delta !== null ? ` (${p.delta >= 0 ? "+" : ""}${p.delta})` : ""}`,
@@ -144,8 +143,8 @@ export function gerarTimeline(params: {
         p.fracos.length ? `Ainda em atraso: ${p.fracos.join(", ")}` : "Nenhum grupo abaixo de 50",
       ],
       direcao: p.promocao
-        ? `Badge de promoção ${p.rank.nome} entra com glow dourado; grupos que subiram acendem em verde`
-        : "Grupos que subiram acendem em verde; número do score contando para cima",
+        ? `${i === 0 ? "Morphing" : "Glitch sutil"} a partir do frame anterior; badge de promoção ${p.rank.nome} entra com glow dourado; grupos que subiram acendem em verde`
+        : `${i === 0 ? "Morphing" : "Glitch sutil"} a partir do frame anterior; grupos que subiram acendem em verde; número do score contando para cima`,
     });
   });
 
@@ -167,7 +166,7 @@ export function gerarTimeline(params: {
     tipo: "fecho",
     titulo: "nutriON",
     legenda: "Transformação é sistema.",
-    dados: ["Coach Diogo Mello", "nutrion.app.br"],
+    dados: ["Coach Diogo Mello", "Link na bio"],
     direcao: "Logo centralizado sobre fundo #020205, CTA no rodapé",
   });
 

@@ -580,7 +580,8 @@ export function buildShowdownContent(s: Showdown, formato: FormatoShowdown): str
       `${s.b.nome}: ${s.b.quandoUsar}`,
       "",
       `SLIDE 8 — CTA + FONTES`,
-      `Salva esse post pra montar seu treino. Quer saber qual é o SEU deficit? Comenta "APEX".`,
+      `O melhor exercício é o que resolve SEU deficit. Não é preferência. É prescrição baseada na sua avaliação.`,
+      `Comenta "APEX" que eu te mando o quiz de deficit.`,
       blocoFontes(s),
     ].join("\n");
   }

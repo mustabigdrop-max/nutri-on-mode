@@ -28,16 +28,18 @@ describe("movement score", () => {
 
   it("dá nota alta para execução dentro das faixas", () => {
     const frames = [
-      ...serie({ leftKnee: 85, rightKnee: 85, trunkLean: 90, leftHip: 100, rightHip: 100 }),
+      ...serie({ leftKnee: 85, rightKnee: 85, trunkLean: 90, leftHip: 80, rightHip: 80 }),
       ...serie({ leftHip: 172, rightHip: 172 }),
     ];
     const r = calcularMovementScore("Agachamento livre", frames)!;
     expect(r.score).toBeGreaterThanOrEqual(80);
     expect(["EXCELENTE", "PERFEITO", "BOM"]).toContain(r.classificacao);
+    expect(r.componentes.every((c) => ["OK", "ATENÇÃO", "ERRO"].includes(c.status))).toBe(true);
+    expect(r.overlayImageUrl).toContain("data:image/svg+xml");
   });
 
   it("limita o score a 40 quando há risco articular", () => {
-    const frames = serie({ trunkLean: 20, leftKnee: 85, rightKnee: 85, leftHip: 170, rightHip: 170 });
+    const frames = serie({ trunkLean: 20, leftKnee: 85, rightKnee: 85, leftHip: 80, rightHip: 80 });
     const r = calcularMovementScore("Agachamento", frames)!;
     expect(r.score).toBeLessThanOrEqual(40);
     expect(r.alertaSeguranca).toBeTruthy();

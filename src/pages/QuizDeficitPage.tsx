@@ -158,14 +158,15 @@ const QuizDeficitPage = () => {
               </h2>
               <div className="space-y-2">
                 {pergunta.opcoes.map((op, i) => (
-                  <button
+                  <Button
                     key={i}
+                    variant="ghost"
                     onClick={() => responder(i)}
-                    className="w-full text-left px-4 py-3 text-sm transition-all"
+                    className="w-full justify-start h-auto text-left px-4 py-3 text-sm whitespace-normal transition-all"
                     style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.borda}`, color: C.texto, borderRadius: 0 }}
                   >
                     {op.texto}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

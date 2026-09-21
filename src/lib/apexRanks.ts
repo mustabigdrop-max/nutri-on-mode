@@ -106,8 +106,14 @@ export function mensagemPromocao(params: {
       linhas.push(`• ${d.grupo}: ${sinal} pontos${d.status === "deficit" ? " (em correção)" : ""}`);
     });
   }
-  if (alvo) linhas.push("", `Próximo objetivo: chegar a ${alvo.nome} (score ${alvo.min}+).`);
-  linhas.push("", "Compartilhe sua promoção no card do sistema.", "", "Coach Diogo Mello", "Transformação é sistema. 💪");
+  if (alvo) {
+    const pontosRestantes = Math.max(1, alvo.min - Math.round(scoreAtual));
+    const ganho = Math.max(1, Math.round(scoreAtual - scoreAnterior));
+    const mesociclos = Math.max(1, Math.ceil(pontosRestantes / ganho));
+    linhas.push("", `Novo objetivo: chegar a ${alvo.nome} (score ${alvo.min}+).`);
+    linhas.push(`Com o ritmo da última reavaliação, estimativa: ${mesociclos} mesociclo${mesociclos > 1 ? "s" : ""}.`);
+  }
+  linhas.push("", "Compartilhe sua promoção.", "[Botão: Gerar Card de Promoção]", "", "Coach Diogo Mello", "Transformação é sistema. 💪");
   return linhas.join("\n");
 }
 

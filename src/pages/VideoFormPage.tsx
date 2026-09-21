@@ -10,11 +10,11 @@ import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-re
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { getPoseLandmarker, analyzeFrame, countReps, detectExercise, type FrameAnalysis } from "@/lib/poseAnalysis";
-import { calcularMovementScore, roteiroReelMovementScore, type MovementScoreResult } from "@/lib/movementScore";
+import { calcularMovementScore, movementScoreToJson, roteiroReelMovementScore, type MovementScoreResult } from "@/lib/movementScore";
 import { useFFmpegConvert } from "@/hooks/useFFmpegConvert";
 
 const EXERCISES = [
-  "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "Levantamento terra",
+  "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "RDL", "Levantamento terra",
   "Hip thrust", "Supino reto", "Supino inclinado", "Desenvolvimento militar", "Rosca direta",
   "Rosca alternada", "Tríceps testa", "Remada curvada", "Puxada frontal", "Push-up",
   "Prancha", "Avanço/passada", "Burpee",
@@ -165,7 +165,7 @@ const VideoFormPage = () => {
       const clientHint = exercise === "auto" ? detectExercise(frames) : null;
       const exercicioAvaliado = exercise === "auto" ? clientHint?.name || "" : exercise;
       setMovement(exercicioAvaliado ? calcularMovementScore(exercicioAvaliado, frames) : null);
-      setStatusText("Enviando para o VideoForm AI...");
+      setStatusText("Enviando para o VideoForm...");
       setProgress(96);
 
       const { data, error } = await supabase.functions.invoke("videoform-ai", {
@@ -216,8 +216,8 @@ const VideoFormPage = () => {
           </Button>
           <Video className="w-6 h-6 text-primary" />
           <div>
-            <h1 className="text-xl font-bold">VideoForm AI</h1>
-            <p className="text-xs text-muted-foreground">Análise biomecânica de execução pelo sistema · Pose estimation + Dr. BioMech</p>
+            <h1 className="text-xl font-bold">VideoForm</h1>
+            <p className="text-xs text-muted-foreground">Análise biomecânica de execução pelo sistema · KINESIS + Dr. BioMech</p>
           </div>
         </div>
       </header>
@@ -231,7 +231,7 @@ const VideoFormPage = () => {
                 <Select value={exercise} onValueChange={setExercise}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">🤖 Detectar automaticamente</SelectItem>
+                    <SelectItem value="auto">Detectar pelo sistema</SelectItem>
                     {EXERCISES.map(ex => <SelectItem key={ex} value={ex}>{ex}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -328,12 +328,18 @@ const VideoFormPage = () => {
                   </p>
                 )}
 
+                {movement.overlayImageUrl && (
+                  <div className="overflow-hidden border border-primary/25 bg-black">
+                    <img src={movement.overlayImageUrl} alt="Overlay do Movement Score" className="w-full max-h-80 object-contain" />
+                  </div>
+                )}
+
                 <div className="space-y-1.5">
                   {movement.componentes.map((c) => (
                     <div key={c.metrica} className="flex items-center justify-between text-xs font-mono">
                       <span className="text-muted-foreground">{c.label}</span>
                       <span className={c.dentro ? "text-primary" : "text-destructive"}>
-                        {c.medido}° ({c.faixa[0]}–{c.faixa[1]}°) · {c.score}
+                        {c.medido}° ({c.faixa[0]}–{c.faixa[1]}°) · {c.status} · {c.score}
                       </span>
                     </div>
                   ))}
@@ -350,16 +356,28 @@ const VideoFormPage = () => {
                   </div>
                 )}
 
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(roteiroReelMovementScore(movement));
-                    toast({ title: "Roteiro copiado", description: "Reel do Movement Score pronto para gravar." });
-                  }}
-                >
-                  Copiar roteiro de Reel
-                </Button>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(roteiroReelMovementScore(movement));
+                      toast({ title: "Roteiro copiado", description: "Reel do Movement Score pronto para gravar." });
+                    }}
+                  >
+                    Copiar roteiro de Reel
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(JSON.stringify(movementScoreToJson(movement), null, 2));
+                      toast({ title: "JSON copiado", description: "Relatório técnico do Movement Score copiado." });
+                    }}
+                  >
+                    Copiar JSON
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </motion.div>

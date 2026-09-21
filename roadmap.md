@@ -6,3 +6,9 @@
 - [x] Validar tipagem e fluxo principal
 
 - [x] Social ON: aba "Postar Refeição" (legendas por estilo + estratégias de stories a partir da refeição real do dia)
+
+- [x] Alinhar Arsenal Viral aos prompts completos reenviados
+
+- [x] Validar o Arsenal Viral atualizado
+
+- [ ] Publicar a versão validada

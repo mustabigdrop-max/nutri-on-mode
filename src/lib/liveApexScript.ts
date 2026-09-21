@@ -53,6 +53,16 @@ export const LIVE_APEX_HASHTAGS = [
   "#Bodybuilding", "#FitnessCoach", "#AvaliaçãoFísica", "#TreinoInteligente", "#CiênciaDoTreino",
 ];
 
+export const LIVE_APEX_FREQUENCIA = "1 episódio por semana, terça ou quinta, alternando análise nova e follow-up; 1 educativo por mês.";
+
+const HOOKS = [
+  (i: LiveApexInput, n: number) => `${i.atleta} treina há ${i.objetivo || "um tempo"}. O APEX encontrou ${n} deficit${n > 1 ? "s" : ""}.`,
+  (i: LiveApexInput) => `${i.atleta} achou que o ponto forte estava resolvido. O sistema mostrou outra coisa.`,
+  (_i: LiveApexInput, _n: number, g: DeficitGrupo) => `Onde estão os ${g.grupo.toLowerCase()}? Olha isso.`,
+  (i: LiveApexInput) => `Se eu fosse o coach do ${i.atleta}, isso é o que eu faria primeiro.`,
+  (_i: LiveApexInput, _n: number, g: DeficitGrupo) => `O deficit mais caro aqui está em ${g.grupo.toLowerCase()}.`,
+];
+
 const TIPO_FALA: Record<string, string> = {
   BIOMECANICO: "o padrão de movimento está travando o grupo — aqui corretivo vem antes de carga",
   ATIVACAO: "o músculo não está sendo recrutado no exercício — falta conexão, não falta peso",
@@ -76,6 +86,7 @@ export function gerarRoteiroLiveApex(input: LiveApexInput): LiveApexRoteiro | nu
   const principal = foco[0];
   const tipo = principal.tipo.toUpperCase();
   const explicacao = TIPO_FALA[tipo] || "o APEX registrou um deficit nesse grupo";
+  const hookBase = HOOKS[(Math.max(1, input.numeroEpisodio) - 1) % HOOKS.length](input, foco.length, principal);
   const titulo =
     input.variacao === "educativo"
       ? "O deficit que MAIS encontro nos meus alunos"
@@ -96,7 +107,9 @@ export function gerarRoteiroLiveApex(input: LiveApexInput): LiveApexRoteiro | nu
       "Fala, aqui é o Diogo Mello.",
       input.variacao === "educativo"
         ? `O deficit que eu mais encontro é ${tipo === "ATIVACAO" ? "falta de ativação" : principal.grupo.toLowerCase()}. E quase ninguém trata.`
-        : `Olha o ${principal.grupo.toLowerCase()} do ${input.atleta}. O problema não é o que você está pensando.`,
+        : input.variacao === "followup"
+          ? `${input.semanasDecorridas ?? "Algumas"} semanas depois, a reavaliação mostrou o que mudou de verdade.`
+          : hookBase,
     ],
     direcao: "Corte seco na foto de avaliação, zoom no grupo em questão",
   });
@@ -123,7 +136,7 @@ export function gerarRoteiroLiveApex(input: LiveApexInput): LiveApexRoteiro | nu
       ...(principal.protocolos?.length
         ? [`Protocolos que entraram no plano dele: ${principal.protocolos.slice(0, 3).join(", ")}.`]
         : ["O protocolo específico sai do próprio diagnóstico, não de fórmula genérica."]),
-      "O STRATUM já reescreve o treino com isso. O NutriPlan ajusta o entorno da sessão.",
+      "O STRATUM reescreve o treino com isso. O NutriPlan ajusta o entorno da sessão.",
     ],
     direcao: "Tela do plano com as tags CORRECT e ACTIVATE em destaque",
   });
@@ -158,7 +171,9 @@ export function gerarRoteiroLiveApex(input: LiveApexInput): LiveApexRoteiro | nu
     nome: "CTA",
     segundos: 7,
     fala: [
-      "Quer saber qual é o seu deficit? Faz o diagnóstico em nutrion.app.br.",
+      input.variacao === "ao_vivo"
+        ? "Comenta APEX que eu te mando o quiz de deficit."
+        : "Quer essa avaliação? Link na bio.",
       "Transformação é sistema.",
     ],
     direcao: "Logo nutriON, tagline e endereço no rodapé",
@@ -175,6 +190,7 @@ export function gerarRoteiroLiveApex(input: LiveApexInput): LiveApexRoteiro | nu
       `${titulo}\n\n` +
       `${foco.map((g) => `${g.grupo}: ${g.tipo.toUpperCase()}`).join(" · ")}\n` +
       "Diagnóstico registrado no APEX, prescrição no STRATUM, reavaliação marcada.\n\n" +
+      `${LIVE_APEX_FREQUENCIA}\n\n` +
       "Transformação é sistema.\n\n" +
       LIVE_APEX_HASHTAGS.join(" "),
   };

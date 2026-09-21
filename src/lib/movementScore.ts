@@ -9,12 +9,15 @@ import type { FrameAnalysis } from "./poseAnalysis";
 
 export type MetricaId =
   | "profundidade"        // ângulo mínimo de joelho
+  | "quadril_fundo"       // ângulo mínimo de quadril
   | "extensao_final"      // ângulo máximo de quadril
   | "controle_tronco"     // inclinação mínima de tronco (quanto menor, mais inclinado)
+  | "angulo_ombro"        // ângulo médio/mínimo de ombro
   | "amplitude_cotovelo"  // variação de ângulo de cotovelo
   | "trava_cotovelo"      // extensão máxima de cotovelo
   | "simetria_joelho"     // diferença entre lados
   | "simetria_cotovelo"
+  | "momentum_tronco"
   | "linha_corpo";        // tronco alinhado (prancha/push-up)
 
 export interface FaixaReferencia {
@@ -39,20 +42,22 @@ export const REFERENCIAS_KINESIS: ReferenciaExercicio[] = [
     exercicio: "Agachamento",
     aliases: ["agachamento livre", "agachamento com barra", "agachamento", "leg press", "avanço/passada", "avanço", "passada"],
     faixas: [
-      { metrica: "profundidade", label: "Profundidade (joelho)", min: 60, max: 100, peso: 0.3, correcao: "Desça até coxa paralela mantendo o pé inteiro no chão; se travar antes, reduza a carga e trabalhe mobilidade de tornozelo." },
-      { metrica: "controle_tronco", label: "Controle de tronco", min: 55, max: 120, peso: 0.3, seguranca: true, correcao: "Tronco caindo à frente: puxe o ar, trave o abdômen e empurre o chão com o meio do pé. Lombar não deve arredondar." },
-      { metrica: "extensao_final", label: "Extensão final de quadril", min: 160, max: 180, peso: 0.2, correcao: "Termine a subida com quadril estendido e glúteo contraído, sem hiperextender a lombar." },
-      { metrica: "simetria_joelho", label: "Simetria entre os lados", min: 0, max: 8, peso: 0.2, penalidadePorGrau: 3, correcao: "Um lado está trabalhando mais: inclua unilaterais começando pelo lado fraco." },
+      { metrica: "profundidade", label: "Joelho no fundo", min: 70, max: 100, peso: 0.25, correcao: "Desça até coxa paralela mantendo o pé inteiro no chão; se travar antes, reduza a carga e trabalhe mobilidade de tornozelo." },
+      { metrica: "quadril_fundo", label: "Quadril no fundo", min: 60, max: 100, peso: 0.2, correcao: "Empurre o quadril para baixo e para trás sem perder a linha da coluna; amplitude só conta com controle." },
+      { metrica: "controle_tronco", label: "Tronco sob controle", min: 55, max: 120, peso: 0.15, seguranca: true, correcao: "Tronco caindo à frente: puxe o ar, trave o abdômen e empurre o chão com o meio do pé. Lombar não deve arredondar." },
+      { metrica: "simetria_joelho", label: "Valgo / simetria de joelhos", min: 0, max: 10, peso: 0.2, penalidadePorGrau: 3, seguranca: true, correcao: "Joelho colapsando ou lado dominante: empurre o joelho na linha do pé e inclua unilaterais começando pelo lado fraco." },
+      { metrica: "extensao_final", label: "Finalização de quadril", min: 160, max: 180, peso: 0.2, correcao: "Termine a subida com quadril estendido e glúteo contraído, sem hiperextender a lombar." },
     ],
   },
   {
     exercicio: "Stiff / Terra",
-    aliases: ["stiff", "levantamento terra", "terra", "romeno", "good morning"],
+    aliases: ["stiff", "rdl", "levantamento terra romeno", "levantamento terra", "terra", "romeno", "good morning"],
     faixas: [
-      { metrica: "controle_tronco", label: "Ângulo de tronco na descida", min: 45, max: 110, peso: 0.35, seguranca: true, correcao: "Lombar deve permanecer neutra: empurre o quadril para trás e pare onde a coluna começa a ceder." },
-      { metrica: "profundidade", label: "Joelho na descida", min: 140, max: 175, peso: 0.25, correcao: "No stiff o joelho fica levemente flexionado e fixo; se dobra muito, virou agachamento." },
-      { metrica: "extensao_final", label: "Extensão final de quadril", min: 160, max: 180, peso: 0.25, correcao: "Finalize com quadril à frente e glúteo contraído, sem jogar o tronco para trás." },
-      { metrica: "simetria_joelho", label: "Simetria entre os lados", min: 0, max: 8, peso: 0.15, penalidadePorGrau: 3, correcao: "Diferença entre os lados: trabalhe unilateral e revise apoio dos pés." },
+      { metrica: "quadril_fundo", label: "Dobradiça de quadril", min: 60, max: 100, peso: 0.25, correcao: "Empurre o quadril para trás e mantenha a barra próxima ao corpo; o movimento nasce no quadril." },
+      { metrica: "profundidade", label: "Joelho semi-estendido", min: 140, max: 175, peso: 0.15, correcao: "No stiff/RDL o joelho fica levemente flexionado e fixo; se dobra muito, virou agachamento." },
+      { metrica: "controle_tronco", label: "Lombar neutra", min: 45, max: 110, peso: 0.3, seguranca: true, correcao: "Lombar deve permanecer neutra: empurre o quadril para trás e pare onde a coluna começa a ceder." },
+      { metrica: "extensao_final", label: "Barra próxima / extensão final", min: 160, max: 180, peso: 0.15, correcao: "Finalize com quadril à frente e glúteo contraído, sem jogar o tronco para trás." },
+      { metrica: "simetria_joelho", label: "Simetria", min: 0, max: 5, peso: 0.15, penalidadePorGrau: 3, correcao: "Diferença entre os lados: trabalhe unilateral e revise apoio dos pés." },
     ],
   },
   {
@@ -69,10 +74,11 @@ export const REFERENCIAS_KINESIS: ReferenciaExercicio[] = [
     exercicio: "Supino / Push-up",
     aliases: ["supino reto", "supino inclinado", "push-up", "flexão", "crucifixo"],
     faixas: [
-      { metrica: "amplitude_cotovelo", label: "Amplitude de cotovelo", min: 55, max: 120, peso: 0.35, correcao: "Amplitude curta: desça controlado até sentir alongamento no peitoral, sem quicar." },
-      { metrica: "trava_cotovelo", label: "Extensão no topo", min: 155, max: 180, peso: 0.25, correcao: "Termine a fase de subida estendendo o cotovelo sem travar com impulso." },
-      { metrica: "linha_corpo", label: "Linha do corpo", min: 150, max: 185, peso: 0.25, seguranca: true, correcao: "Quadril caindo ou subindo: contraia abdômen e glúteo para manter o corpo em linha." },
-      { metrica: "simetria_cotovelo", label: "Simetria entre os braços", min: 0, max: 8, peso: 0.15, penalidadePorGrau: 3, correcao: "Um braço empurra mais: use halteres por um ciclo e comece pelo lado fraco." },
+      { metrica: "amplitude_cotovelo", label: "Cotovelo", min: 80, max: 125, peso: 0.25, correcao: "Desça controlado até sentir alongamento no peitoral, mantendo o cotovelo dentro da linha segura." },
+      { metrica: "angulo_ombro", label: "Ombro", min: 45, max: 75, peso: 0.2, seguranca: true, correcao: "Ajuste a abertura do braço: cotovelo nem colado demais, nem aberto demais. Ombro protegido antes de carga." },
+      { metrica: "simetria_cotovelo", label: "Trajetória / simetria", min: 0, max: 8, peso: 0.2, penalidadePorGrau: 3, correcao: "Trajetória torta ou braço dominante: use halteres por um ciclo e comece pelo lado fraco." },
+      { metrica: "linha_corpo", label: "Escápulas e base", min: 150, max: 185, peso: 0.2, seguranca: true, correcao: "Escápulas fixas e base estável. Quadril não cai, lombar não compensa." },
+      { metrica: "trava_cotovelo", label: "Finalização", min: 155, max: 180, peso: 0.15, correcao: "Termine a fase de subida estendendo o cotovelo sem travar com impulso." },
     ],
   },
   {
@@ -89,10 +95,11 @@ export const REFERENCIAS_KINESIS: ReferenciaExercicio[] = [
     exercicio: "Remada / Puxada",
     aliases: ["remada curvada", "remada", "puxada frontal", "puxada", "pulldown"],
     faixas: [
-      { metrica: "amplitude_cotovelo", label: "Amplitude de cotovelo", min: 50, max: 120, peso: 0.35, correcao: "Puxe até o cotovelo passar a linha do tronco, sem encolher o ombro." },
-      { metrica: "controle_tronco", label: "Tronco estável", min: 45, max: 130, peso: 0.3, seguranca: true, correcao: "Tronco balançando: fixe o ângulo do tronco e puxe com o dorsal, não com o corpo." },
-      { metrica: "trava_cotovelo", label: "Alongamento na volta", min: 150, max: 180, peso: 0.2, correcao: "Volte até estender o braço e alongar o dorsal, sem soltar a escápula." },
-      { metrica: "simetria_cotovelo", label: "Simetria entre os braços", min: 0, max: 8, peso: 0.15, penalidadePorGrau: 3, correcao: "Um lado puxa mais: unilateral com halter, lado fraco primeiro." },
+      { metrica: "controle_tronco", label: "Tronco", min: 30, max: 60, peso: 0.2, seguranca: true, correcao: "Fixe o ângulo do tronco e puxe com o dorsal, não com o corpo." },
+      { metrica: "amplitude_cotovelo", label: "Cotovelo", min: 80, max: 130, peso: 0.15, correcao: "Puxe até o cotovelo passar a linha do tronco, sem encolher o ombro." },
+      { metrica: "angulo_ombro", label: "Retração escapular", min: 20, max: 90, peso: 0.25, correcao: "Pense em colocar a escápula no bolso de trás antes de dobrar o cotovelo." },
+      { metrica: "momentum_tronco", label: "Momentum", min: 0, max: 10, peso: 0.2, seguranca: true, correcao: "Se o tronco balança para puxar, a carga passou do ponto. Reduza e pause a contração." },
+      { metrica: "simetria_cotovelo", label: "Simetria", min: 0, max: 8, peso: 0.2, penalidadePorGrau: 3, correcao: "Um lado puxa mais: unilateral com halter, lado fraco primeiro." },
     ],
   },
   {
@@ -140,6 +147,7 @@ export interface ComponenteScore {
   label: string;
   medido: number;
   faixa: [number, number];
+  status: "OK" | "ATENÇÃO" | "ERRO";
   score: number;
   peso: number;
   dentro: boolean;
@@ -164,6 +172,61 @@ export interface MovementScoreResult {
   errosDetectados: ErroDetectado[];
   correcoesKinesis: string[];
   alertaSeguranca: string | null;
+  overlayImageUrl: string | null;
+}
+
+function corStatus(status: ComponenteScore["status"]): string {
+  if (status === "OK") return "#00FF88";
+  if (status === "ATENÇÃO") return "#B8922A";
+  return "#FF4444";
+}
+
+function escapeSvg(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function buildOverlayImageUrl(params: {
+  exercicio: string;
+  score: number;
+  classificacao: Classificacao;
+  componentes: ComponenteScore[];
+}): string {
+  const linhas = params.componentes.slice(0, 5);
+  const exercicio = escapeSvg(params.exercicio.toUpperCase());
+  const classificacao = escapeSvg(params.classificacao);
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+      <rect width="1080" height="1920" fill="#020205"/>
+      <rect x="52" y="52" width="976" height="1816" fill="none" stroke="#00D4FF" stroke-opacity="0.35" stroke-width="2"/>
+      <text x="80" y="136" fill="#F5F0E8" font-family="Rajdhani, Arial, sans-serif" font-size="58" font-weight="700">MOVEMENT SCORE</text>
+      <text x="80" y="190" fill="#888888" font-family="Space Mono, monospace" font-size="26">${exercicio} · ${classificacao}</text>
+      <text x="80" y="390" fill="#00D4FF" font-family="Rajdhani, Arial, sans-serif" font-size="220" font-weight="700">${params.score}</text>
+      <text x="360" y="370" fill="#F5F0E8" fill-opacity="0.42" font-family="Space Mono, monospace" font-size="42">/100</text>
+      ${linhas.map((c, i) => {
+        const y = 600 + i * 180;
+        const pct = Math.max(0, Math.min(100, c.score));
+        const cor = corStatus(c.status);
+        return `
+          <g>
+            <text x="80" y="${y}" fill="#F5F0E8" font-family="Space Mono, monospace" font-size="28">${escapeSvg(c.label.toUpperCase())}</text>
+            <text x="80" y="${y + 42}" fill="#888888" font-family="Space Mono, monospace" font-size="22">${c.medido}° · alvo ${c.faixa[0]}–${c.faixa[1]}° · ${c.status}</text>
+            <rect x="80" y="${y + 70}" width="760" height="22" fill="#F5F0E8" fill-opacity="0.08"/>
+            <rect x="80" y="${y + 70}" width="${Math.round(760 * pct / 100)}" height="22" fill="${cor}"/>
+            <circle cx="${80 + Math.round(760 * pct / 100)}" cy="${y + 81}" r="18" fill="${cor}" fill-opacity="0.9"/>
+            <text x="880" y="${y + 88}" fill="${cor}" font-family="Rajdhani, Arial, sans-serif" font-size="54" font-weight="700">${c.score}</text>
+          </g>
+        `;
+      }).join("")}
+      <text x="80" y="1770" fill="#B8922A" font-family="Space Mono, monospace" font-size="24">Coach Diogo Mello · nutrion.app.br</text>
+      <text x="80" y="1816" fill="#F5F0E8" fill-opacity="0.64" font-family="Rajdhani, Arial, sans-serif" font-size="42" font-weight="700">Transformação é sistema.</text>
+    </svg>
+  `.trim();
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 function medir(metrica: MetricaId, frames: FrameAnalysis[]): number | null {
@@ -171,15 +234,19 @@ function medir(metrica: MetricaId, frames: FrameAnalysis[]): number | null {
   const joelho = frames.map((f) => (f.angles.leftKnee + f.angles.rightKnee) / 2);
   const quadril = frames.map((f) => (f.angles.leftHip + f.angles.rightHip) / 2);
   const cotovelo = frames.map((f) => (f.angles.leftElbow + f.angles.rightElbow) / 2);
+  const ombro = frames.map((f) => (f.angles.leftShoulder + f.angles.rightShoulder) / 2);
   const tronco = frames.map((f) => f.angles.trunkLean);
 
   switch (metrica) {
     case "profundidade": return Math.min(...joelho);
+    case "quadril_fundo": return Math.min(...quadril);
     case "extensao_final": return Math.max(...quadril);
     case "controle_tronco": return Math.min(...tronco);
+    case "angulo_ombro": return Math.min(...ombro);
     case "linha_corpo": return quadril.reduce((a, b) => a + b, 0) / quadril.length;
     case "amplitude_cotovelo": return Math.max(...cotovelo) - Math.min(...cotovelo);
     case "trava_cotovelo": return Math.max(...cotovelo);
+    case "momentum_tronco": return Math.max(...tronco) - Math.min(...tronco);
     case "simetria_joelho":
       return Math.max(...frames.map((f) => Math.abs(f.angles.leftKnee - f.angles.rightKnee)));
     case "simetria_cotovelo":
@@ -208,8 +275,9 @@ export function calcularMovementScore(exercicio: string, frames: FrameAnalysis[]
     const desvio = dentro ? 0 : valor < f.min ? f.min - valor : valor - f.max;
     const penalidade = f.penalidadePorGrau ?? 2;
     const score = Math.max(0, Math.round(100 - desvio * penalidade));
+    const status = dentro ? "OK" : score >= 70 ? "ATENÇÃO" : "ERRO";
 
-    componentes.push({ metrica: f.metrica, label: f.label, medido: valor, faixa: [f.min, f.max], score, peso: f.peso, dentro });
+    componentes.push({ metrica: f.metrica, label: f.label, medido: valor, faixa: [f.min, f.max], status, score, peso: f.peso, dentro });
 
     if (!dentro) {
       erros.push({ label: f.label, medido: valor, faixa: [f.min, f.max], desvioGraus: desvio, seguranca: !!f.seguranca, correcao: f.correcao });
@@ -228,7 +296,7 @@ export function calcularMovementScore(exercicio: string, frames: FrameAnalysis[]
   }
   score = Math.max(0, Math.min(100, score));
 
-  return {
+  const result = {
     exercicio: exercicio,
     referencia: ref.exercicio,
     score,
@@ -238,6 +306,27 @@ export function calcularMovementScore(exercicio: string, frames: FrameAnalysis[]
     errosDetectados: erros.sort((a, b) => Number(b.seguranca) - Number(a.seguranca) || b.desvioGraus - a.desvioGraus),
     correcoesKinesis: erros.map((e) => e.correcao),
     alertaSeguranca,
+    overlayImageUrl: null,
+  };
+  return { ...result, overlayImageUrl: buildOverlayImageUrl(result) };
+}
+
+export function movementScoreToJson(r: MovementScoreResult) {
+  return {
+    exercicio: r.exercicio,
+    score: r.score,
+    classificacao: r.classificacao,
+    componentes: r.componentes.map((c) => ({
+      articulacao: c.label,
+      angulo_medido: c.medido,
+      range_ideal: c.faixa,
+      status: c.status,
+      score: c.score,
+      correcao: r.errosDetectados.find((e) => e.label === c.label)?.correcao || null,
+    })),
+    erros_detectados: r.errosDetectados,
+    correcoes_kinesis: r.correcoesKinesis,
+    overlay_image_url: r.overlayImageUrl,
   };
 }
 
