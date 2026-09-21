@@ -321,7 +321,8 @@ export default function BiomechHubPanel({
       if (quer("stories")) {
         const r = (await chamarModo("biomech_stories", f, ang, bio)) as StoryScript & { legenda?: string };
         const frames = renderStoryFrames({ tema: r.tema, frames: r.frames || [] }, at);
-        setStoriesImgs(foto ? [foto, ...frames] : frames);
+        const fotoStory = foto ? await fotoParaSlide(foto, 1080, 1920) : null;
+        setStoriesImgs(fotoStory ? [fotoStory, ...frames] : frames);
         legendaFinalTxt = legendaFinalTxt || cleanCaption(r.legenda || "");
         registrarGeracao({ exercicio, formato: "stories", foco: f, angulo: ang });
       }
