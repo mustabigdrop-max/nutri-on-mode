@@ -118,7 +118,7 @@ const CoachHub = () => {
               style={{ background: AMBER }}
             />
             <span className="text-[9px] font-bold" style={{ color: AMBER }}>
-              AI LIVE
+              LIVE
             </span>
           </div>
         </div>

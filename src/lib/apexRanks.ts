@@ -1,6 +1,6 @@
-// ARSENAL VIRAL — MOTOR DE PATENTES DO nutriON
-// A patente vem do APEX Score geral (média das zonas da última avaliação salva).
-// Sem avaliação salva não existe patente — nada é estimado aqui.
+// ARSENAL VIRAL — MOTOR DE RANKS DO nutriON
+// O rank vem do APEX Score geral (média das zonas da última avaliação salva).
+// Sem avaliação salva não existe rank — nada é estimado aqui.
 
 export interface Rank {
   key: string;

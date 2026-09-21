@@ -1,6 +1,6 @@
 // ARSENAL VIRAL — CONQUISTAS DO nutriON
 // Toda conquista é avaliada apenas com dados reais: avaliações APEX salvas,
-// logs de treino registrados, BF% do perfil e histórico de patentes.
+// logs de treino registrados, BF% do perfil e histórico de ranks.
 
 import type { DeltaZona, AssimetriaZona, ZonaScore } from "@/lib/apexMuscleScore";
 import type { Rank } from "@/lib/apexRanks";
@@ -21,7 +21,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "500-workouts", titulo: "Lendário", badge: "👑", descricao: "500 treinos registrados." },
   { id: "bf-under-15", titulo: "Sub-15", badge: "🎯", descricao: "BF% registrado abaixo de 15%." },
   { id: "bf-under-12", titulo: "Sub-12", badge: "💎", descricao: "BF% registrado abaixo de 12%." },
-  { id: "first-promotion", titulo: "Primeira Promoção", badge: "📈", descricao: "Primeira subida de patente." },
+  { id: "first-promotion", titulo: "Primeira Promoção", badge: "📈", descricao: "Primeira subida de rank." },
   { id: "prime-rank", titulo: "Prime", badge: "🔥", descricao: "Rank PRIME alcançado." },
   { id: "perfect-week", titulo: "Semana Perfeita", badge: "✅", descricao: "Todas as sessões prescritas da semana concluídas." },
   { id: "comeback", titulo: "Volta por Cima", badge: "🔄", descricao: "Streak quebrado e retomado até 14 dias." },
@@ -95,7 +95,7 @@ export function avaliarAchievements(ctx: AchievementContext): AchievementUnlock[
   if (ctx.bfPercent !== null && ctx.bfPercent < 12) push("bf-under-12", "BF% abaixo de 12%. Nível de palco.", { bf: ctx.bfPercent });
   else if (ctx.bfPercent !== null && ctx.bfPercent < 15) push("bf-under-15", "BF% abaixo de 15%. Definição real.", { bf: ctx.bfPercent });
 
-  if (ctx.jaFoiPromovido) push("first-promotion", "Sua primeira promoção de patente está registrada.");
+  if (ctx.jaFoiPromovido) push("first-promotion", "Sua primeira promoção de rank está registrada.");
   if (ctx.rankAtual && ["prime", "titan", "apex_elite"].includes(ctx.rankAtual.key)) {
     push("prime-rank", `Rank ${ctx.rankAtual.nome}. Você chegou à faixa alta do sistema.`, { rank: ctx.rankAtual.key });
   }
