@@ -116,7 +116,7 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
       onSubmit?.(preview);
     }
     setSaving(false);
-  }, [user, values, preview, todayKey, onSubmit]);
+  }, [user, values, dailyNotes, preview, todayKey, onSubmit]);
 
   const groups = useMemo(() => {
     const g: Record<PillarKey, typeof CHECKIN_FIELDS> = { M: [], C: [], E: [] };

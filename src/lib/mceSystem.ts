@@ -14,7 +14,7 @@ export type CheckinRow = {
   notes?: string | null;
 };
 
-export type CheckinFieldKey = Exclude<keyof CheckinRow, "checkin_date">;
+export type CheckinFieldKey = Exclude<keyof CheckinRow, "checkin_date" | "notes">;
 
 export const CHECKIN_FIELDS: { key: CheckinFieldKey; label: string; pillar: PillarKey; invert?: boolean }[] = [
   { key: "focus_clarity", label: "Foco / Clareza mental", pillar: "M" },

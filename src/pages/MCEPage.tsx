@@ -868,7 +868,7 @@ export default function MCEIntelligencePage() {
           )}
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.6 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap", marginTop: 24 }}>
-            <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MINDSET" />
+            <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MENTALIDADE" />
             <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MENTALIDADE" />
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <ScoreRing value={totalScore} color={phase.color} size={132} label="MCE SCORE" sublabel={scoresLoading ? "CARREGANDO" : "MÉDIA 7 DIAS"} />
