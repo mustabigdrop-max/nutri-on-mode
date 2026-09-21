@@ -32,6 +32,7 @@ const MealLogPage = lazy(() => import("./pages/MealLogPage"));
 const ChatPage = lazy(() => import("./pages/ChatPage"));
 const MicronutrientsPage = lazy(() => import("./pages/MicronutrientsPage"));
 const GamificationPage = lazy(() => import("./pages/GamificationPage"));
+const PhysiqueCardPage = lazy(() => import("./pages/PhysiqueCardPage"));
 const TransformationPage = lazy(() => import("./pages/TransformationPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ProfessionalDashboard = lazy(() => import("./pages/ProfessionalDashboard"));
