@@ -32,6 +32,7 @@ const MealLogPage = lazy(() => import("./pages/MealLogPage"));
 const ChatPage = lazy(() => import("./pages/ChatPage"));
 const MicronutrientsPage = lazy(() => import("./pages/MicronutrientsPage"));
 const GamificationPage = lazy(() => import("./pages/GamificationPage"));
+const PhysiqueCardPage = lazy(() => import("./pages/PhysiqueCardPage"));
 const TransformationPage = lazy(() => import("./pages/TransformationPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ProfessionalDashboard = lazy(() => import("./pages/ProfessionalDashboard"));
@@ -248,6 +249,7 @@ const App = () => (
             <Route path="/chat" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Chat"><ChatPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/micronutrients" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Micronutrientes"><MicronutrientsPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/gamification" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Gamificação"><GamificationPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/physique-card" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Physique Card"><PhysiqueCardPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/transformation" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Transformação"><TransformationPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/shopping-list" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Lista de Compras"><ShoppingListPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/meal-history" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Histórico de Refeições"><MealHistoryPage /></PlanGateWrapper></ProtectedRoute>} />

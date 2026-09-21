@@ -254,6 +254,30 @@ export type Database = {
         }
         Relationships: []
       }
+      apex_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          metadata: Json
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          metadata?: Json
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          metadata?: Json
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       apex_agent_sessions: {
         Row: {
           approved_at: string | null
@@ -1029,6 +1053,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      apex_rank_history: {
+        Row: {
+          apex_score: number
+          assessment_date: string | null
+          created_at: string
+          direction: string
+          id: string
+          previous_apex_score: number | null
+          previous_rank_key: string | null
+          rank_key: string
+          user_id: string
+        }
+        Insert: {
+          apex_score: number
+          assessment_date?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          previous_apex_score?: number | null
+          previous_rank_key?: string | null
+          rank_key: string
+          user_id: string
+        }
+        Update: {
+          apex_score?: number
+          assessment_date?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          previous_apex_score?: number | null
+          previous_rank_key?: string | null
+          rank_key?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       apex_reports: {
         Row: {
