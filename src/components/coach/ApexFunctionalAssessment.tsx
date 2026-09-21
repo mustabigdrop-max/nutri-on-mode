@@ -244,6 +244,7 @@ export default function ApexFunctionalAssessment() {
       coachProfileId: run.coach_profile_id,
       visualAssessmentId: run.visual_assessment_id,
       visualAnalysis: analysis,
+      previousVisualAnalysis: visual.previous_analysis as ApexZonesAnalysis | undefined,
       checklistEntradas: checklist,
       checklistMode: mode,
     });

@@ -91,7 +91,10 @@ export default function ApexOrchestratorPage() {
     if (!run || !user || run.status === "published") return;
     setPublishing(true);
     try {
-      if (editing) await saveOverrides();
+      if (editing) {
+        toast({ title: "Salve o override antes de publicar", variant: "destructive" });
+        return;
+      }
       const currentPlan = { ...plano, volume: volumes, protocolos_ativos: protocols };
       const { data: protocol, error: planError } = await supabase.from("training_protocols").insert({
         user_id: user.id,

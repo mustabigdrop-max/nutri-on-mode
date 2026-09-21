@@ -250,6 +250,7 @@ function visualReport(input: BuildOrchestratorInput, flaggedGroups: string[]): R
   const previousScore = scoreTo100(input.previousVisualAnalysis?.weighted_score ?? (input.previousVisualAnalysis ? weightedScore(input.previousVisualAnalysis.zones) : null));
   return {
     analysis: input.visualAnalysis,
+    previous_analysis: input.previousVisualAnalysis ?? null,
     assessment_id: input.visualAssessmentId ?? null,
     score_geral: currentScore,
     score_anterior: previousScore,
@@ -333,7 +334,7 @@ function buildGamification(input: BuildOrchestratorInput, diagnostico: Diagnosti
     scoreAtual,
     scoreAnterior,
     rankAtual,
-    jaFoiPromovido: Boolean(rankChange?.direction === "promotion"),
+    jaFoiPromovido: false,
     semanaPerfeita: false,
     voltaPorCima: false,
   });
@@ -479,6 +480,12 @@ export function buildMasterOrchestration(input: BuildOrchestratorInput): Orchest
   const diagnostico = diagnosticoCompletoFromCruzado(cruzado);
   executionLog.push(log("3 — DIAGNOSE", "complete", ["apex_visual_report", "checklist_results"], `${diagnostico.prioridades.length} prioridade(s)`));
 
+  const blockedGroups = new Set(diagnostico.grupos.filter((g) => g.encaminhamento.length > 0).map((g) => g.grupo_key));
+  const diagnosticoLiberado: DiagnosticoCompleto = {
+    ...diagnostico,
+    grupos: diagnostico.grupos.filter((g) => !blockedGroups.has(g.grupo_key)),
+    prioridades: diagnostico.prioridades.filter((p) => !blockedGroups.has(p.grupo_key)),
+  };
   const plano = gerarPlanoStratum({
     nivel: input.training?.nivel || "intermediario",
     frequencia: input.training?.frequencia || 4,
@@ -486,7 +493,7 @@ export function buildMasterOrchestration(input: BuildOrchestratorInput): Orchest
     semanaNoMeso: input.training?.semanaNoMeso || 1,
     semanasTotaisMeso: input.training?.semanasTotaisMeso || 4,
     volumeAtualPorGrupo: input.training?.volumeAtualPorGrupo,
-    diagnostico,
+    diagnostico: diagnosticoLiberado,
   });
   const integrada = prescreverIntegrado(cruzado);
   const protocolos = plano.selecao_kinesis.map((s) => ({
