@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ClipboardList, Loader2, Save, ShieldAlert, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +26,8 @@ import {
 import { prescreverIntegrado, type PrescricaoIntegrada } from "@/lib/apexIntegratedPrescription";
 import { ATIVACAO_PRINCIPIOS } from "@/data/apexActivationLibrary";
 import type { DiagnosticoCompleto } from "@/lib/apexDeficitDiagnose";
+import { buildMasterOrchestration, type ChecklistMode } from "@/lib/apexOrchestrator";
+import type { ApexZonesAnalysis } from "@/lib/apexVisualZones";
 
 const C = {
   bg: "#020205",
@@ -67,6 +69,8 @@ type Scores = Record<string, string>;
 export default function ApexFunctionalAssessment() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const runId = searchParams.get("run");
 
   const [athlete, setAthlete] = useState<AthleteOption | null>(null);
   const [grupoAtivo, setGrupoAtivo] = useState<string>(APEX_CHECKLISTS[0].key);
@@ -78,11 +82,46 @@ export default function ApexFunctionalAssessment() {
   const [saving, setSaving] = useState(false);
   const [ultimaData, setUltimaData] = useState<string | null>(null);
   const [comparacao, setComparacao] = useState<ComparacaoAvaliacoes | null>(null);
+  const [run, setRun] = useState<any>(null);
+
+  const gruposVisiveis = useMemo(() => {
+    if (!run?.flagged_groups?.length) return APEX_CHECKLISTS;
+    const permitidos = new Set(run.flagged_groups as string[]);
+    return APEX_CHECKLISTS.filter((g) => permitidos.has(g.key));
+  }, [run]);
 
   const grupo = useMemo(
-    () => APEX_CHECKLISTS.find((g) => g.key === grupoAtivo) || APEX_CHECKLISTS[0],
-    [grupoAtivo],
+    () => gruposVisiveis.find((g) => g.key === grupoAtivo) || gruposVisiveis[0] || APEX_CHECKLISTS[0],
+    [grupoAtivo, gruposVisiveis],
   );
+
+  useEffect(() => {
+    if (!runId || !user) return;
+    (async () => {
+      const { data } = await supabase.from("apex_orchestrator_runs").select("*").eq("id", runId).maybeSingle();
+      if (!data) return;
+      setRun(data);
+      const { data: selected } = await supabase
+        .from("competition_athletes" as any)
+        .select("id,nome,patient_user_id,fase_atual,data_competicao,categoria,sexo")
+        .eq("id", data.athlete_id)
+        .maybeSingle();
+      if (selected) setAthlete(selected as unknown as AthleteOption);
+      const flagged = data.flagged_groups || [];
+      if (flagged[0]) setGrupoAtivo(flagged[0]);
+      const visual = (data.visual_report || {}) as Record<string, unknown>;
+      const zonesAnalysis = visual.analysis as ApexZonesAnalysis | undefined;
+      if (zonesAnalysis) {
+        const initial: Scores = {};
+        for (const key of flagged) {
+          const zone = key === "core" ? "abdomen" : key === "deltoides" ? "deltoides_ombros" : ["biceps", "triceps"].includes(key) ? "bracos" : ["quadriceps", "posterior_coxa"].includes(key) ? "pernas" : ["gluteos", "dorsal"].includes(key) ? "gluteos_lombar" : null;
+          const raw = zone ? zonesAnalysis.zones?.[zone]?.score : null;
+          if (typeof raw === "number") initial[key] = String(raw <= 10 ? raw * 10 : raw);
+        }
+        setScores(initial);
+      }
+    })();
+  }, [runId, user]);
 
   // Carrega o checklist mais recente já registrado para o atleta
   const carregar = useCallback(async () => {
@@ -191,6 +230,57 @@ export default function ApexFunctionalAssessment() {
     }));
   };
 
+  const concluirOrquestrador = async (mode: ChecklistMode, checklist: ChecklistEntrada[]) => {
+    if (!run || !user || !athlete) return null;
+    const visual = (run.visual_report || {}) as Record<string, unknown>;
+    const analysis = visual.analysis as ApexZonesAnalysis | undefined;
+    if (!analysis) throw new Error("O relatório visual desta execução não está disponível.");
+    const result = buildMasterOrchestration({
+      triggerSource: run.trigger_source,
+      athleteId: athlete.id,
+      athleteName: athlete.nome,
+      patientUserId: run.patient_user_id,
+      coachUserId: user.id,
+      coachProfileId: run.coach_profile_id,
+      visualAssessmentId: run.visual_assessment_id,
+      visualAnalysis: analysis,
+      previousVisualAnalysis: visual.previous_analysis as ApexZonesAnalysis | undefined,
+      checklistEntradas: checklist,
+      checklistMode: mode,
+    });
+    const json = (value: unknown) => JSON.parse(JSON.stringify(value));
+    const { error } = await supabase.from("apex_orchestrator_runs").update({
+      status: result.status,
+      checklist_mode: result.checklist_mode,
+      checklist_results: json(result.checklist_results),
+      visual_report: json(result.visual_report),
+      diagnostico: json(result.diagnostico),
+      protocolos_ativos: json(result.protocolos_ativos),
+      plano_treino: json(result.plano_treino),
+      nutriplan_sync: json(result.nutriplan_sync),
+      evolution_snapshot: json(result.evolution_snapshot),
+      gamification_updates: json(result.gamification_updates),
+      praxis_messages: json(result.praxis_messages),
+      coach_report: json(result.coach_report),
+      execution_log: json(result.execution_log),
+    }).eq("id", run.id);
+    if (error) throw error;
+    return run.id as string;
+  };
+
+  const pularChecklist = async () => {
+    if (!run) return;
+    setSaving(true);
+    try {
+      const id = await concluirOrquestrador("skipped", []);
+      if (id) navigate(`/coach/apex-orchestrator/${id}`);
+    } catch (err) {
+      toast({ title: "Não foi possível continuar", description: err instanceof Error ? err.message : "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const salvar = async () => {
     if (!user || !athlete?.id) {
       toast({ title: "Selecione o atleta", variant: "destructive" });
@@ -234,8 +324,11 @@ export default function ApexFunctionalAssessment() {
       });
       if (errDiag) throw errDiag;
 
+      const id = await concluirOrquestrador(ultimaData && Date.now() - new Date(`${ultimaData}T12:00:00`).getTime() < 28 * 86400000 ? "reused" : "fresh", entradas);
+
       toast({ title: "Avaliação registrada", description: "Checklist e diagnóstico salvos no prontuário do atleta." });
       setUltimaData(hoje);
+      if (id) navigate(`/coach/apex-orchestrator/${id}`);
     } catch (err) {
       toast({
         title: "Não foi possível salvar",
@@ -298,7 +391,7 @@ export default function ApexFunctionalAssessment() {
           <>
             {/* Grupos */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-              {APEX_CHECKLISTS.map((g) => {
+              {gruposVisiveis.map((g) => {
                 const ativo = g.key === grupoAtivo;
                 const n = respondidasGrupo(g.key);
                 return (
@@ -483,6 +576,15 @@ export default function ApexFunctionalAssessment() {
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               {saving ? "salvando…" : "salvar avaliação e diagnóstico"}
             </button>
+            {run && (
+              <button
+                onClick={pularChecklist}
+                disabled={saving}
+                style={{ ...LABEL, marginTop: 8, width: "100%", padding: "12px 16px", border: `1px solid ${C.gold}`, background: "transparent", color: C.gold }}
+              >
+                gerar avaliação parcial e concluir checklist depois
+              </button>
+            )}
           </>
         )}
       </div>

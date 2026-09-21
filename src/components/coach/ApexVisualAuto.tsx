@@ -21,6 +21,7 @@ import {
   photoChecklist, weightedScore, assessmentCadence, addDays, bfRangeMidpoint,
   type ApexZonesAnalysis, type PhotoView, type ZoneKey, type WeakPoint,
 } from "@/lib/apexVisualZones";
+import { buildMasterOrchestration } from "@/lib/apexOrchestrator";
 
 type Step = "atleta" | "fotos" | "analise" | "revisao" | "salvo";
 
@@ -71,6 +72,7 @@ export default function ApexVisualAuto() {
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<ApexZonesAnalysis | null>(null);
   const [forwardLog, setForwardLog] = useState<string[]>([]);
+  const [orchestratorRunId, setOrchestratorRunId] = useState<string | null>(null);
 
   const previous = history[0] || null;
   const previousAnalysis: ApexZonesAnalysis | null = previous?.analise_ia?.zones ? previous.analise_ia : null;
@@ -286,6 +288,52 @@ export default function ApexVisualAuto() {
       if (insErr) throw new Error(insErr.message);
       log.push("Avaliação salva no histórico do atleta.");
 
+      let createdRunId: string | null = null;
+      if (checklist.missing.length === 0) {
+        const patientId = athleteRow?.patient_user_id || athlete.patient_user_id || null;
+        const orchestration = buildMasterOrchestration({
+          triggerSource: "fotos_uploaded",
+          athleteId: athlete.id,
+          athleteName: athleteRow?.nome ?? athlete.nome,
+          patientUserId: patientId,
+          coachUserId: user.id,
+          coachProfileId: cp.id,
+          visualAssessmentId: (saved as any)?.id ?? null,
+          visualAnalysis: analysis,
+          previousVisualAnalysis: previousAnalysis,
+          checklistMode: "pending",
+        });
+        const json = (value: unknown) => JSON.parse(JSON.stringify(value));
+        const { data: run, error: runErr } = await supabase.from("apex_orchestrator_runs").insert({
+          athlete_id: athlete.id,
+          patient_user_id: patientId,
+          coach_user_id: user.id,
+          coach_profile_id: cp.id,
+          visual_assessment_id: (saved as any)?.id ?? null,
+          trigger_source: "fotos_uploaded",
+          status: orchestration.status,
+          checklist_mode: orchestration.checklist_mode,
+          flagged_groups: orchestration.flagged_groups,
+          checklist_results: json(orchestration.checklist_results),
+          visual_report: json(orchestration.visual_report),
+          diagnostico: json(orchestration.diagnostico),
+          protocolos_ativos: json(orchestration.protocolos_ativos),
+          plano_treino: json(orchestration.plano_treino),
+          nutriplan_sync: json(orchestration.nutriplan_sync),
+          evolution_snapshot: json(orchestration.evolution_snapshot),
+          gamification_updates: json(orchestration.gamification_updates),
+          praxis_messages: json(orchestration.praxis_messages),
+          coach_report: json(orchestration.coach_report),
+          execution_log: json(orchestration.execution_log),
+        }).select("id").single();
+        if (runErr) throw new Error(`Avaliação salva, mas o fluxo integrado não iniciou: ${runErr.message}`);
+        createdRunId = run.id;
+        setOrchestratorRunId(run.id);
+        log.push("Orquestrador iniciado e pausado no checklist funcional.");
+      } else {
+        log.push("Fluxo integrado não iniciado: as vistas frontal, lateral e posterior são obrigatórias.");
+      }
+
       // → TrainingON (STRATUM)
       const weakPoints = (analysis.weak_points || []) as WeakPoint[];
       if (weakPoints.length > 0 || (analysis.protocol?.training_adjustments || []).length > 0) {
@@ -308,25 +356,11 @@ export default function ApexVisualAuto() {
         log.push("Sugestões nutricionais registradas na avaliação para revisão no NutriPlan.");
       }
 
-      // → Agenda + notificação ao atleta
-      const patientId = athleteRow?.patient_user_id || athlete.patient_user_id;
-      if (patientId && analysis.protocol?.next_assessment_date) {
-        const { error: notifErr } = await supabase.from("coach_notifications" as any).insert({
-          recipient_user_id: patientId,
-          sender_user_id: user.id,
-          notification_type: "apex_avaliacao",
-          title: "Próxima avaliação APEX agendada",
-          message: `${analysis.protocol.next_assessment_date} — ${analysis.protocol.conditions || "Manhã, jejum, mesma iluminação."}`,
-          action_url: "/apex",
-          reference_id: (saved as any)?.id ?? null,
-        });
-        if (notifErr) log.push("Aviso ao atleta não enviado (vínculo ativo necessário).");
-        else log.push(`Atleta avisado: próxima avaliação em ${analysis.protocol.next_assessment_date}.`);
-      }
+      log.push("Nenhuma mensagem foi enviada ao aluno; o envio acontece somente após a aprovação do coach.");
 
       setForwardLog(log);
       setStep("salvo");
-      toast({ title: "Avaliação salva", description: "Histórico atualizado e módulos notificados." });
+      toast({ title: "Avaliação salva", description: createdRunId ? "Checklist funcional pronto para continuar." : "Histórico atualizado." });
       await pullPhotosFromHistory([]);
     } catch (e: any) {
       setError(e?.message || "Erro ao salvar.");
@@ -600,7 +634,14 @@ export default function ApexVisualAuto() {
               <ul className="list-disc space-y-1 pl-5 text-sm">
                 {forwardLog.map((l, i) => <li key={i}>{l}</li>)}
               </ul>
-              <Button variant="outline" onClick={resetFlow}>Nova avaliação</Button>
+              <div className="flex flex-wrap gap-2">
+                {orchestratorRunId && (
+                  <Button onClick={() => navigate(`/coach/apex-assessment?run=${orchestratorRunId}`)}>
+                    Responder checklist funcional
+                  </Button>
+                )}
+                <Button variant="outline" onClick={resetFlow}>Nova avaliação</Button>
+              </div>
             </CardContent>
           </Card>
         )}
