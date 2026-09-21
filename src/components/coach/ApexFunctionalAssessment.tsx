@@ -166,6 +166,24 @@ export default function ApexFunctionalAssessment() {
   const diagnostico = useMemo(() => diagnosticarAtleta(entradas), [entradas]);
   const prescricao = useMemo(() => prescreverApex(diagnostico), [diagnostico]);
 
+  // DIAGNOSE cruzado (visual × funcional) e prescrição integrada
+  const entradasCruzadas: EntradaCruzada[] = useMemo(
+    () =>
+      entradas.map((e) => {
+        const raw = assimetrias[e.grupo_key];
+        const pct = raw !== undefined && raw !== "" ? Number(raw) : null;
+        return {
+          grupo_key: e.grupo_key,
+          respostas: e.respostas,
+          visual_score: e.visual_score,
+          assimetria_pct: pct !== null && Number.isFinite(pct) ? pct : null,
+        };
+      }),
+    [entradas, assimetrias],
+  );
+  const cruzado = useMemo(() => diagnosticarAtletaCruzado(entradasCruzadas), [entradasCruzadas]);
+  const prescricaoIntegrada = useMemo(() => prescreverIntegrado(cruzado), [cruzado]);
+
   const responder = (perguntaId: string, opcao: string) => {
     setRespostas((prev) => ({
       ...prev,
