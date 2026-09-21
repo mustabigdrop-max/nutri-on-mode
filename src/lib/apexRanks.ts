@@ -15,13 +15,13 @@ export interface Rank {
 }
 
 export const RANKS: Rank[] = [
-  { key: "recruit", nome: "RECRUIT", icone: "🔰", cor: "#555566", glow: false, min: 0, max: 30, descricao: "Início da jornada. Cada treino é um passo." },
-  { key: "soldier", nome: "SOLDIER", icone: "⚔️", cor: "#8B6914", glow: false, min: 31, max: 50, descricao: "Comprometido. A base está sendo construída." },
-  { key: "sergeant", nome: "SERGEANT", icone: "🎯", cor: "#A0A0B0", glow: false, min: 51, max: 65, descricao: "Consistência comprovada. Resultados aparecendo." },
-  { key: "lieutenant", nome: "LIEUTENANT", icone: "⭐", cor: "#B8922A", glow: false, min: 66, max: 75, descricao: "Acima da média. Corpo respondendo ao sistema." },
-  { key: "captain", nome: "CAPTAIN", icone: "🎖️", cor: "#00D4FF", glow: true, min: 76, max: 85, descricao: "Elite. Poucos chegam aqui." },
-  { key: "commander", nome: "COMMANDER", icone: "👑", cor: "#00D4FF", corSecundaria: "#B8922A", glow: true, min: 86, max: 95, descricao: "Excepcional. Referência entre os alunos." },
-  { key: "apex_elite", nome: "APEX ELITE", icone: "💎", cor: "#FFFFFF", corSecundaria: "#00D4FF", glow: true, min: 96, max: 100, descricao: "O topo. Physique de nível competitivo." },
+  { key: "spark", nome: "SPARK", icone: "⚡", cor: "#555566", glow: false, min: 0, max: 30, descricao: "A faísca acendeu. O sistema começou." },
+  { key: "foundation", nome: "FOUNDATION", icone: "🧱", cor: "#8B6914", glow: false, min: 31, max: 50, descricao: "A base está sendo construída. Consistência inicial." },
+  { key: "rising", nome: "RISING", icone: "📈", cor: "#A0A0B0", glow: false, min: 51, max: 65, descricao: "Em ascensão. Resultados aparecendo." },
+  { key: "force", nome: "FORCE", icone: "💪", cor: "#B8922A", glow: false, min: 66, max: 75, descricao: "Força consolidada. Acima da média." },
+  { key: "prime", nome: "PRIME", icone: "🔥", cor: "#00D4FF", glow: true, min: 76, max: 85, descricao: "No auge. Poucos chegam aqui." },
+  { key: "titan", nome: "TITAN", icone: "👑", cor: "#00D4FF", corSecundaria: "#B8922A", glow: true, min: 86, max: 95, descricao: "Excepcional. Referência." },
+  { key: "apex_elite", nome: "APEX ELITE", icone: "💎", cor: "#FFFFFF", corSecundaria: "#00D4FF", glow: true, min: 96, max: 100, descricao: "O topo absoluto." },
 ];
 
 export function rankForScore(score: number | null | undefined): Rank | null {
@@ -131,7 +131,8 @@ export function mensagemRebaixamento(params: {
     "",
     "O importante: você ainda está no sistema, e o sistema funciona quando você volta.",
     "",
-    `Sua patente atual: ${para.nome}. Seu caminho de volta a ${de.nome} está mapeado na próxima reavaliação.`,
+    `Seu rank atual: ${para.nome}. O caminho de volta a ${de.nome} está mapeado.`,
+    "Quer ativar o Protocolo de Retomada? Um bloco de cada vez.",
     "",
     "Estou aqui. 💪",
     "Coach Diogo Mello",
