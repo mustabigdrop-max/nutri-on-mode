@@ -128,6 +128,7 @@ const AthleteTodayTrainingPage = lazy(() => import("./pages/AthleteTodayTraining
 const TrainingSystemsPage = lazy(() => import("./pages/TrainingSystemsPage"));
 const ScienceHubPage = lazy(() => import("./pages/ScienceHubPage"));
 const BiomechanicsVaultPage = lazy(() => import("./pages/BiomechanicsVaultPage"));
+const KinesisPage = lazy(() => import("./pages/KinesisPage"));
 const MetabolicONPage = lazy(() => import("./pages/MetabolicONPage"));
 const MCEPage = lazy(() => import("./pages/MCEPage"));
 const MceForgePage = lazy(() => import("./pages/MceForgePage"));
