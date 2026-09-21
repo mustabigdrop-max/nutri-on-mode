@@ -23,10 +23,10 @@ const PHASES: { id: number; name: string; sub: string; color: string; icon: stri
     steps: [
       { id: "m1", pillar: "M", title: "Defina seu porquê", desc: "Escreva em 1 frase por que você começou. Não é o corpo — é o que o corpo representa.", action: "Abra o MCE e preencha o campo 'Meu Porquê'", error: "Não escreva metas vagas como 'ficar saudável'. Seja específico: 'quero subir 3 lances sem ofegar pra brincar com meu filho.'" },
       { id: "m2", pillar: "M", title: "Áudio de ativação", desc: "Ouça o áudio 'Despertar' toda manhã. 5 minutos. Antes do celular, antes do café.", action: "Vá em MCE > Audio Academy > Despertar. Coloque alarme 5 min antes de levantar.", error: "Se ouvir no carro ou no trabalho, perde o efeito. O cérebro precisa estar em estado alfa (recém-acordado)." },
-      { id: "c1", pillar: "C", title: "Check-in matinal", desc: "Todo dia ao acordar: 30 segundos respondendo como dormiu, mindset e se sabe o plano.", action: "Abra o FORGE > Check-in ☀. São 3 perguntas. Tapa e pronto.", error: "Se pular o check-in, o sistema não calibra seu dia. Sem dados = sem correção = sem evolução." },
+      { id: "c1", pillar: "C", title: "Check-in matinal", desc: "Todo dia ao acordar: 30 segundos respondendo como dormiu, mentalidade e se sabe o plano.", action: "Abra o FORGE > Check-in ☀. São 3 perguntas. Tapa e pronto.", error: "Se pular o check-in, o sistema não calibra seu dia. Sem dados = sem correção = sem evolução." },
       { id: "c2", pillar: "C", title: "Protocolo 24H ativo", desc: "Registre cada refeição no dia que comer. Não no dia seguinte. No ATO.", action: "NutriPlan > Registrar refeição. Foto ou texto. 10 segundos.", error: "Registrar 'depois' = esquecer. O comportamento que não é registrado não é gerenciado." },
       { id: "e1", pillar: "E", title: "Primeiro treino registrado", desc: "Faça seu treino e registre no TrainingON. Qualquer treino. O importante é o REGISTRO.", action: "TrainingON > Iniciar treino > Siga a sequência > Finalize.", error: "Treinar sem registrar é invisível. O sistema precisa dos dados pra periodizar. Sem registro = sem STRATUM." },
-      { id: "e2", pillar: "E", title: "Check-in noturno", desc: "Antes de dormir: 30 segundos avaliando treino, dieta, conteúdo e execução geral.", action: "FORGE > Check-in 🌙. 4 perguntas. Fecha o ciclo do dia.", error: "O check-in noturno é onde a IA detecta desvios. Sem ele, o Protocolo de Correção não ativa." },
+      { id: "e2", pillar: "E", title: "Check-in noturno", desc: "Antes de dormir: 30 segundos avaliando treino, dieta, conteúdo e execução geral.", action: "FORGE > Check-in 🌙. 4 perguntas. Fecha o ciclo do dia.", error: "O check-in noturno é onde o sistema identifica desvios. Sem ele, o Protocolo de Correção não ativa." },
     ],
   },
   {
@@ -34,7 +34,7 @@ const PHASES: { id: number; name: string; sub: string; color: string; icon: stri
     desc: "Transformar ações em hábitos. Consistência > intensidade.",
     gate: "7 dias de streak + check-ins completos",
     steps: [
-      { id: "m3", pillar: "M", title: "Journaling MCE semanal", desc: "Todo domingo: 5 minutos escrevendo o que deu certo, o que errou, e 1 ajuste pra semana seguinte.", action: "MCE > Journaling > Preencha os 3 campos. A IA gera insights.", error: "Não transforme em redação. São 3 frases. Curto, direto, honesto." },
+      { id: "m3", pillar: "M", title: "Journaling MCE semanal", desc: "Todo domingo: 5 minutos escrevendo o que deu certo, o que errou, e 1 ajuste pra semana seguinte.", action: "MCE > Journaling > Preencha os 3 campos. O PRAXIS devolve o próximo ajuste.", error: "Não transforme em redação. São 3 frases. Curto, direto, honesto." },
       { id: "m4", pillar: "M", title: "Identifique seus gatilhos", desc: "Quando você sai do plano, o que aconteceu antes? Estresse? Sono ruim? Social?", action: "MCE > PCA Comportamental > Mapeie seus 3 principais gatilhos.", error: "Não liste gatilhos genéricos. 'Estresse' não serve. 'Quando chego do trabalho depois das 20h e não jantei' serve." },
       { id: "c3", pillar: "C", title: "Consistência alimentar", desc: "Meta: 5 de 7 dias no plano nutricional. Não 7/7 — isso é insustentável na Fase 2.", action: "NutriPlan > Acompanhe seu score semanal. 5/7 = verde. Abaixo = alerta.", error: "Buscar 100% na Fase 2 causa efeito rebote. 70-80% é o alvo. Perfeição é inimiga da consistência." },
       { id: "c4", pillar: "C", title: "Hidratação rastreada", desc: "35ml por kg de peso. Marque cada vez que beber água.", action: "NutriPlan > Hidratação > Registre ao longo do dia.", error: "Beber tudo de uma vez não conta. Distribuir ao longo do dia é o que importa pro metabolismo." },
@@ -70,7 +70,7 @@ const PHASES: { id: number; name: string; sub: string; color: string; icon: stri
 ];
 
 const pillarColors: Record<string, string> = { M: C.purple, C: C.cyan, E: C.gold };
-const pillarNames: Record<string, string> = { M: "Mindset", C: "Comportamento", E: "Execução" };
+const pillarNames: Record<string, string> = { M: "Mentalidade", C: "Comportamento", E: "Execução" };
 
 type Tip = { next_focus: string; tip: string; mce_principle: string };
 
@@ -137,7 +137,7 @@ export default function MceForgeGps() {
   const { user } = useAuth();
   const [activePhase, setActivePhase] = useState(0);
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
-  const [aiTip, setAiTip] = useState<Tip | null>(null);
+  const [praxisTip, setPraxisTip] = useState<Tip | null>(null);
   const [tipLoading, setTipLoading] = useState(false);
 
   // Carrega progresso persistido (mce_exercises_done: exercise_key = "forge_gps_<stepid>")
@@ -176,14 +176,14 @@ export default function MceForgeGps() {
     setDoneIds(next);
   };
 
-  const getAITip = async () => {
+  const getPraxisTip = async () => {
     setTipLoading(true);
     const incomplete = phase.steps.filter((s) => !isDone(s.id)).map((s) => `${s.pillar}: ${s.title}`);
     try {
       const { data } = await supabase.functions.invoke("mce-forge", {
         body: { mode: "forge_tip", phase: phase.name, doneCount, totalCount, incomplete },
       });
-      if (data) setAiTip(data as Tip);
+      if (data) setPraxisTip(data as Tip);
     } catch { /* silencia */ }
     setTipLoading(false);
   };
@@ -245,28 +245,28 @@ export default function MceForgeGps() {
         </div>
       </div>
 
-      {/* AI Tip */}
+      {/* Praxis Tip */}
       {!phaseComplete && (
         <div style={{ marginBottom: 16 }}>
-          {!aiTip && !tipLoading ? (
-            <button onClick={getAITip} style={{
+          {!praxisTip && !tipLoading ? (
+            <button onClick={getPraxisTip} style={{
               width: "100%", padding: "10px", background: `${C.cyan}06`, border: `1px solid ${C.cyan}15`,
               borderRadius: 0, cursor: "pointer", fontFamily: F.m, fontSize: 10, color: C.cyan, letterSpacing: 1,
-            }}>🧠 PEDIR DICA DA IA → QUAL PASSO ATACAR AGORA?</button>
+            }}>🧠 PEDIR DICA DO PRAXIS → QUAL PASSO ATACAR AGORA?</button>
           ) : tipLoading ? (
             <div style={{ background: C.s1, border: `1px solid ${C.border}`, padding: "12px 16px", textAlign: "center" }}>
               <span style={{ fontFamily: F.m, fontSize: 10, color: C.cyan }}>Analisando seu progresso...</span>
             </div>
-          ) : aiTip ? (
+          ) : praxisTip ? (
             <div style={{ background: C.s1, border: `1px solid ${C.cyan}15`, padding: "12px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
                 <span style={{ fontSize: 14 }}>🧠</span>
-                <span style={{ fontFamily: F.t, fontSize: 13, fontWeight: 700, color: C.cyan }}>Foco agora: {aiTip.next_focus}</span>
+                <span style={{ fontFamily: F.t, fontSize: 13, fontWeight: 700, color: C.cyan }}>Foco agora: {praxisTip.next_focus}</span>
               </div>
-              <p style={{ fontFamily: F.b, fontSize: 12, color: C.text, margin: "0 0 6px", lineHeight: 1.5 }}>{aiTip.tip}</p>
+              <p style={{ fontFamily: F.b, fontSize: 12, color: C.text, margin: "0 0 6px", lineHeight: 1.5 }}>{praxisTip.tip}</p>
               <div style={{ background: `${C.gold}08`, padding: "6px 10px" }}>
                 <span style={{ fontFamily: F.m, fontSize: 8, color: C.gold, letterSpacing: 1 }}>MCE</span>
-                <span style={{ fontFamily: F.b, fontSize: 11, color: C.gold, marginLeft: 6 }}>{aiTip.mce_principle}</span>
+                <span style={{ fontFamily: F.b, fontSize: 11, color: C.gold, marginLeft: 6 }}>{praxisTip.mce_principle}</span>
               </div>
             </div>
           ) : null}

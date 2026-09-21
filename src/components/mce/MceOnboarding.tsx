@@ -119,7 +119,7 @@ export default function MceOnboarding({ onComplete }: { onComplete: () => void }
         {(["M", "C", "E"] as PillarKey[]).map((p) => (
           <div key={p} style={{ padding: 14, borderRadius: 12, background: `${PILLAR_COLORS[p]}08`, border: `1px solid ${PILLAR_COLORS[p]}22` }}>
             <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, color: PILLAR_COLORS[p], marginBottom: 10 }}>
-              {p === "M" ? "MINDSET" : p === "C" ? "COMPORTAMENTO" : "EXECUÇÃO"}
+              {p === "M" ? "MENTALIDADE" : p === "C" ? "COMPORTAMENTO" : "EXECUÇÃO"}
             </div>
             {diagnostic[p].map((val, idx) => (
               <div key={idx} style={{ marginBottom: 12 }}>

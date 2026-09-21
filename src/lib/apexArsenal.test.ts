@@ -4,8 +4,8 @@ import { computeStreak, semanaPerfeita } from "@/lib/apexStreaks";
 import { apexScoreGeral, assimetrias, deltasPorGrupo } from "@/lib/apexMuscleScore";
 import { avaliarAchievements } from "@/lib/apexAchievements";
 
-describe("patentes", () => {
-  it("mapeia score para patente", () => {
+describe("ranks", () => {
+  it("mapeia score para rank", () => {
     expect(rankForScore(78)?.nome).toBe("PRIME");
     expect(rankForScore(30)?.nome).toBe("SPARK");
     expect(rankForScore(100)?.nome).toBe("APEX ELITE");

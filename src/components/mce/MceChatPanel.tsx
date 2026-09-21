@@ -21,7 +21,7 @@ const SUGGESTIONS = [
 ];
 
 const QUICK_TAGS = [
-  "Como melhorar meu Mindset?",
+  "Como melhorar minha Mentalidade?",
   "Meu Comportamento está no automático errado",
   "Preciso melhorar minha Execução",
   "Qual exercício MCE fazer agora?",
