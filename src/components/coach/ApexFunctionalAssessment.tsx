@@ -441,6 +441,12 @@ export default function ApexFunctionalAssessment() {
               proxima={diagnostico.proxima_reavaliacao}
             />
 
+            {/* DIAGNOSE CRUZADO: visual × funcional */}
+            {cruzado.grupos.length > 0 && <MapaCruzado cruzado={cruzado} />}
+
+            {/* PRESCRIBE integrado (STRATUM + NutriPlan) */}
+            {cruzado.priorizados.length > 0 && <PrescricaoIntegradaView p={prescricaoIntegrada} />}
+
             {/* ACTIVATE / CORRECT / PRESCRIBE */}
             {diagnostico.grupos.length > 0 && <Prescricao prescricao={prescricao} />}
 
