@@ -17,6 +17,14 @@ import {
 import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 import { gerarRelatorioAtleta } from "@/lib/apexAthleteReport";
 import { compararAvaliacoes, type ComparacaoAvaliacoes, type Evolucao } from "@/lib/apexReassess";
+import {
+  diagnosticarAtletaCruzado,
+  MAX_GRUPOS_PRIORIZADOS,
+  type EntradaCruzada,
+  type GrupoCruzado,
+} from "@/lib/apexCrossDiagnose";
+import { prescreverIntegrado, type PrescricaoIntegrada } from "@/lib/apexIntegratedPrescription";
+import { ATIVACAO_PRINCIPIOS } from "@/data/apexActivationLibrary";
 import type { DiagnosticoCompleto } from "@/lib/apexDeficitDiagnose";
 
 const C = {
