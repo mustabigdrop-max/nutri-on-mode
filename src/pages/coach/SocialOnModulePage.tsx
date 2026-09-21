@@ -472,6 +472,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="carousel_engine" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Carrossel Científico</TabsTrigger>
             <TabsTrigger value="banco_temas" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Banco de temas</TabsTrigger>
             <TabsTrigger value="pacote_dia" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Pacote do Dia</TabsTrigger>
+            <TabsTrigger value="pack_criador" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Pack Criador</TabsTrigger>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
             <TabsTrigger value="lote" className="text-xs gap-1"><Rocket className="w-3 h-3" />Modo Lote</TabsTrigger>
             <TabsTrigger value="signal" className="text-xs gap-1"><Zap className="w-3 h-3" />SIGNAL</TabsTrigger>
