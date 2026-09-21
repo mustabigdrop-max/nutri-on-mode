@@ -73,6 +73,7 @@ export default function ApexFunctionalAssessment() {
   const [respostas, setRespostas] = useState<Respostas>({});
   const [scores, setScores] = useState<Scores>({});
   const [observacoes, setObservacoes] = useState<Record<string, string>>({});
+  const [assimetrias, setAssimetrias] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ultimaData, setUltimaData] = useState<string | null>(null);
