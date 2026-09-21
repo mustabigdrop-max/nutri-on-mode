@@ -13,6 +13,7 @@ import CitationBadge from "@/components/science/CitationBadge";
 import ScienceIndicator from "@/components/science/ScienceIndicator";
 import ReactMarkdown from "react-markdown";
 import BiomechHubPanel from "@/components/biomech/BiomechHubPanel";
+import ShowdownPanel from "@/components/biomech/ShowdownPanel";
 import { potencialDoExercicio, POTENCIAL_LABEL, POTENCIAL_COR } from "@/lib/biomechPotencial";
 import {
   getProtocoloPreferido, getTreinoDeHoje, listarProtocolosTreino, setProtocoloPreferido,
@@ -197,6 +198,9 @@ const BiomechanicsVaultPage = () => {
             );
           }}
         />
+
+        {/* Exercise Showdown */}
+        <ShowdownPanel />
 
         {/* Muscle selector */}
         <div>
