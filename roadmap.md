@@ -16,3 +16,6 @@
 - [x] Atualizar voz PRAXIS/MCE e protocolo de retomada
 - [x] Trocar ranks APEX para sistema nutriON
 - [x] Validar MCE v2 atualizado
+- [ ] Implementar Orquestrador Master pós-fotos APEX
+- [ ] Integrar checklist filtrado, diagnóstico, KINESIS, STRATUM, NutriPlan, Evolution, gamificação e PRAXIS
+- [ ] Validar fluxo e relatório do coach
