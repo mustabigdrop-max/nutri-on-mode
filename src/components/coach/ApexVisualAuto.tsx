@@ -303,6 +303,7 @@ export default function ApexVisualAuto() {
           previousVisualAnalysis: previousAnalysis,
           checklistMode: "pending",
         });
+        const json = (value: unknown) => JSON.parse(JSON.stringify(value));
         const { data: run, error: runErr } = await supabase.from("apex_orchestrator_runs").insert({
           athlete_id: athlete.id,
           patient_user_id: patientId,
@@ -310,7 +311,20 @@ export default function ApexVisualAuto() {
           coach_profile_id: cp.id,
           visual_assessment_id: (saved as any)?.id ?? null,
           trigger_source: "fotos_uploaded",
-          ...orchestration,
+          status: orchestration.status,
+          checklist_mode: orchestration.checklist_mode,
+          flagged_groups: orchestration.flagged_groups,
+          checklist_results: json(orchestration.checklist_results),
+          visual_report: json(orchestration.visual_report),
+          diagnostico: json(orchestration.diagnostico),
+          protocolos_ativos: json(orchestration.protocolos_ativos),
+          plano_treino: json(orchestration.plano_treino),
+          nutriplan_sync: json(orchestration.nutriplan_sync),
+          evolution_snapshot: json(orchestration.evolution_snapshot),
+          gamification_updates: json(orchestration.gamification_updates),
+          praxis_messages: json(orchestration.praxis_messages),
+          coach_report: json(orchestration.coach_report),
+          execution_log: json(orchestration.execution_log),
         }).select("id").single();
         if (runErr) throw new Error(`Avaliação salva, mas o fluxo integrado não iniciou: ${runErr.message}`);
         createdRunId = run.id;
