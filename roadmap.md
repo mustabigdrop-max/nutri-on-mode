@@ -18,4 +18,4 @@
 - [x] Validar MCE v2 atualizado
 - [x] Implementar Orquestrador Master pós-fotos APEX
 - [x] Integrar checklist filtrado, diagnóstico, KINESIS, STRATUM, NutriPlan, Evolution, gamificação e PRAXIS
-- [ ] Validar fluxo e relatório do coach
+- [x] Validar fluxo e relatório do coach
