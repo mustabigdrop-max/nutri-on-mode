@@ -336,7 +336,7 @@ const App = () => (
             <Route path="/mce/business/challenges" element={<ProtectedRoute><BusinessChallengesPage /></ProtectedRoute>} />
             <Route path="/audio" element={<ProtectedRoute><AudioAcademyPage /></ProtectedRoute>} />
             <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
-            <Route path="/videoform" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="VideoForm AI"><VideoFormPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/videoform" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="VideoForm — Movement Score"><VideoFormPage /></PlanGateWrapper></ProtectedRoute>} />
             {/* COACH */}
             <Route path="/coach/plano-alimentar" element={<CoachToolRoute><ProtectedRoute><NutriPlanErrorBoundary><Suspense fallback={<NutriPlanLoading />}><PlanoAlimentarIA /></Suspense></NutriPlanErrorBoundary></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
