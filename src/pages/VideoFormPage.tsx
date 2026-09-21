@@ -163,6 +163,8 @@ const VideoFormPage = () => {
 
       const reps = countReps(frames);
       const clientHint = exercise === "auto" ? detectExercise(frames) : null;
+      const exercicioAvaliado = exercise === "auto" ? clientHint?.name || "" : exercise;
+      setMovement(exercicioAvaliado ? calcularMovementScore(exercicioAvaliado, frames) : null);
       setStatusText("Enviando para o VideoForm AI...");
       setProgress(96);
 
