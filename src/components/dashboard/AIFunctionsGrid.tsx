@@ -15,9 +15,9 @@ type AIFunction = {
 
 const AI_FUNCTIONS: AIFunction[] = [
   // 🆕 NOVO — destaque
-  { key: "mce-intelligence", emoji: "🧠", label: "MCE Intelligence", desc: "Coach comportamental · Mindset · Comportamento · Execução", requiredPlan: "free", relatedPage: "/mce" },
+  { key: "mce-intelligence", emoji: "🧠", label: "MCE Vivo", desc: "Coach comportamental · Mentalidade · Comportamento · Execução", requiredPlan: "free", relatedPage: "/mce" },
   { key: "ergo-diary", emoji: "📋", label: "Diários de Ergogênicos", desc: "Registre ciclos, check-ins e análise de exames ", requiredPlan: "ON +", relatedPage: "/ergo-diary" },
-  { key: "videoform-ai", emoji: "🎥", label: "VideoForm AI", desc: "Análise biomecânica de execução por vídeo", requiredPlan: "ON PRO", relatedPage: "/videoform" },
+  { key: "videoform-ai", emoji: "🎥", label: "VideoForm", desc: "Análise biomecânica de execução por vídeo", requiredPlan: "ON PRO", relatedPage: "/videoform" },
 
   // Free
   { key: "analyze-meal", emoji: "📸", label: "Análise de Refeição", desc: "analisa foto e estima macros", requiredPlan: "free", relatedPage: "/meal-log" },
@@ -45,7 +45,7 @@ const AI_FUNCTIONS: AIFunction[] = [
   { key: "generate-event-strategy", emoji: "📅", label: "Estratégia de Evento", desc: "Plano nutricional pré/durante/pós evento", requiredPlan: "ON +", relatedPage: "/event-mode" },
   { key: "generate-plan-revision", emoji: "🔄", label: "Revisão de Plano", desc: "Ajuste automático baseado em resultados", requiredPlan: "ON +" },
   { key: "analyze-blood-test", emoji: "🩸", label: "Análise de Exames", desc: "interpreta seus exames de sangue", requiredPlan: "ON +", relatedPage: "/blood-test" },
-  { key: "glp1-ai-analysis", emoji: "💉", label: "Análise GLP-1", desc: "Otimização nutricional com agonistas", requiredPlan: "ON +", relatedPage: "/glp1" },
+  { key: "glp1-ai-analysis", emoji: "💉", label: "Protocolo GLP-1", desc: "Otimização nutricional com agonistas", requiredPlan: "ON +", relatedPage: "/glp1" },
   { key: "detect-abandonment-risk", emoji: "⚠️", label: "Detecção de Risco", desc: "Prevê risco de abandono do protocolo", requiredPlan: "ON +" },
   { key: "send-recovery-notifications", emoji: "💬", label: "Recuperação Ativa", desc: "Notificações de reengajamento", requiredPlan: "ON +" },
   { key: "process-voice-checkin", emoji: "🎤", label: "Check-in por Voz", desc: "Registro de refeição por áudio", requiredPlan: "ON +" },

@@ -71,10 +71,10 @@ ESTRUTURA:
 1. "Bom dia, ${firstName}." + contexto do dia
 2. Panorama curto (treino/nutrição/fase) em 2-3 frases
 3. Um insight MCE focado no pilar mais fraco (se < 70)
-4. Uma frase de motivação ligada ao propósito
-5. Fechamento: "Bora. O sistema está com você."
+4. Um próximo bloco concreto ligado ao pilar mais fraco, sem motivação vazia
+5. Fechamento: "Bora. Um bloco de cada vez."
 
-REGRAS: narre naturalmente, sem listar dados nem usar marcadores, títulos ou emojis. Texto corrido em parágrafos.`;
+REGRAS: narre naturalmente, sem listar dados nem usar marcadores, títulos ou emojis. Texto corrido em parágrafos. Falha é dado, nunca culpa. Se houver queda de comportamento, fale em retomada com um bloco.`;
 
       const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
