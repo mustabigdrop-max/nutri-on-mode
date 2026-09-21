@@ -105,6 +105,11 @@ import {
   getLatestApexAssessment,
   type ApexAssessmentContext,
 } from "@/lib/apexAssessmentBridge";
+import {
+  buildStratumGeneratorInstruction,
+  gerarPlanoStratum,
+  type Mesociclo,
+} from "@/lib/stratumTrainingGenerator";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
