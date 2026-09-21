@@ -28,6 +28,9 @@ export interface CoachAthlete {
   riskLevel: RiskLevel;
   /** "pendente" = conta criada mas atleta ainda nao acessou/usou o app */
   accessStatus: "pendente" | "ativo";
+  planExpiresAt?: string | null;
+  isLocked: boolean;
+  lockReason?: string | null;
 }
 
 export const daysSince = (iso?: string | null): number => {
@@ -79,7 +82,7 @@ export function useCoachAthletes(coachProfileId?: string | null, coachUserId?: s
 
     const { data: links } = await supabase
       .from("coach_patients")
-      .select("id, patient_user_id, status, started_at, created_at")
+      .select("id, patient_user_id, status, started_at, created_at, plan_expires_at, is_locked, lock_reason")
       .eq("coach_id", coachProfileId)
       .eq("status", "active");
 
@@ -180,6 +183,9 @@ export function useCoachAthletes(coachProfileId?: string | null, coachUserId?: s
         trainingPlanSentAt: sentTrain?.created_at || train?.created_at || null,
         score,
         riskLevel: getRiskLevel(score, dias),
+        planExpiresAt: (l as any).plan_expires_at ?? null,
+        isLocked: !!(l as any).is_locked,
+        lockReason: (l as any).lock_reason ?? null,
         accessStatus:
           prof?.onboarding_completed ||
           prof?.activation_completed ||
