@@ -10373,6 +10373,7 @@ export type Database = {
       }
       quiz_leads: {
         Row: {
+          coach_id: string | null
           created_at: string
           fonte: string | null
           id: string
@@ -10382,6 +10383,7 @@ export type Database = {
           whatsapp: string
         }
         Insert: {
+          coach_id?: string | null
           created_at?: string
           fonte?: string | null
           id?: string
@@ -10391,6 +10393,7 @@ export type Database = {
           whatsapp: string
         }
         Update: {
+          coach_id?: string | null
           created_at?: string
           fonte?: string | null
           id?: string
@@ -14168,6 +14171,10 @@ export type Database = {
         Returns: boolean
       }
       my_challenge_ids: { Args: { _user_id: string }; Returns: string[] }
+      owns_challenge_gym: {
+        Args: { _gym_id: string; _gym_slug: string; _user_id: string }
+        Returns: boolean
+      }
       record_protocol_adjustment: {
         Args: {
           _athlete_id: string

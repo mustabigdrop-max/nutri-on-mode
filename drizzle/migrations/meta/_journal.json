@@ -64,6 +64,27 @@
       "when": 1790010783698,
       "tag": "0008_harden_privilege_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790011011560,
+      "tag": "0009_restrict_lead_tables_to_owner_coach",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790011088095,
+      "tag": "0010_harden_public_signup_inserts",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790011103702,
+      "tag": "0011_allow_owner_coach_mark_paid",
+      "breakpoints": true
     }
   ]
 }
