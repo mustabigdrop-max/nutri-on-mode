@@ -33,6 +33,7 @@ const ChatPage = lazy(() => import("./pages/ChatPage"));
 const MicronutrientsPage = lazy(() => import("./pages/MicronutrientsPage"));
 const GamificationPage = lazy(() => import("./pages/GamificationPage"));
 const PhysiqueCardPage = lazy(() => import("./pages/PhysiqueCardPage"));
+const QuizDeficitPage = lazy(() => import("./pages/QuizDeficitPage"));
 const TransformationPage = lazy(() => import("./pages/TransformationPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ProfessionalDashboard = lazy(() => import("./pages/ProfessionalDashboard"));
@@ -203,6 +204,7 @@ const App = () => (
             <Route path="/leads" element={<ProtectedRoute><LeadsPage /></ProtectedRoute>} />
             <Route path="/clientes" element={<ProtectedRoute><ClientesPage /></ProtectedRoute>} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/quiz" element={<QuizDeficitPage />} />
             <Route path="/desafio-21" element={<DesafioSignupPage />} />
             {/* Desafio 30 Dias */}
             <Route path="/wall/:slug" element={<WallDisplayPage />} />
