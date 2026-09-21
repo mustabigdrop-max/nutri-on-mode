@@ -7,8 +7,8 @@
 
 - [x] Social ON: aba "Postar Refeição" (legendas por estilo + estratégias de stories a partir da refeição real do dia)
 
-- [ ] Alinhar Arsenal Viral aos prompts completos reenviados
+- [x] Alinhar Arsenal Viral aos prompts completos reenviados
 
-- [ ] Validar o Arsenal Viral atualizado
+- [x] Validar o Arsenal Viral atualizado
 
 - [ ] Publicar a versão validada
