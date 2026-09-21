@@ -8,6 +8,13 @@
       "when": 1789849172863,
       "tag": "0000_apex_assessment_pipeline_camada1",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789967252935,
+      "tag": "0001_coach_patient_plan_lock",
+      "breakpoints": true
     }
   ]
 }

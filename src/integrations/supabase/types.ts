@@ -3448,30 +3448,51 @@ export type Database = {
           created_at: string | null
           features_override: Json | null
           id: string
+          is_locked: boolean
+          lock_history: Json
+          lock_notified: boolean
+          lock_reason: string | null
+          locked_at: string | null
           notes: string | null
           patient_user_id: string
+          plan_expires_at: string | null
           started_at: string | null
           status: string | null
+          unlocked_at: string | null
         }
         Insert: {
           coach_id: string
           created_at?: string | null
           features_override?: Json | null
           id?: string
+          is_locked?: boolean
+          lock_history?: Json
+          lock_notified?: boolean
+          lock_reason?: string | null
+          locked_at?: string | null
           notes?: string | null
           patient_user_id: string
+          plan_expires_at?: string | null
           started_at?: string | null
           status?: string | null
+          unlocked_at?: string | null
         }
         Update: {
           coach_id?: string
           created_at?: string | null
           features_override?: Json | null
           id?: string
+          is_locked?: boolean
+          lock_history?: Json
+          lock_notified?: boolean
+          lock_reason?: string | null
+          locked_at?: string | null
           notes?: string | null
           patient_user_id?: string
+          plan_expires_at?: string | null
           started_at?: string | null
           status?: string | null
+          unlocked_at?: string | null
         }
         Relationships: [
           {
