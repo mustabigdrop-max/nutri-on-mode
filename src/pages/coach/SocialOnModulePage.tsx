@@ -51,6 +51,7 @@ import SocialOnBreakdownStudio from "@/components/social/SocialOnBreakdownStudio
 import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerator";
 import MealPostPanel from "@/components/social/MealPostPanel";
 import ContentPackTodayPanel from "@/components/social/ContentPackTodayPanel";
+import ContentPackPanel from "@/components/social/ContentPackPanel";
 import MceCarouselPanel from "@/components/social/MceCarouselPanel";
 import NexusCarouselPanel from "@/components/social/NexusCarouselPanel";
 import CarouselCientificoPanel from "@/components/social/CarouselCientificoPanel";
@@ -472,6 +473,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="carousel_engine" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Carrossel Científico</TabsTrigger>
             <TabsTrigger value="banco_temas" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Banco de temas</TabsTrigger>
             <TabsTrigger value="pacote_dia" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Pacote do Dia</TabsTrigger>
+            <TabsTrigger value="pack_criador" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Pack Criador</TabsTrigger>
             <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
             <TabsTrigger value="lote" className="text-xs gap-1"><Rocket className="w-3 h-3" />Modo Lote</TabsTrigger>
             <TabsTrigger value="signal" className="text-xs gap-1"><Zap className="w-3 h-3" />SIGNAL</TabsTrigger>
@@ -1132,6 +1134,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="pacote_dia" className="mt-4">
             <ContentPackTodayPanel />
+          </TabsContent>
+          <TabsContent value="pack_criador" className="mt-4">
+            <ContentPackPanel />
           </TabsContent>
           <TabsContent value="breakdown_studio" className="mt-4">
             <SocialOnBreakdownStudio handle={handle} />
