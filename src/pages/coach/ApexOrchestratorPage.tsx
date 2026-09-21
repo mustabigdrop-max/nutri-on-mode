@@ -101,7 +101,7 @@ export default function ApexOrchestratorPage() {
         days_per_week: Array.isArray(plano.divisao?.sessoes) ? plano.divisao.sessoes.length : null,
         protocol_text: JSON.stringify(currentPlan),
         periodizacao_text: JSON.stringify(plano.periodizacao || {}),
-        anatomy_text: JSON.stringify({ diagnostico, protocolos }),
+        anatomy_text: JSON.stringify({ diagnostico, protocolos: protocols }),
         tecnica_text: JSON.stringify(plano.tecnicas || []),
       }).select("id").single();
       if (planError) throw planError;
