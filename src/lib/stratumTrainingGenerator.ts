@@ -630,6 +630,19 @@ export function buildStratumGeneratorInstruction(plano: PlanoStratum): string {
     for (const t of plano.tecnicas) l.push(`  - ${t.grupo} (${t.tipo}): ${t.itens.join("; ")}`);
   }
 
+  if (plano.selecao_kinesis.length) {
+    l.push("SELEÇÃO KINESIS (usar estes exercícios e reproduzir o cue exatamente; sem cue não há prescrição):");
+    for (const s of plano.selecao_kinesis) {
+      l.push(`  - ${s.tag} ${s.grupo} · ${s.exercicio} · ${s.prescricao} · tempo ${s.tempo}`);
+      l.push(`      cue: ${s.cue}`);
+      l.push(`      conexão: ${s.cue_conexao}`);
+      if (s.variacao) l.push(`      variação indicada: ${s.variacao}`);
+      if (s.erro_vigiado) l.push(`      erro a vigiar: ${s.erro_vigiado}`);
+    }
+  }
+
+
+
   if (plano.extras.length) {
     l.push("SESSÕES EXTRAS:");
     for (const e of plano.extras) l.push(`  - ${e.tag} ${e.grupo}: ${e.formato} — ${e.detalhe}`);
