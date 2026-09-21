@@ -105,6 +105,11 @@ import {
   getLatestApexAssessment,
   type ApexAssessmentContext,
 } from "@/lib/apexAssessmentBridge";
+import {
+  buildStratumGeneratorInstruction,
+  gerarPlanoStratum,
+  type Mesociclo,
+} from "@/lib/stratumTrainingGenerator";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -499,6 +504,25 @@ REGRA: use este bloco apenas para contextualizar seleção, ordem dos grupamento
 
     const apexAssessmentBloco = formatApexAssessmentBlock(apexAssessment);
 
+    // STRATUM TRAINING GENERATOR — resolve divisão, aquecimento, volume, técnicas,
+    // feeders, periodização e flags do NutriPlan a partir do diagnóstico real do APEX.
+    const mesocicloAtual: Mesociclo = /deload|descarga/i.test(phase)
+      ? "deload"
+      : /realiza|peak|pico|palco/i.test(`${phase} ${specificGoal}`)
+      ? "realizacao"
+      : /intensifica|transmuta/i.test(phase)
+      ? "intensificacao"
+      : "acumulacao";
+    const planoStratum = gerarPlanoStratum({
+      nivel: stratum.levelKey,
+      frequencia: Number(days) || 3,
+      mesociclo: mesocicloAtual,
+      semanaNoMeso: 1,
+      semanasTotaisMeso: Math.max(parseInt(String(weeks)) || 4, 1),
+      diagnostico: apexAssessment?.diagnostico || null,
+    });
+    const stratumGeneratorBloco = buildStratumGeneratorInstruction(planoStratum);
+
     // Sistema energético/metodológico escolhido automaticamente a partir do objetivo e nível
     const autoSystemId = trainingSystem || autoSystem?.id || "";
     const sistemaBloco = autoSystemId
@@ -561,6 +585,8 @@ Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance
 ${competicaoBloco}
 
 ${buildStratumInstruction(stratum)}
+
+${stratumGeneratorBloco}
 
 ${buildStratumDecisionInstruction({
   phase,
