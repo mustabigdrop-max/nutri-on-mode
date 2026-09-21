@@ -133,6 +133,15 @@ const BiomechanicsVaultPage = () => {
             <h1 className="text-xl font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>BiomechanicsVault</h1>
             <p className="text-xs" style={{ color: "#9ca3af" }}>Análise biomecânica com Dual-AI · Perplexity + Dr. BioMech</p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto"
+            onClick={() => navigate("/kinesis")}
+            style={{ borderColor: "rgba(74,222,128,0.4)", color: "#4ade80" }}
+          >
+            KINESIS
+          </Button>
         </div>
       </header>
 
