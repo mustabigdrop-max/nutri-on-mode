@@ -846,7 +846,7 @@ const TIPO_COR: Record<string, string> = {
   ATIVACAO: C.cyan,
   VOLUME: C.gold,
   ESTETICO: C.textSec,
-  ASSIMETRIA: C.orange || C.gold,
+  ASSIMETRIA: C.gold,
 };
 
 function MapaCruzado({ cruzado }: { cruzado: ReturnType<typeof diagnosticarAtletaCruzado> }) {
