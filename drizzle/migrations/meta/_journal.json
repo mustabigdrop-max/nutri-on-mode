@@ -50,6 +50,20 @@
       "when": 1790010274014,
       "tag": "0006_drop_permissive_shared_cache_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790010677243,
+      "tag": "0007_restrict_challenge_participant_pii",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790010783698,
+      "tag": "0008_harden_privilege_columns",
+      "breakpoints": true
     }
   ]
 }

@@ -14035,6 +14035,17 @@ export type Database = {
       }
     }
     Functions: {
+      challenge_leaderboard: {
+        Args: { _challenge_id: string }
+        Returns: {
+          full_name: string
+          id: string
+          mce_score: number
+          streak: number
+          tier: string
+          user_id: string
+        }[]
+      }
       decrement_coach_slots: { Args: never; Returns: undefined }
       generate_unique_coach_code: { Args: never; Returns: string }
       get_anamnesis_by_token: {
