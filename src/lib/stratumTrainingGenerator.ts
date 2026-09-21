@@ -581,6 +581,7 @@ export function gerarPlanoStratum(input: StratumGeneratorInput): PlanoStratum {
     encaminhamentos: diag?.encaminhamentos || [],
     resumo_ajustes,
     prescricao_apex: prescricao,
+    selecao_kinesis: selecionarExerciciosKinesis(prioritarios),
   };
 }
 
