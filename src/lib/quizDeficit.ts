@@ -169,6 +169,7 @@ export const DEFICIT_CARDS: Record<DeficitKey, DeficitCard> = {
       "Fazer exercícios de ativação de glúteo ANTES de cada treino de pernas",
       "Glute bridge com pausa de 5s no topo, todos os dias",
       "Treinar glúteo PRIMEIRO na sessão, não no final",
+      "Fazer a avaliação completa para confirmar o padrão",
     ],
   },
   ativacao_dorsal: {
