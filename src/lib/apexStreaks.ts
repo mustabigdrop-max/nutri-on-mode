@@ -114,12 +114,14 @@ export function computeStreak(logs: WorkoutLog[], hoje = new Date()): StreakResu
 /** Semana perfeita: todas as sessões prescritas da semana concluídas. */
 export function semanaPerfeita(logs: WorkoutLog[], sessoesPrescritas: number, hoje = new Date()): boolean {
   if (!sessoesPrescritas || sessoesPrescritas < 1) return false;
-  const inicio = new Date(hoje);
+  const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
   inicio.setDate(inicio.getDate() - 6);
+  const inicioISO = diaISO(inicio);
+  const hojeISO = diaISO(new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
   const treinos = logs.filter((l) => {
     if (!isTreino(l)) return false;
-    const d = new Date(`${l.log_date.slice(0, 10)}T12:00:00`);
-    return d >= new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate()) && d <= hoje;
+    const dia = l.log_date.slice(0, 10);
+    return dia >= inicioISO && dia <= hojeISO;
   });
   const dias = new Set(treinos.map((l) => l.log_date.slice(0, 10)));
   return dias.size >= sessoesPrescritas;
