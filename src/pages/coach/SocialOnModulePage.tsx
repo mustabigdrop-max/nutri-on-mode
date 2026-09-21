@@ -51,6 +51,7 @@ import SocialOnBreakdownStudio from "@/components/social/SocialOnBreakdownStudio
 import SocialOnContentGenerator from "@/components/social/SocialOnContentGenerator";
 import MealPostPanel from "@/components/social/MealPostPanel";
 import ContentPackTodayPanel from "@/components/social/ContentPackTodayPanel";
+import ContentPackPanel from "@/components/social/ContentPackPanel";
 import MceCarouselPanel from "@/components/social/MceCarouselPanel";
 import NexusCarouselPanel from "@/components/social/NexusCarouselPanel";
 import CarouselCientificoPanel from "@/components/social/CarouselCientificoPanel";
