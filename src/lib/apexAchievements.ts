@@ -22,7 +22,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "bf-under-15", titulo: "Sub-15", badge: "🎯", descricao: "BF% registrado abaixo de 15%." },
   { id: "bf-under-12", titulo: "Sub-12", badge: "💎", descricao: "BF% registrado abaixo de 12%." },
   { id: "first-promotion", titulo: "Primeira Promoção", badge: "📈", descricao: "Primeira subida de patente." },
-  { id: "captain-rank", titulo: "Capitão", badge: "🎖️", descricao: "Patente CAPTAIN alcançada." },
+  { id: "prime-rank", titulo: "Prime", badge: "🔥", descricao: "Rank PRIME alcançado." },
   { id: "perfect-week", titulo: "Semana Perfeita", badge: "✅", descricao: "Todas as sessões prescritas da semana concluídas." },
   { id: "comeback", titulo: "Volta por Cima", badge: "🔄", descricao: "Streak quebrado e retomado até 14 dias." },
   { id: "apex-jump-20", titulo: "Salto APEX", badge: "🚀", descricao: "APEX Score subiu 20 pontos ou mais numa reavaliação." },
@@ -96,8 +96,8 @@ export function avaliarAchievements(ctx: AchievementContext): AchievementUnlock[
   else if (ctx.bfPercent !== null && ctx.bfPercent < 15) push("bf-under-15", "BF% abaixo de 15%. Definição real.", { bf: ctx.bfPercent });
 
   if (ctx.jaFoiPromovido) push("first-promotion", "Sua primeira promoção de patente está registrada.");
-  if (ctx.rankAtual && ["captain", "commander", "apex_elite"].includes(ctx.rankAtual.key)) {
-    push("captain-rank", `Patente ${ctx.rankAtual.nome}. Você chegou à faixa de elite do sistema.`, { patente: ctx.rankAtual.key });
+  if (ctx.rankAtual && ["prime", "titan", "apex_elite"].includes(ctx.rankAtual.key)) {
+    push("prime-rank", `Rank ${ctx.rankAtual.nome}. Você chegou à faixa alta do sistema.`, { rank: ctx.rankAtual.key });
   }
 
   if (ctx.semanaPerfeita) push("perfect-week", "Semana perfeita. Todas as sessões concluídas. Execução nota 10.");

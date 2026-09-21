@@ -12,7 +12,7 @@
 - [x] Validar o Arsenal Viral atualizado
 
 - [ ] Publicar a versão validada
-- [ ] Integrar MCE Filosofia Viva v2 no módulo MCE
-- [ ] Atualizar voz PRAXIS/MCE e protocolo de retomada
-- [ ] Trocar ranks APEX para sistema nutriON
+- [x] Integrar MCE Filosofia Viva v2 no módulo MCE
+- [x] Atualizar voz PRAXIS/MCE e protocolo de retomada
+- [x] Trocar ranks APEX para sistema nutriON
 - [ ] Validar MCE v2 atualizado

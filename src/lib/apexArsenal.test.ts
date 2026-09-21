@@ -6,8 +6,8 @@ import { avaliarAchievements } from "@/lib/apexAchievements";
 
 describe("patentes", () => {
   it("mapeia score para patente", () => {
-    expect(rankForScore(78)?.nome).toBe("CAPTAIN");
-    expect(rankForScore(30)?.nome).toBe("RECRUIT");
+    expect(rankForScore(78)?.nome).toBe("PRIME");
+    expect(rankForScore(30)?.nome).toBe("SPARK");
     expect(rankForScore(100)?.nome).toBe("APEX ELITE");
     expect(rankForScore(null)).toBeNull();
   });
@@ -121,7 +121,7 @@ describe("conquistas", () => {
     expect(ids).toContain("apex-jump-20");
     expect(ids).not.toContain("250-workouts");
     expect(ids).not.toContain("bf-under-12");
-    expect(ids).not.toContain("captain-rank");
+    expect(ids).not.toContain("prime-rank");
     expect(ids).not.toContain("comeback");
   });
 
