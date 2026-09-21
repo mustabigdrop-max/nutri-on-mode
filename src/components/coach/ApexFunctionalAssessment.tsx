@@ -17,6 +17,14 @@ import {
 import { prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 import { gerarRelatorioAtleta } from "@/lib/apexAthleteReport";
 import { compararAvaliacoes, type ComparacaoAvaliacoes, type Evolucao } from "@/lib/apexReassess";
+import {
+  diagnosticarAtletaCruzado,
+  MAX_GRUPOS_PRIORIZADOS,
+  type EntradaCruzada,
+  type GrupoCruzado,
+} from "@/lib/apexCrossDiagnose";
+import { prescreverIntegrado, type PrescricaoIntegrada } from "@/lib/apexIntegratedPrescription";
+import { ATIVACAO_PRINCIPIOS } from "@/data/apexActivationLibrary";
 import type { DiagnosticoCompleto } from "@/lib/apexDeficitDiagnose";
 
 const C = {
@@ -65,6 +73,7 @@ export default function ApexFunctionalAssessment() {
   const [respostas, setRespostas] = useState<Respostas>({});
   const [scores, setScores] = useState<Scores>({});
   const [observacoes, setObservacoes] = useState<Record<string, string>>({});
+  const [assimetrias, setAssimetrias] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [ultimaData, setUltimaData] = useState<string | null>(null);
@@ -156,6 +165,24 @@ export default function ApexFunctionalAssessment() {
 
   const diagnostico = useMemo(() => diagnosticarAtleta(entradas), [entradas]);
   const prescricao = useMemo(() => prescreverApex(diagnostico), [diagnostico]);
+
+  // DIAGNOSE cruzado (visual × funcional) e prescrição integrada
+  const entradasCruzadas: EntradaCruzada[] = useMemo(
+    () =>
+      entradas.map((e) => {
+        const raw = assimetrias[e.grupo_key];
+        const pct = raw !== undefined && raw !== "" ? Number(raw) : null;
+        return {
+          grupo_key: e.grupo_key,
+          respostas: e.respostas,
+          visual_score: e.visual_score,
+          assimetria_pct: pct !== null && Number.isFinite(pct) ? pct : null,
+        };
+      }),
+    [entradas, assimetrias],
+  );
+  const cruzado = useMemo(() => diagnosticarAtletaCruzado(entradasCruzadas), [entradasCruzadas]);
+  const prescricaoIntegrada = useMemo(() => prescreverIntegrado(cruzado), [cruzado]);
 
   const responder = (perguntaId: string, opcao: string) => {
     setRespostas((prev) => ({
@@ -363,6 +390,28 @@ export default function ApexFunctionalAssessment() {
                     />
                   </div>
                   <div>
+                    <div style={{ ...LABEL, color: C.gold }}>
+                      assimetria d/e registrada no apex visual (%, opcional)
+                    </div>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={assimetrias[grupo.key] ?? ""}
+                      onChange={(e) => setAssimetrias((p) => ({ ...p, [grupo.key]: e.target.value }))}
+                      placeholder="acima de 8% entra como assimetria"
+                      style={{
+                        width: "100%",
+                        marginTop: 6,
+                        padding: "10px 12px",
+                        background: C.bg,
+                        border: `1px solid ${C.border}`,
+                        color: C.text,
+                        fontSize: 13,
+                      }}
+                    />
+                  </div>
+                  <div>
                     <div style={{ ...LABEL, color: C.gold }}>observações do coach</div>
                     <textarea
                       rows={2}
@@ -391,6 +440,12 @@ export default function ApexFunctionalAssessment() {
               encaminhamentos={diagnostico.encaminhamentos}
               proxima={diagnostico.proxima_reavaliacao}
             />
+
+            {/* DIAGNOSE CRUZADO: visual × funcional */}
+            {cruzado.grupos.length > 0 && <MapaCruzado cruzado={cruzado} />}
+
+            {/* PRESCRIBE integrado (STRATUM + NutriPlan) */}
+            {cruzado.priorizados.length > 0 && <PrescricaoIntegradaView p={prescricaoIntegrada} />}
 
             {/* ACTIVATE / CORRECT / PRESCRIBE */}
             {diagnostico.grupos.length > 0 && <Prescricao prescricao={prescricao} />}
@@ -781,6 +836,198 @@ function Comparacao({ comparacao }: { comparacao: ComparacaoAvaliacoes }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+const TIPO_COR: Record<string, string> = {
+  ADEQUADO: C.green,
+  BIOMECANICO: C.red,
+  ATIVACAO: C.cyan,
+  VOLUME: C.gold,
+  ESTETICO: C.textSec,
+  ASSIMETRIA: C.gold,
+};
+
+function MapaCruzado({ cruzado }: { cruzado: ReturnType<typeof diagnosticarAtletaCruzado> }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: 16, marginTop: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <ClipboardList size={16} color={C.gold} />
+        <div style={{ ...TITLE, fontSize: 20, letterSpacing: "0.02em" }}>MAPA VISUAL × FUNCIONAL</div>
+      </div>
+      <div style={{ ...LABEL, color: C.textDim, marginBottom: 12 }}>
+        no máximo {MAX_GRUPOS_PRIORIZADOS} grupos priorizados por ciclo
+      </div>
+
+      <div style={{ display: "grid", gap: 10 }}>
+        {cruzado.grupos.map((g: GrupoCruzado) => {
+          const prioridade = cruzado.priorizados.findIndex((p) => p.grupo_key === g.grupo_key);
+          const cor = TIPO_COR[g.tipo_primario] || C.textSec;
+          return (
+            <div key={g.grupo_key} style={{ border: `1px solid ${C.border}`, padding: 12 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                <div style={{ ...TITLE, fontSize: 16, flex: 1, minWidth: 160 }}>{g.grupo}</div>
+                {prioridade >= 0 && (
+                  <span style={{ ...LABEL, color: C.gold, border: `1px solid ${C.gold}`, padding: "2px 6px" }}>
+                    prioridade {prioridade + 1}
+                  </span>
+                )}
+                <span style={{ ...LABEL, color: cor, border: `1px solid ${cor}`, padding: "2px 6px" }}>
+                  {g.tipo_primario}
+                  {g.tipo_secundario ? ` + ${g.tipo_secundario}` : ""}
+                </span>
+                {g.severidade && <span style={{ ...LABEL, color: C.textSec }}>{g.severidade}</span>}
+              </div>
+
+              <div style={{ ...LABEL, color: C.textDim, marginTop: 8 }}>
+                visual: {g.apex_visual.score !== null ? `${g.apex_visual.score}/100` : "sem score registrado"}
+                {g.apex_visual.assimetria_pct !== null ? ` · assimetria ${g.apex_visual.assimetria_pct}%` : ""}
+              </div>
+
+              {g.checklist_tags.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                  {g.checklist_tags.map((t) => (
+                    <span key={t} style={{ ...LABEL, color: C.textSec, border: `1px solid ${C.border}`, padding: "2px 6px" }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ color: C.textSec, fontSize: 12, marginTop: 8 }}>{g.fase}</div>
+
+              {g.evidencias_funcionais.length > 0 && (
+                <ul style={{ color: C.textDim, fontSize: 12, marginTop: 8, paddingLeft: 16 }}>
+                  {g.evidencias_funcionais.map((e) => (
+                    <li key={e}>{e}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {cruzado.fila.length > 0 && (
+        <div style={{ marginTop: 12, border: `1px solid ${C.border}`, padding: 12 }}>
+          <div style={{ ...LABEL, color: C.gold }}>fila para o próximo mesociclo</div>
+          <div style={{ color: C.textSec, fontSize: 12, marginTop: 6 }}>
+            {cruzado.fila.map((g: GrupoCruzado) => g.grupo).join(" · ")}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PrescricaoIntegradaView({ p }: { p: PrescricaoIntegrada }) {
+  const Bloco = ({ titulo, children }: { titulo: string; children: React.ReactNode }) => (
+    <div style={{ border: `1px solid ${C.border}`, padding: 12, marginTop: 10 }}>
+      <div style={{ ...LABEL, color: C.gold, marginBottom: 8 }}>{titulo}</div>
+      {children}
+    </div>
+  );
+
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: 16, marginTop: 18 }}>
+      <div style={{ ...TITLE, fontSize: 20, letterSpacing: "0.02em" }}>PRESCRIÇÃO INTEGRADA</div>
+      <div style={{ ...LABEL, color: C.textDim, marginTop: 4 }}>{ATIVACAO_PRINCIPIOS.aviso}</div>
+
+      {p.warmup.length > 0 && (
+        <Bloco titulo="aquecimento aplicado ao treino">
+          {p.warmup.map((w, i) => (
+            <div key={`${w.tag}-${i}`} style={{ color: C.textSec, fontSize: 12, marginBottom: 6 }}>
+              <span style={{ ...LABEL, color: w.tag === "[CORRECT]" ? C.red : C.cyan }}>{w.tag}</span>{" "}
+              {w.grupo} — {w.descricao} <span style={{ color: C.textDim }}>({w.duracao})</span>
+            </div>
+          ))}
+        </Bloco>
+      )}
+
+      {p.correcoes.map(({ grupo, protocolo }) => (
+        <Bloco key={`c-${grupo}-${protocolo.tag}`} titulo={`correção · ${grupo} — ${protocolo.titulo}`}>
+          <div style={{ color: C.textDim, fontSize: 12, marginBottom: 8 }}>{protocolo.problema}</div>
+          {protocolo.itens.map((it) => (
+            <div key={it.exercicio} style={{ color: C.textSec, fontSize: 12, marginBottom: 6 }}>
+              <span style={{ ...LABEL, color: it.fase === "EVITAR" ? C.red : C.cyan }}>{it.fase}</span> {it.exercicio} ·{" "}
+              {it.volume} — {it.objetivo}
+            </div>
+          ))}
+          <div style={{ color: C.textDim, fontSize: 12, marginTop: 8 }}>{protocolo.protocolo}</div>
+          <div style={{ color: C.textDim, fontSize: 12 }}>{protocolo.progressao}</div>
+          {protocolo.encaminhamento && (
+            <div style={{ color: C.red, fontSize: 12, marginTop: 8 }}>{protocolo.encaminhamento}</div>
+          )}
+        </Bloco>
+      ))}
+
+      {p.ativacoes.map(({ grupo, protocolo }) => (
+        <Bloco key={`a-${grupo}-${protocolo.tag}`} titulo={`ativação pré-treino · ${grupo} — ${protocolo.titulo}`}>
+          {protocolo.exercicios.map((ex) => (
+            <div key={ex.nome} style={{ color: C.textSec, fontSize: 12, marginBottom: 6 }}>
+              {ex.nome} · {ex.prescricao}
+              <div style={{ color: C.textDim }}>cue: {ex.cue}</div>
+            </div>
+          ))}
+          <div style={{ color: C.textDim, fontSize: 12 }}>
+            {ATIVACAO_PRINCIPIOS.momento} · {ATIVACAO_PRINCIPIOS.descanso} · {ATIVACAO_PRINCIPIOS.rpe}
+          </div>
+        </Bloco>
+      ))}
+
+      {p.ajustes.length > 0 && (
+        <Bloco titulo="ajustes no treino">
+          {p.ajustes.map((a) => (
+            <div key={a.grupo} style={{ marginBottom: 8 }}>
+              <div style={{ ...LABEL, color: C.cyan }}>{a.grupo}</div>
+              <ul style={{ color: C.textSec, fontSize: 12, paddingLeft: 16 }}>
+                {a.itens.map((i) => (
+                  <li key={i}>{i}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </Bloco>
+      )}
+
+      {p.feeders.length > 0 && (
+        <Bloco titulo="sessões extras">
+          {p.feeders.map((f) => (
+            <div key={`${f.grupo}-${f.tag}`} style={{ color: C.textSec, fontSize: 12, marginBottom: 6 }}>
+              <span style={{ ...LABEL, color: C.gold }}>{f.tag}</span> {f.grupo} — {f.formato}
+              <div style={{ color: C.textDim }}>{f.detalhe}</div>
+            </div>
+          ))}
+        </Bloco>
+      )}
+
+      {p.nutriplan.length > 0 && (
+        <Bloco titulo="nutriplan — sugestão para revisão profissional">
+          {p.nutriplan.map((n) => (
+            <div key={n.grupo} style={{ color: C.textSec, fontSize: 12, marginBottom: 6 }}>
+              <span style={{ ...LABEL, color: C.cyan }}>{n.grupo}</span> {n.detalhe}
+            </div>
+          ))}
+        </Bloco>
+      )}
+
+      {p.encaminhamentos.length > 0 && (
+        <Bloco titulo="encaminhamentos">
+          <ul style={{ color: C.red, fontSize: 12, paddingLeft: 16 }}>
+            {p.encaminhamentos.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        </Bloco>
+      )}
+
+      <Bloco titulo="reavaliação">
+        <div style={{ color: C.textSec, fontSize: 12 }}>
+          Checklist funcional em {p.reavaliacao.checklist_semanas} semanas.
+        </div>
+        <div style={{ color: C.textDim, fontSize: 12, marginTop: 4 }}>{p.reavaliacao.visual_nota}</div>
+      </Bloco>
     </div>
   );
 }
