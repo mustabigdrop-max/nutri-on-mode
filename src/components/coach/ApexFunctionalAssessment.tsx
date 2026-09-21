@@ -106,7 +106,7 @@ export default function ApexFunctionalAssessment() {
         .select("id,nome,patient_user_id,fase_atual,data_competicao,categoria,sexo")
         .eq("id", data.athlete_id)
         .maybeSingle();
-      if (selected) setAthlete(selected as AthleteOption);
+      if (selected) setAthlete(selected as unknown as AthleteOption);
       const flagged = data.flagged_groups || [];
       if (flagged[0]) setGrupoAtivo(flagged[0]);
       const visual = (data.visual_report || {}) as Record<string, unknown>;
