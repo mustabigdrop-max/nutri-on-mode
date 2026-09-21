@@ -14,7 +14,7 @@ import { calcularMovementScore, movementScoreToJson, roteiroReelMovementScore, t
 import { useFFmpegConvert } from "@/hooks/useFFmpegConvert";
 
 const EXERCISES = [
-  "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "Levantamento terra",
+  "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "RDL", "Levantamento terra",
   "Hip thrust", "Supino reto", "Supino inclinado", "Desenvolvimento militar", "Rosca direta",
   "Rosca alternada", "Tríceps testa", "Remada curvada", "Puxada frontal", "Push-up",
   "Prancha", "Avanço/passada", "Burpee",
@@ -217,7 +217,7 @@ const VideoFormPage = () => {
           <Video className="w-6 h-6 text-primary" />
           <div>
             <h1 className="text-xl font-bold">VideoForm</h1>
-            <p className="text-xs text-muted-foreground">Análise biomecânica de execução pelo sistema · Pose estimation + Dr. BioMech</p>
+            <p className="text-xs text-muted-foreground">Análise biomecânica de execução pelo sistema · KINESIS + Dr. BioMech</p>
           </div>
         </div>
       </header>
@@ -231,7 +231,7 @@ const VideoFormPage = () => {
                 <Select value={exercise} onValueChange={setExercise}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">🤖 Detectar automaticamente</SelectItem>
+                    <SelectItem value="auto">Detectar pelo sistema</SelectItem>
                     {EXERCISES.map(ex => <SelectItem key={ex} value={ex}>{ex}</SelectItem>)}
                   </SelectContent>
                 </Select>
