@@ -455,7 +455,7 @@ const KinesisPage = () => {
                         ativo={fonteConteudo.subgrupo === s.subgrupo}
                         onClick={() => setFonteConteudo({ tipo: "SUBGRUPO", grupo: fonteConteudo.grupo, subgrupo: s.subgrupo })}
                       >
-                        {s.nome}
+                        {s.subgrupo}
                       </Chip>
                     ))}
                   </div>
