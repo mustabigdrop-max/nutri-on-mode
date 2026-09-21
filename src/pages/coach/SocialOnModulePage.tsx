@@ -1134,6 +1134,9 @@ const SocialOnModulePage = () => {
           <TabsContent value="pacote_dia" className="mt-4">
             <ContentPackTodayPanel />
           </TabsContent>
+          <TabsContent value="pack_criador" className="mt-4">
+            <ContentPackPanel />
+          </TabsContent>
           <TabsContent value="breakdown_studio" className="mt-4">
             <SocialOnBreakdownStudio handle={handle} />
           </TabsContent>
