@@ -15,4 +15,4 @@
 - [x] Integrar MCE Filosofia Viva v2 no módulo MCE
 - [x] Atualizar voz PRAXIS/MCE e protocolo de retomada
 - [x] Trocar ranks APEX para sistema nutriON
-- [ ] Validar MCE v2 atualizado
+- [x] Validar MCE v2 atualizado
