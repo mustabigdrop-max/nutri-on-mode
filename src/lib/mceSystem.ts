@@ -11,9 +11,10 @@ export type CheckinRow = {
   hydration: number;
   movement: number;
   focus_clarity: number;
+  notes?: string | null;
 };
 
-export type CheckinFieldKey = Exclude<keyof CheckinRow, "checkin_date">;
+export type CheckinFieldKey = Exclude<keyof CheckinRow, "checkin_date" | "notes">;
 
 export const CHECKIN_FIELDS: { key: CheckinFieldKey; label: string; pillar: PillarKey; invert?: boolean }[] = [
   { key: "focus_clarity", label: "Foco / Clareza mental", pillar: "M" },
@@ -25,22 +26,63 @@ export const CHECKIN_FIELDS: { key: CheckinFieldKey; label: string; pillar: Pill
 ];
 
 export const MCE_LEVELS = [
-  { min: 0, max: 30, name: "INICIANTE", title: "Reconhecendo o padrão", color: "#EF4444" },
-  { min: 31, max: 50, name: "CONSCIENTE", title: "Vendo o sistema", color: "#F59E0B" },
-  { min: 51, max: 70, name: "PRATICANTE", title: "Construindo o hábito", color: "#00D4FF" },
-  { min: 71, max: 85, name: "CONSISTENTE", title: "O comportamento virou identidade", color: "#00FF88" },
-  { min: 86, max: 100, name: "ELITE", title: "Transformação é sistema", color: "#A78BFA" },
+  { min: 0, max: 30, name: "SPARK", title: "A faísca acendeu. O sistema começou.", color: "#555566" },
+  { min: 31, max: 50, name: "FOUNDATION", title: "A base está sendo construída.", color: "#8B6914" },
+  { min: 51, max: 65, name: "RISING", title: "Em ascensão. Resultados aparecendo.", color: "#A0A0B0" },
+  { min: 66, max: 75, name: "FORCE", title: "Força consolidada. Acima da média.", color: "#B8922A" },
+  { min: 76, max: 85, name: "PRIME", title: "No auge. Poucos chegam aqui.", color: "#00D4FF" },
+  { min: 86, max: 95, name: "TITAN", title: "Excepcional. Referência.", color: "#00D4FF" },
+  { min: 96, max: 100, name: "APEX ELITE", title: "O topo absoluto.", color: "#FFFFFF" },
 ] as const;
 
 export type MceLevel = (typeof MCE_LEVELS)[number];
 
 export const LEVEL_REWARD: Record<string, string> = {
-  INICIANTE: "Ritual do Despertar (Audio Academy)",
-  CONSCIENTE: "Breathwork · Reset de 5 minutos",
-  PRATICANTE: "Masterclass · Arquitetura de Hábito",
-  CONSISTENTE: "Masterclass · Identidade e Execução",
-  ELITE: "Série completa · Sistema Operacional Humano",
+  SPARK: "Ritual do Despertar (Audio Academy)",
+  FOUNDATION: "Reset de 5 minutos",
+  RISING: "Arquitetura de Hábito",
+  FORCE: "Identidade e Execução",
+  PRIME: "Série completa · Sistema Operacional Humano",
+  TITAN: "Rituais avançados MCE",
+  "APEX ELITE": "Documentação do processo completo",
 };
+
+export type MceDailyNotes = {
+  intention?: string;
+  oneThing?: string;
+  didProtocol?: boolean;
+  resistance?: string;
+  nightReview?: string;
+  tomorrowAdjustment?: string;
+  resetBlock?: string;
+  manualScores?: Record<PillarKey, number>;
+  updatedAt?: string;
+};
+
+export const emptyMceDailyNotes = (): MceDailyNotes => ({
+  intention: "",
+  oneThing: "",
+  didProtocol: false,
+  resistance: "",
+  nightReview: "",
+  tomorrowAdjustment: "",
+  resetBlock: "",
+  manualScores: { M: 7, C: 7, E: 7 },
+});
+
+export function parseMceDailyNotes(raw?: string | null): MceDailyNotes {
+  if (!raw) return { ...emptyMceDailyNotes(), manualScores: undefined };
+  try {
+    const parsed = JSON.parse(raw) as MceDailyNotes;
+    return { ...emptyMceDailyNotes(), ...parsed, manualScores: { ...emptyMceDailyNotes().manualScores, ...parsed.manualScores } };
+  } catch {
+    return { ...emptyMceDailyNotes(), nightReview: raw };
+  }
+}
+
+export function clampNoteScore(value: number | undefined): number {
+  return Math.max(0, Math.min(10, Number(value ?? 0)));
+}
 
 export function levelFor(score: number): { level: MceLevel; next: MceLevel | null; progress: number } {
   const s = Math.max(0, Math.min(100, Math.round(score)));
@@ -54,6 +96,15 @@ export function levelFor(score: number): { level: MceLevel; next: MceLevel | nul
 
 // ── Check-in scoring ────────────────────────────────────────────────────────
 export function dailyScoresFromCheckin(row: Partial<CheckinRow>): Record<PillarKey, number> {
+  const notes = parseMceDailyNotes(row.notes);
+  const manual = notes.manualScores;
+  if (manual) {
+    return {
+      M: clampNoteScore(manual.M) * 10,
+      C: clampNoteScore(manual.C) * 10,
+      E: clampNoteScore(manual.E) * 10,
+    };
+  }
   const v = (n?: number) => Math.max(1, Math.min(10, Number(n) || 1));
   const stressInverted = 11 - v(row.stress_level);
   return {
@@ -110,6 +161,56 @@ export function weekConsistency(checkins: CheckinRow[], anchor: Date = new Date(
 }
 
 export const weekLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+export const MCE_WEEKLY_CALENDAR = [
+  { day: "SEG", pillar: "M", title: "Mentalidade", format: "Carrossel reflexivo ou legenda longa", prompt: "A mentalidade que mudou minha semana" },
+  { day: "TER", pillar: "E", title: "Execução técnica", format: "Reel educativo", prompt: "APEX Diagnóstico ou Movement Score" },
+  { day: "QUA", pillar: "C", title: "Comportamento", format: "Reel do dia a dia", prompt: "As micro-decisões que mudaram minha semana" },
+  { day: "QUI", pillar: "E", title: "Execução técnica", format: "KINESIS, Showdown ou ciência", prompt: "Dados + prática" },
+  { day: "SEX", pillar: "C", title: "Review comportamental", format: "Carrossel ou stories", prompt: "Meu MCE score da semana" },
+  { day: "SÁB", pillar: "L", title: "Livre", format: "Bastidores", prompt: "Família, treino, rotina real" },
+  { day: "DOM", pillar: "M", title: "Preparação", format: "Story reflexivo ou carrossel", prompt: "Minha intenção essa semana" },
+] as const;
+
+export const MCE_COMPASS_QUESTIONS = [
+  "Por quem você faz isso quando o motivo pessoal não basta?",
+  "Que exemplo você quer deixar visível na sua casa?",
+  "O que você não aceita mais repetir nos próximos 12 meses?",
+  "Qual bloco mínimo você consegue cumprir mesmo no pior dia?",
+  "Que frase resume a pessoa que você está construindo?",
+] as const;
+
+export const MCE_RETOMADA_PHASES = [
+  { phase: 0, label: "RECONHECIMENTO", days: "agora", score: "M/C/E livre", rule: "Parei. Dado registrado.", goal: "Identificar qual pilar falhou primeiro e escolher um bloco possível." },
+  { phase: 1, label: "PRIMEIRO BLOCO", days: "dias 1–3", score: "M=5 · C=5 · E=3", rule: "A retomada nunca começa com tudo.", goal: "Três dias fazendo uma coisa de menor atrito." },
+  { phase: 2, label: "SEGUNDO BLOCO", days: "dias 4–7", score: "M=6 · C=6 · E=5", rule: "Só adiciona quando o primeiro bloco existe.", goal: "Sete dias com dois blocos simples." },
+  { phase: 3, label: "SISTEMA COMPLETO", days: "dias 8–21", score: "M=7 · C=7 · E=7", rule: "Reabre STRATUM e NutriPlan sem radicalizar.", goal: "Protocolo 24H completo e streak reconstruído." },
+  { phase: 4, label: "DOCUMENTAÇÃO", days: "dia 21+", score: "conteúdo real", rule: "O durante também é prova social.", goal: "Documentar o que fez parar, voltar e aprender." },
+] as const;
+
+export const MCE_VOICE_TRIGGERS = [
+  { event: "Streak 7 dias", message: "Reconhecimento direto: o sistema voltou a rodar." },
+  { event: "Score cai 3 dias", message: "Apoio sem culpa: um bloco de cada vez." },
+  { event: "Deficit resolvido", message: "Celebração com dado real da reavaliação." },
+  { event: "Aluno volta", message: "Acolhimento firme: voltou, isso é o que importa." },
+] as const;
+
+export function mceMirrorInsight(checkins: CheckinRow[]): string {
+  if (checkins.length < 5) return "Registre pelo menos 5 dias para o Mirror mostrar um padrão confiável.";
+  const byDay = new Map<number, number[]>();
+  for (const row of checkins) {
+    const date = new Date(`${row.checkin_date}T12:00:00`);
+    const score = dailyScoresFromCheckin(row).C;
+    const values = byDay.get(date.getDay()) ?? [];
+    values.push(score);
+    byDay.set(date.getDay(), values);
+  }
+  const averages = [...byDay.entries()].map(([day, values]) => ({ day, avg: Math.round(values.reduce((a, b) => a + b, 0) / values.length) }));
+  const lowest = averages.sort((a, b) => a.avg - b.avg)[0];
+  if (!lowest) return "Ainda não há padrão suficiente no C para analisar.";
+  const label = weekLabels[lowest.day] ?? "dia";
+  return `Seu C mais baixo aparece em ${label}. Trate esse dia como ponto de atenção e reduza o atrito antes dele.`;
+}
 
 // ── Heatmap ────────────────────────────────────────────────────────────────
 export type HeatDay = { date: string; label: string; count: number; intensity: 0 | 1 | 2 | 3; crisis: boolean };

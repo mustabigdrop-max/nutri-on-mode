@@ -24,7 +24,7 @@ type OsBlock = {
 
 const BLOCKS: OsBlock[] = [
   {
-    sound: "ignition", audio: "Despertar", audioDur: "5 min", audioKey: "despertar", id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MINDSET", pilarColor: C.purple,
+    sound: "ignition", audio: "Despertar", audioDur: "5 min", audioKey: "despertar", id: "ignition", name: "IGNIÇÃO", time: "05:00–06:00", pilar: "MENTALIDADE", pilarColor: C.purple,
     duration: "15-20 min", from: 5, to: 6,
     science: "Kahneman: Sistema 2 está no pico pela manhã. Programe agora ou o Sistema 1 comanda o dia.",
     items: [
@@ -67,11 +67,11 @@ const BLOCKS: OsBlock[] = [
     ],
   },
   {
-    sound: "consolidation", audio: "Pré-sono", audioDur: "7 min", audioKey: "pre_sono", id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MINDSET + COMPORTAMENTO", pilarColor: C.purple,
+    sound: "consolidation", audio: "Pré-sono", audioDur: "7 min", audioKey: "pre_sono", id: "consolidation", name: "CONSOLIDAÇÃO", time: "20:00–22:00", pilar: "MENTALIDADE + COMPORTAMENTO", pilarColor: C.purple,
     duration: "15-20 min", from: 20, to: 22,
     science: "Hipocampo transfere memórias de curto pra longo prazo durante o sono. A última hora consolida o dia.",
     items: [
-      { id: "e1", text: "Revisão MCE do dia — M, C, E (nota 1-10 cada)", ref: "Dweck · Growth Mindset" },
+      { id: "e1", text: "Revisão MCE do dia — M, C, E (nota 1-10 cada)", ref: "Dweck · Growth Mentalidade" },
       { id: "e2", text: "1 coisa que vou manter + 1 que vou corrigir", ref: "Rotter · Locus interno" },
       { id: "e3", text: "Prep do amanhã — roupa, marmita, alarme, 1ª tarefa", ref: "Kahneman · Sistema 1" },
       { id: "e4", text: "Desaceleração neural — respiração 4-7-8, sem tela", ref: "Walker · UC Berkeley" },
@@ -305,7 +305,7 @@ function Block({ block, hour, checked, onCheck, soundEnabled }: { block: OsBlock
 
 function MceScoreInput({ scores, onChange }: { scores: Record<string, number>; onChange: (s: Record<string, number>) => void }) {
   const pillars = [
-    { id: "m", label: "Mindset", color: C.purple, q: "Como está seu sistema operacional hoje?" },
+    { id: "m", label: "Mentalidade", color: C.purple, q: "Como está seu sistema operacional hoje?" },
     { id: "c", label: "Comportamento", color: C.cyan, q: "Seus padrões automáticos estão no plano?" },
     { id: "e", label: "Execução", color: C.gold, q: "O que foi entregue de fato?" },
   ];
@@ -368,7 +368,7 @@ export default function MceOsPanel({ streak = 0, rankName = "Iniciante" }: { str
     return { name: b.name, done: d, total: b.items.length, pct: Math.round((d / b.items.length) * 100) };
   }), [checked]);
   const weakBlock = useMemo(() => blocksStatus.filter((b) => b.pct < 50).sort((a, b) => a.pct - b.pct)[0] ?? null, [blocksStatus]);
-  const weakPillar = scores.m <= scores.c && scores.m <= scores.e ? "Mindset" : scores.c <= scores.e ? "Comportamento" : "Execução";
+  const weakPillar = scores.m <= scores.c && scores.m <= scores.e ? "Mentalidade" : scores.c <= scores.e ? "Comportamento" : "Execução";
 
 
   const toggle = useCallback((id: string) => {

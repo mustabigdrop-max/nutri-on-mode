@@ -21,7 +21,7 @@ EXPERIÊNCIA → INTERPRETAÇÃO → REPETIÇÃO → CIRCUITO NEURAL → CRENÇA
 \`\`\`
 
 1. Você FAZ algo (experiência)
-2. Você INTERPRETA o resultado (mindset fixo ou de crescimento)
+2. Você INTERPRETA o resultado (mentalidade fixo ou de crescimento)
 3. Você REPETE a interpretação (comportamento)
 4. O cérebro CONSOLIDA o circuito (neuroplasticidade)
 5. O circuito vira CRENÇA automática
@@ -39,7 +39,7 @@ Não começa pelo pensamento. Começa pela AÇÃO. Ação pequena, interpretada 
 ---
 
 ## BLOCO 1 — IGNIÇÃO (05:00–06:00)
-### Pilar: MINDSET · Duração: 15-20 minutos
+### Pilar: MENTALIDADE · Duração: 15-20 minutos
 
 Este é o bloco mais importante do dia. O córtex pré-frontal está limpo, o cortisol está no pico natural (ritmo circadiano), e o cérebro está mais receptivo a programação intencional. O que você faz nos primeiros 30 minutos determina o padrão do dia inteiro.
 
@@ -152,7 +152,7 @@ Driskell, Copper & Moran (1994) provaram em meta-análise que visualização mel
 ---
 
 ## BLOCO 5 — CONSOLIDAÇÃO (20:00–22:00)
-### Pilar: MINDSET + COMPORTAMENTO · Duração: 15-20 minutos
+### Pilar: MENTALIDADE + COMPORTAMENTO · Duração: 15-20 minutos
 
 O hipocampo transfere memórias de curto para longo prazo durante o sono. A última hora acordado influencia o que o cérebro prioriza consolidar.
 
@@ -161,9 +161,9 @@ O hipocampo transfere memórias de curto para longo prazo durante o sono. A últ
 \`\`\`
 ═══ REVISÃO MCE ═══
 
-MINDSET (M)
+MENTALIDADE (M)
 → Minha crença mais forte hoje: _______________
-→ Tive algum pensamento de mindset fixo? [sim/não]
+→ Tive algum pensamento de mentalidade fixo? [sim/não]
    Se sim, qual? _______________
    Como reinterpretei? _______________
 
@@ -213,7 +213,7 @@ Sono não é descanso. É parte do protocolo.
 \`\`\`
 ═══ AUDITORIA SEMANAL MCE ═══
 
-MINDSET
+MENTALIDADE
 → Crença que mais me fortaleceu esta semana: _______________
 → Crença que mais me limitou: _______________
 → O que vou fazer diferente com essa crença limitante? _______________

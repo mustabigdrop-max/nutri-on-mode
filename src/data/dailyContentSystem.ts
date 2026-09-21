@@ -2,7 +2,7 @@
 // 7 pilares (rotação semanal) + 7 fórmulas de Reel + calendário de 30 dias + banco de hooks
 
 export type DailyPillarId =
-  | "mindset" | "treino" | "nutricao" | "business" | "prova_social" | "lifestyle" | "reflexao";
+  | "mentalidade" | "treino" | "nutricao" | "business" | "prova_social" | "lifestyle" | "reflexao";
 
 export type DailyPillar = {
   id: DailyPillarId;
@@ -22,7 +22,7 @@ export type DailyPillar = {
 
 export const DAILY_PILLARS: DailyPillar[] = [
   {
-    id: "mindset", weekdayIndex: 1, weekday: "SEG", label: "Mindset", emoji: "🧠",
+    id: "mentalidade", weekdayIndex: 1, weekday: "SEG", label: "Mentalidade", emoji: "🧠",
     tone: "inspiracional-direto", focus: "Crenças, identidade, propósito",
     product: "MCE / nutriON", funnel: "TOFU", color: "#00D4FF", dbPillar: "mce_drop",
     example: "Disciplina não é talento. É arquitetura comportamental.",
@@ -181,7 +181,7 @@ export const formulaById = (id: string) => REEL_FORMULAS.find((f) => f.id === id
 
 /** Fórmula sugerida por pilar (default do dia) */
 export const DEFAULT_FORMULA_BY_PILLAR: Record<DailyPillarId, string> = {
-  mindset: "mito",
+  mentalidade: "mito",
   treino: "edit",
   nutricao: "pov",
   business: "lista",
@@ -204,7 +204,7 @@ export type CalendarDay = {
 };
 
 export const CALENDAR_30: CalendarDay[] = [
-  { day: 1, weekday: "SEG", pillar: "mindset", formula: "mito", hook: "Você acha que disciplina é dom. Tá errado.", notes: "Disciplina é arquitetura comportamental. Você constrói o sistema que te faz agir mesmo sem vontade. Isso é o MCE. CTA: segue pra entender o método.", product: "MCE", funnel: "TOFU" },
+  { day: 1, weekday: "SEG", pillar: "mentalidade", formula: "mito", hook: "Você acha que disciplina é dom. Tá errado.", notes: "Disciplina é arquitetura comportamental. Você constrói o sistema que te faz agir mesmo sem vontade. Isso é o MCE. CTA: segue pra entender o método.", product: "MCE", funnel: "TOFU" },
   { day: 2, weekday: "TER", pillar: "treino", formula: "edit", hook: "Frame de costas dupla (pose)", notes: "6 frames de treino no beat. Texto final: \"16 anos de processo.\"", product: "Shape/autoridade", funnel: "TOFU" },
   { day: 3, weekday: "QUA", pillar: "nutricao", formula: "pov", hook: "POV: você descobre que sua fome nunca foi de comida", notes: "Clip de prep + tela do NutriPlan. Punch: o comportamento vem antes do alimento.", product: "NutriPlan", funnel: "MOFU" },
   { day: 4, weekday: "QUI", pillar: "business", formula: "lista", hook: "3 hábitos que mudaram meu negócio", notes: "1. Prospectar todo dia. 2. Review financeira toda sexta. 3. Conteúdo diário sem desculpa.", product: "Business Coaching", funnel: "TOFU" },
@@ -212,7 +212,7 @@ export const CALENDAR_30: CalendarDay[] = [
   { day: 6, weekday: "SÁB", pillar: "lifestyle", formula: "pov", hook: "POV: sábado de pai que é coach, militar e empreendedor", notes: "Rotina: treino + filha + prep + trabalho.", product: "Autoridade pessoal", funnel: "TOFU" },
   { day: 7, weekday: "DOM", pillar: "reflexao", formula: "tela_preta", hook: "O que ninguém fala sobre transformação.", notes: "Todo mundo quer o resultado, ninguém quer o processo. Se apaixone pelo processo.", product: "Marca pessoal", funnel: "TOFU" },
 
-  { day: 8, weekday: "SEG", pillar: "mindset", formula: "resposta", hook: "Print: \"coach, como mudo minha mentalidade?\"", notes: "Mentalidade não é pensamento positivo.", product: "MCE Audio Academy", funnel: "MOFU" },
+  { day: 8, weekday: "SEG", pillar: "mentalidade", formula: "resposta", hook: "Print: \"coach, como mudo minha mentalidade?\"", notes: "Mentalidade não é pensamento positivo.", product: "MCE Audio Academy", funnel: "MOFU" },
   { day: 9, weekday: "TER", pillar: "treino", formula: "lista", hook: "3 erros no treino que travam seu shape", notes: "1. Sem periodização (STRATUM). 2. Sem feeder sets. 3. Sem tracking de volume.", product: "TrainingON", funnel: "MOFU" },
   { day: 10, weekday: "QUA", pillar: "nutricao", formula: "mito", hook: "Você acha que cortar carbo emagrece. Tá errado.", product: "NutriPlan", funnel: "MOFU" },
   { day: 11, weekday: "QUI", pillar: "business", formula: "pov", hook: "POV: você é empreendedor e ninguém entende por que trabalha no domingo", product: "Business Coaching", funnel: "TOFU" },
@@ -220,7 +220,7 @@ export const CALENDAR_30: CalendarDay[] = [
   { day: 13, weekday: "SÁB", pillar: "lifestyle", formula: "edit", hook: "Rotina completa em 20s", notes: "Treino + prep + filha + trabalho + oração.", product: "Autoridade", funnel: "TOFU" },
   { day: 14, weekday: "DOM", pillar: "reflexao", formula: "tela_preta", hook: "A diferença entre quem muda e quem não muda.", product: "MCE", funnel: "TOFU" },
 
-  { day: 15, weekday: "SEG", pillar: "mindset", formula: "mito", hook: "Motivação não funciona. Ciência prova.", notes: "CTA: link na bio — MCE Audio gratuito por 14 dias.", product: "nutriON trial", funnel: "BOFU" },
+  { day: 15, weekday: "SEG", pillar: "mentalidade", formula: "mito", hook: "Motivação não funciona. Ciência prova.", notes: "CTA: link na bio — MCE Audio gratuito por 14 dias.", product: "nutriON trial", funnel: "BOFU" },
   { day: 16, weekday: "TER", pillar: "treino", formula: "edit", hook: "7 camadas. Do macrociclo até a fibra muscular.", notes: "Screen recording do TrainingON com STRATUM.", product: "TrainingON", funnel: "MOFU" },
   { day: 17, weekday: "QUA", pillar: "nutricao", formula: "pov", hook: "POV: seu nutricionista te dá PDF e some por 30 dias", notes: "Tela do PRAXIS respondendo em tempo real. Punch: seu protocolo responde. 24h.", product: "PRAXIS/nutriON", funnel: "MOFU" },
   { day: 18, weekday: "QUI", pillar: "business", formula: "mito", hook: "Você acha que precisa de mais clientes. Tá errado. Precisa de mais sistema.", product: "Business Coaching", funnel: "MOFU" },
@@ -228,7 +228,7 @@ export const CALENDAR_30: CalendarDay[] = [
   { day: 20, weekday: "SÁB", pillar: "lifestyle", formula: "edit", hook: "Rotina real de sábado", product: "Autoridade", funnel: "TOFU" },
   { day: 21, weekday: "DOM", pillar: "reflexao", formula: "tela_preta", hook: "Transformação é sistema. Não é motivação.", product: "MCE", funnel: "TOFU" },
 
-  { day: 22, weekday: "SEG", pillar: "mindset", formula: "tela_preta", hook: "Desafio 30 Dias nutriON. Entra ou fica olhando.", notes: "Explicar o desafio rápido. CTA: link na bio, entrada gratuita.", product: "Desafio", funnel: "BOFU" },
+  { day: 22, weekday: "SEG", pillar: "mentalidade", formula: "tela_preta", hook: "Desafio 30 Dias nutriON. Entra ou fica olhando.", notes: "Explicar o desafio rápido. CTA: link na bio, entrada gratuita.", product: "Desafio", funnel: "BOFU" },
   { day: 23, weekday: "TER", pillar: "treino", formula: "edit", hook: "Seu personal não faz isso.", notes: "Screen recording: demo do APEX analisando pose.", product: "APEX/nutriON", funnel: "MOFU" },
   { day: 24, weekday: "QUA", pillar: "nutricao", formula: "resposta", hook: "Print: \"quanto custa o acompanhamento?\"", notes: "Explicar valor vs preço.", product: "nutriON Premium", funnel: "BOFU" },
   { day: 25, weekday: "QUI", pillar: "business", formula: "lista", hook: "O que fiz essa semana no meu negócio", notes: "Transparência total com números.", product: "Business Coaching", funnel: "MOFU" },
@@ -250,7 +250,7 @@ export const HOOK_BANK_30: DailyHook[] = [
     "A identidade vem antes do resultado.",
     "Pare de se preparar pra começar. Comece.",
     "O medo de mudar é biológico. A decisão de mudar é sua.",
-  ].map((text) => ({ text, category: "Mindset", pillar: "mindset" as DailyPillarId })),
+  ].map((text) => ({ text, category: "Mentalidade", pillar: "mentalidade" as DailyPillarId })),
   ...[
     "16 anos de treino. O que aprendi em 1 frase.",
     "Seu treino não funciona porque não tem sistema.",

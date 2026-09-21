@@ -68,7 +68,7 @@ export default function MceSystemPanel({ scores }: { scores: Record<PillarKey, n
   return (
     <div style={{ display: "grid", gap: 16 }}>
       {/* Micro-desafio */}
-      <Card title="DESAFIO DE HOJE" icon={<Sparkles size={14} />} caption={`Pilar mais fraco: ${challenge.pillar === "M" ? "Mindset" : challenge.pillar === "C" ? "Comportamento" : "Execução"}`}>
+      <Card title="DESAFIO DE HOJE" icon={<Sparkles size={14} />} caption={`Pilar mais fraco: ${challenge.pillar === "M" ? "Mentalidade" : challenge.pillar === "C" ? "Comportamento" : "Execução"}`}>
         <p style={{ fontFamily: DISPLAY, fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.9)", margin: 0 }}>{challenge.text}</p>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14, flexWrap: "wrap" }}>
           <button
@@ -159,7 +159,7 @@ export default function MceSystemPanel({ scores }: { scores: Record<PillarKey, n
                 contentStyle={{ background: "#07070d", border: "1px solid rgba(255,255,255,0.12)", fontFamily: MONO, fontSize: 11 }}
                 labelStyle={{ color: "rgba(255,255,255,0.6)" }}
               />
-              <Line type="monotone" dataKey="M" name="Mindset" stroke="#A78BFA" strokeWidth={2} dot={false} connectNulls />
+              <Line type="monotone" dataKey="M" name="Mentalidade" stroke="#A78BFA" strokeWidth={2} dot={false} connectNulls />
               <Line type="monotone" dataKey="C" name="Comportamento" stroke="#00FF88" strokeWidth={2} dot={false} connectNulls />
               <Line type="monotone" dataKey="E" name="Execução" stroke="#F59E0B" strokeWidth={2} dot={false} connectNulls />
               <Line type="monotone" dataKey="media" name="Média" stroke="rgba(255,255,255,0.35)" strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls />

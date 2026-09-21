@@ -5,10 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { PillarKey } from "@/data/mceData";
 import {
   CHECKIN_FIELDS,
+  clampNoteScore,
   dailyScoresFromCheckin,
   dayKey,
+  emptyMceDailyNotes,
+  parseMceDailyNotes,
   rollingScores,
   type CheckinRow,
+  type MceDailyNotes,
 } from "@/lib/mceSystem";
 
 const MONO = "'Space Mono', ui-monospace, monospace";
@@ -22,7 +26,7 @@ const PILLAR_COLORS: Record<PillarKey, string> = {
 
 export type CheckinSubmitHandler = (scores: Record<PillarKey, number>) => void;
 
-type NumericCheckin = Omit<CheckinRow, "checkin_date">;
+type NumericCheckin = Omit<CheckinRow, "checkin_date" | "notes">;
 
 export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: CheckinSubmitHandler; onClose?: () => void }) {
   const { user } = useAuth();
@@ -37,6 +41,7 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [existing, setExisting] = useState<CheckinRow | null>(null);
+  const [dailyNotes, setDailyNotes] = useState<MceDailyNotes>(() => emptyMceDailyNotes());
 
   useEffect(() => {
     if (!user) return;
@@ -45,7 +50,7 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
     (async () => {
       const { data } = await supabase
         .from("mce_checkins")
-        .select("checkin_date, sleep_quality, stress_level, nutrition_adherence, hydration, movement, focus_clarity")
+        .select("checkin_date, sleep_quality, stress_level, nutrition_adherence, hydration, movement, focus_clarity, notes")
         .eq("user_id", user.id)
         .eq("checkin_date", today)
         .maybeSingle();
@@ -60,6 +65,7 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
           movement: row.movement,
           focus_clarity: row.focus_clarity,
         });
+        setDailyNotes(parseMceDailyNotes(row.notes));
         setExisting(row);
         setSaved(true);
       }
@@ -67,11 +73,25 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
     return () => { cancelled = true; };
   }, [user]);
 
-  const preview = useMemo(() => dailyScoresFromCheckin(values), [values]);
+  const preview = useMemo(() => dailyScoresFromCheckin({ ...values, notes: JSON.stringify(dailyNotes) }), [values, dailyNotes]);
   const todayKey = useMemo(() => dayKey(new Date()), []);
 
   const update = (key: keyof NumericCheckin, val: number) => {
     setValues((prev) => ({ ...prev, [key]: val }));
+    setSaved(false);
+  };
+
+  const updateNote = <K extends keyof MceDailyNotes>(key: K, val: MceDailyNotes[K]) => {
+    setDailyNotes((prev) => ({ ...prev, [key]: val, updatedAt: new Date().toISOString() }));
+    setSaved(false);
+  };
+
+  const updateManualScore = (pillar: PillarKey, val: number) => {
+    setDailyNotes((prev) => ({
+      ...prev,
+      manualScores: { M: 7, C: 7, E: 7, ...prev.manualScores, [pillar]: clampNoteScore(val) },
+      updatedAt: new Date().toISOString(),
+    }));
     setSaved(false);
   };
 
@@ -87,15 +107,16 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
       hydration: values.hydration,
       movement: values.movement,
       focus_clarity: values.focus_clarity,
+      notes: JSON.stringify({ ...dailyNotes, manualScores: dailyNotes.manualScores, updatedAt: new Date().toISOString() }),
     };
     const { error } = await supabase.from("mce_checkins").upsert(payload, { onConflict: "user_id,checkin_date" });
     if (!error) {
       setSaved(true);
-      setExisting(values as unknown as CheckinRow);
+      setExisting({ ...values, checkin_date: todayKey, notes: payload.notes } as CheckinRow);
       onSubmit?.(preview);
     }
     setSaving(false);
-  }, [user, values, preview, todayKey, onSubmit]);
+  }, [user, values, dailyNotes, preview, todayKey, onSubmit]);
 
   const groups = useMemo(() => {
     const g: Record<PillarKey, typeof CHECKIN_FIELDS> = { M: [], C: [], E: [] };
@@ -108,13 +129,82 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.5, color: "rgba(255,255,255,0.35)" }}>CHECK-IN DIÁRIO · MCE</div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 700, color: "#fff", marginTop: 4 }}>Como foi seu dia?</div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 700, color: "#fff", marginTop: 4 }}>Como foi seu dia no sistema?</div>
         </div>
         {onClose && (
           <button type="button" onClick={onClose} aria-label="Fechar" style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}>
             <X size={18} />
           </button>
         )}
+      </div>
+
+      <div style={{ display: "grid", gap: 12, marginBottom: 18 }}>
+        <div style={{ padding: 14, borderRadius: 12, background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.22)" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "#B8922A", marginBottom: 10 }}>PRÁTICA DIÁRIA · M</div>
+          <label style={{ display: "grid", gap: 6, fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.72)" }}>
+            Intenção do dia — uma frase
+            <input
+              value={dailyNotes.intention ?? ""}
+              onChange={(e) => updateNote("intention", e.target.value)}
+              placeholder="Hoje eu vou..."
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, padding: "10px 12px", fontFamily: DISPLAY }}
+            />
+          </label>
+          <label style={{ display: "grid", gap: 6, fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.72)", marginTop: 10 }}>
+            Se só pudesse fazer uma coisa hoje
+            <input
+              value={dailyNotes.oneThing ?? ""}
+              onChange={(e) => updateNote("oneThing", e.target.value)}
+              placeholder="O bloco que move a agulha é..."
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, padding: "10px 12px", fontFamily: DISPLAY }}
+            />
+          </label>
+        </div>
+
+        <div style={{ padding: 14, borderRadius: 12, background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.2)" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "#00FF88", marginBottom: 10 }}>COMPORTAMENTO · C</div>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, fontFamily: DISPLAY, fontSize: 14, color: "rgba(255,255,255,0.78)" }}>
+            <input
+              type="checkbox"
+              checked={Boolean(dailyNotes.didProtocol)}
+              onChange={(e) => updateNote("didProtocol", e.target.checked)}
+              style={{ width: 18, height: 18, accentColor: "#00FF88" }}
+            />
+            Fiz pelo menos um bloco do Protocolo 24H
+          </label>
+          <label style={{ display: "grid", gap: 6, fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.72)", marginTop: 10 }}>
+            Resistência principal
+            <input
+              value={dailyNotes.resistance ?? ""}
+              onChange={(e) => updateNote("resistance", e.target.value)}
+              placeholder="O que tentou me tirar do sistema?"
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, padding: "10px 12px", fontFamily: DISPLAY }}
+            />
+          </label>
+        </div>
+
+        <div style={{ padding: 14, borderRadius: 12, background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.22)" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "#F59E0B", marginBottom: 10 }}>REVISÃO · E</div>
+          <label style={{ display: "grid", gap: 6, fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.72)" }}>
+            O que executei? O que não executei?
+            <textarea
+              value={dailyNotes.nightReview ?? ""}
+              onChange={(e) => updateNote("nightReview", e.target.value)}
+              rows={3}
+              placeholder="Dado, sem julgamento."
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, padding: "10px 12px", fontFamily: DISPLAY, resize: "vertical" }}
+            />
+          </label>
+          <label style={{ display: "grid", gap: 6, fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.72)", marginTop: 10 }}>
+            Ajuste de amanhã
+            <input
+              value={dailyNotes.tomorrowAdjustment ?? ""}
+              onChange={(e) => updateNote("tomorrowAdjustment", e.target.value)}
+              placeholder="Amanhã eu corrijo..."
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, padding: "10px 12px", fontFamily: DISPLAY }}
+            />
+          </label>
+        </div>
       </div>
 
       <div style={{ display: "grid", gap: 18 }}>
@@ -128,6 +218,22 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
               <span style={{ marginLeft: "auto", fontFamily: DISPLAY, fontSize: 18, fontWeight: 700, color: PILLAR_COLORS[pillar] }}>{preview[pillar]}</span>
             </div>
             <div style={{ display: "grid", gap: 14 }}>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.75)" }}>Nota MCE do dia</span>
+                  <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: PILLAR_COLORS[pillar], minWidth: 24, textAlign: "right" }}>{dailyNotes.manualScores?.[pillar] ?? 7}</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={10}
+                  step={1}
+                  value={dailyNotes.manualScores?.[pillar] ?? 7}
+                  onChange={(e) => updateManualScore(pillar, Number(e.target.value))}
+                  aria-label={`Nota MCE ${pillar}`}
+                  style={{ width: "100%", accentColor: PILLAR_COLORS[pillar] }}
+                />
+              </div>
               {groups[pillar].map((field) => {
                 const val = values[field.key] as number;
                 const displayVal = field.invert ? 11 - val : val;
@@ -192,7 +298,7 @@ export function useRollingMceScores() {
     const since = new Date();
     since.setDate(since.getDate() - 14);
     const [checkinRes, diagRes, scoreRes] = await Promise.all([
-      supabase.from("mce_checkins").select("checkin_date, sleep_quality, stress_level, nutrition_adherence, hydration, movement, focus_clarity").eq("user_id", user.id).gte("checkin_date", since.toISOString().slice(0, 10)).order("checkin_date", { ascending: false }),
+      supabase.from("mce_checkins").select("checkin_date, sleep_quality, stress_level, nutrition_adherence, hydration, movement, focus_clarity, notes").eq("user_id", user.id).gte("checkin_date", since.toISOString().slice(0, 10)).order("checkin_date", { ascending: false }),
       supabase.from("mce_diagnostics").select("pillar, answers").eq("user_id", user.id),
       supabase.from("mce_scores").select("score_m, score_c, score_e").eq("user_id", user.id).eq("source", "diagnostic").order("created_at", { ascending: false }).limit(1).maybeSingle(),
     ]);

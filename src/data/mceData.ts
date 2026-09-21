@@ -39,16 +39,16 @@ export interface Pillar {
 export const PILLAR_DATA: Record<PillarKey, Pillar> = {
   M: {
     key: "M",
-    label: "MINDSET",
+    label: "MENTALIDADE",
     fullLabel: "Mentalidade",
     color: "#A78BFA",
     accent: "#C4B5FD",
     tagline: "O Sistema Operacional",
     subtitle: "Fundação cognitiva · crenças e identidade",
     manifesto:
-      "Mentalidade não é pensar positivo. É o software que filtra como você interpreta adversidade, processa decisões e constrói identidade. Sem o sistema operacional correto, nenhum plano funciona.",
+      "Mentalidade não é motivação. É decisão: saber por quê, por quem e por quanto tempo você vai agir. Sem clareza, nenhum plano sustenta o comportamento.",
     authors: [
-      { name: "Carol Dweck", inst: "Stanford University", year: 2006, concept: "Growth Mindset", book: "Mindset: The New Psychology of Success", insight: "Indivíduos com mentalidade de crescimento interpretam falha como dado, não veredito — atingindo desempenho 47% superior em domínios complexos. Talento é ponto de partida, não teto." },
+      { name: "Carol Dweck", inst: "Stanford University", year: 2006, concept: "Growth Mentalidade", book: "Mentalidade: The New Psychology of Success", insight: "Indivíduos com mentalidade de crescimento interpretam falha como dado, não veredito — atingindo desempenho 47% superior em domínios complexos. Talento é ponto de partida, não teto." },
       { name: "Daniel Kahneman", inst: "Princeton · Nobel 2002", year: 2011, concept: "Sistema 1 vs Sistema 2", book: "Thinking, Fast and Slow", insight: "Sistema 1: automático, impulsivo, emocional. Sistema 2: deliberado, racional, estratégico. A maioria das decisões alimentares ruins vem do Sistema 1. MCE treina a pausa de 10 segundos entre estímulo e resposta." },
       { name: "Albert Bandura", inst: "Stanford University", year: 1997, concept: "Autoeficácia", book: "Self-Efficacy: The Exercise of Control", insight: "A crença na própria capacidade é o maior preditor de sucesso. 4 fontes: experiência de domínio, modelagem social, persuasão verbal e estado fisiológico." },
       { name: "Viktor Frankl", inst: "Universidade de Viena", year: 1946, concept: "Logoterapia", book: "Em Busca de Sentido", insight: "Entre o estímulo e a resposta há um espaço. Nesse espaço está nosso poder de escolher. A busca por sentido é o motor primário da transformação." },
@@ -77,7 +77,7 @@ export const PILLAR_DATA: Record<PillarKey, Pillar> = {
     tagline: "O Código de Execução",
     subtitle: "Arquitetura de hábitos · design de ambiente",
     manifesto:
-      "Mentalidade sem comportamento é filosofia de bar. Comportamento é onde o software vira ação. É o código que transforma intenção em resultado mensurável.",
+      "Comportamento é o dia em que você sabe o que fazer, mas não faz. Não é fracasso: é dado. O C é onde micro-decisões acumulam ou derrubam o sistema.",
     authors: [
       { name: "James Clear", inst: "Autor · Pesquisador", year: 2018, concept: "4 Leis dos Hábitos", book: "Atomic Habits", insight: "1) Torne óbvio — 2) Torne atraente — 3) Torne fácil — 4) Torne satisfatório. Se o comportamento não acontece, uma dessas leis está falhando. Diagnostique e corrija." },
       { name: "Charles Duhigg", inst: "MIT · Yale", year: 2012, concept: "Loop do Hábito", book: "The Power of Habit", insight: "Todo comportamento segue: Gatilho → Rotina → Recompensa. Você não elimina hábitos — reprograma a rotina mantendo o gatilho e trocando a recompensa." },
@@ -108,7 +108,7 @@ export const PILLAR_DATA: Record<PillarKey, Pillar> = {
     tagline: "O Output Mensurável",
     subtitle: "Sistemas de performance · accountability · feedback",
     manifesto:
-      "Execução é onde tudo se materializa. Sem execução, mentalidade é devaneio e comportamento é intenção. Planejamento sem execução é só opinião.",
+      "Execução é fazer certo o que já tem motivo e padrão para acontecer. M antes de C, C antes de E: sem essa ordem, técnica vira treino aleatório.",
     authors: [
       { name: "John Boyd", inst: "U.S. Air Force", year: 1976, concept: "OODA Loop", book: "Destruction and Creation", insight: "Observar → Orientar → Decidir → Agir. Quem cicla mais rápido vence. No fitness: ajuste semanal baseado em dados concretos, não intuição." },
       { name: "Peter Gollwitzer", inst: "New York University", year: 1999, concept: "Implementation Intentions", book: "American Psychologist", insight: "Planos SE [situação] ENTÃO [ação] triplicam a taxa de execução. Chega de 'vou comer melhor.' Formato: SE for 12h ENTÃO como minha marmita." },

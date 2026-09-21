@@ -43,7 +43,7 @@ const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "vera", label: "VERA", icon: Sparkles, desc: "Avaliação feminina completa" },
   { key: "plano", label: "Plano Alimentar", icon: UtensilsCrossed, desc: "Macros e carb cycling" },
   { key: "training", label: "TrainingON", icon: Dumbbell, desc: "Sistema, fibra e volume" },
-  { key: "pose", label: "Pose AI", icon: ScanLine, desc: "Análise postural MediaPipe" },
+  { key: "pose", label: "Pose", icon: ScanLine, desc: "Análise postural MediaPipe" },
   { key: "lab", label: "Exames Lab", icon: FlaskConical, desc: "Score metabólico e alertas" },
   { key: "relatorios", label: "Relatórios", icon: FileBarChart, desc: "Relatório semanal" },
   { key: "mce", label: "MCE", icon: Headphones, desc: "Biblioteca de áudios MCE e progresso de escuta" },
@@ -118,7 +118,7 @@ const CoachHub = () => {
               style={{ background: AMBER }}
             />
             <span className="text-[9px] font-bold" style={{ color: AMBER }}>
-              AI LIVE
+              LIVE
             </span>
           </div>
         </div>

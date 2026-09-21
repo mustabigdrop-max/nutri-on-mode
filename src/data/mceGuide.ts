@@ -18,31 +18,31 @@ Antes de prescrever dieta, montar treino ou ajustar farmacologia, você precisa 
 
 ## O QUE É O MCE (pra você nunca mais gaguejar)
 
-MCE é um framework comportamental de três camadas que explica por que algumas pessoas executam e outras desistem — mesmo com o mesmo plano na mão.
+MCE é um sistema comportamental de três camadas que explica por que algumas pessoas executam e outras desistem — mesmo com o mesmo plano na mão.
 
-- **M — Mindset** → Como você pensa
+- **M — Mentalidade** → Como você pensa
 - **C — Comportamento** → O que você faz no automático
 - **E — Execução** → O que você entrega de fato
 
 As três camadas são sequenciais e hierárquicas: se o M está quebrado, o C é inconsistente e o E não acontece. Não adianta montar o melhor treino do mundo pra alguém que não acredita que é capaz de mudar.
 
-A maioria do mercado fitness começa pelo E (execução) — "faz essa dieta, segue esse treino." O MCE começa pelo M (mindset) — "o que você acredita sobre si mesmo?"
+A maioria do mercado fitness começa pelo E (execução) — "faz essa dieta, segue esse treino." O MCE começa pelo M (mentalidade) — "o que você acredita sobre si mesmo?"
 
 ---
 
-## PILAR 1: MINDSET — O Sistema Operacional
+## PILAR 1: MENTALIDADE — O Sistema Operacional
 
 ### O que é
-Mindset é o filtro pelo qual você interpreta tudo que acontece. Não é "pensar positivo." É o sistema operacional que processa adversidade, decisão e identidade.
+Mentalidade é o filtro pelo qual você interpreta tudo que acontece. Não é "pensar positivo." É o sistema operacional que processa adversidade, decisão e identidade.
 
 Se o sistema operacional está corrompido, nenhum aplicativo funciona. Você pode instalar o melhor plano alimentar, o melhor protocolo de treino — se o sistema operacional rejeita, ele trava.
 
 ### A ciência por trás
 
-**Carol Dweck — Growth Mindset (Stanford)**
-Dweck provou que existem dois padrões mentais: fixo e de crescimento. Quem tem mindset fixo acredita que talento é nato — "eu sou assim, não vou mudar." Quem tem mindset de crescimento acredita que habilidade é construída — "eu ainda não sei, mas posso aprender."
+**Carol Dweck — Growth Mentalidade (Stanford)**
+Dweck provou que existem dois padrões mentais: fixo e de crescimento. Quem tem mentalidade fixo acredita que talento é nato — "eu sou assim, não vou mudar." Quem tem mentalidade de crescimento acredita que habilidade é construída — "eu ainda não sei, mas posso aprender."
 
-→ **Como você usa isso**: quando um cliente diz "eu não consigo fazer dieta", ele está operando em mindset fixo. Ele não está descrevendo uma realidade — está descrevendo uma crença. O primeiro trabalho do MCE é identificar e reconstruir essa crença.
+→ **Como você usa isso**: quando um cliente diz "eu não consigo fazer dieta", ele está operando em mentalidade fixo. Ele não está descrevendo uma realidade — está descrevendo uma crença. O primeiro trabalho do MCE é identificar e reconstruir essa crença.
 
 **Daniel Kahneman — Sistema 1 vs Sistema 2 (Princeton, Nobel 2002)**
 Kahneman mostrou que temos dois sistemas de pensamento. Sistema 1 é rápido, automático, emocional — é ele que faz você abrir a geladeira às 23h sem pensar. Sistema 2 é lento, deliberado, racional — é ele que faz você calcular macros e planejar refeições.
@@ -55,7 +55,7 @@ Frankl sobreviveu a campos de concentração nazistas e descobriu que as pessoas
 → **Como você usa isso**: quando o alarme toca às 5h e está frio, existe um espaço entre o alarme e a sua resposta. Quem tem um propósito claro escolhe levantar. Quem não tem, escolhe o travesseiro. O M do MCE trabalha esse propósito.
 
 ### Na sua rotina real (use nos stories)
-- "Hoje eu acordei 4:50 e a cama estava confortável. Mas eu não opero por conforto. Eu opero por propósito. Isso é Mindset — o M do MCE."
+- "Hoje eu acordei 4:50 e a cama estava confortável. Mas eu não opero por conforto. Eu opero por propósito. Isso é Mentalidade — o M do MCE."
 - "Meu shape não é genética. É decisão repetida todo dia. Carol Dweck provou em Stanford que talento não é fixo. Genética é o ponto de partida, não o teto."
 - "Quando você abre a geladeira às 23h, não é fome. É o Sistema 1 do Kahneman operando no automático. O MCE ensina seu Sistema 2 a criar travas antes disso acontecer."
 
@@ -118,13 +118,13 @@ Merzenich é o pai da neuroplasticidade moderna. Ele provou que o cérebro se re
 >
 > O MCE responde essa pergunta.
 >
-> Primeiro, MINDSET — o sistema operacional. Se você acredita que não é capaz, nenhum plano funciona. Dweck provou em Stanford.
+> Primeiro, MENTALIDADE — o sistema operacional. Se você acredita que não é capaz, nenhum plano funciona. Dweck provou em Stanford.
 >
 > Segundo, COMPORTAMENTO — os padrões automáticos. 90% do seu dia é automático. Se o automático está programado errado, não é vontade que resolve. É reprogramação. Bandura provou em Stanford.
 >
 > Terceiro, EXECUÇÃO — o resultado mensurável. Cada dia que você executa, seu cérebro se reconfigura pra facilitar a próxima execução. Merzenich provou na UCSF.
 >
-> Mindset → Comportamento → Execução. Nessa ordem. Sem pular etapa.
+> Mentalidade → Comportamento → Execução. Nessa ordem. Sem pular etapa.
 >
 > É assim que eu vivo. É assim que eu treino meus atletas. É o comportamento que vem antes do protocolo."
 
@@ -139,7 +139,7 @@ Merzenich é o pai da neuroplasticidade moderna. Ele provou que o cérebro se re
 - "Nenhum protocolo funciona sem comportamento."
 - "Eu não treino corpos. Eu construo padrões."
 
-### Sobre Mindset
+### Sobre Mentalidade
 - "Sem o sistema operacional correto, nenhum app funciona."
 - "A cama é confortável. O propósito é maior."
 - "Você não precisa acreditar que é fácil. Precisa acreditar que é possível."
@@ -161,8 +161,8 @@ Merzenich é o pai da neuroplasticidade moderna. Ele provou que o cérebro se re
 
 ## ROTEIRO DE STORIES SEMANAL (7 dias de conteúdo MCE)
 
-**Segunda — Mindset Monday**
-Acorda, grava no espelho ou no carro. Fala sobre uma decisão do dia que veio do mindset. "Hoje eu escolhi X porque meu sistema operacional está programado pra Y." Encerra com a frase do dia.
+**Segunda — Mentalidade Monday**
+Acorda, grava no espelho ou no carro. Fala sobre uma decisão do dia que veio do mentalidade. "Hoje eu escolhi X porque meu sistema operacional está programado pra Y." Encerra com a frase do dia.
 
 **Terça — Comportamento na prática**
 Mostra algo da sua rotina que é padrão automático: marmitas preparadas, alarme configurado, treino no horário. "Isso aqui não é disciplina heroica. É padrão instalado. É o C do MCE."
@@ -184,11 +184,46 @@ Mostra o prep da semana: marmitas, plano revisado, check-in enviado. "Domingo é
 
 ---
 
+## MCE — FILOSOFIA VIVA
+
+O MCE não é uma tela do app. É a prática diária que o Coach Diogo vive, documenta e ensina.
+
+A verdade que ninguém fala: todo mundo tem o dia em que para. O dia em que sabe o que fazer, mas não faz. Isso não é fracasso. Isso é Comportamento — o C do MCE.
+
+Mentalidade pode estar certa. Execução pode estar desenhada. Mas se o Comportamento para, tudo para.
+
+O MCE não é método para quem nunca cai. É o método para quem sabe se levantar.
+
+### Protocolo pessoal do Coach
+
+**Manhã — M:** intenção do dia, revisão do Protocolo 24H e uma pergunta: se eu só pudesse fazer uma coisa hoje, qual moveria mais a agulha?
+
+**Durante o dia — C:** executar os blocos, registrar fiz ou não fiz, tratar resistência como dado e observar cada micro-decisão.
+
+**Noite — E:** revisar o que executou, o que não executou, o que muda amanhã e dar nota M/C/E de 0 a 10.
+
+> Não ensino o que não vivo.
+
+### Conteúdo vivo
+
+Segunda e domingo são M: reflexão, propósito, autores e intenção.
+Terça e quinta são E: APEX, STRATUM, KINESIS, Showdown e Movement Score.
+Quarta e sexta são C: micro-decisões, rotina real, falhas registradas e ajustes.
+Sábado é bastidor: família, rotina, treino e vida real.
+
+### O posicionamento
+
+Todo coach vende resultado. Diogo vende o sistema que gera resultado.
+Todo coach mostra antes e depois. Diogo mostra o durante, inclusive quando falha.
+Todo coach fala para nunca desistir. Diogo mostra exatamente como voltar quando parou.
+
+---
+
 ## REFERÊNCIAS CIENTÍFICAS COMPLETAS
 
 | Autor | Universidade | Conceito | Obra principal |
 |---|---|---|---|
-| Carol Dweck | Stanford | Growth Mindset | *Mindset: The New Psychology of Success* (2006) |
+| Carol Dweck | Stanford | Growth Mentalidade | *Mentalidade: The New Psychology of Success* (2006) |
 | Daniel Kahneman | Princeton (Nobel 2002) | Sistema 1 vs Sistema 2 | *Thinking, Fast and Slow* (2011) |
 | Albert Bandura | Stanford | Autoeficácia | *Self-Efficacy: The Exercise of Control* (1997) |
 | Viktor Frankl | Universidade de Viena | Logoterapia / Propósito | *Em Busca de Sentido* (1946) |

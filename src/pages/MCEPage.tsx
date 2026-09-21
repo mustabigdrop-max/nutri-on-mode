@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
 import {
-  Activity, ArrowLeft, BookOpen, Brain, Briefcase, CheckCircle2, Clock, Dumbbell,
-  FileDown, Flame, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
+  Activity, ArrowLeft, BookOpen, Brain, Briefcase, CalendarDays, CheckCircle2, Clock, Compass, Dumbbell,
+  FileDown, Flame, Headphones, Map, Mic, MonitorUp, NotebookPen, RotateCcw, ScanLine, TrendingUp, Users, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
@@ -28,7 +28,16 @@ import Protocol24hChecklist from "@/components/mce/Protocol24hChecklist";
 import MceSystemPanel from "@/components/mce/MceSystemPanel";
 import MceDailyCheckin, { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
 import MceOnboarding from "@/components/mce/MceOnboarding";
-import { weekConsistency, weekLabels, rollingScores } from "@/lib/mceSystem";
+import {
+  MCE_COMPASS_QUESTIONS,
+  MCE_RETOMADA_PHASES,
+  MCE_VOICE_TRIGGERS,
+  MCE_WEEKLY_CALENDAR,
+  mceMirrorInsight,
+  weekConsistency,
+  weekLabels,
+  rollingScores,
+} from "@/lib/mceSystem";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -92,7 +101,7 @@ function ScoreRing({ value, max = 100, color, size = 120, label, sublabel }: {
 
 function PillarNav({ active, scores, onChange }: { active: PillarKey; scores: Record<PillarKey, number>; onChange: (k: PillarKey) => void }) {
   const pills = [
-    { key: "M" as PillarKey, label: "MINDSET", color: "#9333EA", Icon: Brain },
+    { key: "M" as PillarKey, label: "MENTALIDADE", color: "#9333EA", Icon: Brain },
     { key: "C" as PillarKey, label: "COMPORTAMENTO", color: "#00C896", Icon: Activity },
     { key: "E" as PillarKey, label: "EXECUÇÃO", color: "#E8A020", Icon: Zap },
   ];
@@ -419,7 +428,7 @@ function TriangleDiagram({ scores, activeKey }: { scores: Record<PillarKey, numb
   const w = 420, h = 360;
   const cx = w / 2;
   const nodes = [
-    { key: "M" as PillarKey, x: cx, y: 45, color: "#9333EA", label: "M", name: "Mindset", detail: "Fundação cognitiva" },
+    { key: "M" as PillarKey, x: cx, y: 45, color: "#9333EA", label: "M", name: "Mentalidade", detail: "Fundação cognitiva" },
     { key: "C" as PillarKey, x: 62, y: 302, color: "#00C896", label: "C", name: "Comportamento", detail: "Arquitetura de hábitos" },
     { key: "E" as PillarKey, x: 358, y: 302, color: "#E8A020", label: "E", name: "Execução", detail: "Output mensurável" },
   ];
@@ -482,6 +491,111 @@ function TriangleDiagram({ scores, activeKey }: { scores: Record<PillarKey, numb
         );
       })}
     </svg>
+  );
+}
+
+function MceLivingLayer({ scores, checkins, resetActive, onActivateRetomada }: {
+  scores: Record<PillarKey, number>;
+  checkins: { checkin_date: string; sleep_quality: number; stress_level: number; nutrition_adherence: number; hydration: number; movement: number; focus_clarity: number; notes?: string | null }[];
+  resetActive: boolean;
+  onActivateRetomada: () => void;
+}) {
+  const lowest = (["M", "C", "E"] as PillarKey[]).reduce((a, b) => (scores[a] <= scores[b] ? a : b));
+  const pillarLabel = lowest === "M" ? "Mentalidade" : lowest === "C" ? "Comportamento" : "Execução";
+  const mirror = mceMirrorInsight(checkins);
+
+  return (
+    <div style={{ display: "grid", gap: 16 }}>
+      <section style={{ padding: 18, borderRadius: 14, background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.24)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#B8922A", marginBottom: 8 }}>
+          <NotebookPen size={15} />
+          <h3 style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.5, margin: 0 }}>MCE JOURNAL</h3>
+        </div>
+        <p style={{ fontFamily: DISPLAY, fontSize: 18, lineHeight: 1.45, color: "rgba(255,255,255,0.88)", margin: 0 }}>
+          O diário agora começa no check-in: intenção do dia, bloco executado, resistência, revisão da noite e nota M/C/E de 0 a 10.
+        </p>
+        <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.18)", fontFamily: MONO, fontSize: 10, lineHeight: 1.6, color: "#00D4FF" }}>
+          MCE MIRROR · {mirror}
+        </div>
+      </section>
+
+      <section style={{ padding: 18, borderRadius: 14, background: "rgba(167,139,250,0.06)", border: "1px solid rgba(167,139,250,0.24)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#A78BFA", marginBottom: 8 }}>
+          <Compass size={15} />
+          <h3 style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.5, margin: 0 }}>MCE COMPASS</h3>
+        </div>
+        <div style={{ display: "grid", gap: 8 }}>
+          {MCE_COMPASS_QUESTIONS.map((question, index) => (
+            <div key={question} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontFamily: DISPLAY, fontSize: 14, color: "rgba(255,255,255,0.72)", lineHeight: 1.45 }}>
+              <span style={{ fontFamily: MONO, color: "#A78BFA", minWidth: 22 }}>{String(index + 1).padStart(2, "0")}</span>
+              <span>{question}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ padding: 18, borderRadius: 14, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#EF4444", marginBottom: 8 }}>
+          <RotateCcw size={15} />
+          <h3 style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.5, margin: 0 }}>MCE RESET BUTTON</h3>
+        </div>
+        <p style={{ fontFamily: DISPLAY, fontSize: 16, lineHeight: 1.5, color: "rgba(255,255,255,0.82)", margin: "0 0 12px" }}>
+          Pilar de atenção agora: {pillarLabel}. Sem julgamento. Um bloco de cada vez.
+        </p>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onActivateRetomada}
+          disabled={resetActive}
+          style={{ border: `1px solid ${resetActive ? "rgba(0,255,136,0.45)" : "rgba(239,68,68,0.35)"}`, color: resetActive ? "#00FF88" : "#EF4444", borderRadius: 0, fontFamily: MONO, letterSpacing: 2 }}
+        >
+          {resetActive ? "RETOMADA ATIVA ✓" : "ATIVAR RETOMADA"}
+        </Button>
+        <div style={{ display: "grid", gap: 8, marginTop: 14 }}>
+          {MCE_RETOMADA_PHASES.map((phase) => (
+            <div key={phase.phase} style={{ display: "grid", gridTemplateColumns: "52px 1fr", gap: 10, padding: 10, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <span style={{ fontFamily: MONO, fontSize: 9, color: "#EF4444" }}>F{phase.phase}<br />{phase.days}</span>
+              <div>
+                <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 700, color: "#fff" }}>{phase.label}</div>
+                <div style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.38)", marginTop: 2 }}>{phase.score} · {phase.rule}</div>
+                <p style={{ fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.62)", margin: "6px 0 0", lineHeight: 1.45 }}>{phase.goal}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ padding: 18, borderRadius: 14, background: "rgba(0,255,136,0.04)", border: "1px solid rgba(0,255,136,0.18)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#00FF88", marginBottom: 12 }}>
+          <CalendarDays size={15} />
+          <h3 style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.5, margin: 0 }}>CALENDÁRIO SEMANAL MCE</h3>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
+          {MCE_WEEKLY_CALENDAR.map((day) => (
+            <div key={day.day} style={{ padding: 10, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontFamily: MONO, fontSize: 9, color: "#00FF88" }}>{day.day} · {day.pillar}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 14, fontWeight: 700, color: "#fff", marginTop: 4 }}>{day.title}</div>
+              <div style={{ fontFamily: DISPLAY, fontSize: 12, color: "rgba(255,255,255,0.52)", marginTop: 4 }}>{day.prompt}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ padding: 18, borderRadius: 14, background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.2)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#00D4FF", marginBottom: 10 }}>
+          <Mic size={15} />
+          <h3 style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2.5, margin: 0 }}>MCE VOICE</h3>
+        </div>
+        <div style={{ display: "grid", gap: 8 }}>
+          {MCE_VOICE_TRIGGERS.map((trigger) => (
+            <div key={trigger.event} style={{ display: "flex", justifyContent: "space-between", gap: 12, borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 8 }}>
+              <span style={{ fontFamily: MONO, fontSize: 10, color: "#00D4FF" }}>{trigger.event}</span>
+              <span style={{ fontFamily: DISPLAY, fontSize: 13, color: "rgba(255,255,255,0.62)", textAlign: "right" }}>{trigger.message}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -618,9 +732,12 @@ export default function MCEIntelligencePage() {
     }
   };
 
+  const resetKey = `mce-reset-${new Date().toISOString().slice(0, 10)}`;
+
   const tabs = [
     { key: "estudo", label: "ESTUDO", group: "content" as const, Icon: BookOpen },
     { key: "guia", label: "GUIA", group: "content" as const, Icon: Map },
+    { key: "vivo", label: "VIVO", badge: "#B8922A", group: "content" as const, Icon: NotebookPen },
     { key: "diagnostico", label: "DIAGNÓSTICO", group: "content" as const, Icon: ScanLine },
     { key: "exercicios", label: "EXERCÍCIOS", group: "content" as const, Icon: Dumbbell },
     { key: "perfis", label: "PERFIS", group: "content" as const, Icon: Users },
@@ -751,7 +868,7 @@ export default function MCEIntelligencePage() {
           )}
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.6 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap", marginTop: 24 }}>
-            <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MINDSET" />
+            <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MENTALIDADE" />
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <ScoreRing value={totalScore} color={phase.color} size={132} label="MCE SCORE" sublabel={scoresLoading ? "CARREGANDO" : "MÉDIA 7 DIAS"} />
               <div style={{
@@ -836,6 +953,19 @@ export default function MCEIntelligencePage() {
 
         <div style={{ marginTop: 20 }}>
           {tab === "audio" && <AudioAcademyPage embedded />}
+
+          {/* MCE VIVO */}
+          {tab === "vivo" && (
+            <div>
+              <div style={sectionTitle}>MCE VIVO · PRÁTICA, RETOMADA E CONTEÚDO</div>
+              <MceLivingLayer
+                scores={scores}
+                checkins={checkins}
+                resetActive={Boolean(completed[resetKey])}
+                onActivateRetomada={() => toggleComplete(resetKey)}
+              />
+            </div>
+          )}
 
           {/* CHECK-IN */}
           {tab === "checkin" && (
