@@ -26,7 +26,7 @@ const PILLAR_COLORS: Record<PillarKey, string> = {
 
 export type CheckinSubmitHandler = (scores: Record<PillarKey, number>) => void;
 
-type NumericCheckin = Omit<CheckinRow, "checkin_date">;
+type NumericCheckin = Omit<CheckinRow, "checkin_date" | "notes">;
 
 export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: CheckinSubmitHandler; onClose?: () => void }) {
   const { user } = useAuth();
@@ -298,7 +298,7 @@ export function useRollingMceScores() {
     const since = new Date();
     since.setDate(since.getDate() - 14);
     const [checkinRes, diagRes, scoreRes] = await Promise.all([
-      supabase.from("mce_checkins").select("checkin_date, sleep_quality, stress_level, nutrition_adherence, hydration, movement, focus_clarity").eq("user_id", user.id).gte("checkin_date", since.toISOString().slice(0, 10)).order("checkin_date", { ascending: false }),
+      supabase.from("mce_checkins").select("checkin_date, sleep_quality, stress_level, nutrition_adherence, hydration, movement, focus_clarity, notes").eq("user_id", user.id).gte("checkin_date", since.toISOString().slice(0, 10)).order("checkin_date", { ascending: false }),
       supabase.from("mce_diagnostics").select("pillar, answers").eq("user_id", user.id),
       supabase.from("mce_scores").select("score_m, score_c, score_e").eq("user_id", user.id).eq("source", "diagnostic").order("created_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
