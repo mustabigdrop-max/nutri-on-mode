@@ -10368,6 +10368,36 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_leads: {
+        Row: {
+          created_at: string
+          fonte: string | null
+          id: string
+          nome: string
+          respostas: Json
+          resultado: string
+          whatsapp: string
+        }
+        Insert: {
+          created_at?: string
+          fonte?: string | null
+          id?: string
+          nome: string
+          respostas?: Json
+          resultado: string
+          whatsapp: string
+        }
+        Update: {
+          created_at?: string
+          fonte?: string | null
+          id?: string
+          nome?: string
+          respostas?: Json
+          resultado?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       reels_variations: {
         Row: {
           analysis_id: string | null
