@@ -5309,6 +5309,7 @@ export type Database = {
       exercise_guides: {
         Row: {
           created_at: string
+          created_by: string | null
           exercise_key: string
           exercise_name: string
           guide: Json
@@ -5317,6 +5318,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           exercise_key: string
           exercise_name: string
           guide: Json
@@ -5325,6 +5327,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           exercise_key?: string
           exercise_name?: string
           guide?: Json
