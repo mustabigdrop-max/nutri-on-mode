@@ -24,6 +24,7 @@ const SECTIONS: HubSection[] = [
       { id: "carrossel_mce", name: "Carrossel MCE", icon: "▤", desc: "Tema → 7 slides no template MCE Educacional", hot: true, isNew: true },
       { id: "carousel_engine", name: "Carrossel Científico", icon: "◫", desc: "Tema → pesquisa real + 5 slides premium", hot: true, isNew: true },
       { id: "pacote_dia", name: "Pacote do Dia", icon: "📦", desc: "Reels, carrossel, stories e cronograma prontos", hot: true, isNew: true },
+      { id: "pack_criador", name: "Pack Criador", icon: "🎨", desc: "Cards prontos por tema (creatina, MindForce e mais)", hot: true, isNew: true },
       { id: "signal", name: "SIGNAL", icon: "📡", desc: "Briefing diário completo", hot: true },
       { id: "um_toque", name: "1 Toque", icon: "✦", desc: "Upload → 4 versões prontas", hot: true },
       { id: "lote", name: "Modo Lote", icon: "🚀", desc: "Sobe a semana toda → agenda sozinho", hot: true, isNew: true },
@@ -35,7 +36,7 @@ const SECTIONS: HubSection[] = [
       { id: "postar_refeicao", name: "Postar Refeição", icon: "🍽️", desc: "Refeição do dia → legendas por estilo + stories", hot: true, isNew: true },
       { id: "post_pronto", name: "Post Pronto", icon: "📋", desc: "Templates editáveis" },
       { id: "editor", name: "Editor", icon: "✏️", desc: "Texto + mídia em tempo real" },
-      { id: "criar", name: "Criar", icon: "⚙️", desc: "Do zero, com IA guiada" },
+      { id: "criar", name: "Criar", icon: "⚙️", desc: "Do zero, guiado passo a passo" },
     ],
   },
   {
