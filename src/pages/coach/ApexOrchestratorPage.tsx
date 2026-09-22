@@ -86,6 +86,36 @@ export default function ApexOrchestratorPage() {
     return "Pronto para revisão";
   }, [run?.status]);
 
+  const faltantes = useMemo(() => camposFaltantes(aluno), [aluno]);
+  const comandoStratum = useMemo(() => buildComandoStratum({
+    aluno,
+    periodizacao: {
+      macrociclo: plano.periodizacao?.macrociclo ?? null,
+      mesociclo: plano.periodizacao?.mesociclo ?? null,
+      semana: plano.periodizacao?.semana_no_meso ?? plano.periodizacao?.semana ?? null,
+      semanas_totais: plano.periodizacao?.semanas_totais_meso ?? plano.periodizacao?.semanas_totais ?? null,
+    },
+    score_atual: typeof evolution.score_atual === "number" ? evolution.score_atual : null,
+    score_anterior: typeof evolution.score_anterior === "number" ? evolution.score_anterior : null,
+    grupos,
+    prioridades: asArray(diagnostico.prioridades),
+    protocolos: protocols,
+    volume_atual: volumes.map((v) => ({ grupo: v.grupo, series_semana: v.series_semana })),
+    encaminhamentos: Array.isArray(diagnostico.encaminhamentos) ? diagnostico.encaminhamentos.map((e: unknown) => typeof e === "string" ? e : JSON.stringify(e)) : [],
+    checklist_parcial: run?.checklist_mode === "skipped",
+    treino_anterior: treinoAnterior.trim() || null,
+  }), [aluno, plano, evolution, grupos, diagnostico, protocols, volumes, run?.checklist_mode, treinoAnterior]);
+
+  const copiarComando = async () => {
+    try {
+      await navigator.clipboard.writeText(comandoStratum);
+      toast({ title: "COMANDO STRATUM copiado", description: "Cole no TrainingON para gerar o treino." });
+    } catch {
+      toast({ title: "Copie manualmente", description: "Selecione o texto do comando abaixo.", variant: "destructive" });
+    }
+  };
+
+
   const saveOverrides = async () => {
     if (!run || !user) return;
     setSaving(true);
