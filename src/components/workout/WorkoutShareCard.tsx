@@ -150,7 +150,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
           </div>
 
           <div className="mt-1 grid grid-cols-5 gap-px px-[14px]">
-            {protocols.map(([value, label], index) => <div key={label} className={`bg-[var(--ws-surface)] px-1 py-[5px] text-center border-b-2 ${index === 1 ? "border-[var(--ws-cyan)] bg-[#08081A]" : "border-[var(--ws-gray)]"}`}><Editable enabled={editing} className={`block font-display text-[10px] font-bold ${index === 1 ? "text-[var(--ws-cyan)]" : "text-[var(--ws-white)]"}`}>{value || "—"}</Editable><span className="block text-[5px] tracking-[.5px] text-[var(--ws-dim)]">{label}</span></div>)}
+            {protocols.map(([value, label], index) => <div key={label} className={`bg-[var(--ws-surface)] px-1 py-[5px] text-center border-b-2 ${index === 1 ? "workout-share-protocol-active border-[var(--ws-cyan)]" : "border-[var(--ws-gray)]"}`}><Editable enabled={editing} className={`block font-display text-[10px] font-bold ${index === 1 ? "text-[var(--ws-cyan)]" : "text-[var(--ws-white)]"}`}>{value || "—"}</Editable><span className="block text-[5px] tracking-[.5px] text-[var(--ws-dim)]">{label}</span></div>)}
           </div>
 
           {props.focusAlert && <div className="mx-[14px] my-2 flex items-center gap-[6px] border-l-2 border-[var(--ws-red)] bg-[rgba(255,68,68,.04)] px-[10px] py-[6px]"><span className="text-[11px]">⚡</span><Editable enabled={editing} className="flex-1 text-[7px] leading-[1.35] text-[var(--ws-red)]">{props.focusAlert}</Editable><span className="bg-[var(--ws-red)] px-[5px] py-px font-display text-[6px] font-bold text-[var(--ws-bg)]">APEX</span></div>}

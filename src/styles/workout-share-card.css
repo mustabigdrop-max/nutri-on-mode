@@ -35,4 +35,5 @@
 @keyframes workoutMusclePulse { 0%,100% { opacity: .6; } 50% { opacity: 1; } }
 .workout-muscle-pulse { animation: workoutMusclePulse 2.5s ease-in-out infinite; }
 .workout-share-bottom-accent { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,212,255,.1), rgba(184,146,42,.1), transparent); }
+.workout-share-protocol-active { background: #08081a; }
 @media (prefers-reduced-motion: reduce) { .workout-share-scan, .workout-muscle-pulse { animation: none; } }
