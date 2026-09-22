@@ -19,6 +19,7 @@
 - [x] Implementar Orquestrador Master pós-fotos APEX
 - [x] Integrar checklist filtrado, diagnóstico, KINESIS, STRATUM, NutriPlan, Evolution, gamificação e PRAXIS
 - [x] Validar fluxo e relatório do coach
-- [ ] Criar TrainingON Ultra Share View com exportação, Story e edição inline
-- [ ] Integrar o Share View aos dados reais do treino salvo
-- [ ] Validar visual, tipagem e exportação do Share View
+- [x] Criar TrainingON Ultra Share View com exportação, Story e edição inline
+- [x] Integrar o Share View aos dados reais do treino salvo
+- [x] Validar tipagem e exportação do Share View
+- [ ] Validar visual autenticado do Share View — aguarda uma sessão ativa de aluno na prévia

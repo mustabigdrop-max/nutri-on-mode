@@ -23,7 +23,6 @@
 .workout-share-stage *, .workout-share-stage *::before, .workout-share-stage *::after { border-radius: 0 !important; box-sizing: border-box; }
 .workout-share-stage [contenteditable='true'] { outline: 1px dashed rgba(0, 212, 255, 0.35); outline-offset: 1px; cursor: text; }
 .workout-share-content { width: 390px; position: relative; z-index: 2; }
-.workout-share-stage.is-story { height: 693px; display: flex; align-items: center; }
 .workout-share-corners { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
 .workout-share-corner { position: absolute; width: 14px; height: 14px; border-style: solid; }
 .workout-share-corner.tl { top: 5px; left: 5px; border-width: 1px 0 0 1px; border-color: var(--ws-cyan); }

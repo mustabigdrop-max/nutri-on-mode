@@ -72,9 +72,9 @@ function StatRing({ value, label, progress, color }: { value: string | number; l
 }
 
 function BodyMap({ litMuscles }: { litMuscles: WorkoutShareCardProps["litMuscles"] }) {
-  const find = (id: string, fallback: string) => litMuscles.find((m) => m.id === id) ?? { id, color: fallback, pulse: false };
-  const part = (id: string, fallback: string) => {
-    const item = find(id, fallback);
+  const part = (id: string) => {
+    const item = litMuscles.find((muscle) => muscle.id === id);
+    if (!item) return { fill: "#0A0A15", stroke: "#1A1A28", opacity: 1, className: "" };
     return { fill: item.color, stroke: item.color, opacity: .32, filter: `drop-shadow(0 0 4px ${item.color})`, className: item.pulse ? "workout-muscle-pulse" : "" };
   };
   return (
@@ -83,11 +83,11 @@ function BodyMap({ litMuscles }: { litMuscles: WorkoutShareCardProps["litMuscles
         <ellipse cx="50" cy="13" rx="10" ry="12"/><path d="M42 25 Q50 29 58 25 L64 39 69 74 61 108 58 154 55 192 46 192 42 154 39 108 31 74 36 39Z"/>
         <path d="M36 34 24 42 17 77 23 80 34 57Z"/><path d="M64 34 76 42 83 77 77 80 66 57Z"/>
       </g>
-      <path d="M39 37 Q45 31 49 39 L48 56 Q42 54 37 48Z" {...part("pec-left", "#FF4444")} />
-      <path d="M51 39 Q55 31 61 37 L63 48 Q58 54 52 56Z" {...part("pec-right", "#B8922A")} />
-      <ellipse cx="34" cy="39" rx="7" ry="9" {...part("delt", "#00D4FF")} /><ellipse cx="66" cy="39" rx="7" ry="9" {...part("delt", "#00D4FF")} />
-      <path d="M27 47 34 48 30 68 24 66Z" {...part("triceps", "#B8922A")} /><path d="M66 48 73 47 76 66 70 68Z" {...part("triceps", "#B8922A")} />
-      <g fontFamily="Space Mono" fontSize="4" fontWeight="700"><text x="44" y="48" fill="#FF4444">PEC</text><text x="26" y="40" fill="#00D4FF">DLT</text><text x="23" y="60" fill="#B8922A">TRI</text></g>
+      <path d="M39 37 Q45 31 49 39 L48 56 Q42 54 37 48Z" {...part("pec-left")} />
+      <path d="M51 39 Q55 31 61 37 L63 48 Q58 54 52 56Z" {...part("pec-right")} />
+      <ellipse cx="34" cy="39" rx="7" ry="9" {...part("delt")} /><ellipse cx="66" cy="39" rx="7" ry="9" {...part("delt")} />
+      <path d="M27 47 34 48 30 68 24 66Z" {...part("triceps")} /><path d="M66 48 73 47 76 66 70 68Z" {...part("triceps")} />
+      <g fontFamily="Space Mono" fontSize="4" fontWeight="700"><text x="44" y="48" fill="var(--ws-red)">PEC</text><text x="26" y="40" fill="var(--ws-cyan)">DLT</text><text x="23" y="60" fill="var(--ws-gold)">TRI</text></g>
     </svg>
   );
 }
@@ -113,7 +113,14 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
       if (story) {
         canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1920;
         const ctx = canvas.getContext("2d");
-        if (ctx) { ctx.fillStyle = "#010108"; ctx.fillRect(0, 0, 1080, 1920); ctx.drawImage(source, 0, 0, 1080, 1920); }
+        if (ctx) {
+          ctx.fillStyle = "#010108";
+          ctx.fillRect(0, 0, 1080, 1920);
+          const scale = Math.min(1080 / source.width, 1920 / source.height);
+          const width = source.width * scale;
+          const height = source.height * scale;
+          ctx.drawImage(source, (1080 - width) / 2, (1920 - height) / 2, width, height);
+        }
       }
       const link = document.createElement("a");
       link.download = `trainingon-${props.dayCode.toLowerCase()}-${fileDate}.png`;
