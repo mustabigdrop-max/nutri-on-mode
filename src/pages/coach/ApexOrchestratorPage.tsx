@@ -28,6 +28,8 @@ export default function ApexOrchestratorPage() {
   const [protocols, setProtocols] = useState<JsonObject[]>([]);
   const [volumes, setVolumes] = useState<JsonObject[]>([]);
   const [overrideNote, setOverrideNote] = useState("");
+  const [aluno, setAluno] = useState<ComandoAluno>({});
+  const [treinoAnterior, setTreinoAnterior] = useState("");
 
   const load = useCallback(async () => {
     if (!runId) return;
