@@ -192,14 +192,13 @@ const MyTrainingPage = () => {
           </div>
         )}
 
-        {shareData && (
-          <section className="mt-8 border-t border-border/40 pt-6">
-            <div className="mb-4 flex items-end justify-between gap-4">
-              <div>
-                <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan">Ultra Share View</p>
-                <h2 className="font-display text-xl font-bold">Compartilhar treino</h2>
-              </div>
-              {structuredDays.length > 1 && (
+        <section className="mt-8 border-t border-border/40 pt-6">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="font-tech text-[10px] uppercase tracking-[0.18em] text-cyan">Ultra Share View</p>
+              <h2 className="font-display text-xl font-bold">Compartilhar treino</h2>
+            </div>
+            {shareData && structuredDays.length > 1 && (
                 <div className="flex gap-1">
                   {structuredDays.map((day, index) => (
                     <Button key={day.day_number} type="button" size="sm" variant={shareDayIndex === index ? "default" : "outline"} className="h-8 rounded-none px-3 font-tech text-[10px]" onClick={() => setShareDayIndex(index)}>
@@ -207,13 +206,26 @@ const MyTrainingPage = () => {
                     </Button>
                   ))}
                 </div>
-              )}
-            </div>
+            )}
+          </div>
+          {shareData ? (
             <div className="overflow-x-auto pb-3">
               <WorkoutShareCard {...shareData} />
             </div>
-          </section>
-        )}
+          ) : (
+            <div
+              className="rounded-2xl p-6 text-center"
+              style={{ border: `1px solid ${GREEN}22`, background: `${GREEN}08` }}
+            >
+              <p className="text-sm font-semibold">Card indisponível por enquanto</p>
+              <p className="text-xs mt-1" style={{ color: DIM }}>
+                {training
+                  ? "Seu treino atual não está no formato estruturado necessário para o card. Peça ao coach para reenviar pelo TrainingON."
+                  : "Assim que seu coach enviar seu treino pelo TrainingON, o card de compartilhamento aparece aqui."}
+              </p>
+            </div>
+          )}
+        </section>
       </main>
 
       <AthleteBottomNav />
