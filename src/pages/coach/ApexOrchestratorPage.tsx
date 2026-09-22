@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, ClipboardCheck, Download, Loader2, Pencil, Save, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ClipboardCheck, Copy, Download, Loader2, Pencil, Save, ShieldAlert } from "lucide-react";
+import { buildComandoStratum, camposFaltantes, type ComandoAluno } from "@/lib/apexComandoStratum";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
