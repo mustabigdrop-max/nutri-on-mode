@@ -90,7 +90,7 @@ export default function ApexOrchestratorPage() {
     if (!run || !user) return;
     setSaving(true);
     const changedPlan = { ...plano, volume: volumes };
-    const changedReport = { ...report, override_note: overrideNote, edited_manually: true, edited_at: new Date().toISOString(), edited_by: user.id };
+    const changedReport = { ...report, override_note: overrideNote, aluno_comando: { ...aluno, treino_anterior: treinoAnterior }, edited_manually: true, edited_at: new Date().toISOString(), edited_by: user.id };
     const changedLog = [...logs, { etapa: "Override do coach", status: "complete", timestamp: new Date().toISOString(), note: overrideNote || "Exercícios ou volume editados manualmente." }];
     const { error } = await supabase.from("apex_orchestrator_runs").update({
       protocolos_ativos: protocols,
