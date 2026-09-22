@@ -150,6 +150,7 @@ const ApexAssessmentPage = lazy(() => import("./pages/coach/ApexAssessmentPage")
 const ApexOrchestratorPage = lazy(() => import("./pages/coach/ApexOrchestratorPage"));
 const CoachTrainingOnPage = lazy(() => import("./pages/coach/CoachTrainingOnPage"));
 const CoachWorkoutSharePage = lazy(() => import("./pages/coach/CoachWorkoutSharePage"));
+const CoachWorkoutEditorPage = lazy(() => import("./pages/coach/CoachWorkoutEditorPage"));
 const GapAnalysisPage = lazy(() => import("./pages/GapAnalysisPage"));
 const CoachLabExamsPage = lazy(() => import("./pages/coach/CoachLabExamsPage"));
 const ExamRequestPage = lazy(() => import("./pages/coach/ExamRequestPage"));
@@ -360,6 +361,7 @@ const App = () => (
             <Route path="/coach/apex-orchestrator/:runId" element={<CoachToolRoute><ProtectedRoute><ApexOrchestratorPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/trainingon" element={<CoachToolRoute><ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/compartilhar-treino" element={<CoachToolRoute><ProtectedRoute><CoachWorkoutSharePage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/editar-treino" element={<CoachToolRoute><ProtectedRoute><CoachWorkoutEditorPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/gap-analysis" element={<CoachToolRoute><ProtectedRoute><GapAnalysisPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/lab-exams" element={<CoachToolRoute><ProtectedRoute><CoachLabExamsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/exames" element={<CoachToolRoute><ProtectedRoute><ExamRequestPage /></ProtectedRoute></CoachToolRoute>} />

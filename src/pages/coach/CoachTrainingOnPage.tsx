@@ -483,6 +483,14 @@ export default function CoachTrainingOnPage() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => navigate("/coach/editar-treino")}
+            className="border-amber-500/40 text-amber-300 hover:text-amber-200"
+          >
+            Editar treino
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => navigate("/coach/compartilhar-treino")}
             className="border-cyan-500/40 text-cyan-300 hover:text-cyan-200"
           >
