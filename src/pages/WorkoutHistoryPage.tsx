@@ -8,7 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutSchedule, WORKOUT_TYPES, getWorkoutAdjustment, DAY_NAMES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import BottomNav from "@/components/BottomNav";
-import WorkoutShareCard from "@/components/workout/WorkoutShareCard";
+import WeeklyWorkoutShareCard from "@/components/workout/WeeklyWorkoutShareCard";
 
 interface DailyLog {
   id: string;
@@ -415,7 +415,7 @@ const WorkoutHistoryPage = () => {
           transition={{ delay: 0.5 }}
           className="mb-4"
         >
-          <WorkoutShareCard
+          <WeeklyWorkoutShareCard
             weekData={weekData}
             stats={stats}
             weekLabel={formatWeekLabel()}
