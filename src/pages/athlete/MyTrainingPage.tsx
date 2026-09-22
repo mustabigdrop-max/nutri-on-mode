@@ -206,13 +206,26 @@ const MyTrainingPage = () => {
                     </Button>
                   ))}
                 </div>
-              )}
-            </div>
+            )}
+          </div>
+          {shareData ? (
             <div className="overflow-x-auto pb-3">
               <WorkoutShareCard {...shareData} />
             </div>
-          </section>
-        )}
+          ) : (
+            <div
+              className="rounded-2xl p-6 text-center"
+              style={{ border: `1px solid ${GREEN}22`, background: `${GREEN}08` }}
+            >
+              <p className="text-sm font-semibold">Card indisponível por enquanto</p>
+              <p className="text-xs mt-1" style={{ color: DIM }}>
+                {training
+                  ? "Seu treino atual não está no formato estruturado necessário para o card. Peça ao coach para reenviar pelo TrainingON."
+                  : "Assim que seu coach enviar seu treino pelo TrainingON, o card de compartilhamento aparece aqui."}
+              </p>
+            </div>
+          )}
+        </section>
       </main>
 
       <AthleteBottomNav />
