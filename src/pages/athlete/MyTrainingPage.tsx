@@ -36,7 +36,7 @@ const MyTrainingPage = () => {
 
   const structuredDays = useMemo(() => training ? parseProtocolToDays(training.protocolText).days.filter((day) => (day.exercises || []).length > 0) : [], [training]);
   const selectedShareDay = structuredDays[shareDayIndex] || structuredDays[0];
-  const shareData = useMemo(() => training && selectedShareDay ? dayShareData(selectedShareDay, training) : null, [selectedShareDay, training]);
+  const shareData = useMemo(() => training && selectedShareDay ? buildWorkoutShareData(selectedShareDay, { phase: training.phase, weeks: training.weeks, muscles: training.muscles, updatedAt: training.updatedAt }) : null, [selectedShareDay, training]);
 
   if (loading) {
     return (
