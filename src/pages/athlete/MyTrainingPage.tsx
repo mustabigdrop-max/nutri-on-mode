@@ -5,9 +5,10 @@ import { useAthletePlans } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
 import { parseProtocolText } from "@/lib/parseProtocolText";
-import { parseProtocolToDays, type ParsedDay, type ParsedExercise } from "@/lib/parseProtocolMarkdown";
+import { parseProtocolToDays } from "@/lib/parseProtocolMarkdown";
 import { athleteQuery, useAthleteTarget } from "@/hooks/useAthleteTarget";
-import WorkoutShareCard, { type WorkoutShareExercise } from "@/components/workout/WorkoutShareCard";
+import WorkoutShareCard from "@/components/workout/WorkoutShareCard";
+import { buildWorkoutShareData } from "@/lib/workoutShareAdapter";
 import { Button } from "@/components/ui/button";
 
 const BG = "#020205";
