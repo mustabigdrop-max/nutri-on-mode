@@ -290,6 +290,40 @@ export default function ApexOrchestratorPage() {
           <div><SectionTitle title="Gamificação" subtitle="Atualização baseada na avaliação salva" /><div className="mt-3 space-y-2 text-sm"><p>Rank: <strong>{rankPrevious.nome || "—"} → {rankCurrent.nome || "—"}</strong></p><p>Novas conquistas: <strong>{asArray(gamification.achievements_novos).map((a) => a.titulo).join(", ") || "nenhuma"}</strong></p><p>Physique Card: <strong>{gamification.physique_card?.status === "ready" ? "pronto" : "dados insuficientes"}</strong></p></div></div>
         </section>
 
+        <section>
+          <SectionTitle title="Comando STRATUM" subtitle="Saída única do APEX · copie e cole no TrainingON" />
+          {faltantes.length > 0 && (
+            <Alert className="mt-3"><ShieldAlert className="h-4 w-4" /><AlertDescription>Complete antes de gerar o treino: {faltantes.join(", ")}.</AlertDescription></Alert>
+          )}
+          <div className="mt-3 grid gap-2 md:grid-cols-3">
+            {([
+              ["nome", "Nome"],
+              ["sexo", "Sexo (M/F)"],
+              ["idade", "Idade"],
+              ["peso_kg", "Peso (kg)"],
+              ["altura_cm", "Altura (cm)"],
+              ["bf_range", "BF% estimado"],
+              ["nivel", "Nível"],
+              ["objetivo", "Objetivo"],
+              ["frequencia", "Frequência (dias/semana)"],
+              ["duracao_sessao_min", "Duração por sessão (min)"],
+              ["equipamento", "Equipamento"],
+              ["lesoes", "Lesões"],
+            ] as Array<[keyof ComandoAluno, string]>).map(([key, label]) => (
+              <label key={String(key)} className="space-y-1 text-xs">
+                <span className="font-mono uppercase text-muted-foreground">{label}</span>
+                <Input value={String(aluno[key] ?? "")} onChange={(e) => setAluno((prev) => ({ ...prev, [key]: e.target.value }))} />
+              </label>
+            ))}
+          </div>
+          <Textarea className="mt-3" placeholder="Treino anterior (opcional) — para o STRATUM gerar o comparativo de mudanças" value={treinoAnterior} onChange={(e) => setTreinoAnterior(e.target.value)} />
+          <div className="mt-3 flex flex-wrap gap-3 print:hidden">
+            <Button onClick={copiarComando}><Copy className="mr-2 h-4 w-4" />Copiar comando</Button>
+            <Button variant="outline" onClick={saveOverrides} disabled={saving}>{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Salvar dados do aluno</Button>
+          </div>
+          <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap border border-border bg-muted/20 p-4 font-mono text-xs">{comandoStratum}</pre>
+        </section>
+
         <section><SectionTitle title="Como o sistema chegou nesta prescrição" subtitle="Log completo da execução" /><div className="mt-3 space-y-2">{logs.map((entry, i) => <div key={i} className="flex gap-3 border-b border-border py-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><div><p className="font-medium">{entry.etapa}</p><p className="text-sm text-muted-foreground">{entry.status} · {entry.note || String(entry.output || "etapa registrada")}</p></div></div>)}</div></section>
 
         <section className="flex flex-wrap gap-3 border-t border-border pt-6 print:hidden">
