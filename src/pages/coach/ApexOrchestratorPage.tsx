@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, ClipboardCheck, Download, Loader2, Pencil, Save, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ClipboardCheck, Copy, Download, Loader2, Pencil, Save, ShieldAlert } from "lucide-react";
+import { buildComandoStratum, camposFaltantes, type ComandoAluno } from "@/lib/apexComandoStratum";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,8 @@ export default function ApexOrchestratorPage() {
   const [protocols, setProtocols] = useState<JsonObject[]>([]);
   const [volumes, setVolumes] = useState<JsonObject[]>([]);
   const [overrideNote, setOverrideNote] = useState("");
+  const [aluno, setAluno] = useState<ComandoAluno>({});
+  const [treinoAnterior, setTreinoAnterior] = useState("");
 
   const load = useCallback(async () => {
     if (!runId) return;
@@ -42,6 +45,24 @@ export default function ApexOrchestratorPage() {
     setProtocols(asArray(next.protocolos_ativos));
     setVolumes(asArray(asObject(next.plano_treino).volume));
     setOverrideNote(String(asObject(next.coach_report).override_note || ""));
+    const savedAluno = asObject(asObject(next.coach_report).aluno_comando);
+    const visual = asObject(next.visual_report);
+    const planoDados = asObject(next.plano_treino);
+    setAluno({
+      nome: savedAluno.nome || asObject(next.coach_report).athlete_name || "",
+      sexo: savedAluno.sexo || "",
+      idade: savedAluno.idade ?? "",
+      peso_kg: savedAluno.peso_kg ?? "",
+      altura_cm: savedAluno.altura_cm ?? "",
+      bf_range: savedAluno.bf_range || visual.bf_range || "",
+      nivel: savedAluno.nivel || planoDados.nivel || "",
+      objetivo: savedAluno.objetivo || "",
+      frequencia: savedAluno.frequencia ?? (Array.isArray(planoDados.divisao?.sessoes) ? planoDados.divisao.sessoes.length : ""),
+      duracao_sessao_min: savedAluno.duracao_sessao_min ?? "",
+      equipamento: savedAluno.equipamento || "",
+      lesoes: savedAluno.lesoes || "",
+    });
+    setTreinoAnterior(String(savedAluno.treino_anterior || ""));
     setLoading(false);
   }, [runId]);
 
@@ -65,11 +86,41 @@ export default function ApexOrchestratorPage() {
     return "Pronto para revisão";
   }, [run?.status]);
 
+  const faltantes = useMemo(() => camposFaltantes(aluno), [aluno]);
+  const comandoStratum = useMemo(() => buildComandoStratum({
+    aluno,
+    periodizacao: {
+      macrociclo: plano.periodizacao?.macrociclo ?? null,
+      mesociclo: plano.periodizacao?.mesociclo ?? null,
+      semana: plano.periodizacao?.semana_no_meso ?? plano.periodizacao?.semana ?? null,
+      semanas_totais: plano.periodizacao?.semanas_totais_meso ?? plano.periodizacao?.semanas_totais ?? null,
+    },
+    score_atual: typeof evolution.score_atual === "number" ? evolution.score_atual : null,
+    score_anterior: typeof evolution.score_anterior === "number" ? evolution.score_anterior : null,
+    grupos,
+    prioridades: asArray(diagnostico.prioridades),
+    protocolos: protocols,
+    volume_atual: volumes.map((v) => ({ grupo: v.grupo, series_semana: v.series_semana })),
+    encaminhamentos: Array.isArray(diagnostico.encaminhamentos) ? diagnostico.encaminhamentos.map((e: unknown) => typeof e === "string" ? e : JSON.stringify(e)) : [],
+    checklist_parcial: run?.checklist_mode === "skipped",
+    treino_anterior: treinoAnterior.trim() || null,
+  }), [aluno, plano, evolution, grupos, diagnostico, protocols, volumes, run?.checklist_mode, treinoAnterior]);
+
+  const copiarComando = async () => {
+    try {
+      await navigator.clipboard.writeText(comandoStratum);
+      toast({ title: "COMANDO STRATUM copiado", description: "Cole no TrainingON para gerar o treino." });
+    } catch {
+      toast({ title: "Copie manualmente", description: "Selecione o texto do comando abaixo.", variant: "destructive" });
+    }
+  };
+
+
   const saveOverrides = async () => {
     if (!run || !user) return;
     setSaving(true);
     const changedPlan = { ...plano, volume: volumes };
-    const changedReport = { ...report, override_note: overrideNote, edited_manually: true, edited_at: new Date().toISOString(), edited_by: user.id };
+    const changedReport = { ...report, override_note: overrideNote, aluno_comando: { ...aluno, treino_anterior: treinoAnterior }, edited_manually: true, edited_at: new Date().toISOString(), edited_by: user.id };
     const changedLog = [...logs, { etapa: "Override do coach", status: "complete", timestamp: new Date().toISOString(), note: overrideNote || "Exercícios ou volume editados manualmente." }];
     const { error } = await supabase.from("apex_orchestrator_runs").update({
       protocolos_ativos: protocols,
@@ -237,6 +288,40 @@ export default function ApexOrchestratorPage() {
         <section className="grid gap-6 md:grid-cols-2">
           <div><SectionTitle title="Ajustes NutriPlan" subtitle="Sugestões para revisão profissional" /><ul className="mt-3 space-y-2">{nutriplan.length ? nutriplan.map((n, i) => <li key={i} className="border-l-2 border-primary pl-3 text-sm"><strong>{n.grupo}</strong> · {n.note}</li>) : <li className="text-sm text-muted-foreground">Sem flags nutricionais registradas.</li>}</ul></div>
           <div><SectionTitle title="Gamificação" subtitle="Atualização baseada na avaliação salva" /><div className="mt-3 space-y-2 text-sm"><p>Rank: <strong>{rankPrevious.nome || "—"} → {rankCurrent.nome || "—"}</strong></p><p>Novas conquistas: <strong>{asArray(gamification.achievements_novos).map((a) => a.titulo).join(", ") || "nenhuma"}</strong></p><p>Physique Card: <strong>{gamification.physique_card?.status === "ready" ? "pronto" : "dados insuficientes"}</strong></p></div></div>
+        </section>
+
+        <section>
+          <SectionTitle title="Comando STRATUM" subtitle="Saída única do APEX · copie e cole no TrainingON" />
+          {faltantes.length > 0 && (
+            <Alert className="mt-3"><ShieldAlert className="h-4 w-4" /><AlertDescription>Complete antes de gerar o treino: {faltantes.join(", ")}.</AlertDescription></Alert>
+          )}
+          <div className="mt-3 grid gap-2 md:grid-cols-3">
+            {([
+              ["nome", "Nome"],
+              ["sexo", "Sexo (M/F)"],
+              ["idade", "Idade"],
+              ["peso_kg", "Peso (kg)"],
+              ["altura_cm", "Altura (cm)"],
+              ["bf_range", "BF% estimado"],
+              ["nivel", "Nível"],
+              ["objetivo", "Objetivo"],
+              ["frequencia", "Frequência (dias/semana)"],
+              ["duracao_sessao_min", "Duração por sessão (min)"],
+              ["equipamento", "Equipamento"],
+              ["lesoes", "Lesões"],
+            ] as Array<[keyof ComandoAluno, string]>).map(([key, label]) => (
+              <label key={String(key)} className="space-y-1 text-xs">
+                <span className="font-mono uppercase text-muted-foreground">{label}</span>
+                <Input value={String(aluno[key] ?? "")} onChange={(e) => setAluno((prev) => ({ ...prev, [key]: e.target.value }))} />
+              </label>
+            ))}
+          </div>
+          <Textarea className="mt-3" placeholder="Treino anterior (opcional) — para o STRATUM gerar o comparativo de mudanças" value={treinoAnterior} onChange={(e) => setTreinoAnterior(e.target.value)} />
+          <div className="mt-3 flex flex-wrap gap-3 print:hidden">
+            <Button onClick={copiarComando}><Copy className="mr-2 h-4 w-4" />Copiar comando</Button>
+            <Button variant="outline" onClick={saveOverrides} disabled={saving}>{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Salvar dados do aluno</Button>
+          </div>
+          <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap border border-border bg-muted/20 p-4 font-mono text-xs">{comandoStratum}</pre>
         </section>
 
         <section><SectionTitle title="Como o sistema chegou nesta prescrição" subtitle="Log completo da execução" /><div className="mt-3 space-y-2">{logs.map((entry, i) => <div key={i} className="flex gap-3 border-b border-border py-3"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><div><p className="font-medium">{entry.etapa}</p><p className="text-sm text-muted-foreground">{entry.status} · {entry.note || String(entry.output || "etapa registrada")}</p></div></div>)}</div></section>
