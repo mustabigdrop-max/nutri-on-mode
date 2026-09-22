@@ -45,6 +45,24 @@ export default function ApexOrchestratorPage() {
     setProtocols(asArray(next.protocolos_ativos));
     setVolumes(asArray(asObject(next.plano_treino).volume));
     setOverrideNote(String(asObject(next.coach_report).override_note || ""));
+    const savedAluno = asObject(asObject(next.coach_report).aluno_comando);
+    const visual = asObject(next.visual_report);
+    const planoDados = asObject(next.plano_treino);
+    setAluno({
+      nome: savedAluno.nome || asObject(next.coach_report).athlete_name || "",
+      sexo: savedAluno.sexo || "",
+      idade: savedAluno.idade ?? "",
+      peso_kg: savedAluno.peso_kg ?? "",
+      altura_cm: savedAluno.altura_cm ?? "",
+      bf_range: savedAluno.bf_range || visual.bf_range || "",
+      nivel: savedAluno.nivel || planoDados.nivel || "",
+      objetivo: savedAluno.objetivo || "",
+      frequencia: savedAluno.frequencia ?? (Array.isArray(planoDados.divisao?.sessoes) ? planoDados.divisao.sessoes.length : ""),
+      duracao_sessao_min: savedAluno.duracao_sessao_min ?? "",
+      equipamento: savedAluno.equipamento || "",
+      lesoes: savedAluno.lesoes || "",
+    });
+    setTreinoAnterior(String(savedAluno.treino_anterior || ""));
     setLoading(false);
   }, [runId]);
 
