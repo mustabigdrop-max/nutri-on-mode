@@ -665,6 +665,8 @@ export function buildStratumGeneratorInstruction(plano: PlanoStratum): string {
   l.push("RESUMO DE AJUSTES (reproduzir no output como lista de mudanças vs. treino anterior):");
   for (const r of plano.resumo_ajustes) l.push(`  - ${r}`);
 
+  l.push(buildTechniqueAddendumRule());
+
   l.push(
     "REGRAS ABSOLUTAS: CORRECT antes de VOLUME (grupo biomecânico nunca recebe técnica de fadiga nem séries extras); todo exercício ligado a um deficit leva cue de execução e tag visual ([CORRECT], [ACTIVATE], [DEFICIT: tipo], [ASSIMETRIA], [FEEDER]); prescrever a progressão semanal de cada exercício (carga alvo + RPE) dentro do mesociclo; nunca usar os termos IA/AI/Inteligência Artificial — a engine é o STRATUM e a voz para o aluno é do Coach Diogo Mello via PRAXIS; a engine sugere, o coach decide.",
     "━━━ FIM STRATUM TRAINING GENERATOR ━━━",

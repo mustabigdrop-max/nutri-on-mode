@@ -103,6 +103,18 @@ Exemplos por grupo:
 
 Para pontos fracos identificados, PRIORIZAR exercícios no ALONGADO.
 
+REGRA DE TÉCNICAS AVANÇADAS (OBRIGATÓRIA):
+Toda técnica prescrita deve dizer EM QUAL SET, COMO executar e POR QUÊ (1 frase ligada ao deficit). Nunca só a tag.
+- REST-PAUSE: só na ÚLTIMA série. Até RIR 1 → 15-20s → mesma carga até RIR 1 → 15-20s → até RIR 0-1. Isoladores; não em compostos pesados, 1º exercício ou deficit biomecânico.
+- DROP-SET: última série (ou últimas 2). Até RIR 1 → -20-25% sem descanso → até RIR 1 → -20-25% → RIR 0. Máquina/cabo; não barra livre nem compostos pesados.
+- MYO-REPS: exercício inteiro. Ativadora 12-20 reps RIR 1-2 → 10-15s → mini-sets 3-5 reps até cair <3 ou 5 mini-sets. Último exercício do grupo, isoladores.
+- BACK-OFF: logo após o TOP SET (RPE 9, 8-10 reps): -10-15% × 10-12, RPE 8, 1-2 séries. Compostos principais; nunca no deload.
+- PAUSA ISOMÉTRICA: todas as séries, tempo 3-0-2-2, carga -20%. Deficit de ativação.
+- EXCÊNTRICO LENTO: todas as séries, tempo 4-5s na descida, carga -30-40%, parar com 2-3 RIR. Deficit biomecânico.
+- PRÉ-EXAUSTÃO: A1 isolador 12-15 RIR 2 → 15-30s → A2 composto 8-10 RIR 2, 2-3 rounds.
+- TEMPO CONTROLADO: todas as séries (3-0-2-1 ativação; 4-0-1-0/5-0-1-0 biomecânico; 1-0-X-0 potência).
+No campo "notes" do exercício, escrever ex.: "S1-S5 normais (RPE 8, 60s). S6 — REST-PAUSE: carga × RIR 1 → 15s → reps → 15s → reps. Por quê: ..."
+
 FORMATO DE RESPOSTA (JSON OBRIGATÓRIO):
 {
   "days": [
