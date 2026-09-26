@@ -43,6 +43,8 @@ const titleType = (title: string) => {
   if (/PULL|PUXAR/.test(upper)) return "PULL";
   if (/LOWER|INFERIOR|PERNA/.test(upper)) return "LOWER";
   if (/UPPER|SUPERIOR/.test(upper)) return "UPPER";
+  if (/PEITORAL|PEITO/.test(upper) && /(DELTOIDE|DELTÓIDE|OMBRO|TRÍCEPS|TRICEPS)/.test(upper)) return "PUSH";
+  if (/(COSTAS|DORSAL)/.test(upper) && /(BÍCEPS|BICEPS)/.test(upper)) return "PULL";
   return title.replace(/^TREINO\s*[A-Z0-9]+\s*[-–—:]?\s*/i, "").trim() || "TREINO";
 };
 
