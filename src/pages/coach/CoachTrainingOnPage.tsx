@@ -328,7 +328,15 @@ export default function CoachTrainingOnPage() {
         });
       }
 
-      toast({ title: "✓ Exportado para TrainingON", description: "Disponível em Meus Protocolos." });
+      toast({
+        title: "✓ Exportado para TrainingON",
+        description: "Disponível na lista de protocolos salvos.",
+        action: (
+          <Button variant="outline" size="sm" onClick={() => navigate("/coach/compartilhar-treino")}>
+            Ver protocolos
+          </Button>
+        ),
+      });
     } catch (e: any) {
       toast({ title: "Erro ao exportar", description: e?.message || "Falha ao salvar protocolo", variant: "destructive" });
     } finally {
