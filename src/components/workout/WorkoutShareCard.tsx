@@ -3,12 +3,14 @@ import { Share2, Pencil, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Button } from "@/components/ui/button";
 import "@/styles/workout-share-card.css";
+import { computeMuscleActivation, autoView, type MuscleKey } from "@/lib/workoutMuscleActivation";
 
 export interface WorkoutShareExercise {
   number: number;
   name: string;
   sub: string;
   pills: string[];
+  sets?: number;
   color?: "red" | "gold" | "cyan" | "gray";
 }
 
@@ -33,29 +35,37 @@ export interface WorkoutShareCardProps {
   coachName?: string;
 }
 
-/* ─── Grupos musculares: shapes do lado esquerdo (espelhados) + âncora do lado direito ─── */
-type GroupKey = "pec" | "delt" | "bi" | "tri" | "fore" | "abs" | "obl" | "quad" | "calf";
-const GROUPS: Record<GroupKey, { label: string; test: RegExp; color: string; paths: string[]; anchor: [number, number] }> = {
-  pec: { label: "PEITORAL", test: /peit|pec|supino|crucifix|chest|fly/i, color: "#00D4FF", anchor: [128, 90],
-    paths: ["M99 76 C90 72 76 72 67 80 C62 90 65 102 75 107 C85 110 95 106 99 101 Z"] },
-  delt: { label: "DELTOIDES", test: /ombro|delt|desenvolv|elevação lateral|lateral raise|press militar/i, color: "#B8922A", anchor: [150, 82],
-    paths: ["M67 69 C57 69 49 78 48 92 C52 99 58 99 63 93 C65 85 69 77 76 73 Z"] },
-  tri: { label: "TRÍCEPS", test: /tr[ií]ceps|francês|testa|pushdown|mergulho|dip/i, color: "#8866CC", anchor: [155, 116],
-    paths: ["M48 96 C41 105 39 122 43 138 C48 139 53 127 55 106 C54 101 52 98 48 96 Z"] },
-  bi: { label: "BÍCEPS", test: /b[ií]ceps|rosca|curl/i, color: "#AFA9EC", anchor: [143, 116],
-    paths: ["M60 98 C53 100 49 113 50 128 C53 136 60 131 64 118 L65 103 Z"] },
-  fore: { label: "ANTEBRAÇO", test: /antebra|punho|forearm/i, color: "#AFA9EC", anchor: [154, 158],
-    paths: ["M45 137 C39 151 39 171 43 184 C49 180 54 159 55 140 Z"] },
-  abs: { label: "ABDÔMEN", test: /abd|core|prancha|crunch/i, color: "#5DCAA5", anchor: [104, 134],
-    paths: ["M89 111 C93 109 98 109 99 111 L99 124 L89 124 Z", "M89 127 L99 127 L99 140 L89 140 Z", "M89 143 L99 143 L99 160 C94 161 90 157 89 150 Z"] },
-  obl: { label: "OBLÍQUOS", test: /obl[ií]qu/i, color: "#5DCAA5", anchor: [116, 132],
-    paths: ["M76 112 C82 118 86 132 86 150 C80 150 76 140 74 128 Z"] },
-  quad: { label: "QUADRÍCEPS", test: /quadr|agach|leg press|extensora|squat|afundo|passada/i, color: "#EF9F27", anchor: [120, 205],
-    paths: ["M77 172 C72 195 74 224 82 240 C90 236 94 210 96 190 C92 180 85 174 77 172 Z"] },
-  calf: { label: "PANTURRILHA", test: /panturr|g[eê]meos|calf|s[oó]leo/i, color: "#EF9F27", anchor: [118, 266],
-    paths: ["M78 252 C74 262 76 277 82 284 C86 276 88 262 86 252 Z"] },
+/* ─── Grupos musculares: shapes do lado esquerdo (espelhados) + âncora do lado direito, por vista ─── */
+type View = "front" | "back";
+type GroupDef = { label: string; front?: { paths: string[]; anchor: [number, number] }; back?: { paths: string[]; anchor: [number, number] } };
+const DELT = ["M67 69 C57 69 49 78 48 92 C52 99 58 99 63 93 C65 85 69 77 76 73 Z"];
+const TRI = ["M48 96 C41 105 39 122 43 138 C48 139 53 127 55 106 C54 101 52 98 48 96 Z"];
+const FORE = ["M45 137 C39 151 39 171 43 184 C49 180 54 159 55 140 Z"];
+const GROUPS: Record<GroupKey, GroupDef> = {
+  pec: { label: "PEITORAL", front: { anchor: [128, 90], paths: ["M99 76 C90 72 76 72 67 80 C62 90 65 102 75 107 C85 110 95 106 99 101 Z"] } },
+  delt: { label: "DELTOIDES", front: { anchor: [150, 82], paths: DELT }, back: { anchor: [150, 82], paths: DELT } },
+  tri: { label: "TRÍCEPS", front: { anchor: [155, 116], paths: TRI }, back: { anchor: [155, 116], paths: TRI } },
+  bi: { label: "BÍCEPS", front: { anchor: [143, 116], paths: ["M60 98 C53 100 49 113 50 128 C53 136 60 131 64 118 L65 103 Z"] } },
+  fore: { label: "ANTEBRAÇO", front: { anchor: [154, 158], paths: FORE }, back: { anchor: [154, 158], paths: FORE } },
+  abs: { label: "ABDÔMEN", front: { anchor: [104, 134], paths: ["M89 111 C93 109 98 109 99 111 L99 124 L89 124 Z", "M89 127 L99 127 L99 140 L89 140 Z", "M89 143 L99 143 L99 160 C94 161 90 157 89 150 Z"] } },
+  obl: { label: "OBLÍQUOS", front: { anchor: [116, 132], paths: ["M76 112 C82 118 86 132 86 150 C80 150 76 140 74 128 Z"] } },
+  lats: { label: "DORSAL", back: { anchor: [122, 112], paths: ["M66 90 C70 104 76 122 86 140 C92 134 96 118 99 104 C90 96 78 90 66 90 Z"] } },
+  traps: { label: "TRAPÉZIO", back: { anchor: [116, 64], paths: ["M92 56 C86 60 78 64 72 66 C82 70 92 76 99 82 L99 56 Z"] } },
+  lower: { label: "LOMBAR", back: { anchor: [106, 152], paths: ["M88 142 C90 152 92 160 99 164 L99 140 C95 142 91 142 88 142 Z"] } },
+  quad: { label: "QUADRÍCEPS", front: { anchor: [120, 205], paths: ["M77 172 C72 195 74 224 82 240 C90 236 94 210 96 190 C92 180 85 174 77 172 Z"] } },
+  add: { label: "ADUTORES", front: { anchor: [106, 200], paths: ["M92 182 C88 194 88 210 92 224 C96 214 98 198 99 186 Z"] } },
+  ham: { label: "POSTERIORES", back: { anchor: [118, 220], paths: ["M77 198 C73 214 75 232 81 244 C88 238 93 220 96 200 C90 196 83 196 77 198 Z"] } },
+  glute: { label: "GLÚTEOS", back: { anchor: [114, 182], paths: ["M75 170 C72 181 76 193 88 195 C96 195 99 187 99 177 C94 171 84 169 75 170 Z"] } },
+  hipabd: { label: "ABDUTORES", back: { anchor: [120, 162], paths: ["M73 156 C75 164 81 168 90 167 C88 161 82 155 73 156 Z"] } },
+  calf: { label: "PANTURRILHA", front: { anchor: [118, 266], paths: ["M78 252 C74 262 76 277 82 284 C86 276 88 262 86 252 Z"] }, back: { anchor: [118, 266], paths: ["M78 250 C72 260 74 276 81 286 C86 278 89 262 87 250 Z"] } },
 };
+const ALL_KEYS = Object.keys(GROUPS) as GroupKey[];
 
+// Cores por ranking: 1º cyan, 2º gold, 3º purple; 4º+ mesma família, mais discreto.
+const RANK_COLORS = ["#00D4FF", "#B8922A", "#8866CC"];
+type Lit = { key: GroupKey; pct: number; color: string; intensity: number };
+
+type GroupKey = MuscleKey;
 const BODY_HALF =
   "M100 50 C96 50 93 52 92 56 C88 60 80 62 72 64 C58 66 47 74 44 88 C40 103 40 120 40 135 C38 151 37 168 39 185 C38 194 40 201 44 202 C50 201 51 194 50 185 C51 168 55 154 57 139 C59 124 63 111 66 101 C68 116 70 132 73 150 C74 160 72 168 73 176 C70 200 72 226 77 246 C74 262 76 280 80 292 C84 296 92 296 95 293 C94 278 94 262 93 248 C96 226 98 204 99 186 L100 186 Z";
 
@@ -63,49 +73,40 @@ function Editable({ children, enabled, className = "", style }: { children: Reac
   return <span className={className} style={style} contentEditable={enabled} suppressContentEditableWarning>{children}</span>;
 }
 
-function useActivation(props: WorkoutShareCardProps) {
+function useActivation(props: WorkoutShareCardProps): Lit[] {
   return useMemo(() => {
-    const total = props.exercises.length;
-    const out: Array<{ key: GroupKey; pct: number }> = [];
-    (Object.keys(GROUPS) as GroupKey[]).forEach((key) => {
-      const g = GROUPS[key];
-      const hits = props.exercises.filter((e) => g.test.test(`${e.name} ${e.sub}`)).length;
-      const inHeader = g.test.test(props.muscles) || props.litMuscles.some((m) => m.id.startsWith(key));
-      if (hits === 0 && !inHeader) return;
-      // % = fração real dos exercícios do dia que envolvem o grupo (mínimo visual quando só citado no título)
-      out.push({ key, pct: total ? Math.round((hits / total) * 100) : 0 });
-    });
-    const sorted = out.sort((a, b) => b.pct - a.pct);
-    // Em empates reais, preserva a ordem de recrutamento visual do treino PUSH.
-    const pushOrder: GroupKey[] = ["pec", "delt", "tri"];
-    pushOrder.forEach((key, index) => {
-      const current = sorted.find((item) => item.key === key);
-      const previous = index > 0 ? sorted.find((item) => item.key === pushOrder[index - 1]) : undefined;
-      if (current && previous && current.pct >= previous.pct) current.pct = Math.max(0, previous.pct - 1);
-    });
-    return sorted.sort((a, b) => b.pct - a.pct);
-  }, [props.exercises, props.muscles, props.litMuscles]);
+    const raw = computeMuscleActivation(props.exercises);
+    const max = raw[0]?.pct || 1;
+    return raw.map((a, i) => ({
+      key: a.key,
+      pct: a.pct,
+      color: RANK_COLORS[i % 3],
+      intensity: (0.3 + 0.7 * (a.pct / max)) * (i < 3 ? 1 : 0.55),
+    }));
+  }, [props.exercises]);
 }
 
-function AnatomyFigure({ active }: { active: Array<{ key: GroupKey; pct: number }> }) {
-  const map = new Map(active.map((a) => [a.key, a.pct]));
+function AnatomyFigure({ active, view }: { active: Lit[]; view: View }) {
+  const map = new Map(active.map((a) => [a.key, a]));
   const mirror = "translate(200 0) scale(-1 1)";
   const renderGroup = (key: GroupKey) => {
-    const g = GROUPS[key];
-    const pct = map.get(key);
-    const on = pct !== undefined;
-    const intensity = on ? 0.45 + 0.55 * Math.max(0.15, pct / 100) : 0;
+    const def = GROUPS[key][view];
+    if (!def) return null;
+    const lit = map.get(key);
+    const on = lit !== undefined;
+    const intensity = lit?.intensity ?? 0;
+    const color = lit?.color ?? "#1a1c2c";
     const shapes = (fill: string, extra?: object) => (
       <>
-        {g.paths.map((d, i) => <path key={`l${i}`} d={d} fill={fill} {...extra} />)}
-        {g.paths.map((d, i) => <path key={`r${i}`} d={d} fill={fill} transform={mirror} {...extra} />)}
+        {def.paths.map((d, i) => <path key={`l${i}`} d={d} fill={fill} {...extra} />)}
+        {def.paths.map((d, i) => <path key={`r${i}`} d={d} fill={fill} transform={mirror} {...extra} />)}
       </>
     );
     if (!on) return <g key={key}>{shapes("url(#ws-muscle-off)", { stroke: "rgba(255,255,255,.035)", strokeWidth: 0.5 })}</g>;
     return (
       <g key={key} className="workout-muscle-pulse">
-        <g filter="url(#ws-glow)" opacity={intensity * 0.9}>{shapes(g.color)}</g>
-        <g opacity={intensity}>{shapes(`url(#ws-grad-${key})`, { stroke: g.color, strokeOpacity: 0.55, strokeWidth: 0.5 })}</g>
+        <g filter="url(#ws-glow)" opacity={intensity * 0.9}>{shapes(color)}</g>
+        <g opacity={intensity}>{shapes(`url(#ws-grad-${key})`, { stroke: color, strokeOpacity: 0.55, strokeWidth: 0.5 })}</g>
       </g>
     );
   };
@@ -118,11 +119,11 @@ function AnatomyFigure({ active }: { active: Array<{ key: GroupKey; pct: number 
         <linearGradient id="ws-muscle-off" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#1a1c2c" /><stop offset="1" stopColor="#10111c" />
         </linearGradient>
-        {(Object.keys(GROUPS) as GroupKey[]).map((k) => (
+        {active.map(({ key: k, color }) => (
           <radialGradient key={k} id={`ws-grad-${k}`} cx=".5" cy=".4" r=".7">
             <stop offset="0" stopColor="#ffffff" stopOpacity=".55" />
-            <stop offset=".35" stopColor={GROUPS[k].color} stopOpacity=".95" />
-            <stop offset="1" stopColor={GROUPS[k].color} stopOpacity=".35" />
+            <stop offset=".35" stopColor={color} stopOpacity=".95" />
+            <stop offset="1" stopColor={color} stopOpacity=".35" />
           </radialGradient>
         ))}
         <filter id="ws-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" /></filter>
@@ -142,9 +143,9 @@ function AnatomyFigure({ active }: { active: Array<{ key: GroupKey; pct: number 
       <path d={BODY_HALF} fill="none" stroke="#ffffff" strokeOpacity=".05" strokeWidth=".4" />
       <path d="M100 8 C110 8 116 16 116 27 C116 38 109 46 100 46" fill="none" stroke="#00D4FF" strokeOpacity=".4" strokeWidth=".5" />
       {/* músculos */}
-      {(Object.keys(GROUPS) as GroupKey[]).map(renderGroup)}
+      {ALL_KEYS.map(renderGroup)}
       {/* linha alba */}
-      <path d="M100 104 L100 162" stroke="#000" strokeOpacity=".5" strokeWidth=".6" />
+      {view === "front" ? <path d="M100 104 L100 162" stroke="#000" strokeOpacity=".5" strokeWidth=".6" /> : <path d="M100 58 L100 166" stroke="#000" strokeOpacity=".5" strokeWidth=".6" />}
     </svg>
   );
 }
@@ -154,7 +155,10 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
   const [editing, setEditing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const active = useActivation(props);
-  const callouts = active.slice(0, 3);
+  const [viewOverride, setViewOverride] = useState<View | null>(null);
+  const view: View = viewOverride ?? autoView(active);
+  // Cards: até 4 grupos mais ativados com representação na vista atual.
+  const callouts = active.filter((a) => GROUPS[a.key][view]).slice(0, 4);
   const fileDate = useMemo(() => props.date.toLowerCase().replace(/\s+/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""), [props.date]);
 
   const renderPng = async () => {
@@ -196,7 +200,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
 
   // Zonas fixas: texto 80px, corpo 142px, cards 104px. Nenhum conteúdo cruza de zona.
   const FX = 106, FY = 2, FIGURE_SCALE = 0.7;
-  const slots = [18, 94, 170];
+  const slots = [4, 62, 120, 178];
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -215,21 +219,21 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
           </header>
 
           {/* corpo + callouts */}
-          <section className="ws-anatomy-stage relative mt-2 h-[252px]">
+          <section className="ws-anatomy-stage relative mt-2 h-[256px]">
             <div className="absolute left-6 top-2 z-[3] w-[76px] overflow-hidden">
               <Editable enabled={editing} className="block font-display text-[52px] font-bold leading-[.82]">{props.dayCode}</Editable>
               <Editable enabled={editing} className="ws-day-type mt-3 block font-display text-[14px] font-bold uppercase leading-[1.15]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
               {meta && <span className="ws-mono mt-3 block text-[10px] leading-[1.5]" style={{ color: "#888898" }}>{meta}</span>}
             </div>
-            <div className="ws-anatomy-figure absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} /></div>
-            <svg className="pointer-events-none absolute inset-0" width="390" height="252" aria-hidden="true">
+            <div className="ws-anatomy-figure absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} view={view} /></div>
+            <svg className="pointer-events-none absolute inset-0" width="390" height="256" aria-hidden="true">
               {callouts.map((c, i) => {
-                const [ax, ay] = GROUPS[c.key].anchor;
-                const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 262, y2 = slots[i] + 25;
+                const [ax, ay] = GROUPS[c.key][view]!.anchor;
+                const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 262, y2 = slots[i] + 27;
                 return (
                   <g key={c.key}>
-                    <path d={`M${x1} ${y1} C${x1 + 18} ${y1}, ${x2 - 16} ${y2}, ${x2} ${y2}`} fill="none" stroke={GROUPS[c.key].color} strokeOpacity=".45" strokeWidth=".75" />
-                    <circle cx={x1} cy={y1} r="1.8" fill={GROUPS[c.key].color} />
+                    <path d={`M${x1} ${y1} C${x1 + 18} ${y1}, ${x2 - 16} ${y2}, ${x2} ${y2}`} fill="none" stroke={c.color} strokeOpacity=".45" strokeWidth=".75" />
+                    <circle cx={x1} cy={y1} r="1.8" fill={c.color} />
                   </g>
                 );
               })}
@@ -237,11 +241,11 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
             {callouts.map((c, i) => (
               <div key={c.key} className="ws-glass absolute" style={{ left: 262, top: slots[i], width: 104 }}>
                 <span className="ws-mono block text-[10px] leading-tight" style={{ color: "#A0A0B2" }}>{GROUPS[c.key].label}</span>
-                <span className="block font-display text-[22px] font-bold leading-none" style={{ color: GROUPS[c.key].color }}>{c.pct}<span className="text-[11px] opacity-70">%</span></span>
-                <span className="ws-bar mt-1 block"><i style={{ width: `${Math.max(4, c.pct)}%`, background: GROUPS[c.key].color }} /></span>
+                <span className="block font-display text-[22px] font-bold leading-none" style={{ color: c.color }}>{c.pct}<span className="text-[11px] opacity-70">%</span></span>
+                <span className="ws-bar mt-1 block"><i style={{ width: `${Math.max(4, c.pct)}%`, background: c.color }} /></span>
               </div>
             ))}
-            {callouts.length > 0 && <span className="ws-mono absolute text-[10px] font-bold" style={{ left: 262, top: 236, color: "#A0A0B2" }}>EXERCÍCIOS DO DIA</span>}
+            {callouts.length > 0 && <span className="ws-mono absolute text-[10px] font-bold" style={{ left: 262, top: 240, color: "#A0A0B2" }}>% DO VOLUME DO DIA</span>}
           </section>
 
           {/* stats */}
@@ -291,6 +295,11 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
       </div>
 
       <div className="flex w-[390px] gap-2" data-html2canvas-ignore="true">
+        <div className="flex border border-border">
+          {(["front", "back"] as View[]).map((v) => (
+            <Button key={v} type="button" size="sm" variant={view === v ? "default" : "ghost"} onClick={() => setViewOverride(v)} className="h-10 rounded-none font-tech text-[10px] uppercase">{v === "front" ? "Frente" : "Costas"}</Button>
+          ))}
+        </div>
         <Button type="button" onClick={share} disabled={exporting} className="h-10 flex-1 rounded-none font-tech text-[10px] uppercase tracking-wider">
           {exporting ? <Loader2 className="animate-spin" /> : <Share2 />}{exporting ? "Preparando" : "Compartilhar treino"}
         </Button>
