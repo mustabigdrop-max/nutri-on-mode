@@ -241,7 +241,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
 
           {/* corpo + callouts */}
           <section className="ws-anatomy-stage relative mt-2 h-[204px]">
-            <div className="absolute left-6 top-2 z-[3] w-[76px] overflow-hidden">
+            <div className="absolute left-6 top-2 z-[3] w-[84px]">
               <Editable enabled={editing} className="block font-display text-[52px] font-bold leading-[.82]">{props.dayCode}</Editable>
               <Editable enabled={editing} className="ws-day-type mt-3 block font-display text-[14px] font-bold uppercase leading-[1.15]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
               {meta && <span className="ws-mono mt-3 block text-[10px] leading-[1.5]" style={{ color: "#888898" }}>{meta}</span>}
@@ -252,7 +252,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
                 const def = GROUPS[c.key][view];
                 if (!def) return null;
                 const [ax, ay] = def.anchor;
-                const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 262, y2 = slots[i] + 23;
+                const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 254, y2 = slots[i] + 23;
                 return (
                   <g key={c.key}>
                     <path d={`M${x1} ${y1} C${x1 + 18} ${y1}, ${x2 - 16} ${y2}, ${x2} ${y2}`} fill="none" stroke={c.color} strokeOpacity=".45" strokeWidth=".75" />
@@ -262,9 +262,9 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
               })}
             </svg>
             {callouts.map((c, i) => (
-              <div key={c.key} className="ws-glass absolute" style={{ left: 262, top: slots[i], width: 104 }}>
+              <div key={c.key} className="ws-glass absolute" style={{ left: 254, top: slots[i], width: 114 }}>
                 <span className="flex items-baseline justify-between gap-1">
-                  <span className="ws-mono block text-[10px] leading-tight" style={{ color: "#A0A0B2", letterSpacing: 1 }}>{GROUPS[c.key].label}</span>
+                  <span className="ws-mono block text-[10px] leading-tight" style={{ color: "#A0A0B2", letterSpacing: 0.5 }}>{GROUPS[c.key].label}</span>
                   <span className="block font-display text-[24px] font-bold leading-none" style={{ color: c.color }}>{c.pct}<span className="text-[11px] opacity-70">%</span></span>
                 </span>
                 <span className="ws-bar mt-1 block"><i style={{ width: `${Math.max(4, c.pct)}%`, background: c.color }} /></span>
@@ -274,11 +274,11 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
 
           {/* resumo do treino */}
           <section className="mx-6 mb-4">
-            {sum.weekBadge && <span className="ws-chip inline-block" style={{ color: "#B8922A", fontSize: 10 }}>{sum.weekBadge}</span>}
+            {sum.weekBadge && <span className="ws-chip inline-block leading-[1.6]" style={{ color: "#B8922A", fontSize: 10 }}>{sum.weekBadge}</span>}
             {(sum.tonnageKg || sum.totalReps) && (
               <div className="mt-3">
                 <span className="ws-mono block text-[10px]" style={{ color: "#A0A0B2" }}>{sum.tonnageKg ? "Carga total do dia" : "Repetições totais do dia"}</span>
-                <b className="block font-display text-[36px] font-bold leading-none">
+                <b className="mb-1 block font-display text-[36px] font-bold leading-[1.15]">
                   {sum.tonnageKg ? <>{fmtNum(sum.tonnageKg / 1000, 1)}<span className="ml-1 text-[14px]" style={{ color: "#00D4FF" }}>t</span></> : fmtNum(sum.totalReps!)}
                 </b>
                 {sum.tonnageKg && sum.tonnageKg >= 90 && <span className="mt-1 block text-[12px]" style={{ color: "#F0F0F5", opacity: .75 }}>equivale a {fmtNum(Math.floor(sum.tonnageKg / 90))} pessoas de 90 kg</span>}
@@ -322,7 +322,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
 
           {focusLine && (
             <div className="mx-6 mt-4 flex items-start gap-3">
-              <span className="ws-chip shrink-0" style={{ color: "#03030a", background: "#FF4D6D", borderColor: "#FF4D6D" }}>FOCO</span>
+              <span className="ws-chip shrink-0 leading-[1.6]" style={{ color: "#03030a", background: "#FF4D6D", borderColor: "#FF4D6D" }}>FOCO</span>
               <span className="text-[12px] font-bold leading-[1.4]" style={{ color: "#F0F0F5" }}>{focusLine}</span>
             </div>
           )}
