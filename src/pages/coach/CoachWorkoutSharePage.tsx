@@ -12,6 +12,7 @@ type ProtocolRow = {
   id: string;
   client_name: string | null;
   phase: string | null;
+  days_per_week?: number | null;
   weeks: string | null;
   muscles: string[] | null;
   protocol_text: string | null;
@@ -37,7 +38,7 @@ export default function CoachWorkoutSharePage() {
       setLoading(true);
       const { data } = await supabase
         .from("training_protocols")
-        .select("id, client_name, phase, weeks, muscles, protocol_text, created_at")
+        .select("id, client_name, phase, weeks, days_per_week, muscles, protocol_text, created_at")
         .order("created_at", { ascending: false })
         .limit(50);
       if (!active) return;
@@ -62,6 +63,7 @@ export default function CoachWorkoutSharePage() {
     return buildWorkoutShareData(day, {
       phase: selected.phase,
       weeks: selected.weeks,
+      daysPerWeek: selected.days_per_week,
       muscles: selected.muscles,
       updatedAt: selected.created_at,
     });
