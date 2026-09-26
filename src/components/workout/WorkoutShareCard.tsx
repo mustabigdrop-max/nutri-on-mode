@@ -218,7 +218,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
           <section className="ws-anatomy-stage relative mt-2 h-[252px]">
             <div className="absolute left-6 top-2 z-[3] w-[76px] overflow-hidden">
               <Editable enabled={editing} className="block font-display text-[52px] font-bold leading-[.82]">{props.dayCode}</Editable>
-              <Editable enabled={editing} className="ws-day-type mt-3 block font-display text-[16px] font-bold uppercase leading-[1.15]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
+              <Editable enabled={editing} className="ws-day-type mt-3 block font-display text-[14px] font-bold uppercase leading-[1.15]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
               {meta && <span className="ws-mono mt-3 block text-[10px] leading-[1.5]" style={{ color: "#888898" }}>{meta}</span>}
             </div>
             <div className="ws-anatomy-figure absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} /></div>
@@ -262,10 +262,10 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
           )}
 
           {/* exercícios */}
-          <section className="mx-6 mt-4">
+          <section className="ws-exercise-list mx-6 mt-4">
             <span className="ws-mono block pb-2 text-[10px]" style={{ color: "#888898" }}>{props.exercises.length} EXERCÍCIOS</span>
             {props.exercises.map((e) => (
-              <div key={`${e.number}-${e.name}`} className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-start gap-2 py-2">
+              <div key={`${e.number}-${e.name}`} className="ws-exercise-row grid grid-cols-[18px_minmax(0,1fr)_auto] items-start gap-2 py-2">
                 <span className="ws-mono pt-[2px] text-[10px]" style={{ color: "#888898" }}>{String(e.number).padStart(2, "0")}</span>
                 <div className="min-w-0 flex-1">
                   <Editable enabled={editing} className="block break-words font-display text-[12px] font-bold leading-[1.2]">{e.name}</Editable>
