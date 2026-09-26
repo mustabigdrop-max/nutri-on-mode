@@ -1212,6 +1212,7 @@ Português. Específico. Científico. Zero genérico.`;
                   <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
                 )}
               </Button>
+              </>
             );
           })()}
 
