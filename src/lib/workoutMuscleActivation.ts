@@ -89,5 +89,5 @@ export function computeMuscleActivation(exercises: ActivationInput[], warn: (msg
 }
 
 const BACK_LEADERS: MuscleKey[] = ["ham", "glute", "hipabd", "lats", "traps", "lower"];
-export const autoView = (active: MuscleActivation[]): "front" | "back" =>
+export const autoView = (active: Array<{ key: MuscleKey }>): "front" | "back" =>
   active[0] && BACK_LEADERS.includes(active[0].key) ? "back" : "front";
