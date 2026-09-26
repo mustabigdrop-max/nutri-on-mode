@@ -18,6 +18,7 @@ import { ORDEM_TRATAMENTO } from "@/lib/apexDeficitDiagnose";
 import { ATIVACAO_REGRA, prescreverApex, type PrescricaoApex } from "@/lib/apexPrescription";
 import type { StratumLevelKey } from "@/lib/stratumEngine";
 import { exerciciosDoGrupo } from "@/lib/kinesisAtlas";
+import { buildTechniqueAddendumRule } from "@/lib/stratumTechniqueApplication";
 import { substituirPorUnilateral } from "@/lib/kinesisAsymmetry";
 import type { ExercicioKinesis } from "@/lib/kinesisTypes";
 
