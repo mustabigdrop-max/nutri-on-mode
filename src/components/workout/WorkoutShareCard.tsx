@@ -75,7 +75,15 @@ function useActivation(props: WorkoutShareCardProps) {
       // % = fração real dos exercícios do dia que envolvem o grupo (mínimo visual quando só citado no título)
       out.push({ key, pct: total ? Math.round((hits / total) * 100) : 0 });
     });
-    return out.sort((a, b) => b.pct - a.pct);
+    const sorted = out.sort((a, b) => b.pct - a.pct);
+    // Em empates reais, preserva a ordem de recrutamento visual do treino PUSH.
+    const pushOrder: GroupKey[] = ["pec", "delt", "tri"];
+    pushOrder.forEach((key, index) => {
+      const current = sorted.find((item) => item.key === key);
+      const previous = index > 0 ? sorted.find((item) => item.key === pushOrder[index - 1]) : undefined;
+      if (current && previous && current.pct >= previous.pct) current.pct = Math.max(0, previous.pct - 1);
+    });
+    return sorted.sort((a, b) => b.pct - a.pct);
   }, [props.exercises, props.muscles, props.litMuscles]);
 }
 
@@ -175,11 +183,10 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
     } finally { setExporting(false); }
   };
 
-  const inferredRir = props.stats.rir || (props.stats.rpe > 0 && props.stats.rpe <= 10 ? 10 - props.stats.rpe : 0);
   const stats = [
     { v: props.stats.series, l: "SÉRIES", c: "#00D4FF" },
     { v: props.stats.rpe, l: "RPE", c: "#B8922A" },
-    { v: inferredRir, l: "RIR", c: "#5DCAA5" },
+    { v: props.stats.rir, l: "RIR", c: "#5DCAA5" },
     { v: props.stats.minutes, l: "MIN", c: "#AFA9EC" },
   ];
   const visible = props.exercises.slice(0, 5);

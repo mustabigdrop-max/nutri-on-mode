@@ -50,8 +50,13 @@ const titleType = (title: string) => {
 export function buildWorkoutShareData(day: ParsedDay, meta: WorkoutShareMeta): WorkoutShareCardProps {
   const exercises = day.exercises || [];
   const allSetText = exercises.flatMap((exercise) => exercise.sets.map((set) => set.detail)).join(" ");
+  const allPrescriptionText = [
+    allSetText,
+    day.session_notes || "",
+    ...exercises.map((exercise) => exercise.notes || ""),
+  ].join(" ");
   const rpeValues = Array.from(allSetText.matchAll(/RPE\s*(\d+(?:[.,]\d+)?)/gi)).map((m) => Number(m[1].replace(",", ".")));
-  const rirValues = Array.from(allSetText.matchAll(/RIR\s*(\d+(?:[.,]\d+)?)/gi)).map((m) => Number(m[1].replace(",", ".")));
+  const rirValues = Array.from(allPrescriptionText.matchAll(/RIR\s*(\d+(?:[.,]\d+)?)/gi)).map((m) => Number(m[1].replace(",", ".")));
   const minutes = Number(day.estimated_duration.match(/\d+/)?.[0] || 0);
   const muscleSeries = new Map<string, number>();
   exercises.forEach((exercise) => {
@@ -91,7 +96,7 @@ export function buildWorkoutShareData(day: ParsedDay, meta: WorkoutShareMeta): W
     stats: {
       series: exercises.reduce((total, exercise) => total + exerciseSetCount(exercise), 0),
       rpe: rpeValues.length ? Math.max(...rpeValues) : numericValue(allSetText, "RPE"),
-      rir: rirValues.length ? Math.min(...rirValues) : numericValue(allSetText, "RIR"),
+      rir: rirValues.length ? Math.min(...rirValues) : numericValue(allPrescriptionText, "RIR"),
       minutes,
     },
     focusAlert: day.session_notes || "",
