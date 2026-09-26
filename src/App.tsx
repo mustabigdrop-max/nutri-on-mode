@@ -146,6 +146,7 @@ const CoachApexVisualPage = lazy(() => import("./pages/coach/CoachApexVisualPage
 const ApexCheckinPage = lazy(() => import("./pages/coach/ApexCheckinPage"));
 const ApexVisualIAPage = lazy(() => import("./pages/coach/ApexVisualIAPage"));
 const ApexVisualAutoPage = lazy(() => import("./pages/coach/ApexVisualAutoPage"));
+const ApexAutoLandmarksLabPage = lazy(() => import("./pages/coach/ApexAutoLandmarksLabPage"));
 const ApexAssessmentPage = lazy(() => import("./pages/coach/ApexAssessmentPage"));
 const ApexOrchestratorPage = lazy(() => import("./pages/coach/ApexOrchestratorPage"));
 const CoachTrainingOnPage = lazy(() => import("./pages/coach/CoachTrainingOnPage"));
@@ -356,6 +357,7 @@ const App = () => (
             <Route path="/coach/apex-visual" element={<CoachToolRoute><ProtectedRoute><CoachApexVisualPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-checkin" element={<CoachToolRoute><ProtectedRoute><ApexCheckinPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-visual-ia" element={<CoachToolRoute><ProtectedRoute><ApexVisualIAPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/apex-pontos-teste" element={<CoachToolRoute><ProtectedRoute><ApexAutoLandmarksLabPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-visual-auto" element={<CoachToolRoute><ProtectedRoute><ApexVisualAutoPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-assessment" element={<CoachToolRoute><ProtectedRoute><ApexAssessmentPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-orchestrator/:runId" element={<CoachToolRoute><ProtectedRoute><ApexOrchestratorPage /></ProtectedRoute></CoachToolRoute>} />
