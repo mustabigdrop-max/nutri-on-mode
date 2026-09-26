@@ -6,6 +6,7 @@ export type WorkoutShareMeta = {
   weeks?: string | number | null;
   muscles?: string[] | null;
   updatedAt?: string | null;
+  daysPerWeek?: number | null;
 };
 
 const numericValue = (text: string, marker: "RPE" | "RIR") => {
@@ -17,6 +18,17 @@ const exerciseSetCount = (exercise: ParsedExercise) => exercise.sets.reduce((tot
   const match = set.detail.match(/(\d+)\s*séries/i);
   return total + (match ? Number(match[1]) : 0);
 }, 0);
+
+/** Volume real prescrito: séries × reps (limite inferior da faixa) × carga em kg, ignorando feeders. */
+const exerciseLoad = (exercise: ParsedExercise) => exercise.sets.reduce((acc, set) => {
+  if (/feeder/i.test(set.label || "")) return acc;
+  const reps = set.detail.match(/(\d+)(?:\s*[-–a]\s*\d+)?\s*reps/i);
+  if (!reps) return acc;
+  const n = Number(set.detail.match(/(\d+)\s*séries/i)?.[1] || 1);
+  const r = Number(reps[1]) * n;
+  const kg = set.detail.match(/(\d+(?:[.,]\d+)?)\s*kg/i);
+  return { reps: acc.reps + r, kg: acc.kg + (kg ? r * Number(kg[1].replace(",", ".")) : 0) };
+}, { reps: 0, kg: 0 });
 
 const sharePills = (exercise: ParsedExercise) => {
   const text = exercise.sets.map((set) => `${set.label || ""} ${set.detail}`).join(" ");
@@ -113,5 +125,14 @@ export function buildWorkoutShareData(day: ParsedDay, meta: WorkoutShareMeta): W
       color: muscleColor(muscle),
     })),
     litMuscles,
+    summary: (() => {
+      const load = exercises.reduce((a, e) => { const l = exerciseLoad(e); return { reps: a.reps + l.reps, kg: a.kg + l.kg }; }, { reps: 0, kg: 0 });
+      return {
+        tonnageKg: load.kg > 0 ? load.kg : undefined,
+        totalReps: load.reps > 0 ? load.reps : undefined,
+        tutSeconds: load.reps > 0 ? load.reps * 3 : undefined,
+        weekBadge: meta.daysPerWeek ? `TREINO ${day.day_number} DE ${meta.daysPerWeek}` : undefined,
+      };
+    })(),
   };
 }
