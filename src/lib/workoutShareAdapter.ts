@@ -6,7 +6,7 @@ export type WorkoutShareMeta = {
   weeks?: string | number | null;
   muscles?: string[] | null;
   updatedAt?: string | null;
-  daysPerWeek?: number | null;
+  daysPerWeek?: string | number | null;
 };
 
 const numericValue = (text: string, marker: "RPE" | "RIR") => {

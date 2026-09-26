@@ -23,7 +23,7 @@ type ProtocolRow = {
   id: string;
   client_name: string | null;
   phase: string | null;
-  days_per_week?: number | null;
+  days_per_week?: string | null;
   weeks: string | null;
   muscles: string[] | null;
   protocol_text: string | null;
