@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { Download, Image, Pencil, Loader2 } from "lucide-react";
+import { Share2, Pencil, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Button } from "@/components/ui/button";
 import "@/styles/workout-share-card.css";
@@ -33,156 +33,261 @@ export interface WorkoutShareCardProps {
   coachName?: string;
 }
 
-const colors = {
-  red: "var(--ws-red)", gold: "var(--ws-gold)", cyan: "var(--ws-cyan)",
-  green: "var(--ws-green)", gray: "var(--ws-gray)", purple: "var(--ws-purple)",
-} as const;
-
-const pillColors: Record<string, { color: string; border: string; background?: string }> = {
-  "8X": { color: "var(--ws-orange)", border: "rgba(255,136,0,.2)" },
-  IIA: { color: "var(--ws-cyan)", border: "rgba(0,212,255,.15)" },
-  "RIR 1": { color: "var(--ws-green)", border: "rgba(0,255,136,.15)" },
-  "RIR 2": { color: "var(--ws-green)", border: "rgba(0,255,136,.15)" },
-  "REST-P": { color: "var(--ws-gold)", border: "rgba(184,146,42,.15)" },
-  BSET: { color: "var(--ws-pink)", border: "rgba(255,102,170,.15)" },
-  TOP: { color: "var(--ws-gold)", border: "rgba(184,146,42,.2)", background: "rgba(184,146,42,.08)" },
-  UNI: { color: "var(--ws-red)", border: "rgba(255,68,68,.15)" },
-  ALONG: { color: "var(--ws-green)", border: "rgba(0,255,136,.1)" },
-  ENC: { color: "var(--ws-green)", border: "rgba(0,255,136,.1)" },
+/* ─── Grupos musculares: shapes do lado esquerdo (espelhados) + âncora do lado direito ─── */
+type GroupKey = "pec" | "delt" | "bi" | "tri" | "fore" | "abs" | "obl" | "quad" | "calf";
+const GROUPS: Record<GroupKey, { label: string; test: RegExp; color: string; paths: string[]; anchor: [number, number] }> = {
+  pec: { label: "PEITORAL", test: /peit|pec|supino|crucifix|chest|fly/i, color: "#FF4D6D", anchor: [128, 90],
+    paths: ["M99 76 C90 72 76 72 67 80 C62 90 65 102 75 107 C85 110 95 106 99 101 Z"] },
+  delt: { label: "DELTOIDES", test: /ombro|delt|desenvolv|elevação lateral|lateral raise|press militar/i, color: "#00D4FF", anchor: [150, 82],
+    paths: ["M67 69 C57 69 49 78 48 92 C52 99 58 99 63 93 C65 85 69 77 76 73 Z"] },
+  tri: { label: "TRÍCEPS", test: /tr[ií]ceps|francês|testa|pushdown|mergulho|dip/i, color: "#B8922A", anchor: [155, 116],
+    paths: ["M48 98 C44 110 43 123 46 134 C50 131 52 119 53 104 Z"] },
+  bi: { label: "BÍCEPS", test: /b[ií]ceps|rosca|curl/i, color: "#AFA9EC", anchor: [143, 116],
+    paths: ["M56 101 C52 113 52 125 54 133 C60 127 62 114 62 103 Z"] },
+  fore: { label: "ANTEBRAÇO", test: /antebra|punho|forearm/i, color: "#AFA9EC", anchor: [154, 158],
+    paths: ["M46 140 C42 154 42 169 44 181 C48 177 52 160 54 142 Z"] },
+  abs: { label: "ABDÔMEN", test: /abd|core|prancha|crunch/i, color: "#5DCAA5", anchor: [104, 134],
+    paths: ["M89 111 C93 109 98 109 99 111 L99 124 L89 124 Z", "M89 127 L99 127 L99 140 L89 140 Z", "M89 143 L99 143 L99 160 C94 161 90 157 89 150 Z"] },
+  obl: { label: "OBLÍQUOS", test: /obl[ií]qu/i, color: "#5DCAA5", anchor: [116, 132],
+    paths: ["M76 112 C82 118 86 132 86 150 C80 150 76 140 74 128 Z"] },
+  quad: { label: "QUADRÍCEPS", test: /quadr|agach|leg press|extensora|squat|afundo|passada/i, color: "#EF9F27", anchor: [120, 205],
+    paths: ["M77 172 C72 195 74 224 82 240 C90 236 94 210 96 190 C92 180 85 174 77 172 Z"] },
+  calf: { label: "PANTURRILHA", test: /panturr|g[eê]meos|calf|s[oó]leo/i, color: "#EF9F27", anchor: [118, 266],
+    paths: ["M78 252 C74 262 76 277 82 284 C86 276 88 262 86 252 Z"] },
 };
+
+const BODY_HALF =
+  "M100 50 C96 50 93 52 92 56 C88 60 80 62 72 64 C60 66 50 74 47 88 C44 102 44 118 43 134 C42 150 40 166 41 184 C40 192 40 198 44 201 C48 200 49 194 49 186 C50 170 54 156 56 140 C58 126 62 112 65 102 C67 116 70 132 73 150 C74 160 72 168 73 176 C70 200 72 226 77 246 C74 262 76 280 80 292 C84 296 92 296 95 293 C94 278 94 262 93 248 C96 226 98 204 99 186 L100 186 Z";
 
 function Editable({ children, enabled, className = "", style }: { children: ReactNode; enabled: boolean; className?: string; style?: CSSProperties }) {
   return <span className={className} style={style} contentEditable={enabled} suppressContentEditableWarning>{children}</span>;
 }
 
-function StatRing({ value, label, progress, color }: { value: string | number; label: string; progress: number; color: string }) {
-  const circumference = 138.2;
-  return (
-    <div className="relative h-[52px] w-[52px] shrink-0">
-      <svg viewBox="0 0 52 52" className="absolute inset-0 -rotate-90" aria-hidden="true">
-        <circle cx="26" cy="26" r="22" fill="none" stroke="#111120" strokeWidth="3" />
-        <circle cx="26" cy="26" r="22" fill="none" stroke={color} strokeWidth="3" strokeLinecap="square" strokeDasharray={circumference} strokeDashoffset={circumference * (1 - Math.max(0, Math.min(1, progress)))} />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-        <b className="font-display text-[11px]">{value || "—"}</b>
-        <span className="mt-[2px] text-[5px] uppercase text-[var(--ws-dim)]">{label}</span>
-      </div>
-    </div>
-  );
+function useActivation(props: WorkoutShareCardProps) {
+  return useMemo(() => {
+    const total = props.exercises.length;
+    const out: Array<{ key: GroupKey; pct: number }> = [];
+    (Object.keys(GROUPS) as GroupKey[]).forEach((key) => {
+      const g = GROUPS[key];
+      const hits = props.exercises.filter((e) => g.test.test(`${e.name} ${e.sub}`)).length;
+      const inHeader = g.test.test(props.muscles) || props.litMuscles.some((m) => m.id.startsWith(key));
+      if (hits === 0 && !inHeader) return;
+      // % = fração real dos exercícios do dia que envolvem o grupo (mínimo visual quando só citado no título)
+      out.push({ key, pct: total ? Math.round((hits / total) * 100) : 0 });
+    });
+    return out.sort((a, b) => b.pct - a.pct);
+  }, [props.exercises, props.muscles, props.litMuscles]);
 }
 
-function BodyMap({ litMuscles }: { litMuscles: WorkoutShareCardProps["litMuscles"] }) {
-  const part = (id: string) => {
-    const item = litMuscles.find((muscle) => muscle.id === id);
-    if (!item) return { fill: "#0A0A15", stroke: "#1A1A28", opacity: 1, className: "" };
-    return { fill: item.color, stroke: item.color, opacity: .32, filter: `drop-shadow(0 0 4px ${item.color})`, className: item.pulse ? "workout-muscle-pulse" : "" };
+function AnatomyFigure({ active }: { active: Array<{ key: GroupKey; pct: number }> }) {
+  const map = new Map(active.map((a) => [a.key, a.pct]));
+  const mirror = "translate(200 0) scale(-1 1)";
+  const renderGroup = (key: GroupKey) => {
+    const g = GROUPS[key];
+    const pct = map.get(key);
+    const on = pct !== undefined;
+    const intensity = on ? 0.45 + 0.55 * Math.max(0.15, pct! / 100) : 0;
+    const shapes = (fill: string, extra?: object) => (
+      <>
+        {g.paths.map((d, i) => <path key={`l${i}`} d={d} fill={fill} {...extra} />)}
+        {g.paths.map((d, i) => <path key={`r${i}`} d={d} fill={fill} transform={mirror} {...extra} />)}
+      </>
+    );
+    if (!on) return <g key={key}>{shapes("url(#ws-muscle-off)", { stroke: "rgba(255,255,255,.035)", strokeWidth: 0.5 })}</g>;
+    return (
+      <g key={key} className="workout-muscle-pulse">
+        <g filter="url(#ws-glow)" opacity={intensity * 0.9}>{shapes(g.color)}</g>
+        <g opacity={intensity}>{shapes(`url(#ws-grad-${key})`, { stroke: g.color, strokeOpacity: 0.55, strokeWidth: 0.5 })}</g>
+      </g>
+    );
   };
   return (
-    <svg viewBox="0 0 100 200" className="h-[150px] w-[78px]" role="img" aria-label="Mapa dos músculos trabalhados">
-      <g fill="#0A0A15" stroke="#1A1A28" strokeWidth=".6">
-        <ellipse cx="50" cy="13" rx="10" ry="12"/><path d="M42 25 Q50 29 58 25 L64 39 69 74 61 108 58 154 55 192 46 192 42 154 39 108 31 74 36 39Z"/>
-        <path d="M36 34 24 42 17 77 23 80 34 57Z"/><path d="M64 34 76 42 83 77 77 80 66 57Z"/>
-      </g>
-      <path d="M39 37 Q45 31 49 39 L48 56 Q42 54 37 48Z" {...part("pec-left")} />
-      <path d="M51 39 Q55 31 61 37 L63 48 Q58 54 52 56Z" {...part("pec-right")} />
-      <ellipse cx="34" cy="39" rx="7" ry="9" {...part("delt")} /><ellipse cx="66" cy="39" rx="7" ry="9" {...part("delt")} />
-      <path d="M27 47 34 48 30 68 24 66Z" {...part("triceps")} /><path d="M66 48 73 47 76 66 70 68Z" {...part("triceps")} />
-      <g fontFamily="Space Mono" fontSize="4" fontWeight="700"><text x="44" y="48" fill="var(--ws-red)">PEC</text><text x="26" y="40" fill="var(--ws-cyan)">DLT</text><text x="23" y="60" fill="var(--ws-gold)">TRI</text></g>
+    <svg viewBox="0 0 200 300" width="200" height="300" aria-label="Mapa de ativação muscular" role="img">
+      <defs>
+        <linearGradient id="ws-body" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#0c0d18" /><stop offset=".5" stopColor="#121424" /><stop offset="1" stopColor="#0c0d18" />
+        </linearGradient>
+        <linearGradient id="ws-muscle-off" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1a1c2c" /><stop offset="1" stopColor="#10111c" />
+        </linearGradient>
+        {(Object.keys(GROUPS) as GroupKey[]).map((k) => (
+          <radialGradient key={k} id={`ws-grad-${k}`} cx=".5" cy=".4" r=".7">
+            <stop offset="0" stopColor="#ffffff" stopOpacity=".55" />
+            <stop offset=".35" stopColor={GROUPS[k].color} stopOpacity=".95" />
+            <stop offset="1" stopColor={GROUPS[k].color} stopOpacity=".35" />
+          </radialGradient>
+        ))}
+        <filter id="ws-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" /></filter>
+        <filter id="ws-rim" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.2" /></filter>
+      </defs>
+      {/* sombra de chão */}
+      <ellipse cx="100" cy="296" rx="34" ry="3" fill="#00D4FF" opacity=".06" />
+      {/* cabeça + pescoço */}
+      <path d="M100 8 C110 8 116 16 116 27 C116 38 109 46 100 46 C91 46 84 38 84 27 C84 16 90 8 100 8 Z" fill="url(#ws-body)" />
+      <path d="M93 42 L107 42 L108 56 L92 56 Z" fill="url(#ws-body)" />
+      {/* corpo */}
+      <path d={BODY_HALF} fill="url(#ws-body)" />
+      <path d={BODY_HALF} fill="url(#ws-body)" transform={mirror} />
+      {/* rim light ciano (lado direito) */}
+      <path d={BODY_HALF} transform={mirror} fill="none" stroke="#00D4FF" strokeOpacity=".5" strokeWidth=".8" filter="url(#ws-rim)" />
+      <path d={BODY_HALF} transform={mirror} fill="none" stroke="#00D4FF" strokeOpacity=".35" strokeWidth=".4" />
+      <path d={BODY_HALF} fill="none" stroke="#ffffff" strokeOpacity=".05" strokeWidth=".4" />
+      <path d="M100 8 C110 8 116 16 116 27 C116 38 109 46 100 46" fill="none" stroke="#00D4FF" strokeOpacity=".4" strokeWidth=".5" />
+      {/* músculos */}
+      {(Object.keys(GROUPS) as GroupKey[]).map(renderGroup)}
+      {/* linha alba */}
+      <path d="M100 104 L100 162" stroke="#000" strokeOpacity=".5" strokeWidth=".6" />
     </svg>
   );
 }
 
-function Divider({ children }: { children: ReactNode }) {
-  return <div className="flex items-center gap-2 font-display text-[6px] font-bold uppercase tracking-[1.5px] text-[var(--ws-gray)]"><span>{children}</span><span className="h-px flex-1 bg-gradient-to-r from-[var(--ws-gray)] to-transparent" /></div>;
-}
-
 export default function WorkoutShareCard(props: WorkoutShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [story, setStory] = useState(false);
   const [editing, setEditing] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const active = useActivation(props);
+  const callouts = active.slice(0, 3);
   const fileDate = useMemo(() => props.date.toLowerCase().replace(/\s+/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""), [props.date]);
 
-  const exportPng = async () => {
-    const element = cardRef.current;
-    if (!element) return;
+  const renderPng = async () => {
+    const el = cardRef.current!;
+    const source = await html2canvas(el, { backgroundColor: "#03030a", scale: 3, useCORS: true, logging: false });
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080; canvas.height = 1920;
+    const ctx = canvas.getContext("2d");
+    if (ctx) { ctx.fillStyle = "#03030a"; ctx.fillRect(0, 0, 1080, 1920); ctx.drawImage(source, 0, 0, 1080, 1920); }
+    return canvas;
+  };
+
+  const share = async () => {
+    if (!cardRef.current) return;
     setExporting(true);
     try {
-      const source = await html2canvas(element, { backgroundColor: "#010108", scale: 3, useCORS: true, logging: false });
-      let canvas = source;
-      if (story) {
-        canvas = document.createElement("canvas"); canvas.width = 1080; canvas.height = 1920;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.fillStyle = "#010108";
-          ctx.fillRect(0, 0, 1080, 1920);
-          const scale = Math.min(1080 / source.width, 1920 / source.height);
-          const width = source.width * scale;
-          const height = source.height * scale;
-          ctx.drawImage(source, (1080 - width) / 2, (1920 - height) / 2, width, height);
-        }
+      const canvas = await renderPng();
+      const name = `trainingon-${props.dayCode.toLowerCase()}-${fileDate}.png`;
+      const blob: Blob | null = await new Promise((r) => canvas.toBlob(r, "image/png"));
+      const file = blob ? new File([blob], name, { type: "image/png" }) : null;
+      if (file && navigator.canShare?.({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: "TrainingON" }); return; } catch { /* cancelado → baixa */ }
       }
       const link = document.createElement("a");
-      link.download = `trainingon-${props.dayCode.toLowerCase()}-${fileDate}.png`;
-      link.href = canvas.toDataURL("image/png"); link.click();
+      link.download = name; link.href = canvas.toDataURL("image/png"); link.click();
     } finally { setExporting(false); }
   };
 
-  const protocols = [[props.protocol, "PROTOCOLO"], [props.week, "SEMANA"], [props.volume, "VOLUME"], [props.progression, "PROGRESSÃO"], [props.phase, "FASE"]];
+  const stats = [
+    { v: props.stats.series, l: "SÉRIES", c: "#00D4FF" },
+    { v: props.stats.rpe, l: "RPE", c: "#B8922A" },
+    { v: props.stats.rir, l: "RIR", c: "#5DCAA5" },
+    { v: props.stats.minutes, l: "MIN", c: "#AFA9EC" },
+  ];
+  const visible = props.exercises.slice(0, 5);
+  const rest = props.exercises.length - visible.length;
+  const meta = [props.phase, props.week].filter((x) => x && x !== "—").join(" · ");
+
+  // Stage do corpo: 390×316, figura 200×300 posicionada em (FX, FY)
+  const FX = 70, FY = 8;
+  const slots = [58, 128, 198];
+
   return (
     <div className="flex flex-col items-center gap-3">
-      <div ref={cardRef} className={`workout-share-stage ${story ? "is-story" : ""}`}>
-        <div className="workout-share-corners"><i className="workout-share-corner tl"/><i className="workout-share-corner tr"/><i className="workout-share-corner bl"/><i className="workout-share-corner br"/></div>
-        <div className="workout-share-scan" />
-        <div className="workout-share-content">
-          <div className="flex items-center justify-between px-[14px] py-[10px]">
-            <span className="text-[6px] tracking-[2px] text-[var(--ws-cyan)] opacity-60">STRATUM v7</span>
-            <span className="font-display text-[14px] font-bold">Training<span className="text-[var(--ws-gold)]">ON</span></span>
-            <div className="flex items-center gap-2">{props.streak > 0 && <span className="text-[7px] text-[var(--ws-gold)]">🔥 {props.streak}</span>}{props.rank && <span className="border border-[rgba(0,212,255,.2)] px-[5px] py-px font-display text-[6px] font-bold text-[var(--ws-cyan)]">{props.rank}</span>}</div>
-          </div>
+      <div ref={cardRef} className="ws-neural">
+        <div className="ws-neural-vignette" />
+        <svg className="ws-neural-grain" aria-hidden="true"><filter id="ws-noise"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch" /></filter><rect width="100%" height="100%" filter="url(#ws-noise)" /></svg>
 
-          <div className="flex gap-[10px] px-[14px]">
-            <div className="min-w-0 flex-1">
-              <Editable enabled={editing} className="block font-display text-[45px] font-bold leading-[.86] tracking-[-2px]">{props.dayCode}</Editable>
-              <Editable enabled={editing} className="mt-0 block font-display text-[16px] font-bold tracking-[2px] text-[var(--ws-cyan)]">{props.dayType}</Editable>
-              <Editable enabled={editing} className="block text-[8px] text-[var(--ws-dim)]">{props.muscles}</Editable>
-              <div className="mt-2 flex gap-[6px]">
-                <StatRing value={props.stats.series} label="SÉRIES" progress={props.stats.series / 28} color="var(--ws-cyan)" />
-                <StatRing value={props.stats.rpe} label="RPE" progress={props.stats.rpe / 10} color="var(--ws-gold)" />
-                <StatRing value={props.stats.rir} label="RIR" progress={props.stats.rir / 6} color="var(--ws-green)" />
-                <StatRing value={props.stats.minutes} label="MIN" progress={props.stats.minutes / 90} color="var(--ws-purple)" />
+        <div className="relative z-[2] flex h-full flex-col">
+          {/* header */}
+          <header className="flex items-center justify-between px-6 pt-6">
+            <span className="font-display text-[15px] font-bold tracking-[.5px]">Training<span style={{ color: "#B8922A" }}>ON</span></span>
+            <div className="flex items-center gap-2">
+              {props.streak > 0 && <span className="ws-mono text-[8px]" style={{ color: "#B8922A" }}>{props.streak} DIAS</span>}
+              {props.rank && <span className="ws-chip" style={{ color: "#00D4FF" }}>{props.rank}</span>}
+            </div>
+          </header>
+
+          {/* corpo + callouts */}
+          <section className="relative mt-2 h-[316px]">
+            <div className="absolute left-6 top-2 z-[3]">
+              <Editable enabled={editing} className="block font-display text-[56px] font-bold leading-[.82] tracking-[-2px]">{props.dayCode}</Editable>
+              <Editable enabled={editing} className="mt-2 block font-display text-[18px] font-bold uppercase tracking-[4px]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
+              {meta && <span className="ws-mono mt-2 block text-[7px]" style={{ color: "#888898" }}>{meta}</span>}
+            </div>
+            <div className="absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} /></div>
+            <svg className="pointer-events-none absolute inset-0" width="390" height="316" aria-hidden="true">
+              {callouts.map((c, i) => {
+                const [ax, ay] = GROUPS[c.key].anchor;
+                const x1 = FX + ax, y1 = FY + ay, x2 = 262, y2 = slots[i] + 22;
+                return (
+                  <g key={c.key}>
+                    <path d={`M${x1} ${y1} C${x1 + 30} ${y1}, ${x2 - 30} ${y2}, ${x2} ${y2}`} fill="none" stroke={GROUPS[c.key].color} strokeOpacity=".45" strokeWidth=".75" />
+                    <circle cx={x1} cy={y1} r="1.8" fill={GROUPS[c.key].color} />
+                  </g>
+                );
+              })}
+            </svg>
+            {callouts.map((c, i) => (
+              <div key={c.key} className="ws-glass absolute" style={{ left: 262, top: slots[i], width: 104 }}>
+                <span className="ws-mono block text-[6.5px]" style={{ color: "#888898" }}>{GROUPS[c.key].label}</span>
+                <span className="block font-display text-[22px] font-bold leading-none" style={{ color: GROUPS[c.key].color }}>{c.pct}<span className="text-[11px] opacity-70">%</span></span>
+                <span className="ws-bar mt-1 block"><i style={{ width: `${Math.max(4, c.pct)}%`, background: GROUPS[c.key].color }} /></span>
               </div>
+            ))}
+            {callouts.length > 0 && <span className="ws-mono absolute text-[5.5px]" style={{ left: 262, top: 262, color: "#3a3a4a" }}>% DOS EXERCÍCIOS DO DIA</span>}
+          </section>
+
+          {/* stats */}
+          <section className="mx-6 grid grid-cols-4 border-y" style={{ borderColor: "rgba(255,255,255,.06)" }}>
+            {stats.map((s, i) => (
+              <div key={s.l} className="py-3 text-center" style={{ borderLeft: i ? "1px solid rgba(255,255,255,.06)" : undefined }}>
+                <b className="block font-display text-[24px] font-bold leading-none">{s.v || "—"}</b>
+                <span className="ws-mono mt-1 block text-[6.5px]" style={{ color: s.c }}>{s.l}</span>
+              </div>
+            ))}
+          </section>
+
+          {props.focusAlert && (
+            <div className="mx-6 mt-4 flex items-start gap-3">
+              <span className="ws-chip shrink-0" style={{ color: "#03030a", background: "#FF4D6D", borderColor: "#FF4D6D" }}>APEX</span>
+              <Editable enabled={editing} className="line-clamp-2 text-[8px] leading-[1.5]" style={{ color: "#F0F0F5", opacity: .75 }}>{props.focusAlert}</Editable>
             </div>
-            <div className="flex w-[90px] items-center justify-center"><BodyMap litMuscles={props.litMuscles} /></div>
-          </div>
+          )}
 
-          <div className="mt-1 grid grid-cols-5 gap-px px-[14px]">
-            {protocols.map(([value, label], index) => <div key={label} className={`bg-[var(--ws-surface)] px-1 py-[5px] text-center border-b-2 ${index === 1 ? "workout-share-protocol-active border-[var(--ws-cyan)]" : "border-[var(--ws-gray)]"}`}><Editable enabled={editing} className={`block font-display text-[10px] font-bold ${index === 1 ? "text-[var(--ws-cyan)]" : "text-[var(--ws-white)]"}`}>{value || "—"}</Editable><span className="block text-[5px] tracking-[.5px] text-[var(--ws-dim)]">{label}</span></div>)}
-          </div>
+          {/* exercícios */}
+          <section className="mx-6 mt-4 flex-1 overflow-hidden">
+            <span className="ws-mono block pb-2 text-[6.5px]" style={{ color: "#3a3a4a" }}>{props.exercises.length} EXERCÍCIOS</span>
+            {visible.map((e) => (
+              <div key={`${e.number}-${e.name}`} className="flex items-center gap-3 py-[5px]">
+                <span className="ws-mono w-4 text-[8px]" style={{ color: "#3a3a4a" }}>{String(e.number).padStart(2, "0")}</span>
+                <div className="min-w-0 flex-1">
+                  <Editable enabled={editing} className="block truncate font-display text-[12px] font-bold leading-tight">{e.name}</Editable>
+                  <Editable enabled={editing} className="ws-mono block truncate text-[6.5px] normal-case tracking-[.5px]" style={{ color: "#888898" }}>{e.sub}</Editable>
+                </div>
+                {e.pills[0] && <span className="ws-chip shrink-0" style={{ color: "#B8922A" }}>{e.pills[0]}</span>}
+              </div>
+            ))}
+            {rest > 0 && <span className="ws-mono block pt-1 text-[6.5px]" style={{ color: "#888898" }}>+ {rest} EXERCÍCIOS</span>}
+          </section>
 
-          {props.focusAlert && <div className="mx-[14px] my-2 flex items-center gap-[6px] border-l-2 border-[var(--ws-red)] bg-[rgba(255,68,68,.04)] px-[10px] py-[6px]"><span className="text-[11px]">⚡</span><Editable enabled={editing} className="flex-1 text-[7px] leading-[1.35] text-[var(--ws-red)]">{props.focusAlert}</Editable><span className="bg-[var(--ws-red)] px-[5px] py-px font-display text-[6px] font-bold text-[var(--ws-bg)]">APEX</span></div>}
-
-          <div className="px-[14px] py-2">
-            {props.warmup && <><Divider>WARM-UP — ATIVAÇÃO</Divider><div className="flex items-center justify-between py-[6px]"><Editable enabled={editing} className="max-w-[315px] truncate text-[7.5px] text-[var(--ws-dim)]">{props.warmup}</Editable><span className="text-[6px] text-[var(--ws-gray)]">ATIVO</span></div></>}
-            <Divider>TREINO PRINCIPAL — {props.exercises.length} EXERCÍCIOS</Divider>
-            <div className="mt-1">
-              {props.exercises.map((exercise) => <div key={`${exercise.number}-${exercise.name}`} className="flex items-center gap-[6px] border-b border-[rgba(255,255,255,.02)] py-[5px]"><span className="w-4 shrink-0 font-display text-[12px] font-bold" style={{ color: colors[exercise.color ?? "gray"] }}>{exercise.number}</span><div className="min-w-0 flex-1"><Editable enabled={editing} className="block truncate whitespace-nowrap font-display text-[10px] font-bold text-[var(--ws-white)]">{exercise.name}</Editable><Editable enabled={editing} className="block truncate text-[6px] text-[var(--ws-dim)]">{exercise.sub}</Editable></div><div className="flex shrink-0 gap-[2px]">{exercise.pills.map((pill) => { const tone = pillColors[pill] ?? { color: "var(--ws-dim)", border: "rgba(136,136,152,.15)" }; return <span key={pill} className="border px-1 py-px font-display text-[5px] font-bold" style={{ color: tone.color, borderColor: tone.border, background: tone.background }}>{pill}</span>; })}</div></div>)}
+          {/* footer */}
+          <footer className="flex items-end justify-between px-6 pb-6 pt-3">
+            <div>
+              <Editable enabled={editing} className="block font-display text-[10px] font-bold">{props.coachName || "Coach Diogo Mello"}</Editable>
+              <span className="block text-[7px] italic" style={{ color: "#B8922A" }}>Transformação é sistema.</span>
             </div>
-          </div>
-
-          {props.dataStrip.length > 0 && <div className="mx-[14px] my-2 grid grid-cols-4 gap-px">{props.dataStrip.slice(0,4).map((item) => <div key={`${item.value}-${item.label}`} className="bg-[var(--ws-surface)] px-1 py-[5px] text-center"><Editable enabled={editing} className="block font-display text-[9px] font-bold" style={{ color: colors[item.color] }}>{item.value}</Editable><Editable enabled={editing} className="block text-[5px] tracking-[.5px] text-[var(--ws-gray)]">{item.label}</Editable></div>)}</div>}
-
-          <div className="flex items-end justify-between px-[14px] py-2"><div><Editable enabled={editing} className="block text-[6px] text-[var(--ws-gray)]">{props.coachName || "Coach Diogo Mello"}</Editable><span className="block text-[5px] italic text-[var(--ws-gold)] opacity-40">Transformação é sistema.</span></div><div className="text-right"><span className="block font-display text-[9px] font-bold tracking-[1px] text-[var(--ws-cyan)] opacity-50">nutriON</span><span className="block text-[5px] text-[var(--ws-white)] opacity-10">nutrion.app.br · {props.date}</span></div></div>
-          <div className="workout-share-bottom-accent" />
+            <div className="text-right">
+              <span className="block font-display text-[11px] font-bold">nutri<span style={{ color: "#EF9F27" }}>ON</span></span>
+              <span className="ws-mono block text-[6px]" style={{ color: "#3a3a4a" }}>{props.date}</span>
+            </div>
+          </footer>
         </div>
       </div>
 
       <div className="flex w-[390px] gap-2" data-html2canvas-ignore="true">
-        <Button type="button" onClick={exportPng} disabled={exporting} className="h-9 flex-1 rounded-none font-tech text-[10px] uppercase tracking-wider"><Download />{exporting ? "Exportando" : "Exportar"}</Button>
-        <Button type="button" onClick={() => setStory((value) => !value)} variant={story ? "default" : "outline"} className="h-9 rounded-none font-tech text-[10px] uppercase"><Image />Story</Button>
-        <Button type="button" onClick={() => setEditing((value) => !value)} variant={editing ? "default" : "outline"} className="h-9 rounded-none font-tech text-[10px] uppercase"><Pencil />Editar</Button>
+        <Button type="button" onClick={share} disabled={exporting} className="h-10 flex-1 rounded-none font-tech text-[10px] uppercase tracking-wider">
+          {exporting ? <Loader2 className="animate-spin" /> : <Share2 />}{exporting ? "Preparando" : "Compartilhar treino"}
+        </Button>
+        <Button type="button" onClick={() => setEditing((v) => !v)} variant={editing ? "default" : "outline"} className="h-10 rounded-none font-tech text-[10px] uppercase"><Pencil />Editar</Button>
       </div>
-      {exporting && <span className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3 w-3 animate-spin" />Preparando imagem</span>}
     </div>
   );
 }

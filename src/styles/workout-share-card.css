@@ -1,38 +1,29 @@
-.workout-share-stage {
-  --ws-bg: #010108;
-  --ws-surface: #06060e;
-  --ws-cyan: #00d4ff;
-  --ws-gold: #b8922a;
-  --ws-green: #00ff88;
-  --ws-red: #ff4444;
-  --ws-white: #f0f0f5;
-  --ws-gray: #3a3a4a;
-  --ws-dim: #888898;
-  --ws-purple: #8866cc;
-  --ws-orange: #ff8800;
-  --ws-pink: #ff66aa;
+.ws-neural {
   width: 390px;
-  background: var(--ws-bg);
-  border: 1px solid rgba(0, 212, 255, 0.08);
-  border-radius: 0;
-  color: var(--ws-white);
-  font-family: 'Space Mono', monospace;
-  overflow: hidden;
+  height: 693px; /* 9:16 */
   position: relative;
+  overflow: hidden;
+  color: #f0f0f5;
+  font-family: 'Rajdhani', sans-serif;
+  background:
+    radial-gradient(120% 60% at 50% 32%, #0d1022 0%, #06070f 55%, #03030a 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 30px 60px -30px rgba(0,0,0,.8), 0 12px 24px -12px rgba(0,0,0,.6);
 }
-.workout-share-stage *, .workout-share-stage *::before, .workout-share-stage *::after { border-radius: 0 !important; box-sizing: border-box; }
-.workout-share-stage [contenteditable='true'] { outline: 1px dashed rgba(0, 212, 255, 0.35); outline-offset: 1px; cursor: text; }
-.workout-share-content { width: 390px; position: relative; z-index: 2; }
-.workout-share-corners { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
-.workout-share-corner { position: absolute; width: 14px; height: 14px; border-style: solid; }
-.workout-share-corner.tl { top: 5px; left: 5px; border-width: 1px 0 0 1px; border-color: var(--ws-cyan); }
-.workout-share-corner.tr { top: 5px; right: 5px; border-width: 1px 1px 0 0; border-color: var(--ws-cyan); }
-.workout-share-corner.bl { bottom: 5px; left: 5px; border-width: 0 0 1px 1px; border-color: var(--ws-gold); }
-.workout-share-corner.br { bottom: 5px; right: 5px; border-width: 0 1px 1px 0; border-color: var(--ws-gold); }
-.workout-share-scan { position: absolute; top: 50%; left: -60%; width: 60%; height: 1px; background: linear-gradient(90deg, transparent, rgba(0,212,255,.2), transparent); animation: workoutShareScan 6s linear infinite; pointer-events: none; z-index: 4; }
-@keyframes workoutShareScan { from { transform: translateX(0); } to { transform: translateX(267%); } }
-@keyframes workoutMusclePulse { 0%,100% { opacity: .6; } 50% { opacity: 1; } }
-.workout-muscle-pulse { animation: workoutMusclePulse 2.5s ease-in-out infinite; }
-.workout-share-bottom-accent { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,212,255,.1), rgba(184,146,42,.1), transparent); }
-.workout-share-protocol-active { background: #08081a; }
-@media (prefers-reduced-motion: reduce) { .workout-share-scan, .workout-muscle-pulse { animation: none; } }
+.ws-neural *, .ws-neural *::before, .ws-neural *::after { box-sizing: border-box; }
+.ws-neural [contenteditable='true'] { outline: 1px dashed rgba(0, 212, 255, 0.35); outline-offset: 2px; cursor: text; }
+.ws-neural-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(90% 70% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%); }
+.ws-neural-grain { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; opacity: .03; pointer-events: none; }
+.ws-mono { font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 2px; }
+.ws-chip { font-family: 'Space Mono', monospace; font-size: 6.5px; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 6px; border: 1px solid currentColor; border-color: rgba(255,255,255,.12); }
+.ws-glass {
+  padding: 8px 10px;
+  background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.015));
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.ws-bar { height: 2px; background: rgba(255,255,255,.06); position: relative; }
+.ws-bar i { position: absolute; left: 0; top: 0; bottom: 0; }
+@keyframes workoutMusclePulse { 0%,100% { opacity: .82; } 50% { opacity: 1; } }
+.workout-muscle-pulse { animation: workoutMusclePulse 3.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .workout-muscle-pulse { animation: none; } }
