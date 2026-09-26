@@ -14,8 +14,8 @@
 .ws-neural [contenteditable='true'] { outline: 1px dashed rgba(0, 212, 255, 0.35); outline-offset: 2px; cursor: text; }
 .ws-neural-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(90% 70% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%); }
 .ws-neural-grain { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; opacity: .03; pointer-events: none; }
-.ws-anatomy-figure { width: 140px; height: 210px; overflow: visible; }
-.ws-anatomy-figure > svg { display: block; width: 140px; height: 210px; }
+.ws-anatomy-figure { width: 82px; height: 123px; overflow: visible; }
+.ws-anatomy-figure > svg { display: block; width: 82px; height: 123px; }
 .ws-day-type { overflow-wrap: anywhere; }
 .ws-exercise-muscle { letter-spacing: 0; }
 .ws-mono { font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 2px; }

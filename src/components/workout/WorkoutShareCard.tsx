@@ -33,7 +33,24 @@ export interface WorkoutShareCardProps {
   dataStrip: Array<{ value: string; label: string; color: "red" | "gold" | "cyan" | "green" }>;
   litMuscles: Array<{ id: string; color: string; pulse?: boolean }>;
   coachName?: string;
+  summary?: { tonnageKg?: number; totalReps?: number; tutSeconds?: number; weekBadge?: string };
 }
+
+// Frase de foco (≤90 caracteres) a partir do músculo principal do dia.
+const FOCUS_LINES: Partial<Record<MuscleKey, string>> = {
+  pec: "Peito não cresce com pressa. Controle a descida e dono da carga é você.",
+  delt: "Ombro largo é construído série por série. Nada de balanço.",
+  tri: "Braço grande é tríceps. Trave o cotovelo e aperte até o fim.",
+  bi: "Rosca roubada não conta. Cotovelo parado, bíceps trabalhando.",
+  lats: "Costas largas nascem no cotovelo. Puxe com as costas, não com o braço.",
+  traps: "Trapézio responde a pausa no topo. Segure e sinta.",
+  quad: "Profundidade honesta. Coxa que desce inteira cresce inteira.",
+  ham: "Posterior é alongamento sob carga. Quadril para trás, sem pressa.",
+  glute: "Glúteo trava no topo. Sem contração, sem resultado.",
+  calf: "Panturrilha exige amplitude total. Pausa embaixo, sobe explodindo.",
+  abs: "Core forte é coluna protegida. Respiração e controle em cada rep.",
+};
+const fmtNum = (n: number, d = 0) => n.toLocaleString("pt-BR", { maximumFractionDigits: d, minimumFractionDigits: d });
 
 /* ─── Grupos musculares: shapes do lado esquerdo (espelhados) + âncora do lado direito, por vista ─── */
 type View = "front" | "back";
@@ -159,6 +176,10 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
   const view: View = viewOverride ?? autoView(active);
   // Cards: até 4 grupos mais ativados com representação na vista atual.
   const callouts = active.slice(0, 4);
+  const sum = props.summary || {};
+  const primary = active[0];
+  const primarySeries = primary ? props.exercises.filter((e) => computeMuscleActivation([e], () => {})[0]?.key === primary.key).reduce((t, e) => t + (e.sets || 0), 0) : 0;
+  const focusLine = primary ? FOCUS_LINES[primary.key] : undefined;
   const fileDate = useMemo(() => props.date.toLowerCase().replace(/\s+/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""), [props.date]);
 
   const renderPng = async () => {
@@ -199,8 +220,8 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
   const meta = [props.phase, props.week].filter((x) => x && x !== "—").join(" · ");
 
   // Zonas fixas: texto 80px, corpo 142px, cards 104px. Nenhum conteúdo cruza de zona.
-  const FX = 106, FY = 2, FIGURE_SCALE = 0.7;
-  const slots = [4, 62, 120, 178];
+  const FX = 137, FY = 40, FIGURE_SCALE = 0.41;
+  const slots = [0, 51, 102, 153];
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -219,19 +240,19 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
           </header>
 
           {/* corpo + callouts */}
-          <section className="ws-anatomy-stage relative mt-2 h-[256px]">
+          <section className="ws-anatomy-stage relative mt-2 h-[204px]">
             <div className="absolute left-6 top-2 z-[3] w-[76px] overflow-hidden">
               <Editable enabled={editing} className="block font-display text-[52px] font-bold leading-[.82]">{props.dayCode}</Editable>
               <Editable enabled={editing} className="ws-day-type mt-3 block font-display text-[14px] font-bold uppercase leading-[1.15]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
               {meta && <span className="ws-mono mt-3 block text-[10px] leading-[1.5]" style={{ color: "#888898" }}>{meta}</span>}
             </div>
             <div className="ws-anatomy-figure absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} view={view} /></div>
-            <svg className="pointer-events-none absolute inset-0" width="390" height="256" aria-hidden="true">
+            <svg className="pointer-events-none absolute inset-0" width="390" height="204" aria-hidden="true">
               {callouts.map((c, i) => {
                 const def = GROUPS[c.key][view];
                 if (!def) return null;
                 const [ax, ay] = def.anchor;
-                const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 262, y2 = slots[i] + 27;
+                const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 262, y2 = slots[i] + 23;
                 return (
                   <g key={c.key}>
                     <path d={`M${x1} ${y1} C${x1 + 18} ${y1}, ${x2 - 16} ${y2}, ${x2} ${y2}`} fill="none" stroke={c.color} strokeOpacity=".45" strokeWidth=".75" />
@@ -242,12 +263,51 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
             </svg>
             {callouts.map((c, i) => (
               <div key={c.key} className="ws-glass absolute" style={{ left: 262, top: slots[i], width: 104 }}>
-                <span className="ws-mono block text-[10px] leading-tight" style={{ color: "#A0A0B2" }}>{GROUPS[c.key].label}</span>
-                <span className="block font-display text-[22px] font-bold leading-none" style={{ color: c.color }}>{c.pct}<span className="text-[11px] opacity-70">%</span></span>
+                <span className="flex items-baseline justify-between gap-1">
+                  <span className="ws-mono block text-[10px] leading-tight" style={{ color: "#A0A0B2", letterSpacing: 1 }}>{GROUPS[c.key].label}</span>
+                  <span className="block font-display text-[24px] font-bold leading-none" style={{ color: c.color }}>{c.pct}<span className="text-[11px] opacity-70">%</span></span>
+                </span>
                 <span className="ws-bar mt-1 block"><i style={{ width: `${Math.max(4, c.pct)}%`, background: c.color }} /></span>
               </div>
             ))}
-            {callouts.length > 0 && <span className="ws-mono absolute text-[10px] font-bold" style={{ left: 262, top: 240, color: "#A0A0B2" }}>% DO VOLUME DO DIA</span>}
+          </section>
+
+          {/* resumo do treino */}
+          <section className="mx-6 mb-4">
+            {sum.weekBadge && <span className="ws-chip inline-block" style={{ color: "#B8922A", fontSize: 10 }}>{sum.weekBadge}</span>}
+            {(sum.tonnageKg || sum.totalReps) && (
+              <div className="mt-3">
+                <span className="ws-mono block text-[10px]" style={{ color: "#A0A0B2" }}>{sum.tonnageKg ? "Carga total do dia" : "Repetições totais do dia"}</span>
+                <b className="block font-display text-[36px] font-bold leading-none">
+                  {sum.tonnageKg ? <>{fmtNum(sum.tonnageKg / 1000, 1)}<span className="ml-1 text-[14px]" style={{ color: "#00D4FF" }}>t</span></> : fmtNum(sum.totalReps!)}
+                </b>
+                {sum.tonnageKg && sum.tonnageKg >= 90 && <span className="mt-1 block text-[12px]" style={{ color: "#F0F0F5", opacity: .75 }}>equivale a {fmtNum(Math.floor(sum.tonnageKg / 90))} pessoas de 90 kg</span>}
+              </div>
+            )}
+            {active.length > 0 && (
+              <div className="mt-3">
+                <div className="flex h-[6px] w-full gap-[2px]">
+                  {active.map((a) => <i key={a.key} style={{ width: `${a.pct}%`, background: a.color, opacity: Math.max(.45, a.intensity) }} />)}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                  {active.slice(0, 5).map((a) => (
+                    <span key={a.key} className="ws-mono text-[10px]" style={{ color: "#A0A0B2", letterSpacing: 1 }}>
+                      <i className="mr-1 inline-block h-[6px] w-[6px]" style={{ background: a.color }} />{GROUPS[a.key].label} {a.pct}%
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(primarySeries > 0 || sum.tutSeconds) && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {primarySeries > 0 && primary && (
+                  <div className="ws-glass"><span className="ws-mono block text-[10px]" style={{ color: "#A0A0B2", letterSpacing: 1 }}>Séries · {GROUPS[primary.key].label}</span><b className="font-display text-[16px]">{primarySeries}</b></div>
+                )}
+                {sum.tutSeconds && (
+                  <div className="ws-glass"><span className="ws-mono block text-[10px]" style={{ color: "#A0A0B2", letterSpacing: 1 }}>Tempo sob tensão</span><b className="font-display text-[16px]">~{fmtNum(Math.round(sum.tutSeconds / 60))} min</b><span className="ws-mono ml-1 text-[10px]" style={{ color: "#888898", letterSpacing: 1 }}>estimativa</span></div>
+                )}
+              </div>
+            )}
           </section>
 
           {/* stats */}
@@ -260,10 +320,10 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
             ))}
           </section>
 
-          {props.focusAlert && (
+          {focusLine && (
             <div className="mx-6 mt-4 flex items-start gap-3">
-              <span className="ws-chip shrink-0" style={{ color: "#03030a", background: "#FF4D6D", borderColor: "#FF4D6D" }}>APEX</span>
-              <Editable enabled={editing} className="text-[10px] leading-[1.5]" style={{ color: "#F0F0F5", opacity: .75 }}>{props.focusAlert}</Editable>
+              <span className="ws-chip shrink-0" style={{ color: "#03030a", background: "#FF4D6D", borderColor: "#FF4D6D" }}>FOCO</span>
+              <span className="text-[12px] font-bold leading-[1.4]" style={{ color: "#F0F0F5" }}>{focusLine}</span>
             </div>
           )}
 
@@ -296,6 +356,12 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
         </div>
       </div>
 
+      {props.focusAlert && (
+        <details className="w-[390px] border border-border p-3 text-sm text-muted-foreground" data-html2canvas-ignore="true">
+          <summary className="cursor-pointer font-tech text-[11px] uppercase">Ver orientação completa</summary>
+          <p className="mt-2 whitespace-pre-line">{props.focusAlert}</p>
+        </details>
+      )}
       <div className="flex w-[390px] gap-2" data-html2canvas-ignore="true">
         <div className="flex border border-border">
           {(["front", "back"] as View[]).map((v) => (
