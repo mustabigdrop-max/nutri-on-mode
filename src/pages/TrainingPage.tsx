@@ -1187,8 +1187,15 @@ Português. Específico. Científico. Zero genérico.`;
           {(() => {
             const durEst = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
             const blockedByTime = durEst.diff <= -15;
-            const disabled = loading || blockedByTime;
+            const missingName = !clientName.trim();
+            const disabled = loading || blockedByTime || missingName;
             return (
+              <>
+              {missingName && (
+                <p className="text-[10px] text-center font-bold" style={{ color: "#f87171" }}>
+                  ⚠️ Preencha o NOME DO CLIENTE acima para liberar a geração
+                </p>
+              )}
               <Button
                 onClick={generate}
                 disabled={disabled}
@@ -1205,6 +1212,7 @@ Português. Específico. Científico. Zero genérico.`;
                   <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
                 )}
               </Button>
+              </>
             );
           })()}
 
