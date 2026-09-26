@@ -1,8 +1,9 @@
 .ws-neural {
   width: 390px;
-  height: 693px; /* 9:16 */
+  min-height: 693px;
+  height: auto;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   color: #f0f0f5;
   font-family: 'Rajdhani', sans-serif;
   background:
@@ -13,6 +14,10 @@
 .ws-neural [contenteditable='true'] { outline: 1px dashed rgba(0, 212, 255, 0.35); outline-offset: 2px; cursor: text; }
 .ws-neural-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(90% 70% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%); }
 .ws-neural-grain { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; opacity: .03; pointer-events: none; }
+.ws-anatomy-figure { width: 140px; height: 210px; overflow: visible; }
+.ws-anatomy-figure > svg { display: block; width: 140px; height: 210px; }
+.ws-day-type { overflow-wrap: anywhere; }
+.ws-exercise-muscle { letter-spacing: 0; }
 .ws-mono { font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 2px; }
 .ws-chip { font-family: 'Space Mono', monospace; font-size: 6.5px; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 6px; border: 1px solid currentColor; border-color: rgba(255,255,255,.12); }
 .ws-glass {

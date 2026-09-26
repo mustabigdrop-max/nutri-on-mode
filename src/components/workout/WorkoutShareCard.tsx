@@ -158,12 +158,14 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
   const fileDate = useMemo(() => props.date.toLowerCase().replace(/\s+/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""), [props.date]);
 
   const renderPng = async () => {
-    const el = cardRef.current!;
+    const el = cardRef.current;
+    if (!el) return null;
     const source = await html2canvas(el, { backgroundColor: "#03030a", scale: 3, useCORS: true, logging: false });
     const canvas = document.createElement("canvas");
-    canvas.width = 1080; canvas.height = 1920;
+    canvas.width = 1080;
+    canvas.height = Math.round(1080 * (source.height / source.width));
     const ctx = canvas.getContext("2d");
-    if (ctx) { ctx.fillStyle = "#03030a"; ctx.fillRect(0, 0, 1080, 1920); ctx.drawImage(source, 0, 0, 1080, 1920); }
+    if (ctx) { ctx.fillStyle = "#03030a"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(source, 0, 0, canvas.width, canvas.height); }
     return canvas;
   };
 
@@ -172,6 +174,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
     setExporting(true);
     try {
       const canvas = await renderPng();
+      if (!canvas) return;
       const name = `trainingon-${props.dayCode.toLowerCase()}-${fileDate}.png`;
       const blob: Blob | null = await new Promise((r) => canvas.toBlob(r, "image/png"));
       const file = blob ? new File([blob], name, { type: "image/png" }) : null;
@@ -189,13 +192,11 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
     { v: props.stats.rir, l: "RIR", c: "#5DCAA5" },
     { v: props.stats.minutes, l: "MIN", c: "#AFA9EC" },
   ];
-  const visible = props.exercises.slice(0, 5);
-  const rest = props.exercises.length - visible.length;
   const meta = [props.phase, props.week].filter((x) => x && x !== "—").join(" · ");
 
-  // Stage do corpo: 390×316, figura 200×300 posicionada em (FX, FY)
-  const FX = 70, FY = 8;
-  const slots = [58, 128, 198];
+  // Zonas fixas: texto 80px, corpo 142px, cards 104px. Nenhum conteúdo cruza de zona.
+  const FX = 106, FY = 2, FIGURE_SCALE = 0.7;
+  const slots = [18, 94, 170];
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -203,7 +204,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
         <div className="ws-neural-vignette" />
         <svg className="ws-neural-grain" aria-hidden="true"><filter id="ws-noise"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch" /></filter><rect width="100%" height="100%" filter="url(#ws-noise)" /></svg>
 
-        <div className="relative z-[2] flex h-full flex-col">
+        <div className="relative z-[2] flex flex-col">
           {/* header */}
           <header className="flex items-center justify-between px-6 pt-6">
             <span className="font-display text-[15px] font-bold tracking-[.5px]">Training<span style={{ color: "#B8922A" }}>ON</span></span>
@@ -214,20 +215,20 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
           </header>
 
           {/* corpo + callouts */}
-          <section className="relative mt-2 h-[316px]">
-            <div className="absolute left-6 top-2 z-[3]">
-              <Editable enabled={editing} className="block font-display text-[56px] font-bold leading-[.82] tracking-[-2px]">{props.dayCode}</Editable>
-              <Editable enabled={editing} className="mt-2 block font-display text-[18px] font-bold uppercase tracking-[4px]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
-              {meta && <span className="ws-mono mt-2 block max-w-[82px] text-[7px] leading-[1.45]" style={{ color: "#888898" }}>{meta}</span>}
+          <section className="ws-anatomy-stage relative mt-2 h-[252px]">
+            <div className="absolute left-6 top-2 z-[3] w-[76px] overflow-hidden">
+              <Editable enabled={editing} className="block font-display text-[52px] font-bold leading-[.82]">{props.dayCode}</Editable>
+              <Editable enabled={editing} className="ws-day-type mt-3 block font-display text-[16px] font-bold uppercase leading-[1.15]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
+              {meta && <span className="ws-mono mt-3 block text-[10px] leading-[1.5]" style={{ color: "#888898" }}>{meta}</span>}
             </div>
-            <div className="absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} /></div>
-            <svg className="pointer-events-none absolute inset-0" width="390" height="316" aria-hidden="true">
+            <div className="ws-anatomy-figure absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} /></div>
+            <svg className="pointer-events-none absolute inset-0" width="390" height="252" aria-hidden="true">
               {callouts.map((c, i) => {
                 const [ax, ay] = GROUPS[c.key].anchor;
-                const x1 = FX + ax, y1 = FY + ay, x2 = 262, y2 = slots[i] + 22;
+                const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 262, y2 = slots[i] + 25;
                 return (
                   <g key={c.key}>
-                    <path d={`M${x1} ${y1} C${x1 + 30} ${y1}, ${x2 - 30} ${y2}, ${x2} ${y2}`} fill="none" stroke={GROUPS[c.key].color} strokeOpacity=".45" strokeWidth=".75" />
+                    <path d={`M${x1} ${y1} C${x1 + 18} ${y1}, ${x2 - 16} ${y2}, ${x2} ${y2}`} fill="none" stroke={GROUPS[c.key].color} strokeOpacity=".45" strokeWidth=".75" />
                     <circle cx={x1} cy={y1} r="1.8" fill={GROUPS[c.key].color} />
                   </g>
                 );
@@ -235,12 +236,12 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
             </svg>
             {callouts.map((c, i) => (
               <div key={c.key} className="ws-glass absolute" style={{ left: 262, top: slots[i], width: 104 }}>
-                <span className="ws-mono block text-[6.5px]" style={{ color: "#888898" }}>{GROUPS[c.key].label}</span>
+                <span className="ws-mono block text-[10px] leading-tight" style={{ color: "#A0A0B2" }}>{GROUPS[c.key].label}</span>
                 <span className="block font-display text-[22px] font-bold leading-none" style={{ color: GROUPS[c.key].color }}>{c.pct}<span className="text-[11px] opacity-70">%</span></span>
                 <span className="ws-bar mt-1 block"><i style={{ width: `${Math.max(4, c.pct)}%`, background: GROUPS[c.key].color }} /></span>
               </div>
             ))}
-            {callouts.length > 0 && <span className="ws-mono absolute text-[8px] font-bold" style={{ left: 262, top: 262, color: "#A0A0B2" }}>EXERCÍCIOS DO DIA</span>}
+            {callouts.length > 0 && <span className="ws-mono absolute text-[10px] font-bold" style={{ left: 262, top: 236, color: "#A0A0B2" }}>EXERCÍCIOS DO DIA</span>}
           </section>
 
           {/* stats */}
@@ -256,28 +257,27 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
           {props.focusAlert && (
             <div className="mx-6 mt-4 flex items-start gap-3">
               <span className="ws-chip shrink-0" style={{ color: "#03030a", background: "#FF4D6D", borderColor: "#FF4D6D" }}>APEX</span>
-              <Editable enabled={editing} className="line-clamp-2 text-[8px] leading-[1.5]" style={{ color: "#F0F0F5", opacity: .75 }}>{props.focusAlert}</Editable>
+              <Editable enabled={editing} className="text-[10px] leading-[1.5]" style={{ color: "#F0F0F5", opacity: .75 }}>{props.focusAlert}</Editable>
             </div>
           )}
 
           {/* exercícios */}
-          <section className="mx-6 mt-4 flex-1 overflow-hidden">
-            <span className="ws-mono block pb-2 text-[6.5px]" style={{ color: "#3a3a4a" }}>{props.exercises.length} EXERCÍCIOS</span>
-            {visible.map((e) => (
-              <div key={`${e.number}-${e.name}`} className="flex items-center gap-3 py-[5px]">
-                <span className="ws-mono w-4 text-[8px]" style={{ color: "#3a3a4a" }}>{String(e.number).padStart(2, "0")}</span>
+          <section className="mx-6 mt-4">
+            <span className="ws-mono block pb-2 text-[10px]" style={{ color: "#888898" }}>{props.exercises.length} EXERCÍCIOS</span>
+            {props.exercises.map((e) => (
+              <div key={`${e.number}-${e.name}`} className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-start gap-2 py-2">
+                <span className="ws-mono pt-[2px] text-[10px]" style={{ color: "#888898" }}>{String(e.number).padStart(2, "0")}</span>
                 <div className="min-w-0 flex-1">
-                  <Editable enabled={editing} className="block truncate font-display text-[12px] font-bold leading-tight">{e.name}</Editable>
-                  <Editable enabled={editing} className="ws-mono block truncate text-[6.5px] normal-case tracking-[.5px]" style={{ color: "#888898" }}>{e.sub}</Editable>
+                  <Editable enabled={editing} className="block break-words font-display text-[12px] font-bold leading-[1.2]">{e.name}</Editable>
+                  <Editable enabled={editing} className="ws-exercise-muscle block break-words font-mono text-[12px] uppercase leading-[1.2]" style={{ color: "#888898" }}>{e.sub}</Editable>
                 </div>
                 {e.pills[0] && <span className="ws-chip shrink-0" style={{ color: "#B8922A" }}>{e.pills[0]}</span>}
               </div>
             ))}
-            {rest > 0 && <span className="ws-mono block pt-1 text-[6.5px]" style={{ color: "#888898" }}>+ {rest} EXERCÍCIOS</span>}
           </section>
 
           {/* footer */}
-          <footer className="flex items-end justify-between px-6 pb-6 pt-3">
+          <footer className="mt-6 flex items-end justify-between px-6 pb-6 pt-6">
             <div>
               <Editable enabled={editing} className="block font-display text-[10px] font-bold">{props.coachName || "Coach Diogo Mello"}</Editable>
               <span className="block text-[7px] italic" style={{ color: "#B8922A" }}>Transformação é sistema.</span>
