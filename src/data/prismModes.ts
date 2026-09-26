@@ -2,6 +2,7 @@
 
 export type PrismMode =
   | "post_pronto"
+  | "command_center"
   | "reels_studio"
   | "reel_diario"
   | "pack_dia"
@@ -29,6 +30,14 @@ export type PrismModeDef = {
 };
 
 export const PRISM_MODES: PrismModeDef[] = [
+  {
+    id: "command_center",
+    emoji: "🎯",
+    label: "Command Center",
+    desc: "Viral Decoder, Content Forge, Hook Lab e Sales Sniper",
+    color: "#00D4FF",
+    subtypes: [],
+  },
   {
     id: "reels_studio",
     emoji: "🎥",

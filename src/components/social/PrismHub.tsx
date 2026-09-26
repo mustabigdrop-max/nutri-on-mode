@@ -7,6 +7,7 @@ import TechReelsPanel from "./TechReelsPanel";
 import ContentPackPanel from "./ContentPackPanel";
 import DailyReelPanel from "./DailyReelPanel";
 import ReelsStudioPanel from "./ReelsStudioPanel";
+import CommandCenterPanel from "./CommandCenterPanel";
 import HookBankPanel from "./HookBankPanel";
 import ContentCalendarPanel from "./ContentCalendarPanel";
 import { PRISM_MODES, modeById, type PrismMode } from "@/data/prismModes";
@@ -56,6 +57,7 @@ export default function PrismHub({
     return <DailyReelPanel packMode={mode === "pack_dia"} onBack={() => setMode(null)} ctx={ctx} handle={handle} />;
   }
 
+  if (mode === "command_center") return <CommandCenterPanel onBack={() => setMode(null)} />;
   if (mode === "hooks") return <HookBankPanel onBack={() => setMode(null)} />;
   if (mode === "calendario") return <ContentCalendarPanel onBack={() => setMode(null)} />;
 
