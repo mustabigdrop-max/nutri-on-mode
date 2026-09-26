@@ -36,16 +36,16 @@ export interface WorkoutShareCardProps {
 /* ─── Grupos musculares: shapes do lado esquerdo (espelhados) + âncora do lado direito ─── */
 type GroupKey = "pec" | "delt" | "bi" | "tri" | "fore" | "abs" | "obl" | "quad" | "calf";
 const GROUPS: Record<GroupKey, { label: string; test: RegExp; color: string; paths: string[]; anchor: [number, number] }> = {
-  pec: { label: "PEITORAL", test: /peit|pec|supino|crucifix|chest|fly/i, color: "#FF4D6D", anchor: [128, 90],
+  pec: { label: "PEITORAL", test: /peit|pec|supino|crucifix|chest|fly/i, color: "#00D4FF", anchor: [128, 90],
     paths: ["M99 76 C90 72 76 72 67 80 C62 90 65 102 75 107 C85 110 95 106 99 101 Z"] },
-  delt: { label: "DELTOIDES", test: /ombro|delt|desenvolv|elevação lateral|lateral raise|press militar/i, color: "#00D4FF", anchor: [150, 82],
+  delt: { label: "DELTOIDES", test: /ombro|delt|desenvolv|elevação lateral|lateral raise|press militar/i, color: "#B8922A", anchor: [150, 82],
     paths: ["M67 69 C57 69 49 78 48 92 C52 99 58 99 63 93 C65 85 69 77 76 73 Z"] },
-  tri: { label: "TRÍCEPS", test: /tr[ií]ceps|francês|testa|pushdown|mergulho|dip/i, color: "#B8922A", anchor: [155, 116],
-    paths: ["M48 98 C44 110 43 123 46 134 C50 131 52 119 53 104 Z"] },
+  tri: { label: "TRÍCEPS", test: /tr[ií]ceps|francês|testa|pushdown|mergulho|dip/i, color: "#8866CC", anchor: [155, 116],
+    paths: ["M48 96 C41 105 39 122 43 138 C48 139 53 127 55 106 C54 101 52 98 48 96 Z"] },
   bi: { label: "BÍCEPS", test: /b[ií]ceps|rosca|curl/i, color: "#AFA9EC", anchor: [143, 116],
-    paths: ["M56 101 C52 113 52 125 54 133 C60 127 62 114 62 103 Z"] },
+    paths: ["M60 98 C53 100 49 113 50 128 C53 136 60 131 64 118 L65 103 Z"] },
   fore: { label: "ANTEBRAÇO", test: /antebra|punho|forearm/i, color: "#AFA9EC", anchor: [154, 158],
-    paths: ["M46 140 C42 154 42 169 44 181 C48 177 52 160 54 142 Z"] },
+    paths: ["M45 137 C39 151 39 171 43 184 C49 180 54 159 55 140 Z"] },
   abs: { label: "ABDÔMEN", test: /abd|core|prancha|crunch/i, color: "#5DCAA5", anchor: [104, 134],
     paths: ["M89 111 C93 109 98 109 99 111 L99 124 L89 124 Z", "M89 127 L99 127 L99 140 L89 140 Z", "M89 143 L99 143 L99 160 C94 161 90 157 89 150 Z"] },
   obl: { label: "OBLÍQUOS", test: /obl[ií]qu/i, color: "#5DCAA5", anchor: [116, 132],
@@ -57,7 +57,7 @@ const GROUPS: Record<GroupKey, { label: string; test: RegExp; color: string; pat
 };
 
 const BODY_HALF =
-  "M100 50 C96 50 93 52 92 56 C88 60 80 62 72 64 C60 66 50 74 47 88 C44 102 44 118 43 134 C42 150 40 166 41 184 C40 192 40 198 44 201 C48 200 49 194 49 186 C50 170 54 156 56 140 C58 126 62 112 65 102 C67 116 70 132 73 150 C74 160 72 168 73 176 C70 200 72 226 77 246 C74 262 76 280 80 292 C84 296 92 296 95 293 C94 278 94 262 93 248 C96 226 98 204 99 186 L100 186 Z";
+  "M100 50 C96 50 93 52 92 56 C88 60 80 62 72 64 C58 66 47 74 44 88 C40 103 40 120 40 135 C38 151 37 168 39 185 C38 194 40 201 44 202 C50 201 51 194 50 185 C51 168 55 154 57 139 C59 124 63 111 66 101 C68 116 70 132 73 150 C74 160 72 168 73 176 C70 200 72 226 77 246 C74 262 76 280 80 292 C84 296 92 296 95 293 C94 278 94 262 93 248 C96 226 98 204 99 186 L100 186 Z";
 
 function Editable({ children, enabled, className = "", style }: { children: ReactNode; enabled: boolean; className?: string; style?: CSSProperties }) {
   return <span className={className} style={style} contentEditable={enabled} suppressContentEditableWarning>{children}</span>;
@@ -86,7 +86,7 @@ function AnatomyFigure({ active }: { active: Array<{ key: GroupKey; pct: number 
     const g = GROUPS[key];
     const pct = map.get(key);
     const on = pct !== undefined;
-    const intensity = on ? 0.45 + 0.55 * Math.max(0.15, pct! / 100) : 0;
+    const intensity = on ? 0.45 + 0.55 * Math.max(0.15, pct / 100) : 0;
     const shapes = (fill: string, extra?: object) => (
       <>
         {g.paths.map((d, i) => <path key={`l${i}`} d={d} fill={fill} {...extra} />)}
@@ -175,10 +175,11 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
     } finally { setExporting(false); }
   };
 
+  const inferredRir = props.stats.rir || (props.stats.rpe > 0 && props.stats.rpe <= 10 ? 10 - props.stats.rpe : 0);
   const stats = [
     { v: props.stats.series, l: "SÉRIES", c: "#00D4FF" },
     { v: props.stats.rpe, l: "RPE", c: "#B8922A" },
-    { v: props.stats.rir, l: "RIR", c: "#5DCAA5" },
+    { v: inferredRir, l: "RIR", c: "#5DCAA5" },
     { v: props.stats.minutes, l: "MIN", c: "#AFA9EC" },
   ];
   const visible = props.exercises.slice(0, 5);
@@ -210,7 +211,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
             <div className="absolute left-6 top-2 z-[3]">
               <Editable enabled={editing} className="block font-display text-[56px] font-bold leading-[.82] tracking-[-2px]">{props.dayCode}</Editable>
               <Editable enabled={editing} className="mt-2 block font-display text-[18px] font-bold uppercase tracking-[4px]" style={{ color: "#00D4FF" }}>{props.dayType}</Editable>
-              {meta && <span className="ws-mono mt-2 block text-[7px]" style={{ color: "#888898" }}>{meta}</span>}
+              {meta && <span className="ws-mono mt-2 block max-w-[82px] text-[7px] leading-[1.45]" style={{ color: "#888898" }}>{meta}</span>}
             </div>
             <div className="absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} /></div>
             <svg className="pointer-events-none absolute inset-0" width="390" height="316" aria-hidden="true">
@@ -232,7 +233,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
                 <span className="ws-bar mt-1 block"><i style={{ width: `${Math.max(4, c.pct)}%`, background: GROUPS[c.key].color }} /></span>
               </div>
             ))}
-            {callouts.length > 0 && <span className="ws-mono absolute text-[5.5px]" style={{ left: 262, top: 262, color: "#3a3a4a" }}>% DOS EXERCÍCIOS DO DIA</span>}
+            {callouts.length > 0 && <span className="ws-mono absolute text-[8px] font-bold" style={{ left: 262, top: 262, color: "#A0A0B2" }}>EXERCÍCIOS DO DIA</span>}
           </section>
 
           {/* stats */}

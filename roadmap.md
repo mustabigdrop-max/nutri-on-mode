@@ -23,3 +23,4 @@
 - [x] Integrar o Share View aos dados reais do treino salvo
 - [x] Validar tipagem e exportação do Share View
 - [ ] Validar visual autenticado do Share View — aguarda uma sessão ativa de aluno na prévia
+- [x] Ajustar ativação muscular, corpo, rótulo e RIR do card TrainingON
