@@ -42,12 +42,12 @@ const EXERCISE_RULES: Array<[RegExp, MuscleKey[]]> = [
   [/abdutora|abducao/, ["hipabd"]],
   [/adutora|aducao/, ["add"]],
   [/panturr|gemeos|calf|soleo/, ["calf"]],
-  [/supino|crucifix|fly|peck|flexao de braco/, ["pec", "delt", "tri"]],
-  [/desenvolv|militar|arnold/, ["delt", "tri"]],
+  [/supino|crucifix|fly|peck|flexao de braco/, ["pec"]],
+  [/desenvolv|militar|arnold/, ["delt"]],
   [/elevacao lateral|elevacao frontal|crucifixo inverso|face pull/, ["delt"]],
-  [/remada|puxada|pulldown|barra fixa|pull ?up/, ["lats", "bi"]],
+  [/remada|puxada|pulldown|barra fixa|pull ?up/, ["lats"]],
   [/encolhimento|shrug/, ["traps"]],
-  [/rosca|curl/, ["bi", "fore"]],
+  [/rosca|curl/, ["bi"]],
   [/tricep|frances|testa|pushdown|mergulho|dip/, ["tri"]],
   [/prancha|crunch|abdominal/, ["abs"]],
 ];
@@ -61,6 +61,9 @@ function musclesFromField(sub: string): MuscleKey[] {
   });
   return out;
 }
+
+// Empate: ordem de recrutamento (Push: peitoral > deltoides > tríceps).
+const TIE_ORDER: MuscleKey[] = ["pec", "delt", "tri", "quad", "ham", "glute", "lats", "calf"];
 
 export function computeMuscleActivation(exercises: ActivationInput[], warn: (msg: string) => void = console.warn): MuscleActivation[] {
   const volume = new Map<MuscleKey, number>();
@@ -85,7 +88,7 @@ export function computeMuscleActivation(exercises: ActivationInput[], warn: (msg
   return [...volume.entries()]
     .map(([key, v]) => ({ key, volume: v, pct: Math.round((v / total) * 100) }))
     .filter((a) => a.pct > 0)
-    .sort((a, b) => b.volume - a.volume);
+    .sort((a, b) => b.volume - a.volume || TIE_ORDER.indexOf(a.key) - TIE_ORDER.indexOf(b.key));
 }
 
 const BACK_LEADERS: MuscleKey[] = ["ham", "glute", "hipabd", "lats", "traps", "lower"];

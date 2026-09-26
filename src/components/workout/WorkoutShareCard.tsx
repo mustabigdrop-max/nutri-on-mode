@@ -158,7 +158,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
   const [viewOverride, setViewOverride] = useState<View | null>(null);
   const view: View = viewOverride ?? autoView(active);
   // Cards: até 4 grupos mais ativados com representação na vista atual.
-  const callouts = active.filter((a) => GROUPS[a.key][view]).slice(0, 4);
+  const callouts = active.slice(0, 4);
   const fileDate = useMemo(() => props.date.toLowerCase().replace(/\s+/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""), [props.date]);
 
   const renderPng = async () => {
@@ -228,7 +228,9 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
             <div className="ws-anatomy-figure absolute" style={{ left: FX, top: FY }}><AnatomyFigure active={active} view={view} /></div>
             <svg className="pointer-events-none absolute inset-0" width="390" height="256" aria-hidden="true">
               {callouts.map((c, i) => {
-                const [ax, ay] = GROUPS[c.key][view]!.anchor;
+                const def = GROUPS[c.key][view];
+                if (!def) return null;
+                const [ax, ay] = def.anchor;
                 const x1 = FX + ax * FIGURE_SCALE, y1 = FY + ay * FIGURE_SCALE, x2 = 262, y2 = slots[i] + 27;
                 return (
                   <g key={c.key}>
