@@ -1209,11 +1209,6 @@ Português. Específico. Científico. Zero genérico.`;
             );
           })()}
 
-          {missingName && (
-            <p className="text-[10px] text-center font-bold" style={{ color: "#f87171" }}>
-              ⚠️ Preencha o NOME DO CLIENTE acima para liberar a geração
-            </p>
-          )}
           {!fiberProfile && (
             <p className="text-[9px] text-center" style={{ color: TEXT_MUTED }}>
               💡 Vá em <b>Fibras</b> e converse com o agente para ativar a prescrição sincronizada
