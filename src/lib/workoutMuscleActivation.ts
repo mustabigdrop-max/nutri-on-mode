@@ -12,6 +12,7 @@ export const normalizeMuscleText = (s: string) =>
 
 // Ordem importa: termos mais específicos primeiro (abdutor antes de abdômen, posterior de coxa antes de coxa).
 const SYNONYMS: Array<[MuscleKey, RegExp]> = [
+  ["delt", /ombro|delt/],
   ["hipabd", /abdut|gluteo medio|glute med/],
   ["add", /adut/],
   ["ham", /posterior(es)? de coxa|posterior|isquio|femora|hamstring|flexor(es)? de joelho/],

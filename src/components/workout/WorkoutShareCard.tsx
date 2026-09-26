@@ -38,7 +38,7 @@ export interface WorkoutShareCardProps {
 
 // Frase de foco (≤90 caracteres) a partir do músculo principal do dia.
 const FOCUS_LINES: Partial<Record<MuscleKey, string>> = {
-  pec: "Peito não cresce com pressa. Controle a descida e dono da carga é você.",
+  pec: "Peito não cresce com pressa. Controle a descida e domine a carga.",
   delt: "Ombro largo é construído série por série. Nada de balanço.",
   tri: "Braço grande é tríceps. Trave o cotovelo e aperte até o fim.",
   bi: "Rosca roubada não conta. Cotovelo parado, bíceps trabalhando.",
