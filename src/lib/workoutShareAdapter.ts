@@ -65,9 +65,10 @@ export function buildWorkoutShareData(day: ParsedDay, meta: WorkoutShareMeta): W
     const muscle = exercise.muscle_target?.split(/[·,(]/)[0]?.trim();
     if (muscle) muscleSeries.set(muscle, (muscleSeries.get(muscle) || 0) + exerciseSetCount(exercise));
   });
-  const shareExercises: WorkoutShareExercise[] = exercises.slice(0, 7).map((exercise, index) => ({
+  const shareExercises: WorkoutShareExercise[] = exercises.map((exercise, index) => ({
     number: exercise.order || index + 1,
     name: exercise.name,
+    sets: exerciseSetCount(exercise),
     sub: exercise.muscle_target || "Grupo não informado",
     pills: sharePills(exercise),
     color: /unilateral|corretiv|reabil/i.test(`${exercise.name} ${exercise.notes || ""}`)
