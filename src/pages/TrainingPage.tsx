@@ -1187,7 +1187,8 @@ Português. Específico. Científico. Zero genérico.`;
           {(() => {
             const durEst = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
             const blockedByTime = durEst.diff <= -15;
-            const disabled = loading || blockedByTime;
+            const missingName = !clientName.trim();
+            const disabled = loading || blockedByTime || missingName;
             return (
               <Button
                 onClick={generate}
