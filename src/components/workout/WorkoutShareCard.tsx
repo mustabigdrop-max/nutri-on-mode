@@ -285,7 +285,7 @@ export default function WorkoutShareCard(props: WorkoutShareCardProps) {
               </div>
             )}
             {active.length > 0 && (
-              <div className="mt-3">
+              <div className="mt-5">
                 <div className="flex h-[6px] w-full gap-[2px]">
                   {active.map((a) => <i key={a.key} style={{ width: `${a.pct}%`, background: a.color, opacity: Math.max(.45, a.intensity) }} />)}
                 </div>
