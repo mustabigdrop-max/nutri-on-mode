@@ -3,7 +3,7 @@ import { Copy, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { cleanCaption } from "@/lib/captionText";
+import { cleanCaption, toText } from "@/lib/captionText";
 import { TIPO_CARROSSEL_LABEL, type PosSlidesResult, type TipoCarrossel } from "@/lib/carouselPostConfig";
 
 const copiar = (texto: string, label: string) => {
@@ -40,8 +40,20 @@ export default function PosSlidesPanel({
         body: { mode: "pos_slides", tipoCarrossel: tipo, topic: tema, dados: dados ?? null, grupo, handle },
       });
       if (error) throw error;
-      const r = (data?.result || {}) as PosSlidesResult;
-      setRes({ ...r, legenda: cleanCaption(r.legenda) });
+      const r = (data?.result || {}) as Record<string, unknown>;
+      const tags = (v: unknown) => (Array.isArray(v) ? v.map(toText).filter(Boolean) : toText(v).split(/\s+/).filter(Boolean));
+      setRes({
+        ...(r as PosSlidesResult),
+        legenda: cleanCaption(r.legenda ?? r.caption ?? r),
+        self_comment: toText(r.self_comment),
+        cta: toText(r.cta),
+        cta_save: toText(r.cta_save),
+        melhor_horario: toText(r.melhor_horario),
+        dica_engajamento: toText(r.dica_engajamento),
+        disclaimer: toText(r.disclaimer),
+        hashtags_top5: tags(r.hashtags_top5),
+        hashtags_15: tags(r.hashtags_15),
+      } as PosSlidesResult);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não consegui gerar agora.");
     } finally {
