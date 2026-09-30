@@ -115,6 +115,17 @@ export default function CoachWorkoutEditorPage() {
 
   const handleSave = async () => {
     if (!model || !selectedId) return;
+    // Exercícios sem nome são descartados ao salvar — detecta dias que ficariam vazios.
+    const emptyDays = model.days
+      .map((d, i) => ({ label: `D${d.day_number || i + 1}`, title: d.session_title.trim(), count: d.exercises.filter((e) => e.name.trim()).length }))
+      .filter((d) => d.count === 0);
+    if (emptyDays.length) {
+      const names = emptyDays.map((d) => (d.title ? `${d.label} (${d.title})` : d.label)).join(", ");
+      const msg = emptyDays.length === 1
+        ? `O dia ${names} está sem exercícios, deseja salvar assim mesmo?`
+        : `Os dias ${names} estão sem exercícios, deseja salvar assim mesmo?`;
+      if (!window.confirm(msg)) return;
+    }
     setSaving(true);
     const protocol_text = serializeEditableProtocol(model);
     const { error } = await supabase.from("training_protocols").update({ protocol_text }).eq("id", selectedId);
