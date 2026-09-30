@@ -74,9 +74,10 @@ export function parseMceDailyNotes(raw?: string | null): MceDailyNotes {
   if (!raw) return { ...emptyMceDailyNotes(), manualScores: undefined };
   try {
     const parsed = JSON.parse(raw) as MceDailyNotes;
-    return { ...emptyMceDailyNotes(), ...parsed, manualScores: { ...emptyMceDailyNotes().manualScores, ...parsed.manualScores } };
+    if (!parsed || typeof parsed !== "object") return { ...emptyMceDailyNotes(), nightReview: raw, manualScores: undefined };
+    return { ...emptyMceDailyNotes(), ...parsed, manualScores: parsed.manualScores ? { M: 7, C: 7, E: 7, ...parsed.manualScores } : undefined };
   } catch {
-    return { ...emptyMceDailyNotes(), nightReview: raw };
+    return { ...emptyMceDailyNotes(), nightReview: raw, manualScores: undefined };
   }
 }
 
@@ -98,20 +99,17 @@ export function levelFor(score: number): { level: MceLevel; next: MceLevel | nul
 export function dailyScoresFromCheckin(row: Partial<CheckinRow>): Record<PillarKey, number> {
   const notes = parseMceDailyNotes(row.notes);
   const manual = notes.manualScores;
-  if (manual) {
-    return {
-      M: clampNoteScore(manual.M) * 10,
-      C: clampNoteScore(manual.C) * 10,
-      E: clampNoteScore(manual.E) * 10,
-    };
-  }
   const v = (n?: number) => Math.max(1, Math.min(10, Number(n) || 1));
   const stressInverted = 11 - v(row.stress_level);
-  return {
+  const computed = {
     M: Math.round(((v(row.focus_clarity) + stressInverted) / 2) * 10),
     C: Math.round(((v(row.nutrition_adherence) + v(row.hydration)) / 2) * 10),
     E: Math.round(((v(row.movement) + v(row.sleep_quality)) / 2) * 10),
   };
+  if (!manual) return computed;
+  // Nota manual do dia complementa (não substitui) as respostas do check-in.
+  const blend = (k: PillarKey) => Math.round((computed[k] + clampNoteScore(manual[k]) * 10) / 2);
+  return { M: blend("M"), C: blend("C"), E: blend("E") };
 }
 
 export function rollingScores(
