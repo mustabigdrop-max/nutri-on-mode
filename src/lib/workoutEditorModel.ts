@@ -9,6 +9,8 @@ export type EditableExercise = {
   rir: string;
   rest: string;
   notes: string;
+  /** Objeto original do exercício — preservado ao salvar (top_set, tempo, load…). */
+  raw?: Record<string, unknown>;
 };
 
 export type EditableDay = {
@@ -18,6 +20,8 @@ export type EditableDay = {
   session_notes: string;
   warmup: EditableExercise[];
   exercises: EditableExercise[];
+  /** Objeto original do dia — chaves extras preservadas ao salvar. */
+  raw?: Record<string, unknown>;
 };
 
 export type EditableProtocol = {
@@ -26,6 +30,8 @@ export type EditableProtocol = {
   days: EditableDay[];
   /** true quando o conteúdo original já era estruturado com dias e exercícios. */
   wasStructured: boolean;
+  /** Texto original quando o protocolo era texto livre (preservado em original_text). */
+  originalText?: string;
 };
 
 export const emptyExercise = (): EditableExercise => ({
@@ -67,6 +73,7 @@ function exerciseFromRaw(raw: any): EditableExercise {
     rir: text(base.rir),
     rest: text(base.rest) || text(base.rest_seconds) || text(base.descanso),
     notes: text(safe.notes) || text(safe.observacao) || text(safe.execution_cues),
+    raw: raw && typeof raw === "object" ? { ...raw } : undefined,
   };
 }
 
@@ -129,30 +136,32 @@ export function toEditableProtocol(content: unknown): EditableProtocol {
         session_notes: text(raw?.session_notes),
         warmup: (Array.isArray(raw?.warmup) ? raw.warmup : []).map(exerciseFromRaw),
         exercises: (Array.isArray(raw?.exercises) ? raw.exercises : []).map(exerciseFromRaw),
+        raw: raw && typeof raw === "object" ? { ...raw } : undefined,
       })),
     };
   }
 
   const parsed = parseProtocolToDays(content);
-  const days = parsed.days.filter((day) => (day.exercises || []).length > 0).map(dayFromParsed);
-  return { extra: {}, days, wasStructured: days.length > 0 };
+  const days = parsed.days.map(dayFromParsed);
+  const originalText = typeof content === "string" && content.trim() ? content : undefined;
+  return { extra: {}, days, wasStructured: false, originalText };
 }
 
 const cleanExercise = (exercise: EditableExercise, index: number) => {
-  const out: Record<string, unknown> = { order: index + 1, name: exercise.name.trim() };
-  const optional: Array<[string, string]> = [
-    ["muscle_target", exercise.muscle_target],
-    ["sets", exercise.sets],
-    ["reps", exercise.reps],
-    ["rpe", exercise.rpe],
-    ["rir", exercise.rir],
-    ["rest", exercise.rest],
-    ["notes", exercise.notes],
-  ];
-  optional.forEach(([key, value]) => {
+  const out: Record<string, unknown> = { ...(exercise.raw || {}), order: index + 1, name: exercise.name.trim() };
+  const setField = (target: Record<string, unknown>, key: string, value: string) => {
     const trimmed = (value || "").trim();
-    if (trimmed) out[key] = trimmed;
-  });
+    if (trimmed) target[key] = trimmed; else delete target[key];
+  };
+  setField(out, "muscle_target", exercise.muscle_target);
+  setField(out, "notes", exercise.notes);
+  const structure = out.structure && typeof out.structure === "object" ? { ...(out.structure as Record<string, unknown>) } : null;
+  const work = structure && structure.work_sets && typeof structure.work_sets === "object"
+    ? { ...(structure.work_sets as Record<string, unknown>) }
+    : null;
+  const target = work || out;
+  (["sets", "reps", "rpe", "rir", "rest"] as const).forEach((key) => setField(target, key, exercise[key]));
+  if (work && structure) { structure.work_sets = work; out.structure = structure; }
   return out;
 };
 
@@ -160,15 +169,20 @@ const cleanExercise = (exercise: EditableExercise, index: number) => {
 export function serializeEditableProtocol(model: EditableProtocol): string {
   const training_days = model.days.map((day, index) => {
     const out: Record<string, unknown> = {
+      ...(day.raw || {}),
       day_number: day.day_number || index + 1,
       exercises: day.exercises.filter((e) => e.name.trim()).map(cleanExercise),
     };
-    if (day.session_title.trim()) out.session_title = day.session_title.trim();
-    if (day.estimated_duration.trim()) out.estimated_duration = day.estimated_duration.trim();
-    if (day.session_notes.trim()) out.session_notes = day.session_notes.trim();
+    delete out.title;
+    (["session_title", "estimated_duration", "session_notes"] as const).forEach((key) => {
+      if (day[key].trim()) out[key] = day[key].trim(); else delete out[key];
+    });
     const warmup = day.warmup.filter((e) => e.name.trim()).map(cleanExercise);
-    if (warmup.length) out.warmup = warmup;
+    if (warmup.length) out.warmup = warmup; else delete out.warmup;
     return out;
   });
-  return JSON.stringify({ ...model.extra, training_days }, null, 2);
+  const extra = model.originalText && !("original_text" in model.extra)
+    ? { ...model.extra, original_text: model.originalText }
+    : model.extra;
+  return JSON.stringify({ ...extra, training_days }, null, 2);
 }

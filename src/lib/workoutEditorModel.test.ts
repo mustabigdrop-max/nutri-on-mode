@@ -50,3 +50,23 @@ describe("workoutEditorModel", () => {
     expect(JSON.parse(serialized).training_days).toEqual([]);
   });
 });
+
+describe("workoutEditorModel — preservação", () => {
+  it("mantém top_set, backoff_sets, tempo e load ao salvar", () => {
+    const src = JSON.stringify({ training_days: [{ day_number: 1, custom: "x", exercises: [{ name: "Supino", tempo: "3-0-1-0", load: "80kg", structure: { top_set: { reps: "6" }, backoff_sets: [{ reps: "10" }], work_sets: { sets: "3", reps: "8" } } }] }] });
+    const model = toEditableProtocol(src);
+    model.days[0].exercises[0].reps = "10";
+    const out = JSON.parse(serializeEditableProtocol(model));
+    const ex = out.training_days[0].exercises[0];
+    expect(out.training_days[0].custom).toBe("x");
+    expect(ex.tempo).toBe("3-0-1-0");
+    expect(ex.load).toBe("80kg");
+    expect(ex.structure.top_set.reps).toBe("6");
+    expect(ex.structure.backoff_sets).toHaveLength(1);
+    expect(ex.structure.work_sets.reps).toBe("10");
+  });
+  it("guarda o texto livre original", () => {
+    const model = toEditableProtocol("texto livre sem estrutura");
+    expect(JSON.parse(serializeEditableProtocol(model)).original_text).toBe("texto livre sem estrutura");
+  });
+});

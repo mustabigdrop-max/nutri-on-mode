@@ -126,6 +126,9 @@ export default function CoachWorkoutEditorPage() {
         : `Os dias ${names} estão sem exercícios, deseja salvar assim mesmo?`;
       if (!window.confirm(msg)) return;
     }
+    if (!model.wasStructured && model.originalText) {
+      if (!window.confirm("Este treino está em texto livre — salvar vai convertê-lo para o formato com dias e exercícios. O texto original fica guardado junto. Deseja continuar?")) return;
+    }
     setSaving(true);
     const protocol_text = serializeEditableProtocol(model);
     const { error } = await supabase.from("training_protocols").update({ protocol_text }).eq("id", selectedId);
