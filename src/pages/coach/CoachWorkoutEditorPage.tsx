@@ -301,7 +301,7 @@ export default function CoachWorkoutEditorPage() {
                             {field.label}
                           </label>
                           <Input
-                            value={exercise[field.key]}
+                            value={String(exercise[field.key] ?? "")}
                             onChange={(event) => updateExercise(exerciseIndex, field.key, event.target.value)}
                             placeholder={field.placeholder}
                             className="h-9 rounded-none"
