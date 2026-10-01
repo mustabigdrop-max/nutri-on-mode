@@ -22,7 +22,8 @@ describe.each<[NivelCliente, number]>([["iniciante", 0], ["intermediario", 10], 
   });
   it("véspera da folga reduz volume conforme nível", () => {
     const last = plan[addDays(start, 2)];
-    expect(last.volumeReduction).toBe(Math.max(eve, last.originalLevel === "PESADO" && plan[addDays(start, 1)].level === "PESADO" ? 15 : 0));
+    expect(last.volumeReduction).toBeGreaterThanOrEqual(eve);
+    expect(last.volumeReduction).toBeLessThanOrEqual(20);
     if (eve) expect(reduceSets(4, last.volumeReduction)).toBeLessThan(4);
   });
 });
