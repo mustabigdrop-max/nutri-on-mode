@@ -10,6 +10,8 @@ import { athleteQuery, useAthleteTarget } from "@/hooks/useAthleteTarget";
 import WorkoutShareCard from "@/components/workout/WorkoutShareCard";
 import { buildWorkoutShareData } from "@/lib/workoutShareAdapter";
 import { Button } from "@/components/ui/button";
+import TrainingCyclePanel from "@/components/training/TrainingCyclePanel";
+import { useAuth } from "@/contexts/AuthContext";
 
 const BG = "#020205";
 const GREEN = "#00FF88";
@@ -21,6 +23,7 @@ const DIM = "#A0A0A0";
 const MyTrainingPage = () => {
   const navigate = useNavigate();
   const targetId = useAthleteTarget();
+  const { user } = useAuth();
   const { loading, training } = useAthletePlans(targetId || undefined);
   const [shareDayIndex, setShareDayIndex] = useState(0);
 
@@ -92,6 +95,8 @@ const MyTrainingPage = () => {
       </header>
 
       <main className="px-4 max-w-3xl mx-auto">
+        <TrainingCyclePanel athleteUserId={targetId || user?.id} canConfigure={!!targetId} />
+
         {content ? (
           <MarkdownProtocolView content={content} title={training?.clientName || "Protocolo"} />
         ) : (

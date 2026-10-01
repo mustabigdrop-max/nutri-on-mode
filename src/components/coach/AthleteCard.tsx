@@ -39,6 +39,7 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [welcomeSentAt, setWelcomeSentAt] = useState<string | null>(null);
   const [validadeOpen, setValidadeOpen] = useState(false);
+  const [showCycle, setShowCycle] = useState(false);
   const color = RISK_COLOR[a.riskLevel];
 
   useEffect(() => {
@@ -233,6 +234,8 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
           <Trash2 className="w-3.5 h-3.5" /> Excluir
         </button>
       </div>
+
+      {showCycle && <TrainingCyclePanel athleteUserId={a.userId} canConfigure />}
 
       <DeleteAthleteDialog
         open={deleteOpen}
