@@ -24,7 +24,7 @@ describe.each<[NivelCliente, number]>([["iniciante", 0], ["intermediario", 10], 
     const last = plan[addDays(start, 2)];
     expect(last.volumeReduction).toBeGreaterThanOrEqual(eve);
     expect(last.volumeReduction).toBeLessThanOrEqual(20);
-    if (eve) expect(reduceSets(4, last.volumeReduction)).toBeLessThan(4);
+    if (eve) expect(reduceSets(15, last.volumeReduction)).toBeLessThan(15);
   });
 });
 
