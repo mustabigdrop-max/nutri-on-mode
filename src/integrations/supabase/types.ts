@@ -12813,6 +12813,8 @@ export type Database = {
           custom_sequence: string[] | null
           id: string
           pattern: string
+          priority_group: string | null
+          rest_type: string
           start_date: string
           updated_at: string
           updated_by: string | null
@@ -12823,6 +12825,8 @@ export type Database = {
           custom_sequence?: string[] | null
           id?: string
           pattern?: string
+          priority_group?: string | null
+          rest_type?: string
           start_date?: string
           updated_at?: string
           updated_by?: string | null
@@ -12833,6 +12837,8 @@ export type Database = {
           custom_sequence?: string[] | null
           id?: string
           pattern?: string
+          priority_group?: string | null
+          rest_type?: string
           start_date?: string
           updated_at?: string
           updated_by?: string | null
