@@ -12776,6 +12776,69 @@ export type Database = {
           },
         ]
       }
+      training_cycle_adjustments: {
+        Row: {
+          adjust_date: string
+          athlete_user_id: string
+          created_at: string
+          created_by: string
+          id: string
+          kind: string
+          note: string | null
+        }
+        Insert: {
+          adjust_date: string
+          athlete_user_id: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind: string
+          note?: string | null
+        }
+        Update: {
+          adjust_date?: string
+          athlete_user_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      training_cycle_configs: {
+        Row: {
+          athlete_user_id: string
+          created_at: string
+          custom_sequence: string[] | null
+          id: string
+          pattern: string
+          start_date: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          athlete_user_id: string
+          created_at?: string
+          custom_sequence?: string[] | null
+          id?: string
+          pattern?: string
+          start_date?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          athlete_user_id?: string
+          created_at?: string
+          custom_sequence?: string[] | null
+          id?: string
+          pattern?: string
+          start_date?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       training_exercise_overrides: {
         Row: {
           action: string
