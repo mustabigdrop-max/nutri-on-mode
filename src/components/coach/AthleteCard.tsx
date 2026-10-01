@@ -9,6 +9,7 @@ import WelcomeMessageDialog from "@/components/coach/WelcomeMessageDialog";
 import PlanValidityDialog from "@/components/coach/PlanValidityDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
+import TrainingCyclePanel, { TrainingCycleSummary } from "@/components/training/TrainingCyclePanel";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
   ok: "#00FF88",
@@ -113,6 +114,14 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
               {a.objetivo}
               {a.fase && a.fase !== "—" ? ` · ${a.fase}` : ""}
             </p>
+            <TrainingCycleSummary athleteUserId={a.userId} />
+            <button
+              type="button"
+              className="text-[11px] text-primary underline"
+              onClick={(e) => { e.stopPropagation(); setShowCycle((v) => !v); }}
+            >
+              {showCycle ? "Fechar escala" : "Escala de treino"}
+            </button>
           </div>
         </div>
 
