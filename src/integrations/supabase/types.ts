@@ -4600,6 +4600,30 @@ export type Database = {
           },
         ]
       }
+      creator_voice: {
+        Row: {
+          expressoes_evita: string[]
+          expressoes_usa: string[]
+          nicho: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          expressoes_evita?: string[]
+          expressoes_usa?: string[]
+          nicho?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          expressoes_evita?: string[]
+          expressoes_usa?: string[]
+          nicho?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cycle_tracking: {
         Row: {
           compostos: Json | null
@@ -10676,6 +10700,119 @@ export type Database = {
           real_data?: Json
           result?: Json
           script?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      retention_patterns: {
+        Row: {
+          amostras: number
+          confirmado: boolean
+          created_at: string
+          id: string
+          retencao_media: number | null
+          texto: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          amostras?: number
+          confirmado?: boolean
+          created_at?: string
+          id?: string
+          retencao_media?: number | null
+          texto: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          amostras?: number
+          confirmado?: boolean
+          created_at?: string
+          id?: string
+          retencao_media?: number | null
+          texto?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      retention_results: {
+        Row: {
+          created_at: string
+          curva_real: Json
+          id: string
+          pct_3s: number | null
+          script_id: string
+          tempo_medio: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          curva_real?: Json
+          id?: string
+          pct_3s?: number | null
+          script_id: string
+          tempo_medio?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          curva_real?: Json
+          id?: string
+          pct_3s?: number | null
+          script_id?: string
+          tempo_medio?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_results_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "retention_scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retention_scripts: {
+        Row: {
+          created_at: string
+          estrutura: Json
+          id: string
+          nota_geral: number | null
+          notas: Json
+          objetivo: string
+          rede: string
+          roteiro: Json
+          tema: string
+          tom: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estrutura?: Json
+          id?: string
+          nota_geral?: number | null
+          notas?: Json
+          objetivo: string
+          rede?: string
+          roteiro?: Json
+          tema: string
+          tom: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estrutura?: Json
+          id?: string
+          nota_geral?: number | null
+          notas?: Json
+          objetivo?: string
+          rede?: string
+          roteiro?: Json
+          tema?: string
+          tom?: string
           user_id?: string
         }
         Relationships: []
