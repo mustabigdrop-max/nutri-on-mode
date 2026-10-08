@@ -10620,6 +10620,36 @@ export type Database = {
         }
         Relationships: []
       }
+      retention_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          pattern_keys: string[]
+          real_data: Json
+          result: Json
+          script: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pattern_keys?: string[]
+          real_data: Json
+          result: Json
+          script: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pattern_keys?: string[]
+          real_data?: Json
+          result?: Json
+          script?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       risk_interventions: {
         Row: {
           acao_resultante: string | null
