@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import CommandCenterAutomation from "./CommandCenterAutomation";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
 
 /* ═══════════════════════════════════════════════════
@@ -513,6 +514,10 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                 <button type="button" onClick={salvarMeta} style={{ ...btn(true), flex: "none" }}>DEFINIR META</button>
               </div>
             )}
+          </Panel>
+
+          <Panel>
+            <CommandCenterAutomation onChanged={load} />
           </Panel>
 
           <Panel>
