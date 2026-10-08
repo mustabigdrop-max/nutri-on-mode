@@ -41,13 +41,12 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
   // Scheduled runs (cc_automation) authenticate with the private cron key and pass the target user.
-  let auth: { ok: true; userId: string } | { ok: false; status: number };
   const cronKey = req.headers.get("x-cron-key");
-  if (cronKey) {
+  const auth: { ok: true; userId: string } | { ok: false; status: number } = cronKey ? await (async () => {
     const { data } = await adminClient().from("cc_job_state").select("cron_key").eq("id", 1).maybeSingle();
     const uid = req.headers.get("x-user-id") ?? "";
-    auth = data?.cron_key && data.cron_key === cronKey && /^[0-9a-f-]{36}$/.test(uid) ? { ok: true, userId: uid } : { ok: false, status: 401 };
-  } else auth = await requireUser(req);
+    return data?.cron_key && data.cron_key === cronKey && /^[0-9a-f-]{36}$/.test(uid) ? { ok: true as const, userId: uid } : { ok: false as const, status: 401 };
+  })() : await requireUser(req);
   if (!auth.ok) return json({ error: "Não autenticado" }, auth.status);
   const origem = cronKey ? "automacao" : "manual";
   if (!ARQUITETO_PROMPT.trim() || !REDATOR_PROMPT.trim() || !CRITICO_PROMPT.trim())
