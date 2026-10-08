@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireUser, adminClient } from "../_shared/auth.ts";
 import { loadCreatorProfile } from "../_shared/loadCreatorProfile.ts";
 import { creatorScriptPrompt } from "../_shared/creatorScriptRules.ts";
+import { reviewWithGateway } from "../_shared/retentionGateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -160,11 +161,15 @@ const callGateway = async (apiKey: string, model: string, messages: unknown[]) =
   if (!res.ok) throw new Error(`Gateway ${res.status}: ${(await res.text()).slice(0, 400)}`);
   const json = await res.json();
   const raw = json?.choices?.[0]?.message?.content ?? "{}";
+  let parsed: unknown;
   try {
-    return JSON.parse(raw);
+    parsed = JSON.parse(raw);
   } catch {
-    return JSON.parse(String(raw).replace(/```json|```/g, "").trim());
+    parsed = JSON.parse(String(raw).replace(/```json|```/g, "").trim());
   }
+  const rules = messages.filter(m => typeof m === "object" && m !== null)
+    .map(m => (m as { content?: unknown }).content).filter(c => typeof c === "string").join("\n");
+  return await reviewWithGateway(parsed, apiKey, rules);
 };
 
 const PROMPT = (ctx: string, filesCount: number, imgCount: number, videoInfo: string, extra: string, identity: string, platformContext: string) =>
@@ -810,6 +815,7 @@ Responda JSON puro.`,
       parsed = JSON.parse(String(raw).replace(/```json|```/g, "").trim());
     }
 
+    parsed = await reviewWithGateway(parsed, apiKeyEnv, creatorScriptPrompt(creatorProfile, body));
     const fileTypes = [
       ...images.map(() => "image"),
       ...videos.map(() => "video"),

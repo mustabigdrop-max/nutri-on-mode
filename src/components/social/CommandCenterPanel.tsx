@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ACCENT2, Section, Pill, copyText } from "./socialUi";
 import { cleanCaption } from "@/lib/captionText";
+import { RetentionReview } from "./RetentionReview";
 
 type Tool = "decoder" | "forge" | "hooks" | "sniper" | "impact_angulos" | "impact_pesquisa" | "impact_writer";
 const TOOLS: { id: Tool; label: string; hint: string; placeholder: string; group: "cc" | "impact" }[] = [
@@ -23,13 +24,15 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState("");
-  const def = TOOLS.find((t) => t.id === tool)!;
+  const [review, setReview] = useState<unknown>(null);
+  const def = TOOLS.find((t) => t.id === tool) ?? TOOLS[0];
   const ccTools = TOOLS.filter((t) => t.group === "cc");
   const impactTools = TOOLS.filter((t) => t.group === "impact");
 
   const run = async () => {
     if (!input.trim()) return toast.error("Preencha o campo");
     setBusy(true);
+    setReview(null);
     try {
       const { data, error } = await supabase.functions.invoke("command-center", { body: { tool, input } });
       if (error) {
@@ -40,6 +43,7 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
       }
       if ((data as any)?.error) throw new Error((data as any).error);
       setResult(cleanCaption((data as any).result));
+      setReview(data?.critica_retencao);
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   };
 
@@ -48,11 +52,11 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
       <Button variant="ghost" size="sm" onClick={onBack} className="text-xs">← Modos</Button>
       <Section title="🎯 Command Center · analisa, multiplica e converte">
         <div className="flex flex-wrap gap-2">
-          {ccTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); }} />)}
+          {ccTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); setReview(null); }} />)}
         </div>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">✍️ Impact Writer · cria conteúdo pronto</p>
         <div className="flex flex-wrap gap-2">
-          {impactTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); }} />)}
+          {impactTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); setReview(null); }} />)}
         </div>
         <p className="text-xs text-muted-foreground">{def.hint}</p>
         <Textarea rows={4} value={input} onChange={(e) => setInput(e.target.value)} placeholder={def.placeholder} />
@@ -63,6 +67,7 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
       {result && (
         <Section title={def.label} right={<Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => copyText(result)}><Copy className="w-3 h-3" /> Copiar</Button>}>
           <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed">{result}</pre>
+          <RetentionReview value={review} />
         </Section>
       )}
     </div>
