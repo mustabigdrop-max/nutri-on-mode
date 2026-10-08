@@ -6647,6 +6647,51 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          aceite_dados: boolean
+          arroba: string
+          created_at: string
+          desafio: string
+          id: string
+          nicho: string
+          nome: string
+          nota: number | null
+          pilares: Json | null
+          rede: string
+          seguidores: number
+          status: string
+        }
+        Insert: {
+          aceite_dados?: boolean
+          arroba: string
+          created_at?: string
+          desafio: string
+          id?: string
+          nicho: string
+          nome: string
+          nota?: number | null
+          pilares?: Json | null
+          rede: string
+          seguidores: number
+          status?: string
+        }
+        Update: {
+          aceite_dados?: boolean
+          arroba?: string
+          created_at?: string
+          desafio?: string
+          id?: string
+          nicho?: string
+          nome?: string
+          nota?: number | null
+          pilares?: Json | null
+          rede?: string
+          seguidores?: number
+          status?: string
+        }
+        Relationships: []
+      }
       marketplace_protocols: {
         Row: {
           coach_id: string

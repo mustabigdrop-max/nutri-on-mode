@@ -1,3 +1,5 @@
+import AnaliseGratuitaPage from "./pages/AnaliseGratuitaPage";
+import AdminLeadsPage from "./pages/admin/AdminLeadsPage";
 import { Suspense } from "react";
 import { lazyWithRetry as lazy } from "@/lib/lazyWithRetry";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
@@ -310,6 +312,8 @@ const App = () => (
             <Route path="/biological-age" element={<ProtectedRoute><BiologicalAgePage /></ProtectedRoute>} />
             <Route path="/lab" element={<CoachToolRoute><ProtectedRoute><LabPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+            <Route path="/admin/leads" element={<ProtectedRoute><AdminLeadsPage /></ProtectedRoute>} />
+            <Route path="/analise-gratuita" element={<AnaliseGratuitaPage />} />
             <Route path="/admin/apex-coach" element={<ProtectedRoute><AdminApexCoachPage /></ProtectedRoute>} />
             <Route path="/emotional-scan" element={<ProtectedRoute><EmotionalScanPage /></ProtectedRoute>} />
             <Route path="/refeicao-snap" element={<ProtectedRoute><RefeicaoSnapPage /></ProtectedRoute>} />
