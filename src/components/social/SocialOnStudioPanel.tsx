@@ -5,6 +5,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { callSocialAI } from "./socialUi";
+import RetentionEnginePanel from "./RetentionEnginePanel";
 import { compressImageFile, storyboardFromUrl } from "@/lib/socialMediaFrames";
 
 const T = {
@@ -704,6 +705,8 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
   ];
 
   return (
+    <>
+    <RetentionEnginePanel />
     <div style={{ background: T.bg, color: T.text, borderRadius: 12, overflow: "hidden", border: "1px solid #ffffff08" }}>
       {/* Header */}
       <div style={{ padding: "14px 20px", borderBottom: "1px solid #ffffff06", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -737,7 +740,7 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
           <UploadZone onFile={handleFile} />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginTop: 20 }}>
             {[
-              { icon: "💬", title: "Auto legendas", desc: "IA gera as falas" },
+              { icon: "💬", title: "Auto legendas", desc: "Análise gera as falas" },
               { icon: "🎨", title: "Editor visual", desc: "Fontes, cores, estilos" },
               { icon: "✦", title: "4 versões", desc: "Prontas pra cada formato" },
             ].map((f, i) => (

@@ -301,7 +301,7 @@ interface HookAnalyzerResult {
   rewrite_options?: HookRewrite[];
 }
 
-function HookAnalyzer() {
+export function HookAnalyzer() {
   const [hookText, setHookText] = useState("");
   const [hookType, setHookType] = useState("text");
   const [loading, setLoading] = useState(false);
@@ -735,7 +735,6 @@ function InstagramSEO() {
 
 const modules = [
   { id: "share", label: "Share Score", icon: "📤", color: T.cyan, component: ShareScore },
-  { id: "hook", label: "Hook Analyzer", icon: "⚡", color: T.purple, component: HookAnalyzer },
   { id: "save", label: "Save Triggers", icon: "⭐", color: T.gold, component: SaveTriggers },
   { id: "seo", label: "Instagram SEO", icon: "🔍", color: T.green, component: InstagramSEO },
 ];
@@ -765,7 +764,7 @@ export default function SocialOnCriticalPanel() {
       </div>
 
       <div style={{
-        display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0,
+        display: "grid", gridTemplateColumns: `repeat(${modules.length}, 1fr)`, gap: 0,
         borderBottom: `1px solid #ffffff06`,
       }}>
         {modules.map((m) => (
