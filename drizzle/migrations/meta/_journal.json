@@ -141,6 +141,13 @@
       "when": 1791481586503,
       "tag": "0019_retention_engine_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791484768428,
+      "tag": "0020_create_leads",
+      "breakpoints": true
     }
   ]
 }
