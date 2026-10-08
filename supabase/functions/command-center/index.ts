@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     const system = `${baseSpec}\n\nEXECUTE AGORA APENAS a ${def.label}. Coloque o "Formato de Saída" dessa ferramenta no campo content do JSON {"content":"texto da ferramenta"}, sem markdown com ** ou #. Nunca invente estudos, números de pesquisa ou códigos NEXUS: se não tiver certeza, escreva "sem referência confirmada". Métricas de score são estimativas da análise.\n\n${creatorScriptPrompt(profile, body)}`;
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "google/gemini-2.5-flash", response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, { role: "user", content: String(input).slice(0, 4000) }] }),
+      body: JSON.stringify({ model: "google/gemini-2.5-flash", response_format: { type: "json_object" }, messages: [{ role: "system", content: `${system}\nCONTRATO FINAL OBRIGATÓRIO: o campo content é SEMPRE uma string contendo o resultado inteiro da ferramenta, nunca objeto ou array. planejamento_retencao e roteiros_retencao são campos irmãos de content. Cada caminho de fala deve apontar a ["content"]. Não retorne somente o planejamento.` }, { role: "user", content: String(input).slice(0, 4000) }] }),
     });
     if (res.status === 429) return json({ error: "Limite de uso atingido. Tente em instantes." }, 429);
     if (res.status === 402) return json({ error: "Créditos esgotados no espaço de trabalho." }, 402);
