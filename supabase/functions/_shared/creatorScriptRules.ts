@@ -36,6 +36,7 @@ export function creatorScriptPrompt(profileValue: unknown, request: Record<strin
     expressoes_que_ele_usa: text(saved.expressoes_que_ele_usa),
     expressoes_que_ele_evita: text(saved.expressoes_que_ele_evita),
     ganchos_que_retiveram_mais: text(saved.ganchos_que_retiveram_mais),
+    estimulos_que_seguraram: text(saved.estimulos_que_seguraram),
     loops_que_funcionaram: text(saved.loops_que_funcionaram),
     ctas_que_converteram: text(saved.ctas_que_converteram),
     o_que_derrubou_retencao: text(saved.o_que_derrubou_retencao),

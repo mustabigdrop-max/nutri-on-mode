@@ -52,6 +52,6 @@ Deno.serve(async (req) => {
     }
     const parsed = await reviewWithGateway(draft, apiKey ?? "", creatorScriptPrompt(profile, body)) as Record<string, unknown>;
     if (typeof parsed.content !== "string") return json({ error: "Resposta inválida. Tente novamente." }, 502);
-    return json({ result: parsed.content, planejamento_retencao: parsed.planejamento_retencao, critica_retencao: parsed.critica_retencao });
+    return json({ result: parsed.content, planejamento_retencao: parsed.planejamento_retencao, critica_retencao: parsed.critica_retencao, roteiros_retencao: parsed.roteiros_retencao });
   } catch (e) { return json({ error: e instanceof Error ? e.message : "Erro" }, 500); }
 });
