@@ -1,3 +1,5 @@
+import { retentionPlanningPrompt } from "./retentionStructure.ts";
+
 export const SCRIPT_LIMITS = { wordsPerSentence: 14, minWordsPerSecond: 2.5, maxWordsPerSecond: 3 };
 
 export function spokenWordBudget(seconds: number) {
@@ -54,6 +56,10 @@ REGRAS UNIVERSAIS — prevalecem sobre qualquer regra conflitante de estilo:
 ${budget ? `- Para ${seconds}s de fala corrida: ${budget.min} a ${budget.max} palavras no total. Redistribua as frases, sem acelerar artificialmente.` : "- Quando a duração não vier, escolha tempos coerentes com a quantidade real de palavras."}
 - PROIBIDO abrir com: "oi", "fala pessoal", "hoje eu vou", "nesse vídeo", "você sabia", contexto político ou social vago.
 - Saúde, nutrição e suplementação: afirmações seguem o consenso científico e as fontes reais fornecidas. Sem promessa de resultado específico ("perca X kg em Y dias") ou cura. Se exigir cuidado médico, inclua uma ressalva curta na fala ou legenda existente. Não prescreva medicamentos.
+- Sem fonte confirmada fornecida, não use "a ciência provou", "estudos comprovam" ou prova científica como reinício. Use uma mudança de plano ou pergunta. Não prometa resultados duradouros, comer sem esforço ou ganhos garantidos.
+- MCE significa MENTALIDADE, COMPORTAMENTO, EXECUÇÃO. Nunca use "Mindset".
 - Nunca use "IA" ou "AI" no conteúdo público.
-- Responda SOMENTE em JSON válido no schema solicitado, sem texto externo ou cercas de markdown. Preserve o tipo de cada campo; não substitua uma string por objeto.`;
+- Responda SOMENTE em JSON válido no schema solicitado, sem texto externo ou cercas de markdown. Preserve o tipo de cada campo; não substitua uma string por objeto.
+
+${retentionPlanningPrompt(Number.isFinite(seconds) ? seconds : undefined)}`;
 }
