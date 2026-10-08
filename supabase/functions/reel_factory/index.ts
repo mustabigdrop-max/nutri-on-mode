@@ -2,7 +2,7 @@
 // Bounded chunks per invocation, per-batch lease, self-chaining with a hop budget and cooldown. Nothing is published.
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { CRITIC_LIMITS, normalizeCritique, objectiveChecks } from "../_shared/retentionCritic.ts";
-import { ARQUITETO_PROMPT, ATLAS, CRITICO_PROMPT, REDATOR_PROMPT } from "../gerar_reel/prompts.ts";
+import { ARQUITETO_PROMPT, ATLAS, CRITICO_PROMPT, REDATOR_PROMPT } from "../_shared/retentionPrompts.ts";
 import { IDEIAS_PROMPT } from "./prompts.ts";
 import { allocateFormulas, dedupThemes, estimateCalls, originality, preFilter, type Prior } from "./logic.ts";
 
