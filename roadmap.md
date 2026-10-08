@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Integrar crítico de retenção com contagens objetivas, revisão de até duas rodadas e notas visíveis
+- [ ] Testar limites do crítico e geração autenticada com revisão
 - [x] Planejar retenção antes de cada roteiro vertical com estrutura compartilhada e formatos preservados
 - [x] Validar limites com 8 testes e geração autenticada: 35s, três loops, blocos contínuos e campos antigos preservados
 - [ ] Refinar aderência emocional dos roteiros — geração real ainda devolveu CTA sem objetivo emocional válido
