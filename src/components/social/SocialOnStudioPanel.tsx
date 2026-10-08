@@ -918,5 +918,6 @@ export default function SocialOnStudioPanel({ ctx }: { ctx?: Record<string, unkn
         </div>
       )}
     </div>
+    </>
   );
 }
