@@ -7,7 +7,7 @@ const TONS = ["direto", "bem-humorado", "intenso"];
 const QUERO_MAIS = ["comentarios", "salvamentos", "compartilhamentos", "seguidores"];
 const FORCA = ["tensao", "relevancia_pessoal", "especificidade", "zero_aquecimento", "pergunta_aberta"];
 /** Every third reel tests a formula the creator has not measured yet, so ranking keeps learning. */
-export const EXPLORE_EVERY = 3;
+const EXPLORE_EVERY = 3;
 const CONTRATO_ARQUITETO = `\n\nCONTRATO DE FÓRMULA: escolha formula_id SOMENTE entre selecao_formula.permitidas (ids de formulas_atlas). Em modo "priorizar", prefira as do topo de ranking_formulas; em modo "explorar", teste uma delas. Se pedido.quero_mais vier preenchido, escolha o gatilho de CTA do Atlas para essa ação. Inclua no JSON: "formula_id": número, "formula_motivo": "uma frase", "gatilho_cta": "".`;
 const CONTRATO_CRITICO = `\n\nINCLUA no JSON "forca_gancho": {"tensao":0-2,"relevancia_pessoal":0-2,"especificidade":0-2,"zero_aquecimento":0-2,"pergunta_aberta":0-2} avaliando a abertura (bloco 1) pela Escala de Força do Gancho.`;
 type Block = { id: number; tempo: string; funcao: string; fala: string; texto_tela: string; estimulo_visual: string; gatilho: string };

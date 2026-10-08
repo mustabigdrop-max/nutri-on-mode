@@ -22,6 +22,23 @@ async function analyse(input: unknown): Promise<Record<string, any> | null> {
   return null;
 }
 
+const avg = (xs: unknown[]) => { const v = xs.filter(x => x != null && Number.isFinite(Number(x))).map(Number); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length * 10) / 10 : null; };
+/** Recomputed from saved results (one per reel), so recalibrating never inflates usos. */
+async function refreshFormulaStats(db: any, userId: string) {
+  const [{ data: scripts }, { data: results }, { data: formulas }] = await Promise.all([
+    db.from("retention_scripts").select("id, formula_id").eq("user_id", userId).not("formula_id", "is", null),
+    db.from("retention_results").select("script_id, pct_3s, comentarios, salvamentos").eq("user_id", userId),
+    db.from("hook_formulas").select("id, nome"),
+  ]);
+  const groups = new Map<number, any[]>();
+  for (const r of results ?? []) { const f = (scripts ?? []).find((s: any) => s.id === r.script_id)?.formula_id; if (f) groups.set(f, [...(groups.get(f) ?? []), r]); }
+  const rows = [...groups].map(([formula_id, rs]) => ({ user_id: userId, formula_id, usos: rs.length, retencao_3s_media: avg(rs.map(r => r.pct_3s)),
+    comentarios_media: avg(rs.map(r => r.comentarios)), salvamentos_media: avg(rs.map(r => r.salvamentos)), updated_at: new Date().toISOString() }));
+  if (rows.length) await db.from("creator_formula_stats").upsert(rows, { onConflict: "user_id,formula_id" });
+  return rows.sort((a, b) => Number(b.retencao_3s_media ?? -1) - Number(a.retencao_3s_media ?? -1))
+    .map(r => ({ ...r, nome: (formulas ?? []).find((f: any) => f.id === r.formula_id)?.nome ?? `Fórmula ${r.formula_id}` }));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
@@ -51,7 +68,9 @@ Deno.serve(async (req) => {
       points.push({ segundo: parseRange(b.tempo)![1], audiencia: v });
     }
     if (points.length < 2) return json({ error: "Informe a audiência de pelo menos uma faixa de tempo." }, 400);
-    const pct3 = num(body.pct_3s), medio = num(body.tempo_medio);
+    const pct3 = num(body.pct_3s), medio = num(body.tempo_medio), coment = num(body.comentarios), salv = num(body.salvamentos);
+    for (const [v, n] of [[coment, "Comentários"], [salv, "Salvamentos"]] as const)
+      if (v !== null && (!Number.isFinite(v) || v < 0 || v > 1e7)) return json({ error: `${n}: informe um número válido.` }, 400);
     if (pct3 !== null && (!Number.isFinite(pct3) || pct3 < 0 || pct3 > 100)) return json({ error: "% que passou dos 3s deve ficar entre 0 e 100." }, 400);
     if (medio !== null && (!Number.isFinite(medio) || medio < 0 || medio > 600)) return json({ error: "Tempo médio inválido." }, 400);
 
@@ -83,10 +102,11 @@ Deno.serve(async (req) => {
     }
 
     const resultado = { comparacao, maior_queda, analise, padroes, aviso, faixas: points };
-    const row = { script_id: scriptId, user_id: auth.userId, curva_real: resultado, pct_3s: pct3, tempo_medio: medio };
+    const row = { script_id: scriptId, user_id: auth.userId, curva_real: resultado, pct_3s: pct3, tempo_medio: medio, comentarios: coment, salvamentos: salv };
     const { error } = firstTime ? await db.from("retention_results").insert(row) : await db.from("retention_results").update(row).eq("id", prev![0].id);
     if (error) return json({ error: "Não foi possível salvar o resultado." }, 500);
-    return json({ ...resultado, recalibrado: !firstTime });
+    const ranking_formulas = await refreshFormulaStats(db, auth.userId);
+    return json({ ...resultado, recalibrado: !firstTime, ranking_formulas });
   } catch (e: any) {
     return json({ error: e?.message ?? "Falha na calibração." }, e?.status ?? 500);
   }
