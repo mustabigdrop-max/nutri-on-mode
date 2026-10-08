@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireUser, adminClient } from "../_shared/auth.ts";
+import { loadCreatorProfile } from "../_shared/loadCreatorProfile.ts";
+import { creatorScriptPrompt } from "../_shared/creatorScriptRules.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,14 +14,16 @@ const corsHeaders = {
 // traço pessoal/demográfico de quem não informou isso: cada coach da
 // plataforma tem a própria identidade, nunca a de outro coach.
 function coachIdentity(body: Record<string, unknown>): string {
+  const scriptRules = creatorScriptPrompt(body.savedCreatorProfile, body);
   const handle = typeof body?.handle === "string" ? body.handle.replace("@", "").trim() : "";
   const niches = Array.isArray(body?.niches) ? (body.niches as string[]).filter(Boolean) : [];
   const products = Array.isArray(body?.products) ? (body.products as string[]).filter(Boolean) : [];
   const differentials = Array.isArray(body?.differentials) ? (body.differentials as string[]).filter(Boolean) : [];
   if (!handle && !niches.length && !products.length && !differentials.length) {
-    return "PERFIL DO COACH: ainda não preenchido nesta plataforma — escreva de forma profissional e genérica pro nicho fitness/nutrição, SEM inventar nome, credenciais, biografia, produtos ou traço pessoal/demográfico.";
+    return `${scriptRules}\nPERFIL DO COACH: ainda não preenchido nesta plataforma — escreva de forma profissional e genérica pro nicho fitness/nutrição, SEM inventar nome, credenciais, biografia, produtos ou traço pessoal/demográfico.`;
   }
   return [
+    scriptRules,
     handle ? `COACH: @${handle}` : "COACH: (sem @ informado)",
     niches.length ? `Nicho: ${niches.join(", ")}` : "",
     products.length ? `Produtos/serviços: ${products.join(", ")}` : "",
@@ -52,7 +56,7 @@ REGRA DE VIRAL:
 - Humor inteligente > humor tosco.
 
 REGRAS DE ESCRITA:
-- Frases curtas (máx 15 palavras), tom de conversa com autoridade, hook isolado na 1ª linha.
+- Frases curtas (máx 14 palavras), tom de conversa com autoridade, hook isolado na 1ª linha.
 - Máximo 3-4 emojis por legenda. Hashtags só no campo hashtags. Nunca citação acadêmica.
 - Nunca se apresente como IA.`;
 }
@@ -308,6 +312,12 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+    const creatorProfile = await loadCreatorProfile(auth.userId);
+    body.savedCreatorProfile = creatorProfile;
+    body.handle = creatorProfile?.instagram_handle;
+    body.niches = creatorProfile?.niches;
+    body.products = creatorProfile?.products;
+    body.differentials = creatorProfile?.differentials;
     const images: string[] = Array.isArray(body?.images) ? body.images.slice(0, 10) : [];
     const videos: { name?: string; duration?: number; frames?: string[] }[] = Array.isArray(body?.videos) ? body.videos.slice(0, 3) : [];
     const context: string = typeof body?.context === "string" ? body.context.slice(0, 2000) : "";

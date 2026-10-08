@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
+import { loadCreatorProfile } from "../_shared/loadCreatorProfile.ts";
+import { creatorScriptPrompt } from "../_shared/creatorScriptRules.ts";
 import {
   aplicarConfigPosSlides,
   promptPosSlides,
@@ -23,7 +25,7 @@ PILARES: mce_drop (educativo 30%), bastidor (pessoal 25%), transformacao (prova 
 REGRAS OBRIGATÓRIAS DE LEGENDA (todas as legendas, sempre):
 1. Nunca citar nome completo de journal. Prefira "a ciência já provou" ou "pesquisadores de Stanford mostraram".
 2. Nunca usar citação acadêmica (Autor et al., ano). Prefira "Brad Schoenfeld, um dos maiores pesquisadores de hipertrofia".
-3. Frases curtas: no máximo 15 palavras por frase.
+3. Frases curtas: no máximo 14 palavras por frase.
 4. Tom de conversa com autoridade, como falar com um amigo respeitado na academia.
 5. Cada parágrafo tem no máximo 3 linhas.
 6. Sempre uma linha em branco entre parágrafos.
@@ -221,6 +223,11 @@ serve(async (req) => {
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
+
+    const creatorProfile = await loadCreatorProfile(auth.userId);
+    const identityBody = { ...body, handle: creatorProfile?.instagram_handle,
+      niches: creatorProfile?.niches, products: creatorProfile?.products,
+      differentials: creatorProfile?.differentials };
 
     // Frames reais da foto/vídeo enviado (data URLs), quando o modo precisa
     // de análise visual de verdade (ex: studio_vision) — sem isso a IA só
@@ -674,7 +681,7 @@ REGRAS:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: `${BRAND}\n\n${coachIdentity(body)}\n\nVocê é o motor SOCIAL ON. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown.` },
+          { role: "system", content: `${BRAND}\n\n${coachIdentity(identityBody)}\n\n${creatorScriptPrompt(creatorProfile, body)}\n\nVocê é o motor SOCIAL ON. Responda SEMPRE apenas JSON válido no schema pedido, sem markdown.` },
           { role: "user", content: userContent },
         ],
         response_format: { type: "json_object" },
