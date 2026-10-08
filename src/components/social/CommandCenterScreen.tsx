@@ -26,6 +26,8 @@ const CSS = `
 @media (prefers-reduced-motion: reduce) {
   .cc-anim, .cc-anim * { animation: none !important; transition: none !important; }
 }
+.cc-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 900px) { .cc-grid { grid-template-columns: 1fr 1fr; } }
 `;
 
 /** Painel de vidro escuro com canto cortado e brilho fino no topo. */
