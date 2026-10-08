@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
         db.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media, comentarios_media, salvamentos_media").eq("user_id", auth.userId),
         db.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", auth.userId),
       ]);
+      const { data: lastRes } = await db.from("retention_results").select("curva_real").eq("user_id", auth.userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const ajustes = Array.isArray((lastRes as any)?.curva_real?.analise?.ajuste_para_proximo_reel) ? (lastRes as any).curva_real.analise.ajuste_para_proximo_reel.slice(0, 3) : [];
       const all = formulas ?? [];
       const measured = (stats ?? []).filter(s => s.usos > 0);
       const ranking = [...measured].sort((a, b) => Number(b.retencao_3s_media ?? -1) - Number(a.retencao_3s_media ?? -1))
@@ -78,7 +80,7 @@ Deno.serve(async (req) => {
       // Data, not instructions; absent values stay null.
       const contexto = { pedido: { tema, objetivo, tom, rede, quero_mais }, formulas_atlas: all, ranking_formulas: ranking,
         selecao_formula: { modo: explorar ? "explorar" : "priorizar", permitidas }, voz_do_criador: voice ?? null,
-        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado) };
+        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes };
 
       send({ etapa: "arquiteto" });
       const estrutura = await pass(ARQUITETO_PROMPT + CONTRATO_ARQUITETO, contexto);
