@@ -4638,6 +4638,30 @@ export type Database = {
           },
         ]
       }
+      creator_goals: {
+        Row: {
+          alvo: number
+          inicio: string
+          metrica: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alvo: number
+          inicio?: string
+          metrica?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alvo?: number
+          inicio?: string
+          metrica?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       creator_voice: {
         Row: {
           expressoes_evita: string[]
