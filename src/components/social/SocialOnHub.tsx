@@ -340,6 +340,9 @@ export default function SocialOnHub({
         ))}
       </div>
 
+      </>
+      )}
+
       {/* Footer */}
       <div style={{ textAlign: "center", marginTop: 28, paddingTop: 16, borderTop: "1px solid #ffffff05" }}>
         <p style={{ fontFamily: fontMono, fontSize: 9, color: MUTED, letterSpacing: 2, margin: 0 }}>
