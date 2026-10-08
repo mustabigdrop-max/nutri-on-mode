@@ -167,6 +167,12 @@ export default function SocialOnHub({
   stats: { label: string; value: string; color: string }[];
   onOpenTool: (tabId: string) => void;
 }) {
+  // COMMAND CENTER é a primeira aba e a visão padrão do Social ON.
+  const [zone, setZone] = useState<string>("command");
+  const zones = [
+    { id: "command", label: "COMMAND CENTER", accent: CYAN },
+    ...SECTIONS.map((s) => ({ id: s.id, label: s.label, accent: s.accent })),
+  ];
   return (
     <div style={{ background: BG, minHeight: "100%", margin: "-16px", padding: 16 }}>
       {/* Header */}
