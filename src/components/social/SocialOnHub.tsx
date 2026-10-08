@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SocialOnCommandCenter from "./SocialOnCommandCenter";
+import CommandCenterScreen from "./CommandCenterScreen";
 
 const CYAN = "#00D4FF";
 const GOLD = "#B8922A";
@@ -166,6 +167,12 @@ export default function SocialOnHub({
   stats: { label: string; value: string; color: string }[];
   onOpenTool: (tabId: string) => void;
 }) {
+  // COMMAND CENTER é a primeira aba e a visão padrão do Social ON.
+  const [zone, setZone] = useState<string>("command");
+  const zones = [
+    { id: "command", label: "COMMAND CENTER", accent: CYAN },
+    ...SECTIONS.map((s) => ({ id: s.id, label: s.label, accent: s.accent })),
+  ];
   return (
     <div style={{ background: BG, minHeight: "100%", margin: "-16px", padding: 16 }}>
       {/* Header */}
@@ -181,7 +188,39 @@ export default function SocialOnHub({
         )}
       </div>
 
-      {/* Command Center */}
+      {/* Navegação por zona — COMMAND CENTER primeiro */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 16, paddingBottom: 4 }}>
+        {zones.map((z) => {
+          const active = zone === z.id;
+          return (
+            <button
+              key={z.id}
+              type="button"
+              onClick={() => setZone(z.id)}
+              style={{
+                flexShrink: 0,
+                background: active ? `${z.accent}14` : "transparent",
+                border: `1px solid ${active ? `${z.accent}60` : "#ffffff10"}`,
+                borderRadius: 0,
+                color: active ? z.accent : MUTED,
+                fontFamily: fontMono,
+                fontSize: 10,
+                letterSpacing: 1.5,
+                padding: "7px 12px",
+                cursor: "pointer",
+              }}
+            >
+              {z.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {zone === "command" ? (
+        <CommandCenterScreen onOpenTool={onOpenTool} onOpenZone={setZone} />
+      ) : (
+      <>
+      {/* Command Center (briefing diário) */}
       <div style={{ marginBottom: 24 }}>
         <SocialOnCommandCenter handle={handle} niches={niches} products={products} differentials={differentials} stats={stats} onOpenTool={onOpenTool} />
       </div>
@@ -258,9 +297,9 @@ export default function SocialOnHub({
         ))}
       </div>
 
-      {/* Tool Sections */}
+      {/* Tool Sections — só a zona ativa */}
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        {SECTIONS.map((section) => (
+        {SECTIONS.filter((section) => section.id === zone).map((section) => (
           <div key={section.id}>
             <div
               style={{
@@ -300,6 +339,9 @@ export default function SocialOnHub({
           </div>
         ))}
       </div>
+
+      </>
+      )}
 
       {/* Footer */}
       <div style={{ textAlign: "center", marginTop: 28, paddingTop: 16, borderTop: "1px solid #ffffff05" }}>
