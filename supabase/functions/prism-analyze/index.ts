@@ -815,6 +815,7 @@ Responda JSON puro.`,
       parsed = JSON.parse(String(raw).replace(/```json|```/g, "").trim());
     }
 
+    parsed = await reviewWithGateway(parsed, apiKeyEnv, creatorScriptPrompt(creatorProfile, body));
     const fileTypes = [
       ...images.map(() => "image"),
       ...videos.map(() => "video"),

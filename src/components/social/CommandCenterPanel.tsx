@@ -52,11 +52,11 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
       <Button variant="ghost" size="sm" onClick={onBack} className="text-xs">← Modos</Button>
       <Section title="🎯 Command Center · analisa, multiplica e converte">
         <div className="flex flex-wrap gap-2">
-          {ccTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); }} />)}
+          {ccTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); setReview(null); }} />)}
         </div>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">✍️ Impact Writer · cria conteúdo pronto</p>
         <div className="flex flex-wrap gap-2">
-          {impactTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); }} />)}
+          {impactTools.map((t) => <Pill key={t.id} label={t.label} active={tool === t.id} onClick={() => { setTool(t.id); setResult(""); setReview(null); }} />)}
         </div>
         <p className="text-xs text-muted-foreground">{def.hint}</p>
         <Textarea rows={4} value={input} onChange={(e) => setInput(e.target.value)} placeholder={def.placeholder} />

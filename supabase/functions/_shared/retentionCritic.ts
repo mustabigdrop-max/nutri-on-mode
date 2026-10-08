@@ -22,7 +22,8 @@ export const CRITIC_PROMPT = `Você é o crítico de retenção. NÃO escreve o 
 Use as contagens objetivas fornecidas ANTES de dar notas estimadas 0-10. Penalize frases >14 palavras, ritmo <2 ou >3 palavras/s, mais de 7s sem mudança visual ou assunto. Saudação, contexto vago ou "hoje eu vou" em 0-2s limita bloco 1 a 3. Promessa incompreensível até 6s limita bloco 2 a 5.
 Verifique todos os loops fechados, payoff entregando 100% da promessa e CTA com UMA ação. Marque risco com id do bloco: promessa de saúde sem respaldo, número inventado ou afirmação não sustentável. Não confunda número de organização com evidência. Ausência de fonte não autoriza fabricar prova.
 9-10: difícil sair; 7-8: bom mas frágil; 4-6: perde parte; 0-3: perde maioria. Sem elogio vazio. Não aumente notas para encerrar revisão.
-JSON somente: {"notas_por_bloco":[{"id":1,"nota":0,"causa_da_queda":"","correcao":""}],"nota_geral":0,"blocos_para_reescrever":[],"riscos_de_conteudo":[{"id":1,"risco":""}],"veredito":"uma frase direta"}. Uma nota para CADA bloco. Nota <8 ou risco exige reescrita.`;
+Ressalvas: “o esforço some”, “infalível”, “funciona sempre” ou facilidade alimentar garantida são afirmações não sustentáveis; marque risco, não apenas estilo. Promessa se entrega no PAYOFF, nunca adie toda a entrega ao CTA. Correções devem dizer qual exemplo ou promessa preservar, não pedir “dado” sem fonte disponível.
+JSON somente: {"notas_por_bloco":[{"id":1,"nota":0,"causa_da_queda":"","correcao":"","contexto_vago":false,"promessa_incompreensivel":false}],"nota_geral":0,"blocos_para_reescrever":[],"riscos_de_conteudo":[{"id":1,"risco":""}],"veredito":"uma frase direta"}. Uma nota para CADA bloco. Nota <8 ou risco exige reescrita. Os dois booleanos indicam as verificações semânticas do começo e da promessa.`;
 
 export function normalizeCritique(raw: unknown, blocks: ScriptBlock[]): Critique {
   const value = obj(raw);
@@ -36,6 +37,8 @@ export function normalizeCritique(raw: unknown, blocks: ScriptBlock[]): Critique
     let score = Math.max(0, Math.min(10, note.nota));
     const causes = [typeof note.causa_da_queda === "string" ? note.causa_da_queda : ""];
     if (checks.abertura_proibida) { score = Math.min(score, 3); causes.push("Abertura proibida nos primeiros dois segundos."); }
+    if (block.id === 1 && note.contexto_vago === true) { score = Math.min(score, 3); causes.push("Contexto vago na abertura."); }
+    if (block.id === 2 && note.promessa_incompreensivel === true) { score = Math.min(score, 5); causes.push("Promessa incompreensível até seis segundos."); }
     if (checks.frase_longa) { score = Math.min(score, 7); causes.push("Frase acima de 14 palavras."); }
     if (checks.ritmo_invalido) { score = Math.min(score, 7); causes.push("Ritmo fora de 2-3 palavras por segundo."); }
     return { id: block.id, nota: score, causa_da_queda: causes.filter(Boolean).join(" "), correcao: typeof note.correcao === "string" ? note.correcao : "Ajustar a fala ao tempo e à promessa." };
@@ -82,10 +85,10 @@ export async function reviewRetention(value: unknown, complete: Complete, creato
       let current = await critique(); history.push(current);
       while (current.blocos_para_reescrever.length && rounds < CRITIC_LIMITS.maxRounds) {
         const weak = script.blocos.filter(b => current.blocos_para_reescrever.includes(b.id));
-        const response = obj(await complete(`Você é o Redator. Reescreva SOMENTE os blocos fornecidos. Preserve id, tempo, promessa e loops descritos nas correções. Nenhuma ação extra no CTA. Não invente fontes. JSON {"blocos":[{"id":1,"fala":""}]}.\n${creatorRules}`, {
+        const response = obj(await complete(`Você é o Redator. Reescreva SOMENTE os blocos fornecidos, não analise nem devolva o roteiro completo. Cada bloco deve ter entre 2,5 e 3 palavras por segundo e frases de até 14 palavras. Calcule o orçamento pelo tempo. Preserve id, tempo, promessa e loops descritos nas correções. Nenhuma ação extra no CTA. Não invente fontes. Não aplique planejamento_retencao a esta revisão parcial. JSON {"blocos":[{"id":1,"fala":""}]}.\n${creatorRules}`, {
           blocos: weak.map(b => ({ id: b.id, tempo: b.tempo, fala: b.fala, critica: current.notas_por_bloco.find(n => n.id === b.id), riscos: current.riscos_de_conteudo.filter(r => r.id === b.id) })) }));
         rounds++;
-        if (!Array.isArray(response.blocos)) throw new Error("Revisão sem blocos.");
+        if (!Array.isArray(response.blocos) || weak.some(b => !response.blocos.some((v: unknown) => obj(v).id === b.id && typeof obj(v).fala === "string" && String(obj(v).fala).trim()))) throw new Error("Revisão sem todos os blocos solicitados.");
         for (const change of response.blocos) {
           const patch = obj(change); const block = weak.find(b => b.id === patch.id);
           if (block && typeof patch.fala === "string" && patch.fala.trim() && !replaceBlock(result, block, patch.fala)) throw new Error("Não foi possível localizar o trecho original com segurança.");

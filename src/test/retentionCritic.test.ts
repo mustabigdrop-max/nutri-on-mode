@@ -24,6 +24,13 @@ describe("retention critic rules", () => {
     const risk = { ...critic(8), riscos_de_conteudo: [{ id: 1, risco: "Número sem fonte." }] };
     expect(normalizeCritique(risk, [block]).blocos_para_reescrever).toEqual([1]);
   });
+  it("caps vague opening context at 3", () => {
+    expect(normalizeCritique({ ...critic(9), notas_por_bloco: [{ ...critic(9).notas_por_bloco[0], contexto_vago: true }] }, [block]).notas_por_bloco[0].nota).toBe(3);
+  });
+  it("caps an unclear promise at 5", () => {
+    const promise = { ...block, id: 2, tempo: "2-6s", fala: "Uma promessa sem explicação clara não ajuda você a escolher." };
+    expect(normalizeCritique({ notas_por_bloco: [{ id: 2, nota: 9, promessa_incompreensivel: true }] }, [promise]).notas_por_bloco[0].nota).toBe(5);
+  });
   it("never fabricates a score for an omitted block", () => {
     expect(() => normalizeCritique({}, [block])).toThrow("faltou nota");
   });

@@ -1,14 +1,14 @@
 # Roadmap
 
-- [ ] Integrar crítico de retenção com contagens objetivas, revisão de até duas rodadas e notas visíveis
-- [ ] Testar limites do crítico e geração autenticada com revisão
+- [x] Integrar crítico de retenção com contagens objetivas, revisão de até duas rodadas e notas visíveis
+- [x] Testar limites do crítico e geração autenticada com revisão no Command Center
 - [x] Planejar retenção antes de cada roteiro vertical com estrutura compartilhada e formatos preservados
 - [x] Validar limites com 8 testes e geração autenticada: 35s, três loops, blocos contínuos e campos antigos preservados
-- [ ] Refinar aderência emocional dos roteiros — geração real ainda devolveu CTA sem objetivo emocional válido
+- [x] Refinar aderência emocional dos roteiros — geração autenticada retornou todos os rótulos válidos, inclusive CTA
 
 - [x] Integrar perfil real do criador e regras universais nos roteiros Social ON, PRISM e Command Center
 - [x] Validar personalização e limites com testes automáticos
-- [ ] Validar geração autenticada e qualidade dos roteiros no navegador — sessão da prévia desconectada
+- [x] Validar geração autenticada no navegador — críticas e duas revisões visíveis; trechos fracos sinalizados sem aprovação falsa
 
 - [x] Consolidar as 17 regras do STRATUM em um motor determinístico
 - [x] Integrar as decisões ao prompt e à visualização do TrainingON

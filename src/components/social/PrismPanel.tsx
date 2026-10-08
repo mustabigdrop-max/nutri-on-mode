@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Section, copyText, VariationBlock } from "./socialUi";
+import { RetentionReview } from "./RetentionReview";
 import {
   cropToRatio, downloadMany, isMobileDevice, saveImage, extractVideoFrames, fileToDataUrl, getVideoDuration,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl, SOCIAL_BRAND,
@@ -38,6 +39,7 @@ type PrismFile = {
 };
 
 type PrismResult = {
+  critica_retencao?: unknown;
   analysis?: {
     content_detected?: string[];
     environment?: string;
@@ -691,6 +693,7 @@ const PrismPanel = ({
       {/* RESULTADO */}
       {result && (
         <>
+          <RetentionReview value={result.critica_retencao} />
           <Section title="Leitura do PRISM">
             <p className="text-sm">{a?.summary}</p>
             <div className="flex flex-wrap gap-1.5">
