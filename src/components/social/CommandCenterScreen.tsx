@@ -433,7 +433,7 @@ export default function CommandCenterScreen({
         </Panel>
 
         {/* desktop: duas colunas a partir daqui */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 14 }}>
+        <div className="cc-grid">
           {/* 4 · Linha da Atenção */}
           <Panel>
             <div id="cc-linha-atencao" style={{ scrollMarginTop: 80 }}>
