@@ -38,7 +38,7 @@ Entrada: tema efetivo do pedido, objetivo, tom e perfil do criador acima. Nunca 
 3. Promessa em uma frase: o que o espectador ganha ficando até o fim. Em saúde, ganho de compreensão, nunca promessa de cura ou resultado específico.
 4. Crie exatamente ${RETENTION_RULES.openLoops} loops abertos. Cada pergunta ou promessa precisa ser fechada no payoff ou mais adiante. Identifique loop 1, 2 e 3 nos blocos. Não deixe promessa sem resposta.
 5. 0-2s PARADA quebra o scroll. 2-6s PROMESSA comunica o ganho e abre loop 1. Desenvolvimento em blocos de ${RETENTION_RULES.minDevelopmentBlock} a ${RETENTION_RULES.maxDevelopmentBlock}s, cada um com reinício de atenção: virada, pergunta, número confirmado, prova real ou mudança de plano. PAYOFF entrega exatamente a promessa. CTA pede uma única ação.
-6. Duração total entre ${RETENTION_RULES.minDuration} e ${RETENTION_RULES.maxDuration}s; tempos contínuos, sem buracos ou sobreposição. Todo bloco tem objetivo emocional: curiosidade, tensão, alívio ou identificação.
+6. Duração total entre ${RETENTION_RULES.minDuration} e ${RETENTION_RULES.maxDuration}s; tempos contínuos, sem buracos ou sobreposição. objetivo_emocional de cada bloco deve ser EXATAMENTE um destes valores: "curiosidade", "tensão", "alívio", "identificação". Não use rótulos combinados, esperança, autoridade, empoderamento ou chamada à ação. Os campos de texto são strings: use "nenhum" para bloco sem loop, nunca null.
 7. Final em loop: conecte o final ao começo sem reabrir uma promessa não resolvida.
 Exemplo de distribuição viável (adapte o conteúdo, mantenha os limites): ${JSON.stringify(scaffold)}
 Estrutura JSON da etapa:
