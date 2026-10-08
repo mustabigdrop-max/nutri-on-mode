@@ -297,9 +297,9 @@ export default function SocialOnHub({
         ))}
       </div>
 
-      {/* Tool Sections */}
+      {/* Tool Sections — só a zona ativa */}
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        {SECTIONS.map((section) => (
+        {SECTIONS.filter((section) => section.id === zone).map((section) => (
           <div key={section.id}>
             <div
               style={{
