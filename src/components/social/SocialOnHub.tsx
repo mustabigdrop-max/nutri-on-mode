@@ -188,7 +188,39 @@ export default function SocialOnHub({
         )}
       </div>
 
-      {/* Command Center */}
+      {/* Navegação por zona — COMMAND CENTER primeiro */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 16, paddingBottom: 4 }}>
+        {zones.map((z) => {
+          const active = zone === z.id;
+          return (
+            <button
+              key={z.id}
+              type="button"
+              onClick={() => setZone(z.id)}
+              style={{
+                flexShrink: 0,
+                background: active ? `${z.accent}14` : "transparent",
+                border: `1px solid ${active ? `${z.accent}60` : "#ffffff10"}`,
+                borderRadius: 0,
+                color: active ? z.accent : MUTED,
+                fontFamily: fontMono,
+                fontSize: 10,
+                letterSpacing: 1.5,
+                padding: "7px 12px",
+                cursor: "pointer",
+              }}
+            >
+              {z.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {zone === "command" ? (
+        <CommandCenterScreen onOpenTool={onOpenTool} onOpenZone={setZone} />
+      ) : (
+      <>
+      {/* Command Center (briefing diário) */}
       <div style={{ marginBottom: 24 }}>
         <SocialOnCommandCenter handle={handle} niches={niches} products={products} differentials={differentials} stats={stats} onOpenTool={onOpenTool} />
       </div>
