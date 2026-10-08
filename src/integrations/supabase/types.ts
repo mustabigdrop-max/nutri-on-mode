@@ -10494,6 +10494,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reel_generations: {
+        Row: {
+          created_at: string
+          id: string
+          objetivo: string
+          result: Json
+          tema: string
+          tom: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          objetivo: string
+          result: Json
+          tema: string
+          tom: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          objetivo?: string
+          result?: Json
+          tema?: string
+          tom?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reels_variations: {
         Row: {
           analysis_id: string | null
