@@ -10,10 +10,11 @@ const OBJ = [{ id: "alcance", label: "Alcance" }, { id: "autoridade", label: "Au
 const scoreColor = (n: number | null) => n === null ? T.muted : n >= 8 ? T.green : n >= 7 ? T.gold : n >= 5 ? T.orange : T.red;
 const span = (t: string) => { const m = t.match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)/); return m ? Math.max(1, Number(m[2]) - Number(m[1])) : 1; };
 
-type Gen = { id: string; created_at: string; tema: string; objetivo: string; tom: string; roteiro: any; notas: any; nota_geral: number | null };
+type Gen = { id: string; created_at: string; tema: string; objetivo: string; tom: string; roteiro: any; notas: any; nota_geral: number | null; estrutura?: any };
 const card: React.CSSProperties = { background: T.s1, border: "1px solid #ffffff10", padding: 16, marginTop: 12 };
 const label: React.CSSProperties = { fontFamily: T.fm, fontSize: 10, letterSpacing: 1, color: T.muted, marginBottom: 6 };
 const input: React.CSSProperties = { width: "100%", background: T.s2, border: "1px solid #ffffff14", color: T.text, padding: 10, fontSize: 13, borderRadius: 0, boxSizing: "border-box" };
+const QUERO = [{ id: "", label: "Tanto faz" }, { id: "comentarios", label: "Comentários" }, { id: "salvamentos", label: "Salvamentos" }, { id: "compartilhamentos", label: "Compartilhamentos" }, { id: "seguidores", label: "Seguidores" }];
 const TONS = [{ id: "direto", label: "Direto" }, { id: "bem-humorado", label: "Bem-humorado" }, { id: "intenso", label: "Intenso" }];
 const STAGES: Record<string, string> = { arquiteto: "Projetando atenção...", redator: "Projetando atenção...", critico: "Testando o gancho...", reescrita: "Reescrevendo pontos fracos..." };
 
@@ -22,12 +23,12 @@ const Choice = ({ items, value, onChange }: { items: { id: string; label: string
     background: value === o.id ? `${T.purple}25` : T.s2, color: value === o.id ? T.purple : T.muted, border: `1px solid ${value === o.id ? T.purple : "#ffffff14"}` }}>{o.label}</button>)}</div>;
 
 export default function RetentionEnginePanel() {
-  const [tema, setTema] = useState(""); const [objetivo, setObjetivo] = useState("alcance"); const [tom, setTom] = useState("direto");
+  const [tema, setTema] = useState(""); const [objetivo, setObjetivo] = useState("alcance"); const [tom, setTom] = useState("direto"); const [queroMais, setQueroMais] = useState("");
   const [stage, setStage] = useState<string | null>(null); const [gen, setGen] = useState<Gen | null>(null); const [history, setHistory] = useState<Gen[]>([]);
   const busy = stage !== null;
 
   const loadHistory = async () => {
-    const { data } = await supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral").order("created_at", { ascending: false }).limit(20);
+    const { data } = await supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura").order("created_at", { ascending: false }).limit(20);
     setHistory((data as Gen[]) ?? []);
   };
   useEffect(() => { loadHistory(); }, []);
@@ -40,7 +41,7 @@ export default function RetentionEnginePanel() {
       if (!session) throw new Error("Entre na sua conta para gerar");
       const res = await fetch(`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/gerar_reel`, {
         method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ tema, objetivo, tom }) });
+        body: JSON.stringify({ tema, objetivo, tom, quero_mais: queroMais || undefined }) });
       if (!res.ok || !res.body) { let msg = "Falha ao gerar reel"; try { msg = (await res.json())?.error || msg; } catch { /* */ } throw new Error(msg); }
       const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = ""; let done = false;
       while (!done) {
@@ -59,7 +60,7 @@ export default function RetentionEnginePanel() {
     } catch (e: any) { toast.error(e.message); } finally { setStage(null); }
   };
 
-  const r = gen ? { ...gen.roteiro, ...gen.notas, nota_geral: gen.nota_geral } : null;
+  const r = gen ? { ...gen.roteiro, ...gen.notas, nota_geral: gen.nota_geral, formula_nome: gen.estrutura?.formula_nome, formula_motivo: gen.estrutura?.formula_motivo, formula_modo: gen.estrutura?.formula_modo } : null;
   const blocks: any[] = Array.isArray(r?.blocos) ? r.blocos.map((b: any) => ({ ...b, ...(gen?.notas?.notas_por_bloco ?? []).find((n: any) => n.id === b.id), fala: b.fala })) : [];
   const total = blocks.reduce((n, b) => n + span(String(b.tempo)), 0) || 1;
 
@@ -75,6 +76,8 @@ export default function RetentionEnginePanel() {
     <Choice items={OBJ} value={objetivo} onChange={setObjetivo} />
     <div style={{ ...label, marginTop: 12 }}>TOM</div>
     <Choice items={TONS} value={tom} onChange={setTom} />
+    <div style={{ ...label, marginTop: 12 }}>QUERO MAIS (OPCIONAL)</div>
+    <Choice items={QUERO} value={queroMais} onChange={setQueroMais} />
     <button onClick={run} disabled={busy} style={{ marginTop: 16, width: "100%", padding: 16, borderRadius: 0, border: "none", cursor: busy ? "wait" : "pointer", background: T.purple, color: T.bg, fontFamily: T.ft, fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
       {busy ? STAGES[stage!] ?? "Projetando atenção..." : "GERAR REEL"}</button>
 

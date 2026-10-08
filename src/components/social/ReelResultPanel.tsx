@@ -11,21 +11,24 @@ type Script = { id: string; tema: string; created_at: string; roteiro: any; nota
 
 export default function ReelResultPanel() {
   const [scripts, setScripts] = useState<Script[]>([]); const [sel, setSel] = useState("");
-  const [faixas, setFaixas] = useState<Record<string, string>>({}); const [pct3, setPct3] = useState(""); const [medio, setMedio] = useState("");
+  const [faixas, setFaixas] = useState<Record<string, string>>({}); const [pct3, setPct3] = useState(""); const [medio, setMedio] = useState(""); const [coment, setComent] = useState(""); const [salv, setSalv] = useState("");
+  const [ranking, setRanking] = useState<any[]>([]);
   const [busy, setBusy] = useState(false); const [res, setRes] = useState<any>(null);
 
   useEffect(() => { supabase.from("retention_scripts").select("id, tema, created_at, roteiro, nota_geral").order("created_at", { ascending: false }).limit(30)
-    .then(({ data }) => setScripts((data as Script[]) ?? [])); }, []);
+    .then(({ data }) => setScripts((data as Script[]) ?? []));
+    Promise.all([supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media, comentarios_media, salvamentos_media"), supabase.from("hook_formulas").select("id, nome")])
+      .then(([s, f]) => setRanking(((s.data ?? []) as any[]).map(r => ({ ...r, nome: (f.data ?? []).find((x: any) => x.id === r.formula_id)?.nome })).sort((a, b) => Number(b.retencao_3s_media ?? -1) - Number(a.retencao_3s_media ?? -1)))); }, []);
   const script = scripts.find(s => s.id === sel);
   const blocos: any[] = script?.roteiro?.blocos ?? [];
 
   const run = async () => {
     setBusy(true); setRes(null);
-    const { data, error } = await supabase.functions.invoke("calibrar", { body: { script_id: sel, faixas, pct_3s: pct3, tempo_medio: medio } });
+    const { data, error } = await supabase.functions.invoke("calibrar", { body: { script_id: sel, faixas, pct_3s: pct3, tempo_medio: medio, comentarios: coment, salvamentos: salv } });
     setBusy(false);
     const msg = (data as any)?.error ?? (error ? (await (error as any).context?.json?.().catch(() => null))?.error ?? "Falha ao enviar feedback" : null);
     if (msg) return toast.error(msg);
-    setRes(data);
+    setRes(data); if ((data as any)?.ranking_formulas) setRanking((data as any).ranking_formulas);
   };
 
   const comp: any[] = res?.comparacao ?? [];
@@ -50,6 +53,8 @@ export default function ReelResultPanel() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 10 }}>
         <label style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>% QUE PASSOU DOS 3 PRIMEIROS SEGUNDOS<input style={input} inputMode="decimal" value={pct3} onChange={e => setPct3(e.target.value)} /></label>
         <label style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>TEMPO MÉDIO ASSISTIDO (S)<input style={input} inputMode="decimal" value={medio} onChange={e => setMedio(e.target.value)} /></label>
+        <label style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>COMENTÁRIOS<input style={input} inputMode="numeric" value={coment} onChange={e => setComent(e.target.value)} /></label>
+        <label style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>SALVAMENTOS<input style={input} inputMode="numeric" value={salv} onChange={e => setSalv(e.target.value)} /></label>
       </div>
       <button onClick={run} disabled={busy} style={{ marginTop: 14, width: "100%", padding: 14, border: "none", borderRadius: 0, background: T.cyan, color: T.bg, fontFamily: T.ft, fontWeight: 700, fontSize: 17, letterSpacing: 1, cursor: busy ? "wait" : "pointer" }}>
         {busy ? "Comparando previsto x real..." : "ENVIAR FEEDBACK"}</button>
@@ -95,5 +100,15 @@ export default function ReelResultPanel() {
         </>}
       </div>}
     </>}
+
+    {ranking.length > 0 && <div style={card}>
+      <div style={label}>SUAS FÓRMULAS, DA QUE MAIS RETÉM À QUE MENOS RETÉM</div>
+      {ranking.map((f, i) => <div key={f.formula_id} style={{ display: "grid", gridTemplateColumns: "24px 1fr auto", gap: 8, alignItems: "center", padding: "6px 0", borderBottom: "1px solid #ffffff08", fontSize: 12 }}>
+        <span style={{ fontFamily: T.ft, fontWeight: 700, color: i === 0 ? T.cyan : T.muted }}>{i + 1}</span>
+        <span><b>{f.nome}</b> <span style={{ color: T.muted }}>· {f.usos} {f.usos === 1 ? "reel" : "reels"}</span></span>
+        <span style={{ fontFamily: T.fm, fontSize: 10, color: T.text }}>{f.retencao_3s_media ?? "—"}% 3s · {f.comentarios_media ?? "—"} coment. · {f.salvamentos_media ?? "—"} salv.</span>
+      </div>)}
+      <p style={{ fontSize: 11, color: T.muted, margin: "8px 0 0" }}>O próximo reel prioriza as do topo. A cada 3 reels, um testa uma fórmula nova.</p>
+    </div>}
   </div>;
 }

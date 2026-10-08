@@ -4600,6 +4600,44 @@ export type Database = {
           },
         ]
       }
+      creator_formula_stats: {
+        Row: {
+          comentarios_media: number | null
+          formula_id: number
+          retencao_3s_media: number | null
+          salvamentos_media: number | null
+          updated_at: string
+          user_id: string
+          usos: number
+        }
+        Insert: {
+          comentarios_media?: number | null
+          formula_id: number
+          retencao_3s_media?: number | null
+          salvamentos_media?: number | null
+          updated_at?: string
+          user_id: string
+          usos?: number
+        }
+        Update: {
+          comentarios_media?: number | null
+          formula_id?: number
+          retencao_3s_media?: number | null
+          salvamentos_media?: number | null
+          updated_at?: string
+          user_id?: string
+          usos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_formula_stats_formula_id_fkey"
+            columns: ["formula_id"]
+            isOneToOne: false
+            referencedRelation: "hook_formulas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_voice: {
         Row: {
           expressoes_evita: string[]
@@ -6517,6 +6555,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hook_formulas: {
+        Row: {
+          exemplo: string | null
+          gatilho: string
+          id: number
+          nome: string
+          template: string
+        }
+        Insert: {
+          exemplo?: string | null
+          gatilho: string
+          id: number
+          nome: string
+          template: string
+        }
+        Update: {
+          exemplo?: string | null
+          gatilho?: string
+          id?: number
+          nome?: string
+          template?: string
+        }
+        Relationships: []
       }
       lab_conversations: {
         Row: {
@@ -10784,28 +10846,34 @@ export type Database = {
       }
       retention_results: {
         Row: {
+          comentarios: number | null
           created_at: string
           curva_real: Json
           id: string
           pct_3s: number | null
+          salvamentos: number | null
           script_id: string
           tempo_medio: number | null
           user_id: string
         }
         Insert: {
+          comentarios?: number | null
           created_at?: string
           curva_real?: Json
           id?: string
           pct_3s?: number | null
+          salvamentos?: number | null
           script_id: string
           tempo_medio?: number | null
           user_id: string
         }
         Update: {
+          comentarios?: number | null
           created_at?: string
           curva_real?: Json
           id?: string
           pct_3s?: number | null
+          salvamentos?: number | null
           script_id?: string
           tempo_medio?: number | null
           user_id?: string
@@ -10824,10 +10892,12 @@ export type Database = {
         Row: {
           created_at: string
           estrutura: Json
+          formula_id: number | null
           id: string
           nota_geral: number | null
           notas: Json
           objetivo: string
+          quero_mais: string | null
           rede: string
           roteiro: Json
           tema: string
@@ -10837,10 +10907,12 @@ export type Database = {
         Insert: {
           created_at?: string
           estrutura?: Json
+          formula_id?: number | null
           id?: string
           nota_geral?: number | null
           notas?: Json
           objetivo: string
+          quero_mais?: string | null
           rede?: string
           roteiro?: Json
           tema: string
@@ -10850,17 +10922,27 @@ export type Database = {
         Update: {
           created_at?: string
           estrutura?: Json
+          formula_id?: number | null
           id?: string
           nota_geral?: number | null
           notas?: Json
           objetivo?: string
+          quero_mais?: string | null
           rede?: string
           roteiro?: Json
           tema?: string
           tom?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "retention_scripts_formula_id_fkey"
+            columns: ["formula_id"]
+            isOneToOne: false
+            referencedRelation: "hook_formulas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       risk_interventions: {
         Row: {

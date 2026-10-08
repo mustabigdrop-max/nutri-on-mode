@@ -52,7 +52,22 @@ export default function RetentionResultView({ r, blocks }: { r: any; blocks: any
   let acc = 0;
   const pts = blocks.map(b => { const w = span(String(b.tempo)); const x = (acc + w / 2) / total * 100; acc += w; return { x, y: b.nota == null ? null : 40 - Number(b.nota) * 3.6 }; }).filter(p => p.y !== null) as { x: number; y: number }[];
 
+  const forca = r.forca_gancho as Record<string, number> | null | undefined;
+  const CRIT: [string, string][] = [["tensao", "Tensão"], ["relevancia_pessoal", "Relevância pessoal"], ["especificidade", "Especificidade"], ["zero_aquecimento", "Zero aquecimento"], ["pergunta_aberta", "Pergunta aberta"]];
   return <>
+    <div style={card}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <div style={label}>FÓRMULA USADA{r.formula_modo === "explorar" ? " · TESTE DE FÓRMULA NOVA" : ""}</div>
+        {forca && <span style={{ fontFamily: T.ft, fontSize: 20, fontWeight: 700, color: noteColor(r.forca_gancho_total) }}>{r.forca_gancho_total}/10</span>}
+      </div>
+      <p style={{ fontFamily: T.ft, fontSize: 20, fontWeight: 700, color: T.white, margin: 0 }}>{r.formula_nome ?? "não informado"}</p>
+      <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 10px" }}>{str(r.formula_motivo) || "Motivo não informado."}</p>
+      {forca ? CRIT.map(([k, n]) => <div key={k} style={{ display: "grid", gridTemplateColumns: "130px 1fr 28px", gap: 8, alignItems: "center", margin: "4px 0" }}>
+        <span style={{ fontFamily: T.fm, fontSize: 10, color: T.text }}>{n}</span>
+        <div style={{ height: 6, background: T.s2 }}><div style={{ height: "100%", width: `${(forca[k] ?? 0) * 50}%`, background: noteColor((forca[k] ?? 0) * 5) }} /></div>
+        <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>{forca[k]}/2</span>
+      </div>) : <p style={{ fontSize: 12, color: T.muted, margin: 0 }}>A análise não trouxe a nota de força do gancho.</p>}
+    </div>
     <div style={card}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <div style={label}>LINHA DO TEMPO · CURVA DE ATENÇÃO PREVISTA</div>
