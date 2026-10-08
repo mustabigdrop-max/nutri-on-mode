@@ -1,3 +1,5 @@
+import { retentionPlanningPrompt } from "./retentionStructure.ts";
+
 export const SCRIPT_LIMITS = { wordsPerSentence: 14, minWordsPerSecond: 2.5, maxWordsPerSecond: 3 };
 
 export function spokenWordBudget(seconds: number) {
@@ -55,5 +57,7 @@ ${budget ? `- Para ${seconds}s de fala corrida: ${budget.min} a ${budget.max} pa
 - PROIBIDO abrir com: "oi", "fala pessoal", "hoje eu vou", "nesse vídeo", "você sabia", contexto político ou social vago.
 - Saúde, nutrição e suplementação: afirmações seguem o consenso científico e as fontes reais fornecidas. Sem promessa de resultado específico ("perca X kg em Y dias") ou cura. Se exigir cuidado médico, inclua uma ressalva curta na fala ou legenda existente. Não prescreva medicamentos.
 - Nunca use "IA" ou "AI" no conteúdo público.
-- Responda SOMENTE em JSON válido no schema solicitado, sem texto externo ou cercas de markdown. Preserve o tipo de cada campo; não substitua uma string por objeto.`;
+- Responda SOMENTE em JSON válido no schema solicitado, sem texto externo ou cercas de markdown. Preserve o tipo de cada campo; não substitua uma string por objeto.
+
+${retentionPlanningPrompt(Number.isFinite(seconds) ? seconds : undefined)}`;
 }

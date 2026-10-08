@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Planejar retenção antes de cada roteiro vertical com estrutura compartilhada e formatos preservados
+- [ ] Validar os limites de retenção e uma geração real após atualizar os serviços
+
 - [x] Integrar perfil real do criador e regras universais nos roteiros Social ON, PRISM e Command Center
 - [x] Validar personalização e limites com testes automáticos
 - [ ] Validar geração autenticada e qualidade dos roteiros no navegador — sessão da prévia desconectada
