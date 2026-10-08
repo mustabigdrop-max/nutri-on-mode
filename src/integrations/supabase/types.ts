@@ -10766,6 +10766,174 @@ export type Database = {
         }
         Relationships: []
       }
+      reel_bank: {
+        Row: {
+          abertura: string | null
+          agendado_para: string | null
+          batch_id: string | null
+          created_at: string
+          duracao_seg: number | null
+          estrutura: Json | null
+          formula_id: number | null
+          formula_nome: string | null
+          id: string
+          idx: number | null
+          motivo_descarte: string | null
+          nota: number | null
+          notas: Json | null
+          pilar: string | null
+          roteiro: Json | null
+          script_id: string | null
+          status: string
+          tema: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          abertura?: string | null
+          agendado_para?: string | null
+          batch_id?: string | null
+          created_at?: string
+          duracao_seg?: number | null
+          estrutura?: Json | null
+          formula_id?: number | null
+          formula_nome?: string | null
+          id?: string
+          idx?: number | null
+          motivo_descarte?: string | null
+          nota?: number | null
+          notas?: Json | null
+          pilar?: string | null
+          roteiro?: Json | null
+          script_id?: string | null
+          status?: string
+          tema: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          abertura?: string | null
+          agendado_para?: string | null
+          batch_id?: string | null
+          created_at?: string
+          duracao_seg?: number | null
+          estrutura?: Json | null
+          formula_id?: number | null
+          formula_nome?: string | null
+          id?: string
+          idx?: number | null
+          motivo_descarte?: string | null
+          nota?: number | null
+          notas?: Json | null
+          pilar?: string | null
+          roteiro?: Json | null
+          script_id?: string | null
+          status?: string
+          tema?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reel_factory_batches: {
+        Row: {
+          aprovados: number
+          chamadas: number
+          created_at: string
+          cursor: number
+          data: string
+          descartados: number
+          erro: string | null
+          estimativa_chamadas: number | null
+          etapa: string
+          id: string
+          ideias: Json
+          lease_until: string | null
+          n_ideias: number
+          origem: string
+          status: string
+          tentativas: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aprovados?: number
+          chamadas?: number
+          created_at?: string
+          cursor?: number
+          data: string
+          descartados?: number
+          erro?: string | null
+          estimativa_chamadas?: number | null
+          etapa?: string
+          id?: string
+          ideias?: Json
+          lease_until?: string | null
+          n_ideias: number
+          origem?: string
+          status?: string
+          tentativas?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aprovados?: number
+          chamadas?: number
+          created_at?: string
+          cursor?: number
+          data?: string
+          descartados?: number
+          erro?: string | null
+          estimativa_chamadas?: number | null
+          etapa?: string
+          id?: string
+          ideias?: Json
+          lease_until?: string | null
+          n_ideias?: number
+          origem?: string
+          status?: string
+          tentativas?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reel_factory_settings: {
+        Row: {
+          automatico: boolean
+          hora: number
+          limite_agendados_dia: number
+          limite_roteiros_dia: number
+          n_ideias: number
+          pausado: boolean
+          ritmo_semana: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          automatico?: boolean
+          hora?: number
+          limite_agendados_dia?: number
+          limite_roteiros_dia?: number
+          n_ideias?: number
+          pausado?: boolean
+          ritmo_semana?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          automatico?: boolean
+          hora?: number
+          limite_agendados_dia?: number
+          limite_roteiros_dia?: number
+          n_ideias?: number
+          pausado?: boolean
+          ritmo_semana?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reel_generations: {
         Row: {
           created_at: string
