@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SocialOnCommandCenter from "./SocialOnCommandCenter";
+import CommandCenterScreen from "./CommandCenterScreen";
 
 const CYAN = "#00D4FF";
 const GOLD = "#B8922A";
