@@ -41,6 +41,7 @@ import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnBatchPanel from "@/components/social/SocialOnBatchPanel";
+import ReelResultPanel from "@/components/social/ReelResultPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
 import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
 import SocialOnVitrinePanel from "@/components/social/SocialOnVitrinePanel";
@@ -1161,6 +1162,7 @@ const SocialOnModulePage = () => {
             <SocialOnBatchPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="estrategista" className="mt-4">
+            <ReelResultPanel />
             <SocialOnStrategistPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="intelligence" className="mt-0">
