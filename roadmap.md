@@ -1,5 +1,9 @@
 # Roadmap
 
+- [x] Integrar perfil real do criador e regras universais nos roteiros Social ON, PRISM e Command Center
+- [x] Validar personalização e limites com testes automáticos
+- [ ] Validar geração autenticada e qualidade dos roteiros no navegador — sessão da prévia desconectada
+
 - [x] Consolidar as 17 regras do STRATUM em um motor determinístico
 - [x] Integrar as decisões ao prompt e à visualização do TrainingON
 - [x] Adicionar testes das regras críticas e limites de segurança

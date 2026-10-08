@@ -1,0 +1,2 @@
+ALTER TABLE public.social_profile ADD COLUMN IF NOT EXISTS creator_profile jsonb;
+COMMENT ON COLUMN public.social_profile.creator_profile IS 'Creator voice and measured calibration: nicho, rede, objetivo, tom, expressoes_que_ele_usa, expressoes_que_ele_evita, ganchos_que_retiveram_mais, loops_que_funcionaram, ctas_que_converteram, o_que_derrubou_retencao. Missing values are not inferred.';

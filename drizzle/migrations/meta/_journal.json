@@ -113,6 +113,13 @@
       "when": 1790866533162,
       "tag": "0015_training_cycle_rest_type",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791478599657,
+      "tag": "0016_social_creator_profile",
+      "breakpoints": true
     }
   ]
 }
