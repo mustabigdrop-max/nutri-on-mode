@@ -40,8 +40,16 @@ const toBlock = (v: any): Block => ({ id: Number(v?.id), tempo: str(v?.tempo, 20
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
-  const auth = await requireUser(req);
+  // Scheduled runs (cc_automation) authenticate with the private cron key and pass the target user.
+  let auth: { ok: true; userId: string } | { ok: false; status: number };
+  const cronKey = req.headers.get("x-cron-key");
+  if (cronKey) {
+    const { data } = await adminClient().from("cc_job_state").select("cron_key").eq("id", 1).maybeSingle();
+    const uid = req.headers.get("x-user-id") ?? "";
+    auth = data?.cron_key && data.cron_key === cronKey && /^[0-9a-f-]{36}$/.test(uid) ? { ok: true, userId: uid } : { ok: false, status: 401 };
+  } else auth = await requireUser(req);
   if (!auth.ok) return json({ error: "Não autenticado" }, auth.status);
+  const origem = cronKey ? "automacao" : "manual";
   if (!ARQUITETO_PROMPT.trim() || !REDATOR_PROMPT.trim() || !CRITICO_PROMPT.trim())
     return json({ error: "As instruções do Arquiteto, Redator e Crítico ainda não foram configuradas." }, 503);
   let body: any; try { body = await req.json(); } catch { return json({ error: "Pedido inválido." }, 400); }
@@ -122,7 +130,7 @@ Deno.serve(async (req) => {
       };
       const notas = { ...current, rodadas, historico, forca_gancho: forca, forca_gancho_total: forca ? Object.values(forca).reduce((a, b) => a + b, 0) : null,
         avisos: current.notas_por_bloco.filter(n => n.nota < CRITIC_LIMITS.warnBelow).map(n => ({ id: n.id, texto: `Este trecho está fraco. Sugestão de gravação: ${n.correcao}` })) };
-      const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: current.nota_geral })
+      const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: current.nota_geral, origem })
         .select("*").single();
       if (error) throw new HttpError(500, "Reel gerado, mas não foi possível salvar no histórico.");
       send({ etapa: "pronto", script: data });
