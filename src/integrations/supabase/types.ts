@@ -2642,6 +2642,123 @@ export type Database = {
         }
         Relationships: []
       }
+      cc_automation_runs: {
+        Row: {
+          created_at: string
+          detalhes: Json
+          erro: string | null
+          id: string
+          status: string
+          tentativas: number
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detalhes?: Json
+          erro?: string | null
+          id?: string
+          status: string
+          tentativas?: number
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          detalhes?: Json
+          erro?: string | null
+          id?: string
+          status?: string
+          tentativas?: number
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_automation_settings: {
+        Row: {
+          hora: number
+          limite_diario: number
+          pausado: boolean
+          ultima_semanal: string | null
+          ultimo_diario: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          hora?: number
+          limite_diario?: number
+          pausado?: boolean
+          ultima_semanal?: string | null
+          ultimo_diario?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          hora?: number
+          limite_diario?: number
+          pausado?: boolean
+          ultima_semanal?: string | null
+          ultimo_diario?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_briefings: {
+        Row: {
+          conteudo: Json
+          created_at: string
+          data: string
+          id: string
+          script_id: string | null
+          status: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          conteudo?: Json
+          created_at?: string
+          data: string
+          id?: string
+          script_id?: string | null
+          status?: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          conteudo?: Json
+          created_at?: string
+          data?: string
+          id?: string
+          script_id?: string | null
+          status?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_job_state: {
+        Row: {
+          cron_key: string
+          id: number
+          last_run_at: string | null
+          lease_until: string | null
+        }
+        Insert: {
+          cron_key?: string
+          id?: number
+          last_run_at?: string | null
+          lease_until?: string | null
+        }
+        Update: {
+          cron_key?: string
+          id?: number
+          last_run_at?: string | null
+          lease_until?: string | null
+        }
+        Relationships: []
+      }
       challenge_daily_logs: {
         Row: {
           challenge_id: string
@@ -10921,8 +11038,10 @@ export type Database = {
           nota_geral: number | null
           notas: Json
           objetivo: string
+          origem: string
           quero_mais: string | null
           rede: string
+          revisao: string
           roteiro: Json
           tema: string
           tom: string
@@ -10936,8 +11055,10 @@ export type Database = {
           nota_geral?: number | null
           notas?: Json
           objetivo: string
+          origem?: string
           quero_mais?: string | null
           rede?: string
+          revisao?: string
           roteiro?: Json
           tema: string
           tom: string
@@ -10951,8 +11072,10 @@ export type Database = {
           nota_geral?: number | null
           notas?: Json
           objetivo?: string
+          origem?: string
           quero_mais?: string | null
           rede?: string
+          revisao?: string
           roteiro?: Json
           tema?: string
           tom?: string

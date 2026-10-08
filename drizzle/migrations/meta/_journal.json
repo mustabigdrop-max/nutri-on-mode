@@ -162,6 +162,13 @@
       "when": 1791502614462,
       "tag": "0022_creator_goals",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791503018841,
+      "tag": "0023_cc_automation",
+      "breakpoints": true
     }
   ]
 }
