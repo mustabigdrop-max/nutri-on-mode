@@ -11443,6 +11443,7 @@ export type Database = {
           coach_id: string
           content_pillars: Json | null
           created_at: string
+          creator_profile: Json | null
           differentials: Json | null
           funnel_stage: string
           id: string
@@ -11462,6 +11463,7 @@ export type Database = {
           coach_id: string
           content_pillars?: Json | null
           created_at?: string
+          creator_profile?: Json | null
           differentials?: Json | null
           funnel_stage?: string
           id?: string
@@ -11481,6 +11483,7 @@ export type Database = {
           coach_id?: string
           content_pillars?: Json | null
           created_at?: string
+          creator_profile?: Json | null
           differentials?: Json | null
           funnel_stage?: string
           id?: string
