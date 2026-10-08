@@ -1,3 +1,4 @@
+import { jsonrepair } from "npm:jsonrepair@3.13.1";
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { loadCreatorProfile } from "../_shared/loadCreatorProfile.ts";
 import { creatorScriptPrompt } from "../_shared/creatorScriptRules.ts";
@@ -19,9 +20,11 @@ async function pass(system: string, input: unknown): Promise<Record<string, unkn
   if (res.status === 402) throw new HttpError(402, "Créditos esgotados no espaço de trabalho.");
   if (!res.ok) { await res.text(); throw new HttpError(502, "Falha na geração. Tente novamente."); }
   const d = await res.json();
-  const v = JSON.parse(String(d.choices?.[0]?.message?.content ?? "{}").replace(/```json|```/g, "").trim());
+  const raw = String(d.choices?.[0]?.message?.content ?? "{}").replace(/```json|```/g, "").trim();
+  let v: unknown;
+  try { v = JSON.parse(raw); } catch { try { v = JSON.parse(jsonrepair(raw)); } catch { throw new HttpError(502, "Resposta inválida. Tente novamente."); } }
   if (!v || typeof v !== "object" || Array.isArray(v)) throw new HttpError(502, "Resposta inválida. Tente novamente.");
-  return v;
+  return v as Record<string, unknown>;
 }
 
 const toBlock = (v: any): Block => ({ id: Number(v?.id), tempo: str(v?.tempo, 20), funcao: str(v?.funcao, 40), fala: str(v?.fala),
