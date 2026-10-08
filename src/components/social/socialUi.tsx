@@ -39,9 +39,11 @@ const socialAIErrorMessage = async (error: unknown) => {
 };
 
 export const callSocialAI = async (body: Record<string, any>) => {
+  window.dispatchEvent(new CustomEvent("social-retention-review", { detail: null }));
   const { data, error } = await supabase.functions.invoke("social-on-generate", { body });
   if (error) throw new Error(await socialAIErrorMessage(error));
   if ((data as any)?.error) throw new Error((data as any).error);
+  window.dispatchEvent(new CustomEvent("social-retention-review", { detail: data?.result?.critica_retencao ?? null }));
   // Rede de segurança: jargão interno (APEX, RPE, NutrySync...) e numeração
   // decorativa nunca chegam no slide, mesmo se o modelo escorregar.
   return sanitizarConteudoPublico((data as any).result);

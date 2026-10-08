@@ -47,7 +47,7 @@ export function normalizeCritique(raw: unknown, blocks: ScriptBlock[]): Critique
 
 function parentAt(result: Record<string, unknown>, path: (string | number)[]) {
   let parent: unknown = result;
-  for (const key of path.slice(0, -1)) parent = obj(parent)[key];
+  for (const key of path.slice(0, -1)) parent = parent && typeof parent === "object" ? (parent as Record<string, unknown>)[key] : undefined;
   return parent && typeof parent === "object" ? parent as Record<string, unknown> : null;
 }
 export function replaceBlock(result: Record<string, unknown>, block: ScriptBlock, fala: string): boolean {
@@ -65,7 +65,10 @@ export function replaceBlock(result: Record<string, unknown>, block: ScriptBlock
 
 export async function reviewRetention(value: unknown, complete: Complete, creatorRules: string) {
   const result = obj(value);
-  if (!Array.isArray(result.roteiros_retencao) || !result.roteiros_retencao.length) return value;
+  if (!Array.isArray(result.roteiros_retencao) || !result.roteiros_retencao.length) {
+    if (result.planejamento_retencao) result.critica_retencao = [{ erro: "Revisão indisponível: faltou o mapeamento das falas. Não considere este roteiro aprovado." }];
+    return value;
+  }
   const reviews = [];
   for (const candidate of result.roteiros_retencao) {
     const script = obj(candidate) as unknown as Script;

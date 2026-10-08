@@ -3,6 +3,7 @@ import { IMPACT_WRITER_SPEC } from "./impactSpec.ts";
 import { requireUser } from "../_shared/auth.ts";
 import { loadCreatorProfile } from "../_shared/loadCreatorProfile.ts";
 import { creatorScriptPrompt } from "../_shared/creatorScriptRules.ts";
+import { reviewWithGateway } from "../_shared/retentionGateway.ts";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
 const TOOLS: Record<string, { spec: string; label: string }> = {
   decoder: { spec: "cc", label: "FERRAMENTA 1: VIRAL DECODER" },
@@ -35,8 +36,8 @@ Deno.serve(async (req) => {
     if (res.status === 402) return json({ error: "Créditos esgotados no espaço de trabalho." }, 402);
     if (!res.ok) return json({ error: "Falha ao gerar análise" }, 500);
     const d = await res.json();
-    const parsed = JSON.parse(d.choices?.[0]?.message?.content ?? "{}");
+    const parsed = await reviewWithGateway(JSON.parse(d.choices?.[0]?.message?.content ?? "{}"), apiKey ?? "", creatorScriptPrompt(profile, body)) as Record<string, unknown>;
     if (typeof parsed.content !== "string") return json({ error: "Resposta inválida. Tente novamente." }, 502);
-    return json({ result: parsed.content });
+    return json({ result: parsed.content, planejamento_retencao: parsed.planejamento_retencao, critica_retencao: parsed.critica_retencao });
   } catch (e) { return json({ error: e instanceof Error ? e.message : "Erro" }, 500); }
 });

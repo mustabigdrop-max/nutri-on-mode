@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
 import { loadCreatorProfile } from "../_shared/loadCreatorProfile.ts";
 import { creatorScriptPrompt } from "../_shared/creatorScriptRules.ts";
+import { reviewWithGateway } from "../_shared/retentionGateway.ts";
 import {
   aplicarConfigPosSlides,
   promptPosSlides,
@@ -709,6 +710,7 @@ REGRAS:
       parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
     }
 
+    parsed = await reviewWithGateway(parsed, apiKey, creatorScriptPrompt(creatorProfile, body));
     enforceBioLimit(parsed);
 
     // O config do tipo é a fonte final: hashtags, CTA e disclaimer nunca vêm

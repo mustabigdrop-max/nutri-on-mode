@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { SocialRetentionReview } from "@/components/social/RetentionReview";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -244,9 +245,11 @@ const SocialOnModulePage = () => {
   };
 
   const callAI = async (body: Record<string, any>) => {
+    window.dispatchEvent(new CustomEvent("social-retention-review", { detail: null }));
     const { data, error } = await supabase.functions.invoke("social-on-generate", { body });
     if (error) throw new Error(error.message);
     if ((data as any)?.error) throw new Error((data as any).error);
+    window.dispatchEvent(new CustomEvent("social-retention-review", { detail: data?.result?.critica_retencao ?? null }));
     return (data as any).result;
   };
 
@@ -467,6 +470,7 @@ const SocialOnModulePage = () => {
           <ArrowLeft className="w-3.5 h-3.5" /> Hub SOCIAL ON
         </button>
         <Tabs value={tab} onValueChange={setTab}>
+          <SocialRetentionReview key={tab} />
           <TabsList className="hidden">
             <TabGroupLabel first>⚡ Rápido — pegue a mídia e poste</TabGroupLabel>
             <TabsTrigger value="carrossel_nexus" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Carrossel NEXUS-BIO</TabsTrigger>

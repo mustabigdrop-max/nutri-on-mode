@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Section, Pill, copyText, VariationBlock } from "./socialUi";
+import { RetentionReview } from "./RetentionReview";
 import {
   captureFrameAt, compressImageFile, detectMediaKind, extractVideoFrames,
   fileToDataUrl, getVideoDuration, videoObjectUrl,
@@ -38,6 +39,7 @@ export type StudioConcept = {
 };
 
 export type StudioResult = {
+  critica_retencao?: unknown;
   headline?: string;
   strategy?: Record<string, string>;
   concepts?: StudioConcept[];
@@ -410,6 +412,7 @@ export default function PrismStudioPanel({
 
       {result && (
         <>
+          <RetentionReview value={result.critica_retencao} />
           {result.strategy && (
             <Section title="Estratégia">
               <div className="flex flex-wrap gap-1.5">
