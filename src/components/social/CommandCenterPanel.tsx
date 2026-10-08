@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ACCENT2, Section, Pill, copyText } from "./socialUi";
 import { cleanCaption } from "@/lib/captionText";
 import { RetentionReview } from "./RetentionReview";
+import RetentionFeedbackPanel from "./RetentionFeedbackPanel";
 
 type Tool = "decoder" | "forge" | "hooks" | "sniper" | "impact_angulos" | "impact_pesquisa" | "impact_writer";
 const TOOLS: { id: Tool; label: string; hint: string; placeholder: string; group: "cc" | "impact" }[] = [
@@ -25,6 +26,7 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState("");
   const [review, setReview] = useState<unknown>(null);
+  const [prefill, setPrefill] = useState<{ id: number; tempo: string; previsto: number }[]>([]);
   const def = TOOLS.find((t) => t.id === tool) ?? TOOLS[0];
   const ccTools = TOOLS.filter((t) => t.group === "cc");
   const impactTools = TOOLS.filter((t) => t.group === "impact");
@@ -44,6 +46,9 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
       if ((data as any)?.error) throw new Error((data as any).error);
       setResult(cleanCaption((data as any).result));
       setReview(data?.critica_retencao);
+      const script = (data as any)?.roteiros_retencao?.[0]?.blocos ?? [];
+      const notes = (data as any)?.critica_retencao?.[0]?.notas_por_bloco ?? [];
+      setPrefill(script.map((b: any) => ({ id: b.id, tempo: b.tempo, previsto: notes.find((n: any) => n.id === b.id)?.nota })).filter((b: any) => typeof b.previsto === "number"));
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   };
 
@@ -70,6 +75,7 @@ export default function CommandCenterPanel({ onBack }: { onBack: () => void }) {
           <RetentionReview value={review} />
         </Section>
       )}
+      <RetentionFeedbackPanel prefill={prefill} />
     </div>
   );
 }
