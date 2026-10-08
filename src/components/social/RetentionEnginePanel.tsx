@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { copyText } from "./socialUi";
+import RetentionResultView from "./RetentionResultView";
 
 const T = { bg: "#020205", s1: "#0A0A0F", s2: "#111118", cyan: "#00D4FF", gold: "#B8922A", green: "#22C55E", red: "#EF4444", orange: "#F97316", purple: "#A855F7", muted: "#888", text: "#E8E8F0", white: "#FFF",
   ft: "'Rajdhani',sans-serif", fm: "'Space Mono',monospace" };
@@ -77,48 +78,7 @@ export default function RetentionEnginePanel() {
     <button onClick={run} disabled={busy} style={{ marginTop: 16, width: "100%", padding: 16, borderRadius: 0, border: "none", cursor: busy ? "wait" : "pointer", background: T.purple, color: T.bg, fontFamily: T.ft, fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
       {busy ? STAGES[stage!] ?? "Projetando atenção..." : "GERAR REEL"}</button>
 
-    {r && <>
-      <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <div style={label}>LINHA DO TEMPO · NOTA ESTIMADA POR BLOCO</div>
-          <span style={{ fontFamily: T.ft, fontSize: 20, fontWeight: 700, color: scoreColor(r.nota_geral) }}>{r.nota_geral}/10</span>
-        </div>
-        <div style={{ display: "flex", gap: 2, overflowX: "auto" }}>
-          {blocks.map(b => <div key={b.id} title={b.causa_da_queda} style={{ flex: `${span(String(b.tempo)) / total * 100} 0 56px`, background: `${scoreColor(b.nota)}22`, borderTop: `3px solid ${scoreColor(b.nota)}`, padding: "8px 6px" }}>
-            <div style={{ fontFamily: T.fm, fontSize: 9, color: T.muted }}>{b.tempo}</div>
-            <div style={{ fontFamily: T.ft, fontSize: 18, fontWeight: 700, color: scoreColor(b.nota) }}>{b.nota ?? "—"}</div>
-            <div style={{ fontFamily: T.fm, fontSize: 9, color: T.text, textTransform: "uppercase" }}>{b.funcao}</div>
-          </div>)}
-        </div>
-        <p style={{ fontSize: 12, color: T.muted, margin: "10px 0 0" }}>{r.rodadas} revisões · {r.veredito}</p>
-        {(r.avisos ?? []).map((a: any) => <p key={a.id} role="alert" style={{ color: T.red, fontSize: 12, margin: "6px 0 0" }}>Bloco {a.id}: {a.texto}</p>)}
-        {(r.riscos_de_conteudo ?? []).map((a: any, i: number) => <p key={i} style={{ color: T.red, fontSize: 12, margin: "6px 0 0" }}>Risco · bloco {a.id}: {a.risco}</p>)}
-      </div>
-
-      <div style={card}>
-        <div style={label}>ROTEIRO BLOCO A BLOCO</div>
-        {blocks.map(b => <div key={b.id} style={{ borderLeft: `3px solid ${scoreColor(b.nota)}`, padding: "8px 12px", marginBottom: 10, background: T.s2 }}>
-          <div style={{ fontFamily: T.fm, fontSize: 10, color: scoreColor(b.nota) }}>BLOCO {b.id} · {b.tempo} · {String(b.funcao).toUpperCase()} · {b.nota ?? "—"}/10</div>
-          <p style={{ fontSize: 14, color: T.white, margin: "6px 0" }}>🎙 {b.fala}</p>
-          {b.texto_tela && <p style={{ fontSize: 12, margin: "2px 0" }}><b style={{ color: T.cyan }}>Texto na tela:</b> {b.texto_tela}</p>}
-          {b.estimulo_visual && <p style={{ fontSize: 12, margin: "2px 0" }}><b style={{ color: T.gold }}>Estímulo visual:</b> {b.estimulo_visual}</p>}
-          {b.gatilho && <p style={{ fontSize: 12, margin: "2px 0" }}><b style={{ color: T.purple }}>Gatilho:</b> {b.gatilho}</p>}
-          {b.nota !== null && b.nota < 8 && b.correcao && <p style={{ fontSize: 11, color: T.muted, margin: "4px 0 0" }}>Feedback: {b.correcao}</p>}
-        </div>)}
-      </div>
-
-      <div style={card}>
-        <div style={label}>3 ABERTURAS ALTERNATIVAS</div>
-        {(r.aberturas_alternativas ?? []).map((a: string, i: number) => <p key={i} style={{ fontSize: 13, background: T.s2, padding: 10, margin: "0 0 6px" }}>{i + 1}. {a}</p>)}
-      </div>
-
-      <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}><div style={label}>LEGENDA</div>
-          <button onClick={() => copyText(`${r.legenda}\n\n${(r.hashtags ?? []).join(" ")}`)} style={{ background: "none", border: "none", color: T.cyan, cursor: "pointer", fontFamily: T.fm, fontSize: 10 }}>COPIAR</button></div>
-        <p style={{ fontSize: 13, whiteSpace: "pre-wrap", margin: 0 }}>{r.legenda}</p>
-        <p style={{ fontSize: 12, color: T.cyan, marginTop: 8 }}>{(r.hashtags ?? []).join(" ")}</p>
-      </div>
-    </>}
+    {r && <RetentionResultView key={gen?.id} r={r} blocks={blocks} />}
 
     {history.length > 0 && <div style={card}>
       <div style={label}>HISTÓRICO</div>
