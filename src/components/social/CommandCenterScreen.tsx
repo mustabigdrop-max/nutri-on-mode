@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ReelFactoryPanel from "./ReelFactoryPanel";
 import CommandCenterAutomation from "./CommandCenterAutomation";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
 
@@ -397,6 +398,10 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
               </>
             )}
           </div>
+        </Panel>
+
+        <Panel glow={C.gold}>
+          <ReelFactoryPanel onChosen={load} />
         </Panel>
 
         <div className="cc-grid">
