@@ -104,7 +104,11 @@ Deno.serve(async (req) => {
     const resultado = { comparacao, maior_queda, analise, padroes, aviso, faixas: points };
     const row = { script_id: scriptId, user_id: auth.userId, curva_real: resultado, pct_3s: pct3, tempo_medio: medio, comentarios: coment, salvamentos: salv };
     const { error } = firstTime ? await db.from("retention_results").insert(row) : await db.from("retention_results").update(row).eq("id", prev![0].id);
-    if (error) return json({ error: "Não foi possível salvar o resultado." }, 500);
+    if (error) {
+      await db.from("cc_automation_runs").insert({ user_id: auth.userId, tipo: "calibracao", status: "erro", erro: "Não foi possível salvar o resultado.", detalhes: { script_id: scriptId } });
+      return json({ error: "Não foi possível salvar o resultado." }, 500);
+    }
+    await db.from("cc_automation_runs").insert({ user_id: auth.userId, tipo: "calibracao", status: "ok", detalhes: { script_id: scriptId, recalibrado: !firstTime, ajustes: analise?.ajuste_para_proximo_reel ?? [] } });
     const ranking_formulas = await refreshFormulaStats(db, auth.userId);
     return json({ ...resultado, recalibrado: !firstTime, ranking_formulas });
   } catch (e: any) {

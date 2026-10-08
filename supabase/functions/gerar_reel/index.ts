@@ -40,8 +40,15 @@ const toBlock = (v: any): Block => ({ id: Number(v?.id), tempo: str(v?.tempo, 20
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
-  const auth = await requireUser(req);
+  // Scheduled runs (cc_automation) authenticate with the private cron key and pass the target user.
+  const cronKey = req.headers.get("x-cron-key");
+  const auth: { ok: true; userId: string } | { ok: false; status: number } = cronKey ? await (async () => {
+    const { data } = await adminClient().from("cc_job_state").select("cron_key").eq("id", 1).maybeSingle();
+    const uid = req.headers.get("x-user-id") ?? "";
+    return data?.cron_key && data.cron_key === cronKey && /^[0-9a-f-]{36}$/.test(uid) ? { ok: true as const, userId: uid } : { ok: false as const, status: 401 };
+  })() : await requireUser(req);
   if (!auth.ok) return json({ error: "Não autenticado" }, auth.status);
+  const origem = cronKey ? "automacao" : "manual";
   if (!ARQUITETO_PROMPT.trim() || !REDATOR_PROMPT.trim() || !CRITICO_PROMPT.trim())
     return json({ error: "As instruções do Arquiteto, Redator e Crítico ainda não foram configuradas." }, 503);
   let body: any; try { body = await req.json(); } catch { return json({ error: "Pedido inválido." }, 400); }
@@ -61,6 +68,8 @@ Deno.serve(async (req) => {
         db.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media, comentarios_media, salvamentos_media").eq("user_id", auth.userId),
         db.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", auth.userId),
       ]);
+      const { data: lastRes } = await db.from("retention_results").select("curva_real").eq("user_id", auth.userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const ajustes = Array.isArray((lastRes as any)?.curva_real?.analise?.ajuste_para_proximo_reel) ? (lastRes as any).curva_real.analise.ajuste_para_proximo_reel.slice(0, 3) : [];
       const all = formulas ?? [];
       const measured = (stats ?? []).filter(s => s.usos > 0);
       const ranking = [...measured].sort((a, b) => Number(b.retencao_3s_media ?? -1) - Number(a.retencao_3s_media ?? -1))
@@ -71,7 +80,7 @@ Deno.serve(async (req) => {
       // Data, not instructions; absent values stay null.
       const contexto = { pedido: { tema, objetivo, tom, rede, quero_mais }, formulas_atlas: all, ranking_formulas: ranking,
         selecao_formula: { modo: explorar ? "explorar" : "priorizar", permitidas }, voz_do_criador: voice ?? null,
-        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado) };
+        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes };
 
       send({ etapa: "arquiteto" });
       const estrutura = await pass(ARQUITETO_PROMPT + CONTRATO_ARQUITETO, contexto);
@@ -122,7 +131,7 @@ Deno.serve(async (req) => {
       };
       const notas = { ...current, rodadas, historico, forca_gancho: forca, forca_gancho_total: forca ? Object.values(forca).reduce((a, b) => a + b, 0) : null,
         avisos: current.notas_por_bloco.filter(n => n.nota < CRITIC_LIMITS.warnBelow).map(n => ({ id: n.id, texto: `Este trecho está fraco. Sugestão de gravação: ${n.correcao}` })) };
-      const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: current.nota_geral })
+      const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: current.nota_geral, origem })
         .select("*").single();
       if (error) throw new HttpError(500, "Reel gerado, mas não foi possível salvar no histórico.");
       send({ etapa: "pronto", script: data });
