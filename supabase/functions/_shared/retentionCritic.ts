@@ -88,8 +88,9 @@ export async function reviewRetention(value: unknown, complete: Complete, creato
         const response = obj(await complete(`Você é o Redator. Reescreva SOMENTE os blocos fornecidos, não analise nem devolva o roteiro completo. Cada bloco deve ter entre 2,5 e 3 palavras por segundo e frases de até 14 palavras. Calcule o orçamento pelo tempo. Preserve id, tempo, promessa e loops descritos nas correções. Nenhuma ação extra no CTA. Não invente fontes. Não aplique planejamento_retencao a esta revisão parcial. JSON {"blocos":[{"id":1,"fala":""}]}.\n${creatorRules}`, {
           blocos: weak.map(b => ({ id: b.id, tempo: b.tempo, fala: b.fala, critica: current.notas_por_bloco.find(n => n.id === b.id), riscos: current.riscos_de_conteudo.filter(r => r.id === b.id) })) }));
         rounds++;
-        if (!Array.isArray(response.blocos) || weak.some(b => !response.blocos.some((v: unknown) => obj(v).id === b.id && typeof obj(v).fala === "string" && String(obj(v).fala).trim()))) throw new Error("Revisão sem todos os blocos solicitados.");
-        for (const change of response.blocos) {
+        const changes = response.blocos;
+        if (!Array.isArray(changes) || weak.some(b => !changes.some((v: unknown) => obj(v).id === b.id && typeof obj(v).fala === "string" && String(obj(v).fala).trim()))) throw new Error("Revisão sem todos os blocos solicitados.");
+        for (const change of changes) {
           const patch = obj(change); const block = weak.find(b => b.id === patch.id);
           if (block && typeof patch.fala === "string" && patch.fala.trim() && !replaceBlock(result, block, patch.fala)) throw new Error("Não foi possível localizar o trecho original com segurança.");
         }
