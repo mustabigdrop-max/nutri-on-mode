@@ -12063,34 +12063,55 @@ export type Database = {
           comentarios: number | null
           created_at: string
           curva_real: Json
+          duracao_seg: number | null
           id: string
+          novos_seguidores: number | null
           pct_3s: number | null
+          postado_em: string | null
+          ret_media_pct: number | null
           salvamentos: number | null
           script_id: string
+          shares: number | null
+          status: string
           tempo_medio: number | null
           user_id: string
+          views: number | null
         }
         Insert: {
           comentarios?: number | null
           created_at?: string
           curva_real?: Json
+          duracao_seg?: number | null
           id?: string
+          novos_seguidores?: number | null
           pct_3s?: number | null
+          postado_em?: string | null
+          ret_media_pct?: number | null
           salvamentos?: number | null
           script_id: string
+          shares?: number | null
+          status?: string
           tempo_medio?: number | null
           user_id: string
+          views?: number | null
         }
         Update: {
           comentarios?: number | null
           created_at?: string
           curva_real?: Json
+          duracao_seg?: number | null
           id?: string
+          novos_seguidores?: number | null
           pct_3s?: number | null
+          postado_em?: string | null
+          ret_media_pct?: number | null
           salvamentos?: number | null
           script_id?: string
+          shares?: number | null
+          status?: string
           tempo_medio?: number | null
           user_id?: string
+          views?: number | null
         }
         Relationships: [
           {
@@ -12106,6 +12127,7 @@ export type Database = {
         Row: {
           ajuste_obrigatorio: string | null
           angulo: Json | null
+          angulo_usado: string | null
           checklist: Json | null
           created_at: string
           critico2: Json | null
@@ -12117,25 +12139,35 @@ export type Database = {
           fonte_status: string | null
           formula: string | null
           formula_id: number | null
+          gravado_em: string | null
+          gravado_mesmo_assim: Json | null
+          historico_revisoes: Json
           id: string
           motivos_nota: Json | null
+          nota_c1: number | null
+          nota_c2: number | null
+          nota_final: number | null
           nota_geral: number | null
           notas: Json
           objetivo: string
+          observacao: string | null
           ordem_lote: number | null
           origem: string
+          pendencias: Json
           pilar: number | null
           quero_mais: string | null
           rede: string
           ressalva_obrigatoria: string | null
           revisao: string
           risco: string | null
+          rodadas: number | null
           roteiro: Json
           slug: string | null
           status: string | null
           status_qualidade: string | null
           tecnicas: Json | null
           tema: string
+          teto_verificador: number | null
           tipo_afirmacao: string | null
           titulo: string | null
           tom: string
@@ -12144,6 +12176,7 @@ export type Database = {
         Insert: {
           ajuste_obrigatorio?: string | null
           angulo?: Json | null
+          angulo_usado?: string | null
           checklist?: Json | null
           created_at?: string
           critico2?: Json | null
@@ -12155,25 +12188,35 @@ export type Database = {
           fonte_status?: string | null
           formula?: string | null
           formula_id?: number | null
+          gravado_em?: string | null
+          gravado_mesmo_assim?: Json | null
+          historico_revisoes?: Json
           id?: string
           motivos_nota?: Json | null
+          nota_c1?: number | null
+          nota_c2?: number | null
+          nota_final?: number | null
           nota_geral?: number | null
           notas?: Json
           objetivo: string
+          observacao?: string | null
           ordem_lote?: number | null
           origem?: string
+          pendencias?: Json
           pilar?: number | null
           quero_mais?: string | null
           rede?: string
           ressalva_obrigatoria?: string | null
           revisao?: string
           risco?: string | null
+          rodadas?: number | null
           roteiro?: Json
           slug?: string | null
           status?: string | null
           status_qualidade?: string | null
           tecnicas?: Json | null
           tema: string
+          teto_verificador?: number | null
           tipo_afirmacao?: string | null
           titulo?: string | null
           tom: string
@@ -12182,6 +12225,7 @@ export type Database = {
         Update: {
           ajuste_obrigatorio?: string | null
           angulo?: Json | null
+          angulo_usado?: string | null
           checklist?: Json | null
           created_at?: string
           critico2?: Json | null
@@ -12193,25 +12237,35 @@ export type Database = {
           fonte_status?: string | null
           formula?: string | null
           formula_id?: number | null
+          gravado_em?: string | null
+          gravado_mesmo_assim?: Json | null
+          historico_revisoes?: Json
           id?: string
           motivos_nota?: Json | null
+          nota_c1?: number | null
+          nota_c2?: number | null
+          nota_final?: number | null
           nota_geral?: number | null
           notas?: Json
           objetivo?: string
+          observacao?: string | null
           ordem_lote?: number | null
           origem?: string
+          pendencias?: Json
           pilar?: number | null
           quero_mais?: string | null
           rede?: string
           ressalva_obrigatoria?: string | null
           revisao?: string
           risco?: string | null
+          rodadas?: number | null
           roteiro?: Json
           slug?: string | null
           status?: string | null
           status_qualidade?: string | null
           tecnicas?: Json | null
           tema?: string
+          teto_verificador?: number | null
           tipo_afirmacao?: string | null
           titulo?: string | null
           tom?: string

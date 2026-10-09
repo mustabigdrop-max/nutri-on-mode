@@ -12,7 +12,9 @@ import { EstudoHojeCard, useRevisoesHoje } from "./EstudoHoje";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
 import { ReelTecnicas, TecnicasRetencao } from "./ReelTecnicas";
 import { BlockQuality, Critico2Panel, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
-import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
+import { runGerarReel, mergeBlocks, STAGE_LABEL } from "@/lib/retentionEngine";
+import { NucleoReal, DiretorReels, PrevistoRealScatter } from "./ReelDirector";
+import { contentScores, parsePesos } from "@/lib/contentScore";
 
 /* ═══════════════════════════════════════════════════
    COMMAND CENTER — tela principal do Social ON
@@ -115,60 +117,6 @@ const inp: React.CSSProperties = { width: "100%", boxSizing: "border-box", backg
 const btn = (primary?: boolean): React.CSSProperties => ({ flex: 1, background: primary ? C.gold : "transparent", border: primary ? "none" : `1px solid ${C.cyan}50`, color: primary ? "#0A0A0A" : C.cyan, fontFamily: F.t, fontWeight: 700, fontSize: 13, padding: "10px 0", cursor: "pointer", borderRadius: 0 });
 const sigBtn = (c: string, on?: boolean): React.CSSProperties => ({ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: on ? "#0A0A0A" : c, background: on ? c : "none", border: `1px solid ${c}80`, padding: "2px 6px", cursor: "pointer", borderRadius: 0 });
 const Empty = ({ children }: { children: React.ReactNode }) => <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 10, lineHeight: 1.5 }}>{children}</div>;
-
-/* ── Núcleo de Atenção (anel SVG em três camadas) ── */
-const EXEMPLO = { score: 72, subs: [
-  { k: "HOOK", v: 78, trend: [60, 66, 63, 71, 78] },
-  { k: "RETENÇÃO", v: 70, trend: [62, 65, 70, 68, 70] },
-  { k: "REAL 3S", v: 64, trend: [55, 58, 61, 60, 64] },
-  { k: "RITMO", v: 76, trend: [57, 71, 71, 86, 76] },
-] };
-type Sub = { k: string; v: number | null; trend?: number[] };
-
-function Spark({ data, color }: { data?: number[]; color: string }) {
-  if (!data || data.length < 2) return <svg width={44} height={12} aria-hidden><line x1={0} y1={6} x2={44} y2={6} stroke={C.dim} strokeDasharray="2 2" /></svg>;
-  const mi = Math.min(...data), ma = Math.max(...data), r = ma - mi || 1;
-  const d = data.map((v, i) => `${i ? "L" : "M"} ${(i * 44) / (data.length - 1)} ${11 - ((v - mi) / r) * 10}`).join(" ");
-  return <svg width={44} height={12} aria-hidden><path d={d} fill="none" stroke={color} strokeWidth={1.2} /></svg>;
-}
-
-function MiniGauge({ s }: { s: Sub }) {
-  const val = useCountUp(s.v ?? 0, 900);
-  const cor = s.v == null ? C.muted : s.v >= 80 ? C.gold : C.cyan;
-  const r = 20, len = Math.PI * r, p = s.v == null ? 0 : (val / 100) * len;
-  return (
-    <div style={{ textAlign: "center", minWidth: 0 }}>
-      <svg width={56} height={32} viewBox="0 0 56 32" aria-hidden>
-        <path d="M 8 28 A 20 20 0 0 1 48 28" fill="none" stroke={`${C.cyan}18`} strokeWidth={4} />
-        <path d="M 8 28 A 20 20 0 0 1 48 28" fill="none" stroke={cor} strokeWidth={4} strokeDasharray={`${p} ${len}`} style={{ filter: `drop-shadow(0 0 3px ${cor}90)` }} />
-        <text x={28} y={27} textAnchor="middle" fill={C.white} fontFamily={F.t} fontWeight={700} fontSize={13}>{s.v == null ? "—" : val}</text>
-      </svg>
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 2 }}><Spark data={s.trend} color={cor} /></div>
-      <Label>{s.k}</Label>
-    </div>
-  );
-}
-
-function Nucleo({ score, subs, exemplo }: { score: number | null; subs: Sub[]; exemplo: boolean }) {
-  const sc = exemplo ? EXEMPLO.score : score;
-  const ss: Sub[] = exemplo ? EXEMPLO.subs : subs;
-  const shown = useCountUp(sc ?? 0);
-  const CX = 110, CY = 110, R = 78, circ = 2 * Math.PI * R;
-  return (
-    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", padding: "6px 0 4px" }}>
-      {exemplo && <span style={{ position: "absolute", top: 0, right: 0, fontFamily: F.m, fontSize: 9, letterSpacing: 2, color: "#EF9F27", border: "1px solid #EF9F2770", padding: "2px 8px", background: "#EF9F2712" }}>EXEMPLO</span>}
-      <div style={{ position: "absolute", inset: -40, pointerEvents: "none", background: `radial-gradient(circle at 50% 42%, ${C.cyan}16, transparent 60%)` }} />
-      <Nucleus3D shown={shown} score={sc} exemplo={exemplo}>
-        <div style={{ fontFamily: F.t, fontSize: 56, fontWeight: 700, color: C.white, lineHeight: 1, textShadow: `0 0 18px ${C.cyan}60` }}>{sc == null ? "—" : shown}</div>
-        <Label color={C.cyan}>Content Score</Label>
-      </Nucleus3D>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 8, marginTop: 8, width: "100%", maxWidth: 340 }}>
-        {ss.map((s) => <MiniGauge key={s.k} s={s} />)}
-      </div>
-      {exemplo && <Empty>Lance o resultado de um reel para ver o seu score.</Empty>}
-    </div>
-  );
-}
 
 /* ── Linha da Atenção ── */
 const corSeg = (n?: number) => (n == null ? C.muted : n >= 8 ? "#5DCAA5" : n >= 5 ? "#EF9F27" : C.red);
@@ -343,13 +291,14 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("cc-burst", onBurst); };
   }, []);
 
+  const [limiteDia, setLimiteDia] = useState<number | null>(null);
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoaded(true); return; }
     const since = new Date(Date.now() - 120 * 864e5).toISOString();
-    const [s, r, f, h, g, a, bk, pl, ba, pa, ld] = await Promise.all([
-      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em, angulo, motivos_nota, critico2, tecnicas, status_qualidade").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
-      supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
+    const [s, r, f, h, g, a, bk, pl, ba, pa, ld, lim] = await Promise.all([
+      supabase.from("retention_scripts").select("id, created_at, tema, titulo, slug, origem, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em, angulo, motivos_nota, critico2, tecnicas, status_qualidade, tipo_afirmacao, nota_final, nota_c1, nota_c2, teto_verificador, rodadas, angulo_usado, pendencias, historico_revisoes, gravado_em, gravado_mesmo_assim").eq("user_id", user.id).or(`created_at.gte.${since},slug.not.is.null`).order("created_at", { ascending: false }).limit(200),
+      supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at, status, views, ret_media_pct, shares, salvamentos, novos_seguidores, postado_em").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
       supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media").eq("user_id", user.id),
       supabase.from("hook_formulas").select("id, nome").order("id"),
       supabase.from("creator_goals").select("*").eq("user_id", user.id).maybeSingle(),
@@ -359,7 +308,9 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
       supabase.from("reel_bank").select("id, tema, pilar, status, created_at, updated_at, script_id, agendado_para").eq("user_id", user.id).neq("status", "descartado").order("created_at", { ascending: false }).limit(1000),
       supabase.from("content_pillars").select("nome, chave, created_at").eq("user_id", user.id).eq("ativo", true),
       supabase.from("leads").select("id", { count: "exact", head: true }),
+      supabase.from("reel_factory_settings").select("limite_roteiros_dia").eq("user_id", user.id).maybeSingle(),
     ]);
+    setLimiteDia(lim.data?.limite_roteiros_dia ?? 100);
     setScripts(s.data ?? []); setResults(r.data ?? []);
     setAtlas((h.data ?? []) as any[]);
     setBankAll(ba.error ? null : (ba.data ?? [])); setPillarsAll(pa.error ? null : (pa.data ?? []));
@@ -378,21 +329,28 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const hojeIni = dayStart(new Date());
   const ontemIni = new Date(hojeIni.getTime() - 864e5);
   const doDia = scripts.filter(s => new Date(s.created_at) >= hojeIni);
+  // Generations that count toward the daily limit (seeded templates do not).
+  const geradosHoje = doDia.filter(s => ["manual", "diretor", "automacao", "fabrica"].includes(s.origem)).length;
   const reel = doDia[Math.min(todayIdx, Math.max(0, doDia.length - 1))] ?? null;
   const blocos: Bloco[] = useMemo(() => mergeBlocks(reel), [reel]);
   // Último reel com status 'postado' no Banco (mais recente primeiro).
   const ontem = useMemo(() => {
+    // A reel marked as recorded and still waiting for its result comes first.
+    const ag = results.filter(r => r.status === "aguardando").sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    for (const r of ag) { const sc = scripts.find(s => s.id === r.script_id); if (sc) return sc; }
     const post = (bankAll ?? []).filter(b => b.status === "postado" && b.script_id).sort((a, b) => +new Date(b.updated_at ?? b.created_at) - +new Date(a.updated_at ?? a.created_at));
     for (const b of post) { const sc = scripts.find(s => s.id === b.script_id); if (sc) return sc; }
     return null;
-  }, [bankAll, scripts]);
+  }, [bankAll, scripts, results]);
   void ontemIni;
   const ontemBlocos: Bloco[] = useMemo(() => mergeBlocks(ontem), [ontem]);
-  const ontemResult = ontem ? results.find(r => r.script_id === ontem.id) : null;
-  const { score, subs } = useMemo(() => contentScore(scripts, results), [scripts, results]);
+  const ontemResult = ontem ? results.find(r => r.script_id === ontem.id && r.status !== "aguardando") ?? null : null;
+  const pesosTxt = engRows.find(r => r.chave === ("pesos_score" as any))?.conteudo ?? null;
+  const score = useMemo(() => { const c = contentScores(results, parsePesos(pesosTxt)); return c.pronto ? c.ultimo?.score ?? null : null; }, [results, pesosTxt]);
 
   const streak = useMemo(() => {
-    const days = new Set(scripts.map(s => dayStart(new Date(s.created_at)).getTime()));
+    // Recording streak: days with a reel marked as recorded.
+    const days = new Set(scripts.filter(s => s.gravado_em).map(s => dayStart(new Date(s.gravado_em)).getTime()));
     let n = 0, d = hojeIni.getTime();
     if (!days.has(d)) d -= 864e5;
     while (days.has(d)) { n++; d -= 864e5; }
@@ -467,12 +425,14 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     setTemaOpen(true); if (!tema && chips[0]) setTema(chips[0]); scrollTo("cc-missao");
   };
   const busy = stage !== null;
+  const [gravarAlvo, setGravarAlvo] = useState<any | null>(null);
+  const gravarScript = (sc: any) => setGravarAlvo(sc);
+  const abrirLab = (lab: "gancho" | "fala") => { setAcademiaLab(lab); setAcademia(false); setTimeout(() => setAcademia(true), 0); };
   const pctOk = (v: string) => { const n = Number(String(v).replace(",", ".")); return String(v).trim() !== "" && Number.isFinite(n) && n >= 0 && n <= 100; };
   const resultadoCompleto = ontemBlocos.length > 0 && pctOk(pct3) && Number(String(medio).replace(",", ".")) > 0 && ontemBlocos.every(b => pctOk(faixas[b.id] ?? ""));
   const abertura = reel ? (blocos[0]?.fala ?? reel.roteiro?.gancho) : null;
   const comp: any[] = calib?.comparacao ?? ontemResult?.curva_real?.comparacao ?? [];
 
-  const exemplo = loaded && results.length === 0;
   const stepIdx = stage === "arquiteto" ? 0 : stage === "redator" ? 1 : stage ? 2 : -1;
   const motorOk = MOTOR_INSTRUCOES.ativas === MOTOR_INSTRUCOES.total && !auto?.pausado;
   const led = !loaded ? C.muted : motorOk ? "#5DCAA5" : "#EF9F27";
@@ -495,7 +455,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     <div ref={rootRef} className={`cc-anim cc-root cc-fx-${fxLevel}${foco ? " cc-focus" : ""}`} style={{ position: "relative", background: C.bg, borderRadius: 0, overflow: "hidden", overflowX: "hidden", padding: "14px 14px 20px", margin: "-16px -16px 0" }}>
       <style>{CSS}</style>
       <style>{SURREAL_CSS}</style>
-      <AttentionField level={fxLevel} score={exemplo ? null : score} paused={foco} />
+      <AttentionField level={fxLevel} score={score} paused={foco} />
       {foco && <div className="cc-focus-veil" />}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.04, backgroundImage: `linear-gradient(${C.cyan} 1px, transparent 1px), linear-gradient(90deg, ${C.cyan} 1px, transparent 1px)`, backgroundSize: "36px 36px" }} />
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.05, mixBlendMode: "overlay", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")" }} />
@@ -512,7 +472,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
             {!foco && [
               { t: `STREAK ${streak} ${streak === 1 ? "DIA" : "DIAS"}`, c: C.gold },
-              { t: auto?.limite_diario ? `HOJE ${doDia.length} DE ${auto.limite_diario}` : `HOJE ${doDia.length} ${doDia.length === 1 ? "REEL" : "REELS"}`, c: C.cyan },
+              { t: limiteDia != null ? `HOJE ${geradosHoje} DE ${limiteDia}` : `HOJE ${geradosHoje} ${geradosHoje === 1 ? "REEL" : "REELS"}`, c: C.cyan },
               { t: `MOTOR: ${MOTOR_INSTRUCOES.ativas} DE ${MOTOR_INSTRUCOES.total} INSTRUÇÕES ATIVAS`, c: motorOk ? "#5DCAA5" : "#EF9F27" },
             ].map(x => <span key={x.t} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: x.c, border: `1px solid ${x.c}40`, padding: "2px 6px", whiteSpace: "nowrap" }}>{x.t}</span>)}
             {!foco && <button type="button" onClick={abrirInstrucoes} style={sigBtn(C.cyan)}>INSTRUÇÕES</button>}
@@ -535,7 +495,9 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
         </div>
 
         <Panel glow={C.cyan}><Label color={C.cyan}>Núcleo de Atenção</Label>
-          {loaded ? <Nucleo score={score} subs={subs} exemplo={exemplo} /> : <><div className="cc-skel" style={{ width: 180, height: 180, borderRadius: "50%", margin: "14px auto 0" }} /><Skel h={40} /></>}
+          <NucleoReal scripts={scripts} results={results} loaded={loaded} pesosTxt={pesosTxt} hoje={doDia.find(x => x.nota_final != null) ?? null}
+            onReload={load} onGravar={gravarScript} onAbrirLab={abrirLab} scrollTo={scrollTo} />
+          {loaded && <DiretorReels scripts={scripts} results={results} loaded={loaded} pesosTxt={pesosTxt} onReload={async () => { await load(); setTodayIdx(0); }} onGravar={gravarScript} onAbrirLab={abrirLab} scrollTo={scrollTo} />}
         </Panel>
 
         {/* Missão de hoje */}
@@ -765,6 +727,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
       <CommandPalette open={paleta} onClose={() => setPaleta(false)} actions={paletteActions} />
       {gravando && blocos.length > 0 && <ModoGravacao blocos={blocos} onClose={() => setGravando(false)} />}
+      {gravarAlvo && mergeBlocks(gravarAlvo).length > 0 && <ModoGravacao blocos={mergeBlocks(gravarAlvo)} onClose={() => setGravarAlvo(null)} />}
     </div>
   );
 }

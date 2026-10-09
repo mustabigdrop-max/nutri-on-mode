@@ -5,6 +5,7 @@ export { ENGINE_PROMPT_KEYS, ENGINE_PROMPT_DEFAULTS, type EnginePromptKey };
 export const ENGINE_LABEL: Record<EnginePromptKey, string> = {
   bloco_0: "Contexto comum", arquiteto: "Arquiteto", redator: "Redator", critico: "Crítico",
   calibracao: "Calibração", atlas: "Atlas de Atenção", retorica: "Biblioteca de Persuasão", angulo: "Ângulo", proibidas: "Palavras proibidas",
+  revisor: "Revisor", pesos_score: "Pesos do Content Score", fatores_centrais: "Fatores centrais (antítese)",
 };
 export const CORE_KEYS: EnginePromptKey[] = ["bloco_0", "arquiteto", "redator", "critico"];
 export const PLACEHOLDERS = ["{{perfil}}", "{{vencedores}}", "{{fracos}}", "{{fontes_verificadas}}"];

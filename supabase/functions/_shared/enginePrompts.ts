@@ -7,15 +7,16 @@ import { parseProibidas } from "./reelVerifier.ts";
 const NONE = "nenhum cadastrado";
 
 // Field contract the code reads; appended after the user's editable text so edits cannot break parsing.
-const CONTRATO: Record<"arquiteto" | "redator" | "critico" | "calibracao" | "angulo", string> = {
+const CONTRATO: Record<"arquiteto" | "redator" | "critico" | "calibracao" | "angulo" | "revisor", string> = {
   angulo: "",
+  revisor: `\n\nCONTRATO DO SISTEMA: "id" de blocos_alterados é o id do bloco recebido. Altere só ids de blocos_para_revisar. Se não houver bloco novo ou ajuste de tempo, devolva listas vazias.`,
   arquiteto: `\n\nCONTRATO DO SISTEMA: além dos campos acima, cada item de "blocos" leva "id" (1, 2, 3...) e "loops_abertos" é uma lista de textos.`,
   redator: `\n\nCONTRATO DO SISTEMA: cada item de "blocos" leva "id" igual ao bloco do plano (1, 2, 3...), "tempo", "funcao", "fala", "texto_tela" (mesmo conteúdo de texto_na_tela), "estimulo_visual" e "gatilho". Inclua também "legenda" (mesmo conteúdo de legenda_post). Em modo "reescrita_parcial", devolva só os blocos pedidos, com o mesmo "id".`,
   critico: `\n\nCONTRATO DO SISTEMA: cada item de "notas_por_bloco" leva "id" do bloco, "nota", "causa_da_queda" e "correcao". Inclua "frases_fracas":[{"bloco":id,"frase":"texto exato","correcao":"instrução"}]. A entrada traz "verificador" com tetos de nota calculados em código: respeite-os.`,
   calibracao: "",
 };
 
-export type EnginePrompts = { arquiteto: string; redator: string; critico: string; calibracao: string; angulo: string; proibidas: string[]; exemplos: number; editadas: string[] };
+export type EnginePrompts = { arquiteto: string; redator: string; critico: string; calibracao: string; angulo: string; revisor: string; proibidas: string[]; fatores: string[]; pesos: string; exemplos: number; editadas: string[] };
 
 export function fillPlaceholders(text: string, data: Record<string, string>) {
   return text.replace(/\{\{(perfil|vencedores|fracos|fontes_verificadas|exemplos_ouro)\}\}/g, (_, k) => data[k]?.trim() || NONE);
@@ -62,6 +63,7 @@ export async function loadEnginePrompts(db: any, userId: string, opts: { tema?: 
   });
   const tail = `${get("atlas")}\n\n${get("retorica")}`;
   const build = (k: keyof typeof CONTRATO) => fillPlaceholders(`${base}\n\n${get(k)}${CONTRATO[k]}\n\n${tail}`, { exemplos_ouro: exemplos || "Sem reels de referência cadastrados" });
-  return { arquiteto: build("arquiteto"), redator: build("redator"), critico: build("critico"), calibracao: build("calibracao"), angulo: build("angulo"), proibidas: parseProibidas(get("proibidas")), exemplos: ouroSel.length,
+  return { arquiteto: build("arquiteto"), redator: build("redator"), critico: build("critico"), calibracao: build("calibracao"), angulo: build("angulo"), revisor: build("revisor"), proibidas: parseProibidas(get("proibidas")),
+    fatores: parseProibidas(get("fatores_centrais")).map(f => f.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")), pesos: get("pesos_score"), exemplos: ouroSel.length,
     editadas: (rows ?? []).map((r: any) => r.chave) };
 }
