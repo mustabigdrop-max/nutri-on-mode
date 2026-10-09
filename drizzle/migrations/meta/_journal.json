@@ -239,6 +239,13 @@
       "when": 1791550189577,
       "tag": "0033_creator_goals_follower_metrics",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791550481764,
+      "tag": "0034_academy_learning_system",
+      "breakpoints": true
     }
   ]
 }

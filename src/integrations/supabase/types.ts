@@ -56,6 +56,30 @@ export type Database = {
         }
         Relationships: []
       }
+      academy_diagnostic: {
+        Row: {
+          created_at: string
+          plano: Json | null
+          respostas: Json
+          trilha_recomendada: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          plano?: Json | null
+          respostas?: Json
+          trilha_recomendada?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          plano?: Json | null
+          respostas?: Json
+          trilha_recomendada?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       academy_lessons: {
         Row: {
           conceito: string
@@ -105,28 +129,73 @@ export type Database = {
         Row: {
           concluida: boolean
           concluida_em: string | null
+          dominada: boolean
+          etapa_atual: number
           id: string
           lesson_slug: string
+          pratica_scores: Json
           quiz_acertos: number
           resposta_exercicio: string | null
+          ultimo_acesso: string | null
           user_id: string
         }
         Insert: {
           concluida?: boolean
           concluida_em?: string | null
+          dominada?: boolean
+          etapa_atual?: number
           id?: string
           lesson_slug: string
+          pratica_scores?: Json
           quiz_acertos?: number
           resposta_exercicio?: string | null
+          ultimo_acesso?: string | null
           user_id: string
         }
         Update: {
           concluida?: boolean
           concluida_em?: string | null
+          dominada?: boolean
+          etapa_atual?: number
           id?: string
           lesson_slug?: string
+          pratica_scores?: Json
           quiz_acertos?: number
           resposta_exercicio?: string | null
+          ultimo_acesso?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      academy_reviews: {
+        Row: {
+          acerto: boolean | null
+          created_at: string
+          due_at: string
+          feita: boolean
+          id: string
+          intervalo_dias: number
+          lesson_slug: string
+          user_id: string
+        }
+        Insert: {
+          acerto?: boolean | null
+          created_at?: string
+          due_at: string
+          feita?: boolean
+          id?: string
+          intervalo_dias: number
+          lesson_slug: string
+          user_id: string
+        }
+        Update: {
+          acerto?: boolean | null
+          created_at?: string
+          due_at?: string
+          feita?: boolean
+          id?: string
+          intervalo_dias?: number
+          lesson_slug?: string
           user_id?: string
         }
         Relationships: []
@@ -5807,6 +5876,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      error_notebook: {
+        Row: {
+          acertos_seguidos: number
+          correcao_sugerida: string | null
+          created_at: string
+          frase: string
+          id: string
+          lesson_slug: string | null
+          origem: string
+          origem_id: string | null
+          regra: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          acertos_seguidos?: number
+          correcao_sugerida?: string | null
+          created_at?: string
+          frase: string
+          id?: string
+          lesson_slug?: string | null
+          origem: string
+          origem_id?: string | null
+          regra: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          acertos_seguidos?: number
+          correcao_sugerida?: string | null
+          created_at?: string
+          frase?: string
+          id?: string
+          lesson_slug?: string | null
+          origem?: string
+          origem_id?: string | null
+          regra?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       exam_alerts: {
         Row: {
@@ -11672,6 +11783,7 @@ export type Database = {
           slug: string | null
           status: string | null
           status_qualidade: string | null
+          tecnicas: Json | null
           tema: string
           tipo_afirmacao: string | null
           titulo: string | null
@@ -11709,6 +11821,7 @@ export type Database = {
           slug?: string | null
           status?: string | null
           status_qualidade?: string | null
+          tecnicas?: Json | null
           tema: string
           tipo_afirmacao?: string | null
           titulo?: string | null
@@ -11746,6 +11859,7 @@ export type Database = {
           slug?: string | null
           status?: string | null
           status_qualidade?: string | null
+          tecnicas?: Json | null
           tema?: string
           tipo_afirmacao?: string | null
           titulo?: string | null
