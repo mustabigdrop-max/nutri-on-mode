@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ReelFactoryPanel from "./ReelFactoryPanel";
-import CommandCenterAutomation from "./CommandCenterAutomation";
+import CommandCenterLower from "./CommandCenterLower";
 import EngineInstructionsPanel from "./EngineInstructionsPanel";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
