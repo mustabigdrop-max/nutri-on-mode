@@ -1,0 +1,2 @@
+ALTER TABLE public.engine_prompts DROP CONSTRAINT IF EXISTS engine_prompts_chave_check;
+ALTER TABLE public.engine_prompts ADD CONSTRAINT engine_prompts_chave_check CHECK (chave = ANY (ARRAY['bloco_0','arquiteto','redator','critico','calibracao','atlas','retorica','angulo','proibidas','revisor','pesos_score','fatores_centrais']));

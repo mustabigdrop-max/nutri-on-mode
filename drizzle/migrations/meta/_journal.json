@@ -260,6 +260,20 @@
       "when": 1791573529724,
       "tag": "0036_card_kits_p1",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1791583132904,
+      "tag": "0037_q1_quality_gate",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1791583233488,
+      "tag": "0038_q1_engine_keys",
+      "breakpoints": true
     }
   ]
 }

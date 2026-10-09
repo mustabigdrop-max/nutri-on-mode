@@ -3,10 +3,10 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
 import { missingKeys, emptyCore, validateInstruction, ENGINE_PROMPT_DEFAULTS } from "@/lib/engineInstructions";
 
 describe("instruções do motor", () => {
-  it("seed só insere as 9 chaves que faltam", () => {
-    expect(missingKeys([])).toHaveLength(9);
+  it("seed só insere as 12 chaves que faltam", () => {
+    expect(missingKeys([])).toHaveLength(12);
     expect(missingKeys([{ chave: "arquiteto" }, { chave: "atlas" }])).not.toContain("arquiteto");
-    expect(missingKeys([{ chave: "arquiteto" }, { chave: "atlas" }])).toHaveLength(7);
+    expect(missingKeys([{ chave: "arquiteto" }, { chave: "atlas" }])).toHaveLength(10);
   });
   it("aviso só considera contexto, arquiteto, redator e crítico", () => {
     const rows = ["bloco_0", "arquiteto", "redator", "critico"].map(c => ({ chave: c, conteudo: "x" }));

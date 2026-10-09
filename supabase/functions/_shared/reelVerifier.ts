@@ -1,7 +1,9 @@
 // Verificador em código (PROMPT K1, Passo 3): no model, applies score ceilings per block and records why.
 export type VerifyBlock = { id: number; tempo: string; fala: string; texto_tela?: string };
-export type VerifyOpts = { proibidas: string[]; tipoAfirmacao?: string | null; temFonte: boolean };
-export type VerifyResult = { id: number; teto: number; motivos: string[]; riscos: string[]; avisos: string[]; forcar_reescrita: boolean };
+export type VerifyOpts = { proibidas: string[]; tipoAfirmacao?: string | null; temFonte: boolean; ultimo?: boolean; fatores?: string[] };
+export type Gravidade = "critico" | "moderado" | "leve";
+export type Pendencia = { bloco: number; regra: string; gravidade: Gravidade; trecho: string; origem: "verificador" | "critico1" | "critico2" };
+export type VerifyResult = { id: number; teto: number; motivos: string[]; riscos: string[]; avisos: string[]; forcar_reescrita: boolean; pendencias: Pendencia[] };
 
 export const VERIFICADOR_REGRAS = [
   "Saudação no início (oi, olá, e aí, fala, bom dia, boa noite, galera, pessoal): teto 3",
@@ -11,7 +13,11 @@ export const VERIFICADOR_REGRAS = [
   "Termo da lista de palavras proibidas: teto 5",
   "'siga', 'segue o perfil', 'me segue': teto 3, exceto se o bloco citar a próxima parte de uma série",
   "Número, percentual, 'estudo', 'pesquisa' ou 'meta-análise' sem achado científico com fonte: risco 'dado sem fonte' e reescrita obrigatória",
-  "'prova', 'garante', 'nunca', 'sempre', 'todo mundo': aviso 'linguagem absoluta'",
+  "Linguagem absoluta (nunca mais, jamais, sempre, garante, garantido, 100%, ninguém, comprovado, 'prova que', 'todo mundo', 'toda a', 'todo o', 'todas as', 'todos os', '(nunca|não) + até 2 palavras + mais'): teto 7 e pendência crítica. Frequência ('toda segunda', 'todo dia', 'toda semana', 'todo treino') não conta",
+  "Dizer que um erro 'causa' lesão ou que algo 'garante' segurança: teto 7 e pendência crítica",
+  "Dor, lesão, hérnia, inflamação ou risco sem bloco de Ressalva (até 12 palavras, antes do CTA): teto 7 e pendência crítica 'sem_ressalva'",
+  "'Não é (sobre) X. É Y.' com X sendo fator central (carga, dieta, treino, proteína, calorias, sono): aviso de antítese",
+  "Último bloco (CTA) sem motivo ('pra', 'para', 'porque', 'que eu te mando'): teto 6",
   "Regra universal ('compre apenas', 'fuja de', 'nunca coma', 'elimine', 'o vilão'...) sem fonte verificada: teto 5 e risco 'regra universal sem fonte'",
   "Variações de frases proibidas ('ninguém te conta/contou/fala', 'o que ninguém', 'segredo', 'milagre', 'truque infalível'): teto 5",
   "CTA 'comenta X' sem entrega ('que eu mando/mostro Y'): teto 6",
@@ -29,6 +35,26 @@ const SIGA = ["siga", "segue o perfil", "me segue", "me siga", "sigam"];
 const SERIE = /(parte\s*\d|proxima parte|amanha tem|episodio\s*\d|continua amanha)/;
 const DADO = /(\d|%|\bestudos?\b|\bpesquisas?\b|meta-?analise)/;
 const ABSOLUTA = ["prova", "garante", "nunca", "sempre", "todo mundo"];
+/** Words after "toda/todo" that make it a frequency, not an absolute. */
+const PERIODO = /^(segundas?|tercas?|quartas?|quintas?|sextas?|sabados?|domingos?|dias?|semanas?|mes|meses|manhas?|tardes?|noites?|treinos?|anos?|horas?|refeic\w*|vez|vezes|fim|final)$/;
+const ABS_FIXAS: [RegExp, string][] = [
+  [/\bnunca mais\b/g, "nunca mais"], [/\bjamais\b/g, "jamais"], [/\bsempre\b/g, "sempre"],
+  [/\bgarant(e|em|ido|ida|idos|idas|ia)\b/g, "garante"], [/100\s?%/g, "100%"], [/\bninguem\b/g, "ninguém"],
+  [/\bcomprovad[oa]s?\b/g, "comprovado"], [/\bprova que\b/g, "prova que"], [/\btodo mundo\b/g, "todo mundo"],
+];
+/** Absolute-language hits (normalized text). Frequency phrases like "toda segunda" are exempt. */
+export function linguagemAbsoluta(textoNorm: string): string[] {
+  const t = textoNorm, out: string[] = [];
+  for (const [re, nome] of ABS_FIXAS) for (const _ of t.matchAll(re)) out.push(nome);
+  for (const m of t.matchAll(/\b(toda|todo|todas|todos)\s+(a|o|as|os)\s+([\p{L}]+)/gu)) if (!PERIODO.test(m[3])) out.push(`${m[1]} ${m[2]} ${m[3]}`);
+  for (const m of t.matchAll(/\b(nunca|nao)\s+((?:[\p{L}]+\s+){0,2})mais\b/gu)) if (!(m[1] === "nunca" && !m[2])) out.push(m[0]);
+  return out;
+}
+const CAUSA_LESAO = /\b(causa|causam|causar|provoca|provocam)\s+(uma\s+|a\s+)?(lesao|lesoes|hernia|dor|dores|machucado)|\bgarant\w*\s+(a\s+)?seguranca/;
+export const DOR = /\b(dor|dores|doi|doem|doer|doendo|lesao|lesoes|lesion\w*|machuca\w*|hernia\w*|inflama\w*|rim|rins|renal|doenca\w*)\b/;
+const RESSALVA = /\b(procure|procura|consulte|fale com|busque|converse com)\b[^.!?]*\b(profissional|medic\w*|fisioterapeuta|nutricionista|especialista)\b/;
+const CTA_MOTIVO = /\b(pra|para|porque|que eu te mando|que eu mando)\b/;
+export const FATORES_PADRAO = ["carga", "dieta", "treino", "proteina", "calorias", "sono"];
 
 const REGRA_UNIVERSAL = /\b(compre (apenas|somente|so)|fuja d[eoa]s?|nunca coma|nunca beba|evite sempre|corte completamente|elimine|eliminar|proibid[oa]s?|regra de ouro|o vilao|a vila|armadilha)\b/;
 /** Forbidden phrases matched by stem after normalizing (lowercase, no accents). */
@@ -52,8 +78,9 @@ const startsAtZero = (tempo: string) => /^\s*0(?:[.,]0+)?\s*(s|[-–])/.test(tem
 export function verificarBloco(b: VerifyBlock, idx: number, o: VerifyOpts): VerifyResult {
   const raw = stripMarks(`${b.fala}`);
   const t = norm(raw);
-  const r: VerifyResult = { id: b.id, teto: 10, motivos: [], riscos: [], avisos: [], forcar_reescrita: false };
+  const r: VerifyResult = { id: b.id, teto: 10, motivos: [], riscos: [], avisos: [], forcar_reescrita: false, pendencias: [] };
   const cap = (n: number, m: string) => { r.teto = Math.min(r.teto, n); r.motivos.push(`${m} (teto ${n})`); };
+  const pend = (regra: string, gravidade: Gravidade, trecho: string) => r.pendencias.push({ bloco: b.id, regra, gravidade, trecho, origem: "verificador" });
   const abertura = idx === 0 || startsAtZero(b.tempo);
   if (abertura && SAUDACAO.test(t)) cap(3, "Saudação no início");
   const c = has(t, CLICHE); if (c) cap(3, `Abertura proibida: "${c}"`);
@@ -62,16 +89,40 @@ export function verificarBloco(b: VerifyBlock, idx: number, o: VerifyOpts): Veri
   if (longa) cap(7, `Frase com ${longa} palavras (máx. 14)`);
   const p = termoProibido(raw, o.proibidas); if (p) cap(5, `Termo proibido: "${p}"`);
   const u = t.match(REGRA_UNIVERSAL);
-  if (u && !o.temFonte) { cap(5, `Regra universal sem fonte: "${u[0]}". Use linguagem condicional ou pesquise antes`); r.riscos.push("regra universal sem fonte"); r.forcar_reescrita = true; }
+  if (u && !o.temFonte) { cap(5, `Regra universal sem fonte: "${u[0]}". Use linguagem condicional ou pesquise antes`); r.riscos.push("regra universal sem fonte"); r.forcar_reescrita = true; pend("regra_universal_sem_fonte", "critico", u[0]); }
+  for (const a of linguagemAbsoluta(t)) { cap(7, `Linguagem absoluta: "${a}"`); pend("linguagem_absoluta", "critico", a); }
+  const cl = t.match(CAUSA_LESAO); if (cl) { cap(7, `Causalidade de lesão ou garantia de segurança: "${cl[0]}". Use "pode sobrecarregar", "costuma"`); pend("causalidade_lesao", "critico", cl[0]); }
+  const fat = (o.fatores?.length ? o.fatores : FATORES_PADRAO).map(norm);
+  const an = t.match(/\bnao e (sobre )?(a |o |as |os )?([\p{L}]+)[^.!?]*[.!?]\s*e\b/u);
+  if (an && fat.includes(an[3])) { r.avisos.push(`antítese com fator central: "${an[0]}"`); pend("antitese_fator_central", "leve", an[0]); }
+  if (o.ultimo && !CTA_MOTIVO.test(t)) { cap(6, "CTA sem motivo: diga pra quê (pra, para, porque, que eu te mando)"); pend("cta_sem_motivo", "moderado", raw.slice(0, 80)); }
   if (CTA_COMENTA.test(t) && !CTA_ENTREGA.test(t)) cap(6, "CTA sem entrega: use 'Comenta X que eu mando/mostro Y'");
-  const s = has(t, SIGA); if (s && !SERIE.test(t)) cap(3, `Pedido de seguir: "${s}"`);
-  if (DADO.test(t) && !(o.tipoAfirmacao === "achado_cientifico" && o.temFonte)) { r.riscos.push("dado sem fonte"); r.forcar_reescrita = true; r.motivos.push("Dado sem fonte: reescrever sem número ou como posição do Método"); }
+  const s = has(t, SIGA); if (s && !SERIE.test(t)) { cap(3, `Pedido de seguir: "${s}"`); pend("cta_siga", "moderado", s); }
+  // Técnica de execução is a method position: bare numbers (reps, seconds) are allowed, studies and % are not.
+  const dado = o.tipoAfirmacao === "tecnica_de_execucao" ? /(%|\bestudos?\b|\bpesquisas?\b|meta-?analise)/ : DADO;
+  if (dado.test(t) && !(o.tipoAfirmacao === "achado_cientifico" && o.temFonte)) { r.riscos.push("dado sem fonte"); r.forcar_reescrita = true; r.motivos.push("Dado sem fonte: reescrever sem número ou como posição do Método"); pend("dado_sem_fonte", "critico", (t.match(dado) ?? [""])[0]); }
   if (r.teto === 10 && !(/\d/.test(t) && o.temFonte)) r.teto = 9; // 10 only with sourced concrete number
   const a = has(t, ABSOLUTA); if (a) r.avisos.push(`linguagem absoluta: "${a}"`);
   return r;
 }
 
-export const verificarReel = (blocks: VerifyBlock[], o: VerifyOpts) => blocks.map((b, i) => verificarBloco(b, i, o));
+const isRessalva = (b: VerifyBlock & { funcao?: string }) => /ressalva/i.test(b.funcao ?? "") || (RESSALVA.test(norm(stripMarks(b.fala))) && words(stripMarks(b.fala)).length <= 12);
+
+/** Per-block checks plus reel-level ones: last block is the CTA; pain/injury needs a Ressalva block before it. */
+export function verificarReel(blocks: (VerifyBlock & { funcao?: string })[], o: VerifyOpts): VerifyResult[] {
+  const out = blocks.map((b, i) => verificarBloco(b, i, { ...o, ultimo: i === blocks.length - 1 && blocks.length > 1 }));
+  const comDor = blocks.findIndex(b => DOR.test(norm(stripMarks(`${b.fala} ${b.texto_tela ?? ""}`))));
+  const ress = blocks.findIndex(isRessalva);
+  if (comDor >= 0 && (ress < 0 || (blocks.length > 1 && ress === blocks.length - 1))) {
+    const r = out[comDor];
+    r.teto = Math.min(r.teto, 7); r.motivos.push("Tema de dor, lesão ou risco sem bloco de Ressalva antes do CTA (teto 7)");
+    r.pendencias.push({ bloco: r.id, regra: "sem_ressalva", gravidade: "critico", trecho: (norm(blocks[comDor].fala).match(DOR) ?? [""])[0], origem: "verificador" });
+  }
+  return out;
+}
+
+/** Verifier ceiling for the gate: lowest rule-based ceiling (10 when no rule fired). */
+export const tetoVerificador = (v: VerifyResult[]) => v.reduce((m, r) => r.motivos.some(x => /teto \d/.test(x)) ? Math.min(m, r.teto) : m, 10);
 
 /** Broad theme: equals a pillar name, under 4 words, or no verb-like word. */
 export function temaAmplo(tema: string, pilares: string[] = []): boolean {
