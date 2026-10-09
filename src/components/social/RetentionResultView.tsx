@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { copyText } from "./socialUi";
 import CutGeneratorPanel from "./CutGeneratorPanel";
+import { BlockQuality, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
 
 const T = { bg: "#020205", s1: "#0A0A0F", s2: "#111118", cyan: "#00D4FF", gold: "#B8922A", green: "#5DCAA5", red: "#EF4444", yellow: "#EF9F27", purple: "#AFA9EC", muted: "#888", text: "#E8E8F0", white: "#F5F0E8",
   ft: "'Rajdhani',sans-serif", fm: "'Space Mono',monospace" };
@@ -41,7 +42,7 @@ function RecordMode({ blocks, onClose }: { blocks: any[]; onClose: (gravado: boo
   </div>;
 }
 
-export default function RetentionResultView({ r, blocks, scriptId }: { r: any; blocks: any[]; scriptId?: string }) {
+export default function RetentionResultView({ r, blocks, scriptId, onUpdated }: { r: any; blocks: any[]; scriptId?: string; onUpdated?: (s: any) => void }) {
   const total = blocks.reduce((n, b) => n + span(String(b.tempo)), 0) || 1;
   const [rec, setRec] = useState(false); const [gravado, setGravado] = useState(false);
   const [checks, setChecks] = useState<boolean[]>(CHECKS.map(() => false));
@@ -74,6 +75,10 @@ export default function RetentionResultView({ r, blocks, scriptId }: { r: any; b
         <div style={label}>LINHA DO TEMPO · CURVA DE ATENÇÃO PREVISTA</div>
         <span style={{ fontFamily: T.ft, fontSize: 20, fontWeight: 700, color: noteColor(r.nota_geral) }}>{r.nota_geral ?? "—"}/10</span>
       </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+        <QualitySeal status={r.status_qualidade} nota={r.nota_geral} motivo={sealReason({ notas: r, nota_geral: r.nota_geral })} />
+        {r.angulo?.escolhido?.titulo && <span style={{ fontFamily: T.fm, fontSize: 9, color: T.cyan, border: `1px solid ${T.cyan}40`, padding: "2px 8px" }}>Ângulo: {r.angulo.escolhido.titulo}</span>}
+      </div>
       {pts.length > 1 && <svg viewBox="0 0 100 40" preserveAspectRatio="none" style={{ width: "100%", height: 60, display: "block" }}>
         <polyline points={pts.map(p => `${p.x},${p.y}`).join(" ")} fill="none" stroke={T.cyan} strokeWidth={0.8} vectorEffect="non-scaling-stroke" style={{ filter: `drop-shadow(0 0 3px ${T.cyan})` }} />
         {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={1} fill={T.cyan} />)}
@@ -101,11 +106,12 @@ export default function RetentionResultView({ r, blocks, scriptId }: { r: any; b
           <div style={{ fontFamily: T.fm, fontSize: 10, color: noteColor(b.nota) }}>BLOCO {b.id} · {b.tempo} · {String(b.funcao ?? "").toUpperCase()} · NOTA {b.nota ?? "—"}/10</div>
           <Copy text={String(b.nota ?? "")} />
         </div>
-        <Field name="🎙 Fala" color={T.white} value={str(b.fala)} />
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 8, margin: "4px 0" }}><p style={{ fontSize: 12, margin: 0 }}><b style={{ color: T.white }}>🎙 Fala:</b> <VoiceText text={str(b.fala)} /></p><Copy text={str(b.fala)} /></div>
         <Field name="Texto na tela" color={T.cyan} value={str(b.texto_tela)} />
         <Field name="Estímulo visual" color={T.gold} value={str(b.estimulo_visual)} />
         <Field name="Gatilho" color={T.purple} value={str(b.gatilho)} />
         {b.nota != null && b.nota < 8 && b.correcao && <p style={{ fontSize: 11, color: T.muted, margin: "4px 0 0" }}>Feedback: {b.correcao}</p>}
+        <BlockQuality scriptId={scriptId} blocoId={b.id} motivo={(r.motivos_nota ?? []).find((m: any) => m.id === b.id)} onUpdated={onUpdated} />
       </div>)}
     </div>
 

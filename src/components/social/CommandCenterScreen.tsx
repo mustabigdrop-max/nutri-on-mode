@@ -5,6 +5,7 @@ import ReelFactoryPanel from "./ReelFactoryPanel";
 import CommandCenterLower from "./CommandCenterLower";
 import EngineInstructionsPanel from "./EngineInstructionsPanel";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
+import { BlockQuality, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
 
 /* ═══════════════════════════════════════════════════
@@ -320,7 +321,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     if (!user) { setLoaded(true); return; }
     const since = new Date(Date.now() - 120 * 864e5).toISOString();
     const [s, r, f, h, g, a, bk, pl, ba, pa, ld] = await Promise.all([
-      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
+      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em, angulo, motivos_nota, status_qualidade").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
       supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
       supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media").eq("user_id", user.id),
       supabase.from("hook_formulas").select("id, nome").order("id"),
@@ -365,6 +366,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     return n;
   }, [scripts]);
 
+  const [angOpen, setAngOpen] = useState(false);
   const gerar = async () => {
     if (!tema.trim()) return toast.error("Escreva o tema do reel");
     setGenErr(null); setStage("arquiteto");
@@ -376,6 +378,17 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
       await load(); setTodayIdx(0); setFresh(true);
       void script;
     } catch (e: any) { setGenErr(e?.message || "Não foi possível gerar o reel."); } finally { setStage(null); }
+  };
+
+  const trocarAngulo = async (a: any) => {
+    if (!reel) return;
+    setGenErr(null); setStage("arquiteto"); setAngOpen(false);
+    try {
+      const outros = [reel.angulo.escolhido, ...reel.angulo.outros.filter((o: any) => o.titulo !== a.titulo)];
+      await runGerarReel({ tema: reel.angulo?.escolhido ? (reel.tema) : reel.tema, objetivo: reel.objetivo ?? objetivo, tom: "direto", angulo_escolhido: a, angulo_outros: outros } as any, setStage);
+      toast.success("Reel regerado com o novo ângulo");
+      await load(); setTodayIdx(0); setFresh(true);
+    } catch (e: any) { setGenErr(e?.message || "Não foi possível regerar o reel."); } finally { setStage(null); }
   };
 
   const calibrar = async () => {
@@ -493,18 +506,31 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                   <div style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.white, lineHeight: 1.2 }}>{reel.tema}</div>
                   <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
                     {reel.estrutura?.formula_nome && <span style={{ fontFamily: F.m, fontSize: 9, color: C.cyan, border: `1px solid ${C.cyan}40`, padding: "2px 8px" }}>{String(reel.estrutura.formula_nome).toUpperCase()}</span>}
+                    <QualitySeal status={reel.status_qualidade} nota={notaR} motivo={sealReason(reel)} />
+                    {reel.angulo?.escolhido?.titulo && <span style={{ fontFamily: F.m, fontSize: 9, color: C.cyan, border: `1px solid ${C.cyan}40`, padding: "2px 8px" }}>Ângulo: {reel.angulo.escolhido.titulo}</span>}
+                    {reel.angulo?.outros?.length > 0 && <button type="button" onClick={() => setAngOpen(o => !o)} style={{ fontFamily: F.m, fontSize: 9, color: C.cyan, background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}>Ver outros {reel.angulo.outros.length} ângulos</button>}
                     {fontes.length > 0 && <span style={{ fontFamily: F.m, fontSize: 9, color: "#5DCAA5", border: "1px solid #5DCAA550", padding: "2px 8px" }}>{fontes.length} {fontes.length === 1 ? "FONTE" : "FONTES"}</span>}
                     {doDia.length > 1 && <button type="button" onClick={() => { setTodayIdx((todayIdx + 1) % doDia.length); setBlocoAberto(null); }} style={{ fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: `1px solid ${C.dim}`, padding: "2px 8px", cursor: "pointer", borderRadius: 0 }}>OPÇÃO {Math.min(todayIdx, doDia.length - 1) + 1}/{doDia.length} ↻</button>}
                   </div>
                 </div>
               </div>
+              {angOpen && reel.angulo?.outros?.length > 0 && (
+                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
+                  {reel.angulo.outros.map((a: any) => (
+                    <button key={a.titulo} type="button" disabled={busy} onClick={() => trocarAngulo(a)} style={{ textAlign: "left", fontFamily: F.m, fontSize: 10, color: C.text, background: `${C.cyan}06`, border: `1px solid ${C.cyan}25`, padding: "6px 8px", cursor: "pointer", borderRadius: 0 }}>
+                      <b style={{ color: C.cyan }}>{a.titulo}</b>{a.pontos != null ? ` · ${a.pontos} pts` : ""}<br />{a.tensao}
+                    </button>
+                  ))}
+                </div>
+              )}
               {blocos.length > 0 ? (
                 <div style={{ marginTop: 12, borderLeft: `1px solid ${C.cyan}30`, marginLeft: 6, paddingLeft: 14, display: "flex", flexDirection: "column", gap: 10 }}>
                   {blocos.map((b, i) => (
                     <div key={String(b.id)} className="cc-anim" style={{ position: "relative", animation: `ccBlockIn .4s ease ${i * 0.06}s both` }}>
                       <span style={{ position: "absolute", left: -19, top: 4, width: 9, height: 9, background: corSeg(b.nota), boxShadow: `0 0 6px ${corSeg(b.nota)}` }} />
                       <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>{dash(b.tempo)} · NOTA <span style={{ color: corSeg(b.nota) }}>{dash(b.nota)}</span></div>
-                      <div style={{ fontFamily: F.m, fontSize: 11, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{dash(b.fala)}</div>
+                      <div style={{ fontFamily: F.m, fontSize: 11, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{b.fala ? <VoiceText text={String(b.fala)} /> : dash(b.fala)}</div>
+                      <BlockQuality scriptId={reel.id} blocoId={Number(b.id)} motivo={(reel.motivos_nota ?? []).find((m: any) => m.id === Number(b.id))} onUpdated={() => load()} />
                     </div>
                   ))}
                 </div>

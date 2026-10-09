@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const STAGE_LABEL: Record<string, string> = {
+  angulo: "Escolhendo o ângulo...",
   arquiteto: "Projetando atenção...",
   redator: "Projetando atenção...",
   critico: "Testando o gancho...",
