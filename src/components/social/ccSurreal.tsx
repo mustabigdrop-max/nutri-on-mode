@@ -189,8 +189,8 @@ export function lightBurst(color = "#00D4FF") {
 }
 
 /* ── 1) Núcleo tridimensional ── */
-export function Nucleus3D({ shown, score, exemplo, children }: { shown: number; score: number | null; exemplo: boolean; children: React.ReactNode }) {
-  const col = exemplo ? "#EF9F27" : "#00D4FF";
+export function Nucleus3D({ shown, score, exemplo, color, dashed, max = 100, children }: { shown: number; score: number | null; exemplo: boolean; color?: string; dashed?: boolean; max?: number; children: React.ReactNode }) {
+  const col = color ?? (exemplo ? "#EF9F27" : "#00D4FF");
   const s = score ?? 0;
   const thick = 3 + (s / 100) * 7;
   const glow = 4 + (s / 100) * 14;
@@ -201,10 +201,10 @@ export function Nucleus3D({ shown, score, exemplo, children }: { shown: number; 
       <div className="cc-anim cc-ring cc-ring2" style={{ borderColor: `${col}38` }} />
       <div className="cc-anim cc-ring3" style={{ position: "absolute", inset: 0, transformStyle: "preserve-3d" }}>
         <svg width={220} height={220} viewBox="0 0 220 220" style={{ position: "absolute", inset: 0, overflow: "visible" }}>
-          <circle cx={110} cy={110} r={R} fill="none" stroke={`${col}18`} strokeWidth={thick} />
-          <circle cx={110} cy={110} r={R} fill="none" stroke={col} strokeWidth={thick}
-            strokeDasharray={`${(shown / 100) * circ} ${circ}`} transform="rotate(-90 110 110)"
-            style={{ filter: `drop-shadow(0 0 ${glow}px ${col})` }} />
+          <circle cx={110} cy={110} r={R} fill="none" stroke={dashed ? `${col}70` : `${col}18`} strokeWidth={dashed ? 3 : thick} strokeDasharray={dashed ? "6 8" : undefined} />
+          {!dashed && <circle cx={110} cy={110} r={R} fill="none" stroke={col} strokeWidth={thick}
+            strokeDasharray={`${(Math.min(shown, max) / max) * circ} ${circ}`} transform="rotate(-90 110 110)"
+            style={{ filter: `drop-shadow(0 0 ${glow}px ${col})` }} />}
         </svg>
       </div>
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
