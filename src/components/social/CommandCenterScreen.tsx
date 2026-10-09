@@ -110,6 +110,7 @@ const dash = (v: any) => (v == null || v === "" ? "—" : String(v));
 const corNota = (n?: number) => (n == null ? C.muted : n >= 8 ? C.gold : n >= 6 ? C.cyan : C.red);
 const inp: React.CSSProperties = { width: "100%", boxSizing: "border-box", background: "#0A0A12", border: `1px solid ${C.dim}`, color: C.white, fontFamily: F.m, fontSize: 11, padding: "8px 10px", borderRadius: 0 };
 const btn = (primary?: boolean): React.CSSProperties => ({ flex: 1, background: primary ? C.gold : "transparent", border: primary ? "none" : `1px solid ${C.cyan}50`, color: primary ? "#0A0A0A" : C.cyan, fontFamily: F.t, fontWeight: 700, fontSize: 13, padding: "10px 0", cursor: "pointer", borderRadius: 0 });
+const sigBtn = (c: string, on?: boolean): React.CSSProperties => ({ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: on ? "#0A0A0A" : c, background: on ? c : "none", border: `1px solid ${c}80`, padding: "2px 6px", cursor: "pointer", borderRadius: 0 });
 const Empty = ({ children }: { children: React.ReactNode }) => <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 10, lineHeight: 1.5 }}>{children}</div>;
 
 /* ── Núcleo de Atenção (anel SVG em três camadas) ── */
@@ -450,6 +451,17 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const led = !loaded ? C.muted : motorOk ? "#5DCAA5" : "#EF9F27";
   const fontes: any[] = (reel?.roteiro?.fontes ?? reel?.estrutura?.fontes ?? []) as any[];
   const notaR = reel?.nota_geral == null ? null : Number(reel.nota_geral);
+  const paletteActions: PaletteAction[] = [
+    { id: "gerar", label: "Gerar reel de hoje", hint: "MISSÃO", run: () => { setFoco(false); setTemaOpen(true); scrollTo("cc-missao"); } },
+    { id: "banco", label: "Abrir Banco de reels", hint: "FÁBRICA", run: () => { setFoco(false); window.dispatchEvent(new Event("cc-open-banco")); scrollTo("cc-fabrica"); } },
+    { id: "academia", label: "Abrir Academia", run: () => { setFoco(false); setAcademiaLab(undefined); setAcademia(true); } },
+    { id: "fala", label: "Abrir Laboratório de Fala", hint: "ACADEMIA", run: () => { setFoco(false); setAcademiaLab("fala"); setAcademia(false); setTimeout(() => setAcademia(true), 0); } },
+    { id: "cards", label: "Abrir Estúdio de Cards", run: () => { setFoco(false); scrollTo("cc-cards"); } },
+    { id: "resultado", label: "Lançar resultado", hint: "RETENÇÃO", run: () => { setFoco(false); scrollTo("cc-resultado"); } },
+    { id: "rodar", label: "Rodar automação agora", run: () => { setFoco(false); rodarAgora(); } },
+    { id: "foco", label: foco ? "Sair do modo Foco" : "Ativar modo Foco", hint: "ESC SAI", run: () => setFoco(f => !f) },
+    { id: "leve", label: fxLevel === "leve" ? "Desligar modo Leve" : "Ativar modo Leve", hint: "EFEITOS", run: () => setFxLevel(fxLevel === "leve" ? "equilibrado" : "leve") },
+  ];
   const Skel = ({ h }: { h: number }) => <div className="cc-skel" style={{ height: h, marginTop: 8 }} />;
 
   return (
@@ -707,6 +719,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
         </div>
       </div>
 
+      <CommandPalette open={paleta} onClose={() => setPaleta(false)} actions={paletteActions} />
       {gravando && blocos.length > 0 && <ModoGravacao blocos={blocos} onClose={() => setGravando(false)} />}
     </div>
   );
