@@ -2,7 +2,7 @@
 // Bounded chunks per invocation, per-batch lease, self-chaining with a hop budget and cooldown. Nothing is published.
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { CRITIC_LIMITS, normalizeCritique, objectiveChecks } from "../_shared/retentionCritic.ts";
-import { ARQUITETO_PROMPT, ATLAS, CRITICO_PROMPT, REDATOR_PROMPT } from "../_shared/retentionPrompts.ts";
+import { ARQUITETO_PROMPT, ATLAS, CRITICO_PROMPT, PERSUASAO, REDATOR_PROMPT } from "../_shared/retentionPrompts.ts";
 import { IDEIAS_PROMPT } from "./prompts.ts";
 import { allocateFormulas, allocatePillars, assignAngles, type Pillar, dedupThemes, estimateCalls, originality, preFilter, type Prior } from "./logic.ts";
 
@@ -28,7 +28,7 @@ async function pass(model: string, system: string, input: unknown, counter: { n:
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST", headers: { Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model, response_format: { type: "json_object" },
-        messages: [{ role: "system", content: `${system}\n\n${ATLAS}` }, { role: "user", content: JSON.stringify(input) }] }),
+        messages: [{ role: "system", content: `${system}\n\n${ATLAS}\n\n${PERSUASAO}` }, { role: "user", content: JSON.stringify(input) }] }),
     });
     if (res.status === 429) throw new Halt("pausado", "Limite de uso atingido. O lote continua na próxima execução.");
     if (res.status === 402) throw new Halt("pausado", "Créditos esgotados no espaço de trabalho. Lote pausado.");
