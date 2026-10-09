@@ -84,8 +84,9 @@ Deno.serve(async (req) => {
     if (!analise) aviso = "A análise não respondeu. Os números abaixo estão corretos; tente de novo para ver as hipóteses.";
 
     // Um vídeo conta uma vez por padrão: recalibrar o mesmo reel não soma amostras.
-    const { data: prev } = await db.from("retention_results").select("id").eq("script_id", scriptId).eq("user_id", auth.userId).limit(1);
-    const firstTime = !prev?.length;
+    const { data: prev } = await db.from("retention_results").select("id, status").eq("script_id", scriptId).eq("user_id", auth.userId).limit(1);
+    // A pending "aguardando resultado" row (from "Marcar como gravado") still counts as the first real result.
+    const firstTime = !prev?.length || prev[0].status === "aguardando";
     const reals = comparacao.map(c => c.real).filter((v): v is number => v !== null);
     const media = reals.length ? Math.round(reals.reduce((a, b) => a + b, 0) / reals.length * 10) / 10 : null;
     const padroes: { tipo: string; texto: string; amostras: number; confirmado: boolean }[] = [];
@@ -102,8 +103,15 @@ Deno.serve(async (req) => {
     }
 
     const resultado = { comparacao, maior_queda, analise, padroes, aviso, faixas: points };
-    const row = { script_id: scriptId, user_id: auth.userId, curva_real: resultado, pct_3s: pct3, tempo_medio: medio, comentarios: coment, salvamentos: salv };
-    const { error } = firstTime ? await db.from("retention_results").insert(row) : await db.from("retention_results").update(row).eq("id", prev![0].id);
+    const extra: Record<string, number | null> = {};
+    for (const k of ["views", "ret_media_pct", "shares", "novos_seguidores", "duracao_seg"]) {
+      const v = num(body[k]);
+      if (v !== null && (!Number.isFinite(v) || v < 0 || (k === "ret_media_pct" && v > 100) || v > 1e9)) return json({ error: `${k}: informe um número válido.` }, 400);
+      extra[k] = v;
+    }
+    const row = { script_id: scriptId, user_id: auth.userId, curva_real: resultado, pct_3s: pct3, tempo_medio: medio, comentarios: coment, salvamentos: salv, ...extra, status: "lancado",
+      postado_em: typeof body.postado_em === "string" && !isNaN(Date.parse(body.postado_em)) ? body.postado_em : null };
+    const { error } = !prev?.length ? await db.from("retention_results").insert(row) : await db.from("retention_results").update(row).eq("id", prev![0].id);
     if (error) {
       await db.from("cc_automation_runs").insert({ user_id: auth.userId, tipo: "calibracao", status: "erro", erro: "Não foi possível salvar o resultado.", detalhes: { script_id: scriptId } });
       return json({ error: "Não foi possível salvar o resultado." }, 500);
