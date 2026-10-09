@@ -32,6 +32,7 @@ export default function CardStudioPanel() {
   const [limiteGerada, setLimiteGerada] = useState(5);
   const [brandOpen, setBrandOpen] = useState(false);
   const [cmd, setCmd] = useState("");
+  useEffect(() => { const h = (e: Event) => setCmd(String((e as CustomEvent).detail ?? "").slice(0, 1000)); window.addEventListener("cc-card-pedido", h); return () => window.removeEventListener("cc-card-pedido", h); }, []);
   const [reply, setReply] = useState<ReturnType<typeof agenteCards> | null>(null);
   const [reels, setReels] = useState<Reel[]>([]);
   const [reelId, setReelId] = useState("");

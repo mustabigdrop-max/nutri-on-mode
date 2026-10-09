@@ -218,6 +218,13 @@
       "when": 1791514929525,
       "tag": "0030_card_studio",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1791516418029,
+      "tag": "0031_academia_gravitas",
+      "breakpoints": true
     }
   ]
 }

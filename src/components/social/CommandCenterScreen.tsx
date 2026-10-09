@@ -5,6 +5,7 @@ import ReelFactoryPanel from "./ReelFactoryPanel";
 import CommandCenterLower from "./CommandCenterLower";
 import EngineInstructionsPanel from "./EngineInstructionsPanel";
 import CardStudioPanel from "./CardStudioPanel";
+import AcademyPanel from "./AcademyPanel";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
 import { BlockQuality, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
@@ -309,6 +310,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   useEffect(() => { loadEngine(); }, []);
   const vazias = engRows.length ? emptyCore(engRows) : [];
   const MOTOR_INSTRUCOES = { ativas: engRows.length ? CORE_KEYS.length - vazias.length : 0, total: CORE_KEYS.length };
+  const [academia, setAcademia] = useState(false);
   const abrirInstrucoes = () => { setEngOpen(true); setTimeout(() => document.getElementById("cc-instrucoes")?.scrollIntoView({ behavior: "smooth" }), 50); };
   const [fresh, setFresh] = useState(false);
   const [atlas, setAtlas] = useState<{ id: number; nome: string }[]>([]);
@@ -467,6 +469,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
               { t: `MOTOR: ${MOTOR_INSTRUCOES.ativas} DE ${MOTOR_INSTRUCOES.total} INSTRUÇÕES ATIVAS`, c: motorOk ? "#5DCAA5" : "#EF9F27" },
             ].map(x => <span key={x.t} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: x.c, border: `1px solid ${x.c}40`, padding: "2px 6px", whiteSpace: "nowrap" }}>{x.t}</span>)}
             <button type="button" onClick={abrirInstrucoes} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: C.cyan, background: "none", border: `1px solid ${C.cyan}60`, padding: "2px 6px", cursor: "pointer", borderRadius: 0 }}>INSTRUÇÕES</button>
+            <button type="button" onClick={() => setAcademia(true)} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: C.gold, background: "none", border: `1px solid ${C.gold}80`, padding: "2px 6px", cursor: "pointer", borderRadius: 0 }}>ACADEMIA</button>
           </div>
         </div>
 
@@ -615,6 +618,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           <ReelFactoryPanel onChosen={load} />
         </Panel>
 
+        {academia && <AcademyPanel onClose={() => setAcademia(false)} />}
         <Panel glow={C.cyan}><div id="cc-cards" style={{ scrollMarginTop: 80 }} /><CardStudioPanel /></Panel>
 
         {engUser && <Panel glow={C.cyan}><EngineInstructionsPanel rows={engRows} userId={engUser} open={engOpen} onToggle={() => setEngOpen(o => !o)} onChanged={loadEngine} /></Panel>}

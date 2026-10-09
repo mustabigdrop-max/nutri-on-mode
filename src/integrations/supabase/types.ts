@@ -56,6 +56,81 @@ export type Database = {
         }
         Relationships: []
       }
+      academy_lessons: {
+        Row: {
+          conceito: string
+          exercicio: string
+          fonte_nivel: string
+          fontes: Json
+          forte: string
+          fraco: string
+          id: string
+          no_reel: string
+          ordem: number
+          slug: string
+          titulo: string
+          trilha: string
+        }
+        Insert: {
+          conceito?: string
+          exercicio?: string
+          fonte_nivel: string
+          fontes?: Json
+          forte?: string
+          fraco?: string
+          id?: string
+          no_reel?: string
+          ordem?: number
+          slug: string
+          titulo: string
+          trilha: string
+        }
+        Update: {
+          conceito?: string
+          exercicio?: string
+          fonte_nivel?: string
+          fontes?: Json
+          forte?: string
+          fraco?: string
+          id?: string
+          no_reel?: string
+          ordem?: number
+          slug?: string
+          titulo?: string
+          trilha?: string
+        }
+        Relationships: []
+      }
+      academy_progress: {
+        Row: {
+          concluida: boolean
+          concluida_em: string | null
+          id: string
+          lesson_slug: string
+          quiz_acertos: number
+          resposta_exercicio: string | null
+          user_id: string
+        }
+        Insert: {
+          concluida?: boolean
+          concluida_em?: string | null
+          id?: string
+          lesson_slug: string
+          quiz_acertos?: number
+          resposta_exercicio?: string | null
+          user_id: string
+        }
+        Update: {
+          concluida?: boolean
+          concluida_em?: string | null
+          id?: string
+          lesson_slug?: string
+          quiz_acertos?: number
+          resposta_exercicio?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       activation_metrics: {
         Row: {
           created_at: string | null
@@ -7014,6 +7089,36 @@ export type Database = {
           id?: number
           nome?: string
           template?: string
+        }
+        Relationships: []
+      }
+      lab_attempts: {
+        Row: {
+          created_at: string
+          entrada: string
+          id: string
+          nota: number
+          resultado: Json
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entrada?: string
+          id?: string
+          nota?: number
+          resultado?: Json
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entrada?: string
+          id?: string
+          nota?: number
+          resultado?: Json
+          tipo?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -14417,6 +14522,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      transcripts: {
+        Row: {
+          created_at: string
+          duracao_seg: number | null
+          id: string
+          origem: string
+          texto: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duracao_seg?: number | null
+          id?: string
+          origem?: string
+          texto: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duracao_seg?: number | null
+          id?: string
+          origem?: string
+          texto?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_badges: {
         Row: {
