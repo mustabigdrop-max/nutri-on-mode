@@ -49,10 +49,9 @@ Deno.serve(async (req) => {
   })() : await requireUser(req);
   if (!auth.ok) return json({ error: "Não autenticado" }, auth.status);
   const origem = cronKey ? "automacao" : "manual";
-  if (!ARQUITETO_PROMPT.trim() || !REDATOR_PROMPT.trim() || !CRITICO_PROMPT.trim())
-    return json({ error: "As instruções do Arquiteto, Redator e Crítico ainda não foram configuradas." }, 503);
   let body: any; try { body = await req.json(); } catch { return json({ error: "Pedido inválido." }, 400); }
   const tema = str(body.tema, 300), objetivo = str(body.objetivo, 20), tom = str(body.tom, 20), rede = str(body.rede, 30) || "instagram";
+  const teste = body.teste === true && !cronKey;
   const quero_mais = QUERO_MAIS.includes(str(body.quero_mais, 30)) ? str(body.quero_mais, 30) : null;
   if (!tema || !OBJETIVOS.includes(objetivo) || !TONS.includes(tom)) return json({ error: "Preencha o tema, o objetivo e o tom." }, 400);
 
@@ -61,6 +60,7 @@ Deno.serve(async (req) => {
     const send = (v: unknown) => ctrl.enqueue(new TextEncoder().encode(JSON.stringify(v) + "\n"));
     try {
       const db = adminClient();
+      const P = await loadEnginePrompts(db, auth.userId, { tema });
       const [{ data: voice }, { data: patterns }, { data: formulas }, { data: stats }, { count }] = await Promise.all([
         db.from("creator_voice").select("expressoes_usa, expressoes_evita, nicho").eq("user_id", auth.userId).maybeSingle(),
         db.from("retention_patterns").select("tipo, texto, retencao_media, amostras, confirmado").eq("user_id", auth.userId).order("amostras", { ascending: false }).limit(40),
@@ -82,21 +82,42 @@ Deno.serve(async (req) => {
         selecao_formula: { modo: explorar ? "explorar" : "priorizar", permitidas }, voz_do_criador: voice ?? null,
         padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes };
 
+      if (teste) {
+        // Test mode: one run of each pass, nothing saved; reports JSON validity and time per pass.
+        const out: { passe: string; ok: boolean; ms: number; erro?: string }[] = [];
+        let prev: Record<string, unknown> = {};
+        for (const [passe, sys, extra] of [["arquiteto", P.arquiteto + CONTRATO_ARQUITETO, {}], ["redator", P.redator, null], ["critico", P.critico + CONTRATO_CRITICO, null]] as const) {
+          send({ etapa: passe });
+          const t0 = Date.now();
+          try {
+            const input = passe === "arquiteto" ? contexto : passe === "redator" ? { ...contexto, estrutura: out[0]?.ok ? prev.estrutura : {} } : { ...contexto, estrutura: prev.estrutura, blocos: (prev.draft as any)?.blocos ?? [] };
+            const v = await pass(sys, input);
+            if (passe === "arquiteto") prev.estrutura = v; else if (passe === "redator") prev.draft = v;
+            out.push({ passe, ok: true, ms: Date.now() - t0 });
+          } catch (e) {
+            if (e instanceof HttpError && (e.status === 429 || e.status === 402)) throw e;
+            out.push({ passe, ok: false, ms: Date.now() - t0, erro: e instanceof Error ? e.message : "Erro" });
+          }
+          void extra;
+        }
+        send({ etapa: "teste", resultado: out });
+        return;
+      }
       send({ etapa: "arquiteto" });
-      const estrutura = await pass(ARQUITETO_PROMPT + CONTRATO_ARQUITETO, contexto);
+      const estrutura = await pass(P.arquiteto + CONTRATO_ARQUITETO, contexto);
       let formula_id = Number(estrutura.formula_id);
       if (!permitidas.includes(formula_id)) { formula_id = permitidas[0] ?? null as any; estrutura.formula_motivo = "Fórmula definida pelo sistema: a escolha da análise ficou fora das permitidas."; }
       const formula = all.find(f => f.id === formula_id) ?? null;
       Object.assign(estrutura, { formula_id: formula?.id ?? null, formula_nome: formula?.nome ?? null, formula_modo: explorar ? "explorar" : "priorizar" });
       send({ etapa: "redator" });
-      const draft = await pass(REDATOR_PROMPT, { ...contexto, estrutura });
-      const blocks = (Array.isArray(draft.blocos) ? draft.blocos : []).map(toBlock).filter(b => Number.isFinite(b.id) && b.fala && b.tempo);
+      const draft = await pass(P.redator, { ...contexto, estrutura });
+      const blocks = (Array.isArray(draft.blocos) ? draft.blocos : []).map((b: any, i: number) => toBlock({ ...b, id: b?.id ?? i + 1 })).filter(b => Number.isFinite(b.id) && b.fala && b.tempo);
       if (!blocks.length) throw new HttpError(502, "Roteiro incompleto. Tente novamente.");
 
       let forca: Record<string, number> | null = null;
       const critique = async () => {
         const sb = blocks.map(b => ({ id: b.id, tempo: b.tempo, fala: b.fala, caminho: [] as (string | number)[] }));
-        const raw = await pass(CRITICO_PROMPT + CONTRATO_CRITICO, { ...contexto, estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks) });
+        const raw = await pass(P.critico + CONTRATO_CRITICO, { ...contexto, estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks) });
         const f: any = raw.forca_gancho ?? {};
         forca = FORCA.every(k => Number.isFinite(Number(f[k]))) ? Object.fromEntries(FORCA.map(k => [k, Math.max(0, Math.min(2, Math.round(Number(f[k]))))])) : null;
         return normalizeCritique(raw, sb);
@@ -110,7 +131,7 @@ Deno.serve(async (req) => {
         if (!weakIds.length) break;
         send({ etapa: "reescrita", rodada: rodadas + 1 });
         const weak = blocks.filter(b => weakIds.includes(b.id));
-        const patch = await pass(REDATOR_PROMPT, { ...contexto, estrutura, modo: "reescrita_parcial",
+        const patch = await pass(P.redator, { ...contexto, estrutura, modo: "reescrita_parcial",
           blocos: weak.map(b => ({ ...b, critica: current.notas_por_bloco.find(n => n.id === b.id) })) });
         rodadas++;
         for (const p of Array.isArray(patch.blocos) ? patch.blocos : []) {
@@ -125,8 +146,8 @@ Deno.serve(async (req) => {
       const byId = new Map(current.notas_por_bloco.map(n => [n.id, n]));
       const roteiro = {
         blocos: blocks.map(b => ({ ...b, nota: byId.get(b.id)?.nota ?? null })),
-        aberturas_alternativas: (Array.isArray(draft.aberturas_alternativas) ? draft.aberturas_alternativas : []).map(v => str(v, 300)).filter(Boolean).slice(0, 3),
-        legenda: str(draft.legenda, 2200),
+        aberturas_alternativas: (Array.isArray(draft.aberturas_alternativas) ? draft.aberturas_alternativas : []).map((v: any) => str(typeof v === "string" ? v : v?.fala, 300)).filter(Boolean).slice(0, 3),
+        legenda: str(draft.legenda || draft.legenda_post, 2200),
         hashtags: (Array.isArray(draft.hashtags) ? draft.hashtags : []).map(v => str(v, 60)).filter(Boolean).map(h => h.startsWith("#") ? h : `#${h}`).slice(0, 15),
       };
       const notas = { ...current, rodadas, historico, forca_gancho: forca, forca_gancho_total: forca ? Object.values(forca).reduce((a, b) => a + b, 0) : null,

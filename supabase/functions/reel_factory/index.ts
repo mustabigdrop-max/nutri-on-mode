@@ -61,6 +61,7 @@ async function context(db: DB, uid: string) {
     db.from("retention_scripts").select("tema, formula_id, roteiro").eq("user_id", uid).gte("created_at", since).limit(500),
   ]);
   await db.rpc("seed_content_pillars", { _user_id: uid });
+  const prompts = await loadEnginePrompts(db, uid);
   const [{ data: cps }, { data: angs }, { data: cases }, { data: posted }, { data: results }] = await Promise.all([
     db.from("content_pillars").select("chave, nome, publico, qtd_diaria, objetivo, mecanismo, exige_caso_real, ativo").eq("user_id", uid).order("ordem"),
     db.from("content_angles").select("nome").order("id"),
@@ -118,24 +119,24 @@ async function buildOne(ctx: any, idea: any, counter: { n: number }) {
   const contexto = { pedido: { tema: idea.tema, objetivo: idea.objetivo ?? "alcance", tom: "direto", rede: "instagram", pilar: idea.pilar, angulo: idea.angulo, publico: idea.publico, mecanismo: idea.mecanismo, tensao: idea.tensao }, formulas_atlas: ctx.formulas,
     selecao_formula: { modo: "fixa", permitidas: [idea.formula_id] }, voz_do_criador: ctx.voice,
     padroes_confirmados: ctx.patterns.filter((p: any) => p.confirmado), indicios: ctx.patterns.filter((p: any) => !p.confirmado) };
-  const estrutura = await pass(LIGHT, ARQUITETO_PROMPT + `\n\nUse formula_id ${idea.formula_id}. Inclua "formula_id" e "loops_abertos" no JSON.`, contexto, counter);
+  const estrutura = await pass(LIGHT, ctx.prompts.arquiteto + `\n\nUse formula_id ${idea.formula_id}. Inclua "formula_id" e "loops_abertos" no JSON.`, contexto, counter);
   Object.assign(estrutura, { formula_id: formula?.id ?? null, formula_nome: formula?.nome ?? null });
-  const draft = await pass(LIGHT, REDATOR_PROMPT, { ...contexto, estrutura }, counter);
-  const blocks = (Array.isArray(draft.blocos) ? draft.blocos : []).map(toBlock).filter((b: any) => Number.isFinite(b.id) && b.fala && b.tempo);
+  const draft = await pass(LIGHT, ctx.prompts.redator, { ...contexto, estrutura }, counter);
+  const blocks = (Array.isArray(draft.blocos) ? draft.blocos : []).map((b: any, i: number) => toBlock({ ...b, id: b?.id ?? i + 1 })).filter((b: any) => Number.isFinite(b.id) && b.fala && b.tempo);
   if (!blocks.length) return { motivo: "Roteiro incompleto." };
   const pre = preFilter(blocks[0].fala, estrutura.loops_abertos);
   if (pre) return { motivo: pre, estrutura, blocks, draft };
 
   const critique = async () => {
     const sb = blocks.map((b: any) => ({ id: b.id, tempo: b.tempo, fala: b.fala, caminho: [] as (string | number)[] }));
-    const raw = await pass(CRITIC_MODEL, CRITICO_PROMPT, { ...contexto, estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks) }, counter);
+    const raw = await pass(CRITIC_MODEL, ctx.prompts.critico, { ...contexto, estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks) }, counter);
     return normalizeCritique(raw, sb);
   };
   const historico = [];
   let current = await critique(); historico.push(current);
   const weakIds = current.notas_por_bloco.filter(n => n.nota < CRITIC_LIMITS.rewriteBelow).map(n => n.id);
   if (weakIds.length) { // at most one rewrite round in batch mode
-    const patch = await pass(LIGHT, REDATOR_PROMPT, { ...contexto, estrutura, modo: "reescrita_parcial",
+    const patch = await pass(LIGHT, ctx.prompts.redator, { ...contexto, estrutura, modo: "reescrita_parcial",
       blocos: blocks.filter((b: any) => weakIds.includes(b.id)).map((b: any) => ({ ...b, critica: current.notas_por_bloco.find(n => n.id === b.id) })) }, counter);
     for (const p of Array.isArray(patch.blocos) ? patch.blocos : []) {
       const t = blocks.find((b: any) => b.id === Number(p?.id) && weakIds.includes(b.id));
@@ -193,11 +194,7 @@ async function runBatch(db: DB, cronKey: string, batchId: string, budget: number
   if (!batch) return { skipped: "locked_or_done" };
   const { data: s } = await db.from("reel_factory_settings").select("pausado").eq("user_id", batch.user_id).maybeSingle();
   if (s?.pausado) { await db.from("reel_factory_batches").update({ status: "pausado", erro: "Fábrica pausada pelo usuário.", lease_until: null }).eq("id", batch.id); return { paused: true }; }
-  if (!ARQUITETO_PROMPT.trim() || !REDATOR_PROMPT.trim() || !CRITICO_PROMPT.trim()) {
-    await db.from("reel_factory_batches").update({ status: "erro", erro: "As instruções do Arquiteto, Redator e Crítico ainda não foram configuradas.", lease_until: null }).eq("id", batch.id);
-    await db.from("cc_automation_runs").insert({ user_id: batch.user_id, tipo: "fabrica", status: "erro", erro: "Instruções do Motor de Retenção não configuradas.", detalhes: { batch_id: batch.id } });
-    await notify(db, batch.user_id, "Fábrica de Reels parada", "As instruções do Motor de Retenção ainda não foram configuradas.");
-    return { erro: "prompts" };
+
   }
   const counter = { n: 0 };
   try {
