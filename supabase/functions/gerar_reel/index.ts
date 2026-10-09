@@ -62,10 +62,17 @@ function applyPatch(blocks: Block[], patch: Record<string, unknown>, ids: number
 async function avaliar(P: any, contexto: unknown, estrutura: unknown, blocks: Block[], vopts: any) {
   const ver = verificarReel(blocks, vopts);
   const sb = blocks.map(b => ({ id: b.id, tempo: b.tempo, fala: b.fala, caminho: [] as (string | number)[] }));
-  const raw = await pass(P.critico + CONTRATO_CRITICO, { ...(contexto as object), estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks), verificador: ver });
+  let raw: Record<string, unknown> = {}; let critica: ReturnType<typeof normalizeCritique> | null = null;
+  for (let t = 0; t < 2 && !critica; t++) {
+    raw = await pass(P.critico + CONTRATO_CRITICO, { ...(contexto as object), estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks), verificador: ver,
+      ...(t ? { aviso: `Dê nota para TODOS os blocos: ids ${blocks.map(b => b.id).join(", ")}.` } : {}) });
+    // Accept "bloco" as the id key and numeric strings as notes.
+    if (Array.isArray(raw.notas_por_bloco)) raw.notas_por_bloco = (raw.notas_por_bloco as any[]).map(n => ({ ...n, id: Number(n?.id ?? n?.bloco), nota: Number(n?.nota) }));
+    try { critica = normalizeCritique(raw, sb); } catch (e) { if (t) throw e; }
+  }
+  if (!critica) throw new HttpError(502, "Crítica incompleta. Tente novamente.");
   const f: any = raw.forca_gancho ?? {};
   const forca = FORCA.every(k => Number.isFinite(Number(f[k]))) ? Object.fromEntries(FORCA.map(k => [k, Math.max(0, Math.min(2, Math.round(Number(f[k]))))])) : null;
-  const critica = normalizeCritique(raw, sb);
   const frases_fracas = (Array.isArray(raw.frases_fracas) ? raw.frases_fracas : []).map((x: any) => ({ bloco: Number(x?.bloco), frase: str(x?.frase, 300), correcao: str(x?.correcao, 300) })).filter((x: any) => blocks.some(b => b.id === x.bloco) && x.frase);
   const motivos = critica.notas_por_bloco.map(n => {
     const v = ver.find(x => x.id === n.id)!;
