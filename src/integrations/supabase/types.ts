@@ -4896,6 +4896,102 @@ export type Database = {
         }
         Relationships: []
       }
+      cut_assets: {
+        Row: {
+          bloco: string
+          created_at: string
+          custo: number | null
+          descricao: string | null
+          id: string
+          modelo: string | null
+          prompt_hash: string | null
+          regeneracoes: number
+          script_id: string
+          status: string
+          tempo: string | null
+          texto_tela: string | null
+          tipo: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          bloco: string
+          created_at?: string
+          custo?: number | null
+          descricao?: string | null
+          id?: string
+          modelo?: string | null
+          prompt_hash?: string | null
+          regeneracoes?: number
+          script_id: string
+          status?: string
+          tempo?: string | null
+          texto_tela?: string | null
+          tipo: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          bloco?: string
+          created_at?: string
+          custo?: number | null
+          descricao?: string | null
+          id?: string
+          modelo?: string | null
+          prompt_hash?: string | null
+          regeneracoes?: number
+          script_id?: string
+          status?: string
+          tempo?: string | null
+          texto_tela?: string | null
+          tipo?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cut_image_cache: {
+        Row: {
+          created_at: string
+          modelo: string | null
+          path: string
+          prompt_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          modelo?: string | null
+          path: string
+          prompt_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          modelo?: string | null
+          path?: string
+          prompt_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cut_settings: {
+        Row: {
+          limite_diario_ilustracao: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          limite_diario_ilustracao?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          limite_diario_ilustracao?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cycle_tracking: {
         Row: {
           compostos: Json | null
