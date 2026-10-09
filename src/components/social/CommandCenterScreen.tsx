@@ -291,6 +291,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("cc-burst", onBurst); };
   }, []);
 
+  const [extras, setExtras] = useState<Record<string, string>>({});
   const [limiteDia, setLimiteDia] = useState<number | null>(null);
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -385,7 +386,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const calibrar = async () => {
     if (!ontem) return;
     setCalibBusy(true);
-    const { data, error } = await supabase.functions.invoke("calibrar", { body: { script_id: ontem.id, faixas, pct_3s: pct3, tempo_medio: medio } });
+    const { data, error } = await supabase.functions.invoke("calibrar", { body: { script_id: ontem.id, faixas, pct_3s: pct3, tempo_medio: medio, ...extras } });
     setCalibBusy(false);
     const msg = (data as any)?.error ?? (error ? (await (error as any).context?.json?.().catch(() => null))?.error ?? "Falha ao calibrar" : null);
     if (msg) return toast.error(msg);
@@ -698,6 +699,12 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                       <label style={{ display: "flex", flexDirection: "column", gap: 3 }}><span style={{ fontFamily: F.m, fontSize: 9, color: C.text }}>Tempo médio (s)</span>
                         <input style={inp} inputMode="decimal" value={medio} onChange={e => setMedio(e.target.value)} placeholder="segundos" /></label>
                     </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 6 }}>
+                      {([["views", "Views"], ["ret_media_pct", "% médio assistido"], ["shares", "Envios"], ["salvamentos", "Salvamentos"], ["novos_seguidores", "Novos seguidores"]] as const).map(([k, l]) => (
+                        <label key={k} style={{ display: "flex", flexDirection: "column", gap: 3 }}><span style={{ fontFamily: F.m, fontSize: 9, color: C.text }}>{l}</span>
+                          <input style={inp} inputMode="decimal" value={extras[k] ?? ""} onChange={e => setExtras(x => ({ ...x, [k]: e.target.value }))} placeholder="opcional" /></label>
+                      ))}
+                    </div>
                     <Label>% de audiência no fim de cada faixa</Label>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
                       {ontemBlocos.map(b => { const v = faixas[b.id] ?? ""; return (
@@ -714,6 +721,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
             )}
           </Panel>
 
+          <Panel><Label color={C.gold}>Calibração · previsto × real</Label><div style={{ marginTop: 8 }}><PrevistoRealScatter scripts={scripts} results={results} pesosTxt={pesosTxt} /></div></Panel>
           <Panel><Label color={C.gold}>Técnicas × retenção</Label><div style={{ marginTop: 8 }}><TecnicasRetencao scripts={scripts} results={results} /></div></Panel>
 
           <CommandCenterLower loaded={loaded} scripts={scripts} results={results} stats={formulas} atlas={atlas}
