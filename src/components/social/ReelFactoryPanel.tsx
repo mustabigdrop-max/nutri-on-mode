@@ -76,6 +76,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
   const [batches, setBatches] = useState<any[]>([]);
   const [bank, setBank] = useState<any[]>([]);
   const [open, setOpen] = useState<"" | "config" | "banco" | "historico" | "matriz">("");
+  useEffect(() => { const on = () => setOpen("banco"); window.addEventListener("cc-open-banco", on); return () => window.removeEventListener("cc-open-banco", on); }, []);
   const [busy, setBusy] = useState(false);
   const [f, setF] = useState({ q: "", pilar: "", formula: "", nota: "", status: "", descartados: false });
   const [sel, setSel] = useState<string[]>([]);
