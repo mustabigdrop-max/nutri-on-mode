@@ -80,23 +80,38 @@ export type QItem = { id: string; chapter_slug: string; pergunta: string; opcoes
 function rng(seed: number) { let s = seed >>> 0 || 1; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32); }
 function embaralhar<T>(a: T[], r: () => number) { const x = [...a]; for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; }
 
-/** 10–12 do módulo (ou todas, se houver menos) + 2 de módulos anteriores; prefere questões não usadas
+/** Questões do checkpoint do capítulo: exclui as marcadas com uso "prova". */
+export const questoesCheckpoint = <T extends { uso?: string }>(quiz: T[]) => (quiz ?? []).filter(q => q.uso !== "prova");
+/** Tamanho da prova: mínimo entre 12 e o total disponível (checkpoint + uso "prova"). */
+export const tamanhoProva = (disponiveis: number) => Math.min(12, Math.max(0, disponiveis));
+/** Acertos exigidos: 70% arredondado para cima. */
+export const acertosParaAprovar = (n: number) => Math.ceil(n * PROVA_MIN / 100);
+
+/** min(12, total) questões do módulo, em ordem misturada; prefere questões não usadas
  *  na última tentativa e nunca repete a mesma ordem de uma tentativa anterior. */
-export function montarProva(doModulo: QItem[], anteriores: QItem[], tentativas: string[][], seed = Date.now()) {
+export function montarProva(doModulo: QItem[], tentativas: string[][], seed = Date.now()) {
   const r = rng(seed);
   const ultima = new Set(tentativas[tentativas.length - 1] ?? []);
-  const pick = (pool: QItem[], n: number) => {
-    const novas = embaralhar(pool.filter(q => !ultima.has(q.id)), r), velhas = embaralhar(pool.filter(q => ultima.has(q.id)), r);
-    return [...novas, ...velhas].slice(0, n);
-  };
-  const n = Math.min(doModulo.length, 10 + Math.floor(r() * 3));
-  const base = [...pick(doModulo, n), ...pick(anteriores, 2)];
+  const novas = embaralhar(doModulo.filter(q => !ultima.has(q.id)), r), velhas = embaralhar(doModulo.filter(q => ultima.has(q.id)), r);
+  const base = [...novas, ...velhas].slice(0, tamanhoProva(doModulo.length));
   const vistas = new Set(tentativas.map(t => t.join("|")));
   let out = embaralhar(base, r);
   for (let i = 0; i < 20 && base.length > 1 && vistas.has(out.map(q => q.id).join("|")); i++) out = embaralhar(base, r);
   return out;
 }
 export const notaProva = (acertos: number, total: number) => (total ? Math.round((acertos / total) * 100) : 0);
+export const provaPassouAcertos = (acertos: number, total: number) => total > 0 && acertos >= acertosParaAprovar(total);
+
+/** Projeto: "Entregar" exige plano e balanço escritos e a rubrica toda avaliada.
+ *  Se houver medição de dias de revisão, exige também 3 dias distintos. */
+export function podeEntregarProjeto(o: { plano: string; balanco: string; rubrica: string[]; av: Record<string, number>; diasRevisao: number | null }) {
+  if (!o.plano.trim() || !o.balanco.trim()) return false;
+  if (!o.rubrica.every(r => typeof o.av[r] === "number")) return false;
+  return o.diasRevisao == null || o.diasRevisao >= 3;
+}
+
+/** Recursos futuros: cada botão só aparece quando o recurso existir. */
+export const RECURSOS = { revisaoProjeto: false, mentor: false, salaPesquisa: false };
 
 /** Selo interno: prova aprovada + projeto entregue. */
 export const seloModulo = (melhorNota: number | null, projetoEntregue: boolean) => melhorNota != null && provaAprovada(melhorNota) && projetoEntregue;

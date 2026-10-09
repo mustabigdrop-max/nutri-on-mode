@@ -7,7 +7,24 @@
    "subtitulo": "O método por trás da Academia",
    "descricao": "Como a ciência da aprendizagem organiza o estudo neste app.",
    "status": "publicado",
-   "capitulos_planejados": []
+   "capitulos_planejados": [],
+   "projeto": {
+    "titulo": "Meu plano de estudo de 7 dias",
+    "passos": [
+     "Defina um horário fixo de 20 minutos e o lugar onde você vai estudar",
+     "Escreva o seu plano se-então por escrito: Se for [horário], então eu abro a Biblioteca",
+     "Conclua o Capítulo 0 e faça a primeira revisão no dia seguinte",
+     "Em pelo menos 3 dias diferentes, escreva o que você lembra antes de conferir",
+     "Ao fim dos 7 dias, escreva em até 5 linhas o que você ajustou no plano e por quê"
+    ],
+    "rubrica": [
+     "O horário e o lugar de estudo são concretos",
+     "O plano se-então tem um gatilho e uma ação",
+     "Escrevi o que lembrava antes de conferir o capítulo",
+     "Fiz as revisões vencidas em pelo menos 3 dias diferentes",
+     "Registrei um ajuste com base no que descobri estudando"
+    ]
+   }
   },
   {
    "slug": "m1-retorica-classica",
@@ -244,6 +261,42 @@
      ],
      "correta": 2,
      "explicacao": "A análise indicou que o intervalo que produz a maior retenção aumenta conforme aumenta o tempo que se quer lembrar."
+    },
+    {
+     "uso": "prova",
+     "pergunta": "Por que o app libera só um capítulo novo por dia?",
+     "opcoes": [
+      "Para limitar o uso do app",
+      "Porque espaçar o estudo faz parte do método",
+      "Para dificultar o acesso",
+      "Por limitação técnica"
+     ],
+     "correta": 1,
+     "explicacao": "O espaçamento é parte do método: aprender melhora quando o estudo é distribuído no tempo."
+    },
+    {
+     "uso": "prova",
+     "pergunta": "Qual é a regra da casa deste livro?",
+     "opcoes": [
+      "Reler o capítulo duas vezes",
+      "Depois de ler, fechar o capítulo e escrever o que lembra, e só então conferir",
+      "Marcar os trechos principais",
+      "Estudar tudo no mesmo dia"
+     ],
+     "correta": 1,
+     "explicacao": "Evocar sem olhar é o que fixa o conteúdo; conferir vem depois."
+    },
+    {
+     "uso": "prova",
+     "pergunta": "No teste final feito cinco minutos depois, no estudo de Roediger e Karpicke (2006), qual grupo foi melhor?",
+     "opcoes": [
+      "Quem se testou",
+      "Quem releu",
+      "Os dois foram iguais",
+      "Nenhum dos dois"
+     ],
+     "correta": 1,
+     "explicacao": "Com 5 minutos, reler foi melhor. A vantagem de quem se testou apareceu nos testes de 2 dias e de 1 semana."
     }
    ],
    "flashcards": [

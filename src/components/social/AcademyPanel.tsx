@@ -84,7 +84,7 @@ function Ring({ pct, size = 44 }: { pct: number; size?: number }) {
 
 const ESTADO_COR: Record<string, string> = { "não iniciada": C.muted, "em andamento": C.cyan, "concluída": C.green, "dominada": C.gold, "revisar": C.red };
 
-export default function AcademyPanel({ onClose, initialLab, initialErros }: { onClose: () => void; initialLab?: "gancho" | "figuras" | "fala"; initialErros?: boolean }) {
+export default function AcademyPanel({ onClose, initialLab, initialErros, initialAula, capitulo }: { onClose: () => void; initialLab?: "gancho" | "figuras" | "fala"; initialErros?: boolean; initialAula?: string; capitulo?: { titulo: string; onVoltar: () => void } }) {
   const [uid, setUid] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [lessons, setLessons] = useState<Lesson[]>(lessonsSeed as Lesson[]);
@@ -95,7 +95,7 @@ export default function AcademyPanel({ onClose, initialLab, initialErros }: { on
   const [diag, setDiag] = useState<any | undefined>(undefined);
   const [proibidas, setProibidas] = useState<string[]>([]);
   const [dados, setDados] = useState<{ scripts: any[]; results: any[] }>({ scripts: [], results: [] });
-  const [view, setView] = useState<View>(initialLab ? { k: "lab", lab: initialLab } : initialErros ? { k: "erros" } : { k: "home" });
+  const [view, setView] = useState<View>(initialAula ? { k: "aula", slug: initialAula } : initialLab ? { k: "lab", lab: initialLab } : initialErros ? { k: "erros" } : { k: "home" });
 
   const load = async () => {
     const { data: s } = await supabase.auth.getSession(); const u = s.session?.user?.id ?? null; setUid(u);
@@ -237,6 +237,8 @@ export default function AcademyPanel({ onClose, initialLab, initialErros }: { on
           </>}
         </>}
 
+        {capitulo && (view.k === "aula" || view.k === "lab") && <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 10px", fontFamily: "'Space Mono',monospace", fontSize: 11, color: "#888" }}>
+          <button type="button" style={btn()} onClick={capitulo.onVoltar}>← VOLTAR AO CAPÍTULO</button><span>Do capítulo: {capitulo.titulo}</span></div>}
         {view.k === "aula" && (() => {
           const l = lessons.find(x => x.slug === view.slug); if (!l) return null;
           const prox = ordenadas[ordenadas.findIndex(x => x.slug === l.slug) + 1] ?? null;
