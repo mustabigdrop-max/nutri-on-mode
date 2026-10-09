@@ -1,10 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ENGINE_PROMPT_DEFAULTS, ENGINE_PROMPT_KEYS, type EnginePromptKey } from "../../supabase/functions/_shared/engineDefaults";
+import { ENGINE_PROMPT_DEFAULTS, ENGINE_PROMPT_KEYS, ENGINE_ADDENDA, withAddendum, type EnginePromptKey } from "../../supabase/functions/_shared/engineDefaults";
 
 export { ENGINE_PROMPT_KEYS, ENGINE_PROMPT_DEFAULTS, type EnginePromptKey };
 export const ENGINE_LABEL: Record<EnginePromptKey, string> = {
   bloco_0: "Contexto comum", arquiteto: "Arquiteto", redator: "Redator", critico: "Crítico",
-  calibracao: "Calibração", atlas: "Atlas de Atenção", retorica: "Biblioteca de Persuasão",
+  calibracao: "Calibração", atlas: "Atlas de Atenção", retorica: "Biblioteca de Persuasão", angulo: "Ângulo", proibidas: "Palavras proibidas",
 };
 export const CORE_KEYS: EnginePromptKey[] = ["bloco_0", "arquiteto", "redator", "critico"];
 export const PLACEHOLDERS = ["{{perfil}}", "{{vencedores}}", "{{fracos}}", "{{fontes_verificadas}}"];
@@ -36,8 +36,15 @@ export function validateInstruction(chave: EnginePromptKey, text: string): { err
 export async function loadAndSeed(userId: string): Promise<EngineRow[]> {
   const sel = () => supabase.from("engine_prompts").select("id, chave, conteudo, padrao, versao, updated_at").eq("user_id", userId);
   const { data } = await sel();
+  // K1 addenda: appended once to the user's current text as a new version; never overwrites edits.
+  let changed = false;
+  for (const r of (data ?? []) as EngineRow[]) {
+    if (!ENGINE_ADDENDA[r.chave] || !r.conteudo?.trim()) continue;
+    const next = withAddendum(r.chave, r.conteudo);
+    if (next !== r.conteudo) { await saveInstruction(userId, r, next); await supabase.from("engine_prompts").update({ padrao: ENGINE_PROMPT_DEFAULTS[r.chave] }).eq("id", r.id).eq("padrao", r.padrao); changed = true; }
+  }
   const miss = missingKeys(data ?? []);
-  if (!miss.length) return (data ?? []) as EngineRow[];
+  if (!miss.length) return changed ? ((await sel()).data ?? []) as EngineRow[] : (data ?? []) as EngineRow[];
   await supabase.from("engine_prompts").upsert(
     miss.map(k => ({ user_id: userId, chave: k, conteudo: ENGINE_PROMPT_DEFAULTS[k], padrao: ENGINE_PROMPT_DEFAULTS[k] })),
     { onConflict: "user_id,chave", ignoreDuplicates: true });
