@@ -31,11 +31,11 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<{ ok: true; value: T;
 }
 class Skip extends Error {}
 
-async function callGerarReel(cronKey: string, userId: string, tema: string) {
+async function callGerarReel(cronKey: string, userId: string, tema: string, objetivo = "alcance") {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/gerar_reel`, {
     method: "POST",
     headers: { "Content-Type": "application/json", apikey: ANON, Authorization: `Bearer ${ANON}`, "x-cron-key": cronKey, "x-user-id": userId },
-    body: JSON.stringify({ tema, objetivo: "alcance", tom: "direto" }),
+    body: JSON.stringify({ tema, objetivo, tom: "direto" }),
   });
   if (!res.ok) { let m = `Motor de Retenção respondeu ${res.status}`; try { m = (await res.json())?.error || m; } catch { /* */ } throw new Error(m); }
   const text = await res.text();
@@ -48,15 +48,42 @@ async function callGerarReel(cronKey: string, userId: string, tema: string) {
   throw new Error("A geração foi interrompida.");
 }
 
+const ALVO: [string, number][] = [["alcance", 0.5], ["autoridade", 0.3], ["venda", 0.2]];
+export function escolherObjetivo(ultimos: string[]): string {
+  const n = ultimos.length + 1;
+  return ALVO.map(([k, w]) => ({ k, falta: w * n - ultimos.filter(o => o === k).length })).sort((a, b) => b.falta - a.falta)[0].k;
+}
+async function rodizioPilar(db: DB, uid: string, ini: Date) {
+  const desde = new Date(ini.getTime() - 7 * 864e5).toISOString();
+  const [{ data: rec }, { data: pil }] = await Promise.all([
+    db.from("retention_scripts").select("objetivo, tema").eq("user_id", uid).gte("created_at", desde),
+    db.from("content_pillars").select("nome, objetivo").eq("user_id", uid).eq("ativo", true).order("ordem"),
+  ]);
+  if (!pil?.length) return null;
+  const objetivo = escolherObjetivo((rec ?? []).map((r: any) => r.objetivo));
+  const alvoPilar = objetivo === "venda" ? "conversao" : objetivo;
+  const cand = pil.filter((p: any) => (p.objetivo ?? []).includes(alvoPilar));
+  const lista = cand.length ? cand : pil;
+  const uso = (nome: string) => (rec ?? []).filter((r: any) => String(r.tema).toLowerCase().includes(nome.toLowerCase())).length;
+  const p = [...lista].sort((a: any, b: any) => uso(a.nome) - uso(b.nome))[0];
+  return { tema: p.nome, objetivo };
+}
+
 async function daily(db: DB, cronKey: string, uid: string, today: string, limite: number) {
   const ini = localMidnightUtc(today), ontemIni = new Date(ini.getTime() - 864e5);
   const { count } = await db.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", uid).gte("created_at", ini.toISOString());
   if ((count ?? 0) >= limite) throw new Skip(`Limite de ${limite} geração(ões) por dia já atingido.`);
   const { data: plan } = await db.from("social_content_calendar").select("topic, hook, scheduled_time, format").eq("coach_id", uid).eq("date", today).limit(1).maybeSingle();
-  const tema = (plan?.topic || plan?.hook || "").trim();
-  if (!tema) throw new Skip("Sem tema no Planner para hoje.");
+  let tema = (plan?.topic || plan?.hook || "").trim();
+  let objetivo = "alcance";
+  if (!tema) {
+    // No Planner theme: rotate 50% alcance / 30% autoridade / 20% venda over the last 7 days, pick a pillar, let the Ângulo step narrow it.
+    const r = await rodizioPilar(db, uid, ini);
+    if (!r) throw new Skip("Sem tema no Planner e nenhum pilar ativo cadastrado.");
+    tema = r.tema; objetivo = r.objetivo;
+  }
 
-  const script = await callGerarReel(cronKey, uid, tema);
+  const script = await callGerarReel(cronKey, uid, tema, objetivo);
 
   const [{ data: ontem }, { data: best }] = await Promise.all([
     db.from("retention_scripts").select("id, tema, nota_geral").eq("user_id", uid).gte("created_at", ontemIni.toISOString()).lt("created_at", ini.toISOString()).order("created_at", { ascending: false }).limit(1).maybeSingle(),

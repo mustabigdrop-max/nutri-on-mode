@@ -11469,16 +11469,19 @@ export type Database = {
       retention_scripts: {
         Row: {
           ajuste_obrigatorio: string | null
+          angulo: Json | null
           checklist: Json | null
           created_at: string
           estrutura: Json
           estrutura_nome: string | null
+          exemplo_ouro: boolean
           figura: string | null
           fonte_conferida_em: string | null
           fonte_status: string | null
           formula: string | null
           formula_id: number | null
           id: string
+          motivos_nota: Json | null
           nota_geral: number | null
           notas: Json
           objetivo: string
@@ -11493,23 +11496,28 @@ export type Database = {
           roteiro: Json
           slug: string | null
           status: string | null
+          status_qualidade: string | null
           tema: string
+          tipo_afirmacao: string | null
           titulo: string | null
           tom: string
           user_id: string
         }
         Insert: {
           ajuste_obrigatorio?: string | null
+          angulo?: Json | null
           checklist?: Json | null
           created_at?: string
           estrutura?: Json
           estrutura_nome?: string | null
+          exemplo_ouro?: boolean
           figura?: string | null
           fonte_conferida_em?: string | null
           fonte_status?: string | null
           formula?: string | null
           formula_id?: number | null
           id?: string
+          motivos_nota?: Json | null
           nota_geral?: number | null
           notas?: Json
           objetivo: string
@@ -11524,23 +11532,28 @@ export type Database = {
           roteiro?: Json
           slug?: string | null
           status?: string | null
+          status_qualidade?: string | null
           tema: string
+          tipo_afirmacao?: string | null
           titulo?: string | null
           tom: string
           user_id: string
         }
         Update: {
           ajuste_obrigatorio?: string | null
+          angulo?: Json | null
           checklist?: Json | null
           created_at?: string
           estrutura?: Json
           estrutura_nome?: string | null
+          exemplo_ouro?: boolean
           figura?: string | null
           fonte_conferida_em?: string | null
           fonte_status?: string | null
           formula?: string | null
           formula_id?: number | null
           id?: string
+          motivos_nota?: Json | null
           nota_geral?: number | null
           notas?: Json
           objetivo?: string
@@ -11555,7 +11568,9 @@ export type Database = {
           roteiro?: Json
           slug?: string | null
           status?: string | null
+          status_qualidade?: string | null
           tema?: string
+          tipo_afirmacao?: string | null
           titulo?: string | null
           tom?: string
           user_id?: string
