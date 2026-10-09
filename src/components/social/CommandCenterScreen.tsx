@@ -287,7 +287,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const [todayIdx, setTodayIdx] = useState(0);
   const [pct3, setPct3] = useState(""); const [medio, setMedio] = useState(""); const [faixas, setFaixas] = useState<Record<string, string>>({});
   const [calib, setCalib] = useState<any>(null); const [calibBusy, setCalibBusy] = useState(false);
-  const [goalForm, setGoalForm] = useState({ metrica: "reels_publicados", alvo: "" });
+  const [goalForm, setGoalForm] = useState({ metrica: "seguidores_instagram", alvo: "" });
   const [auto, setAuto] = useState<any>(null);
   const [chips, setChips] = useState<string[]>([]);
   const [genErr, setGenErr] = useState<string | null>(null);
