@@ -315,7 +315,17 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const [biblioteca, setBiblioteca] = useState(false);
   const [academiaErros, setAcademiaErros] = useState(false);
   const revHoje = useRevisoesHoje(biblioteca);
-  const abrirTreinos = (a: TreinoAlvo) => { setBiblioteca(false); setAcademiaErros(a === "erros"); setAcademiaLab(a === "gancho" || a === "figuras" || a === "fala" ? a : undefined); setAcademia(true); };
+  const [academiaAula, setAcademiaAula] = useState<string | undefined>(undefined);
+  const [academiaCap, setAcademiaCap] = useState<{ slug: string; titulo: string } | null>(null);
+  const [bibliotecaCap, setBibliotecaCap] = useState<string | undefined>(undefined);
+  const abrirTreinos = (a: TreinoAlvo) => {
+    setBiblioteca(false); setBibliotecaCap(undefined);
+    if (typeof a === "object") {
+      setAcademiaErros(false); setAcademiaCap({ slug: a.capSlug, titulo: a.capTitulo });
+      if ("aula" in a) { setAcademiaAula(a.aula); setAcademiaLab(undefined); } else { setAcademiaAula(undefined); setAcademiaLab(a.lab); }
+    } else { setAcademiaCap(null); setAcademiaAula(undefined); setAcademiaErros(a === "erros"); setAcademiaLab(a === "gancho" || a === "figuras" || a === "fala" ? a : undefined); }
+    setAcademia(true);
+  };
   const [fxLevel, setFxLevel] = useFxLevel();
   const [fxOpen, setFxOpen] = useState(false);
   const [foco, setFoco] = useState(false);
@@ -673,8 +683,10 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           <ReelFactoryPanel onChosen={load} />
         </Panel>
 
-        {academia && <AcademyPanel initialLab={academiaLab} initialErros={academiaErros} onClose={() => { setAcademia(false); setAcademiaLab(undefined); setAcademiaErros(false); }} />}
-        {biblioteca && <BibliotecaPanel onClose={() => setBiblioteca(false)} onTreinos={abrirTreinos} />}
+        {academia && <AcademyPanel initialLab={academiaLab} initialErros={academiaErros} initialAula={academiaAula}
+          capitulo={academiaCap ? { titulo: academiaCap.titulo, onVoltar: () => { const c = academiaCap; setAcademia(false); setAcademiaCap(null); setAcademiaAula(undefined); setAcademiaLab(undefined); setBibliotecaCap(c.slug); setBiblioteca(true); } } : undefined}
+          onClose={() => { setAcademia(false); setAcademiaLab(undefined); setAcademiaErros(false); setAcademiaAula(undefined); setAcademiaCap(null); }} />}
+        {biblioteca && <BibliotecaPanel initialCap={bibliotecaCap} onClose={() => { setBiblioteca(false); setBibliotecaCap(undefined); }} onTreinos={abrirTreinos} />}
         <Panel glow={C.cyan}><div id="cc-cards" style={{ scrollMarginTop: 80 }} /><CardStudioPanel /></Panel>
 
         {engUser && <Panel glow={C.cyan}><EngineInstructionsPanel rows={engRows} userId={engUser} open={engOpen} onToggle={() => setEngOpen(o => !o)} onChanged={loadEngine} /></Panel>}
