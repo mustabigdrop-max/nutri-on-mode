@@ -140,30 +140,30 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
   return (
     <div>
       <div style={row}>
-        <div style={{ ...lbl, color: C.gold }}>FÁBRICA DE REELS</div>
+        <div style={{ ...lbl, color: C.gold }}>Fábrica de reels</div>
         <span style={{ fontFamily: F.m, fontSize: 9, color: cfg?.pausado ? C.gold : C.muted }}>{cfg?.pausado ? "PAUSADA" : cfg?.automatico ? `AUTOMÁTICA · ${String(cfg.hora).padStart(2, "0")}:00` : "MANUAL"}</span>
       </div>
 
       {batches[0] && (
         <div style={{ marginTop: 8, fontFamily: F.m, fontSize: 10, color: C.text, lineHeight: 1.6 }}>
           LOTE {new Date(`${batches[0].data}T12:00:00`).toLocaleDateString("pt-BR")} · <span style={{ color: batches[0].status === "erro" ? C.red : C.cyan }}>{ST_LABEL[batches[0].status]}</span>
-          {" · "}{batches[0].etapa === "ideias" ? "Gerando ideias..." : `${batches[0].cursor}/${batches[0].n_ideias} roteiros`} · {batches[0].aprovados} aprovados · {batches[0].descartados} descartados · {batches[0].chamadas}/{batches[0].estimativa_chamadas ?? "—"} solicitações
+          {" · "}{batches[0].etapa === "ideias" ? "Projetando atenção..." : `${batches[0].cursor}/${batches[0].n_ideias} roteiros`} · {batches[0].aprovados} aprovados · {batches[0].descartados} descartados · {batches[0].chamadas}/{batches[0].estimativa_chamadas ?? "—"} solicitações
           {batches[0].erro && <div style={{ color: C.red }}>{batches[0].erro}</div>}
           {batches[0].status === "pausado" && <button type="button" onClick={() => call({ action: "resume", batch_id: batches[0].id }).then(load).catch(e => toast.error(e.message))} style={{ ...sm(C.cyan), marginTop: 4 }}>RETOMAR</button>}
         </div>
       )}
 
-      <div style={{ ...lbl, marginTop: 12 }}>TOP 10 DE HOJE</div>
-      {!top.length ? <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 6 }}>{loteHoje ? "Nenhum roteiro novo neste lote ainda." : "Nenhum lote hoje."}</div> :
+      <div style={{ ...lbl, marginTop: 12 }}>Prontos pra gravar</div>
+      {!top.length ? <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 6 }}>{batches.length ? "Nenhum roteiro novo neste lote ainda." : "Nenhum lote ainda. Gere o primeiro e comece a aprender com os seus dados."}</div> :
         top.map(x => <Item key={x.id} x={x} actions={<>
-          <button type="button" onClick={() => escolher(x.id)} style={sm(C.gold)}>ESCOLHER PRA HOJE</button>
-          <button type="button" onClick={() => setStatus(x.id, "guardado")} style={sm(C.cyan)}>GUARDAR NO BANCO</button>
+          <button type="button" onClick={() => escolher(x.id)} style={sm(C.gold)}>Escolher pra hoje</button>
+          <button type="button" onClick={() => setStatus(x.id, "guardado")} style={sm(C.cyan)}>Guardar no banco</button>
           <button type="button" onClick={() => setStatus(x.id, "descartado")} style={sm(C.muted)}>DESCARTAR</button>
         </>} />)}
 
       <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
         <button type="button" disabled={busy || !!ativo || cfg?.pausado} onClick={gerar} style={{ ...sm(C.gold), background: C.gold, color: "#0A0A0A" }}>{ativo ? "LOTE EM ANDAMENTO" : "GERAR LOTE"}</button>
-        <button type="button" onClick={() => setOpen(open === "banco" ? "" : "banco")} style={sm(C.cyan)}>BANCO DE REELS</button>
+        <button type="button" onClick={() => setOpen(open === "banco" ? "" : "banco")} style={sm(C.cyan)}>Banco de reels</button>
         <button type="button" onClick={() => setOpen(open === "config" ? "" : "config")} style={sm(C.cyan)}>CONFIGURAR</button>
         <button type="button" onClick={() => setOpen(open === "historico" ? "" : "historico")} style={sm(C.muted)}>HISTÓRICO</button>
       </div>
@@ -186,7 +186,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
 
       {open === "historico" && (
         <div style={{ marginTop: 10 }}>
-          {!batches.length ? <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>Nenhum lote ainda.</div> : batches.map(b => (
+          {!batches.length ? <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>Nenhum lote ainda. Gere o primeiro e comece a aprender com os seus dados.</div> : batches.map(b => (
             <div key={b.id} style={{ display: "grid", gridTemplateColumns: "80px 90px 1fr", gap: 6, fontFamily: F.m, fontSize: 9, color: C.text, borderBottom: `1px solid ${C.dim}`, padding: "4px 0" }}>
               <span>{new Date(b.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
               <span style={{ color: b.status === "erro" ? C.red : b.status === "pausado" ? C.gold : C.cyan }}>{ST_LABEL[b.status]}{b.tentativas > 1 ? " · 2ª" : ""}</span>
@@ -211,7 +211,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
           </div>
           {!filtrado.length ? <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 8 }}>Nada encontrado.</div> : filtrado.slice(0, 100).map(x => <Item key={x.id} x={x} actions={f.descartados ? null : <>
             <label style={{ ...lbl, display: "flex", gap: 4, alignItems: "center" }}><input type="checkbox" checked={sel.includes(x.id)} onChange={e => setSel(s => e.target.checked ? (s.length < 15 ? [...s, x.id] : s) : s.filter(i => i !== x.id))} />LOTE</label>
-            {["novo", "guardado"].includes(x.status) && <button type="button" onClick={() => escolher(x.id)} style={sm(C.gold)}>ESCOLHER PRA HOJE</button>}
+            {["novo", "guardado"].includes(x.status) && <button type="button" onClick={() => escolher(x.id)} style={sm(C.gold)}>Escolher pra hoje</button>}
             {x.status !== "gravado" && x.status !== "postado" && <button type="button" onClick={() => setStatus(x.id, "gravado")} style={sm(C.cyan)}>GRAVADO</button>}
             {x.status !== "postado" && <button type="button" onClick={() => setStatus(x.id, "postado")} style={sm(C.cyan)}>POSTADO</button>}
             <button type="button" onClick={() => setStatus(x.id, "descartado")} style={sm(C.muted)}>DESCARTAR</button>

@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Aplicar textos oficiais no Command Center, Fábrica, avisos e SIGNAL; localizar GRAVITAS
+
 - [x] Integrar crítico de retenção com contagens objetivas, revisão de até duas rodadas e notas visíveis
 - [x] Testar limites do crítico e geração autenticada com revisão no Command Center
 - [x] Planejar retenção antes de cada roteiro vertical com estrutura compartilhada e formatos preservados

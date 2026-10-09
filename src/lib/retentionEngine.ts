@@ -5,6 +5,7 @@ export const STAGE_LABEL: Record<string, string> = {
   redator: "Projetando atenção...",
   critico: "Testando o gancho...",
   reescrita: "Reescrevendo pontos fracos...",
+  originalidade: "Filtrando o que se repete...",
 };
 
 /** Runs gerar_reel and streams step events. Resolves with the saved script. */
