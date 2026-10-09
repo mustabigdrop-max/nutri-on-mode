@@ -1,0 +1,298 @@
+{
+ "modulos": [
+  {
+   "slug": "m0-como-estudar",
+   "ordem": 0,
+   "titulo": "Como estudar aqui",
+   "subtitulo": "O método por trás da Academia",
+   "descricao": "Como a ciência da aprendizagem organiza o estudo neste app.",
+   "status": "publicado",
+   "capitulos_planejados": []
+  },
+  {
+   "slug": "m1-retorica-classica",
+   "ordem": 1,
+   "titulo": "Retórica clássica",
+   "subtitulo": "A arte de enxergar os meios de persuasão",
+   "descricao": "Aristóteles, Cícero e a tradição retórica aplicada ao reel.",
+   "status": "em_breve",
+   "capitulos_planejados": [
+    "O que é retórica (e o que ela não é)",
+    "Ethos, pathos e logos",
+    "Entimema e exemplo: argumentar em 30 segundos",
+    "Os cinco cânones",
+    "Da abertura ao fecho: as partes do discurso",
+    "Figuras que seguram atenção"
+   ]
+  },
+  {
+   "slug": "m2-persuasao-com-ciencia",
+   "ordem": 2,
+   "titulo": "Persuasão com ciência",
+   "subtitulo": "O que a pesquisa mostra sobre atenção, intenção e hábito",
+   "descricao": "Estudos verificados sobre curiosidade, narrativa, intenção e hábito.",
+   "status": "em_breve",
+   "capitulos_planejados": [
+    "Lacuna de informação",
+    "Transporte narrativo",
+    "O efeito do porquê",
+    "Intenção não é ação",
+    "Planos se-então",
+    "Como os hábitos se formam",
+    "Loop aberto sem mitos"
+   ]
+  },
+  {
+   "slug": "m3-atencao-e-retencao",
+   "ordem": 3,
+   "titulo": "Atenção e retenção",
+   "subtitulo": "Do gancho à curva de retenção",
+   "descricao": "Técnicas de produção testadas contra os seus próprios números.",
+   "status": "em_breve",
+   "capitulos_planejados": [
+    "Os 2 primeiros segundos",
+    "A promessa até os 6 segundos",
+    "Ritmo e mudança visual",
+    "Loops e final em loop",
+    "Ler a sua curva de retenção",
+    "Anatomia de um reel de 35 segundos"
+   ]
+  },
+  {
+   "slug": "m4-oratoria-na-camera",
+   "ordem": 4,
+   "titulo": "Oratória na câmera",
+   "subtitulo": "Voz, presença e ensaio",
+   "descricao": "Como falar para a câmera com clareza e presença.",
+   "status": "em_breve",
+   "capitulos_planejados": [
+    "Voz: pausa, ênfase e queda",
+    "Falado não é escrito",
+    "Presença na câmera",
+    "Ensaio e gravação em lote",
+    "Rever a própria gravação"
+   ]
+  },
+  {
+   "slug": "m5-posicionamento",
+   "ordem": 5,
+   "titulo": "Posicionamento e marketing fitness",
+   "subtitulo": "Ocupar um lugar claro",
+   "descricao": "Posicionamento, especificidade, prova e convite.",
+   "status": "em_breve",
+   "capitulos_planejados": [
+    "Posicionamento",
+    "Especificidade",
+    "Prova e autoridade sem exagero",
+    "Do conteúdo ao convite",
+    "A proporção 50/30/20",
+    "Auditoria do próprio perfil"
+   ]
+  },
+  {
+   "slug": "m6-comunicar-saude",
+   "ordem": 6,
+   "titulo": "Comunicar saúde sem enganar",
+   "subtitulo": "Evidência, linguagem calibrada e ética",
+   "descricao": "Como ler estudos e falar de saúde com honestidade.",
+   "status": "em_breve",
+   "capitulos_planejados": [
+    "Níveis de evidência",
+    "Ler um estudo em 10 minutos",
+    "Linguagem calibrada",
+    "Fontes e conflito de interesse",
+    "O que um reel de saúde não deve prometer",
+    "Persuadir sem manipular"
+   ]
+  }
+ ],
+ "capitulos": [
+  {
+   "slug": "c0-como-estudar-aqui",
+   "modulo_slug": "m0-como-estudar",
+   "ordem": 0,
+   "titulo": "Como estudar aqui (e por que funciona)",
+   "pergunta_guia": "Qual é a forma mais eficiente de realmente aprender isto?",
+   "tempo_leitura_min": 6,
+   "nivel_fonte": "verificada",
+   "status": "publicado",
+   "relacionadas": [],
+   "blocos": [
+    {
+     "tipo": "texto",
+     "texto": "Ler um capítulo com atenção dá a sensação de que você aprendeu. A pesquisa sobre aprendizagem mostra que essa sensação engana. Esta Academia foi desenhada em torno de duas práticas que a ciência avaliou melhor do que as outras: testar-se e espaçar o estudo."
+    },
+    {
+     "tipo": "texto",
+     "texto": "Dunlosky e colegas (2013) revisaram dez técnicas de estudo muito usadas. Praticar com testes e distribuir a prática no tempo receberam a maior avaliação de utilidade. Resumir, marcar trechos, reler e duas outras técnicas receberam avaliação baixa. É por isso que este livro tem anotações, mas insiste em perguntas."
+    },
+    {
+     "tipo": "texto",
+     "texto": "Roediger e Karpicke (2006) pediram a estudantes que lessem textos e, depois, ou relessem ou fizessem testes de evocação sem olhar. Com um teste final cinco minutos depois, reler funcionou melhor. Com dois dias ou uma semana de intervalo, quem tinha se testado lembrou bem mais. E os que releram se sentiam mais confiantes do que se saíram. Sentir que sabe e saber são coisas diferentes."
+    },
+    {
+     "tipo": "texto",
+     "texto": "Cepeda e colegas (2006) reuniram 839 avaliações em 317 experimentos sobre prática distribuída. Uma das conclusões práticas é que o intervalo ideal entre os estudos cresce com o tempo que você quer lembrar. Quem quer lembrar por semanas precisa de intervalos maiores do que quem estuda para o dia seguinte."
+    },
+    {
+     "tipo": "destaque",
+     "texto": "Regra da casa: depois de ler, feche o capítulo e escreva o que lembra. Só então confira."
+    },
+    {
+     "tipo": "tabela",
+     "titulo": "O ciclo de cada capítulo",
+     "colunas": [
+      "Etapa",
+      "O que você faz",
+      "Por quê"
+     ],
+     "linhas": [
+      [
+       "Ler",
+       "Leia sem pressa e responda às perguntas de pausa",
+       "Entender antes de memorizar"
+      ],
+      [
+       "Recordar",
+       "Feche e escreva o que lembra",
+       "Evocar é o que fixa"
+      ],
+      [
+       "Checkpoint",
+       "Quiz do capítulo",
+       "Descobrir o que ficou frágil"
+      ],
+      [
+       "Aplicar",
+       "Use num reel seu",
+       "Oratória é habilidade"
+      ],
+      [
+       "Revisar",
+       "Cartões em 1, 3, 7, 21 e 60 dias",
+       "Espaçar o estudo"
+      ],
+      [
+       "Prova e projeto",
+       "Ao fim do módulo",
+       "Testar depois de um intervalo"
+      ]
+     ]
+    },
+    {
+     "tipo": "texto",
+     "texto": "Por isso o app libera um capítulo novo por dia e pede as revisões antes do próximo. Parece lento, mas o espaçamento faz parte do método. Se um dia você precisar adiantar, existe a opção de liberar mesmo assim. Ela fica registrada, sem julgamento."
+    },
+    {
+     "tipo": "cuidado",
+     "texto": "Limites: esses estudos usaram, em geral, material verbal e estudantes. Retórica e oratória também são habilidades, e habilidades se aprendem com prática e retorno. Por isso este livro tem laboratórios, projeto e a Calibração com os seus resultados reais. Os autores da revisão de 2013 também lembram que as técnicas ajudam quem está motivado e consegue usá-las."
+    },
+    {
+     "tipo": "pausa",
+     "pergunta": "Antes de seguir: quais são as duas práticas de estudo mais bem avaliadas na revisão de 2013 e por que reler é uma má aposta?",
+     "resposta": "Praticar com testes e distribuir a prática no tempo. Reler dá confiança, mas a evidência mostra que tende a render menos do que se testar, principalmente quando o teste vem dias depois."
+    },
+    {
+     "tipo": "exercicio",
+     "texto": "Defina o seu horário de estudo e escreva o seu plano: em que dia e hora você vai ler o capítulo do dia e fazer as revisões? Quanto mais concreto, melhor."
+    }
+   ],
+   "glossario": [
+    {
+     "termo": "Prática distribuída",
+     "definicao": "Estudar em sessões espalhadas no tempo, em vez de tudo de uma vez."
+    },
+    {
+     "termo": "Prática com testes",
+     "definicao": "Tentar lembrar sem olhar o material, como quiz e flashcards."
+    },
+    {
+     "termo": "Evocação",
+     "definicao": "O ato de recuperar da memória o que foi estudado."
+    }
+   ],
+   "quiz": [
+    {
+     "pergunta": "Quais técnicas receberam a maior utilidade na revisão de Dunlosky e colegas (2013)?",
+     "opcoes": [
+      "Marcar trechos e reler",
+      "Praticar com testes e distribuir a prática no tempo",
+      "Resumir e fazer mapas",
+      "Ouvir o texto várias vezes"
+     ],
+     "correta": 1,
+     "explicacao": "Praticar com testes e distribuir a prática no tempo foram as mais bem avaliadas. Marcar e reler tiveram avaliação baixa."
+    },
+    {
+     "pergunta": "No experimento de Roediger e Karpicke (2006), o que aconteceu no teste feito dias depois?",
+     "opcoes": [
+      "Quem releu lembrou mais",
+      "Não houve diferença",
+      "Quem tinha se testado lembrou bem mais",
+      "Todos esqueceram igual"
+     ],
+     "correta": 2,
+     "explicacao": "No teste de 2 dias ou 1 semana, o grupo que tinha se testado teve retenção bem maior, embora o grupo que releu se sentisse mais confiante."
+    },
+    {
+     "pergunta": "O que Cepeda e colegas (2006) concluíram sobre o intervalo entre estudos?",
+     "opcoes": [
+      "Quanto menor o intervalo, melhor",
+      "O intervalo não importa",
+      "O intervalo ideal cresce com o tempo que você quer lembrar",
+      "Só vale estudar na véspera"
+     ],
+     "correta": 2,
+     "explicacao": "A análise indicou que o intervalo que produz a maior retenção aumenta conforme aumenta o tempo que se quer lembrar."
+    }
+   ],
+   "flashcards": [
+    {
+     "frente": "Quais as duas técnicas de estudo mais bem avaliadas em Dunlosky e colegas (2013)?",
+     "verso": "Prática com testes e prática distribuída."
+    },
+    {
+     "frente": "Por que reler engana?",
+     "verso": "Aumenta a confiança, mas a retenção de longo prazo costuma ser menor do que a de quem se testa."
+    },
+    {
+     "frente": "Regra da casa deste livro",
+     "verso": "Depois de ler, feche o capítulo e escreva o que lembra. Só então confira."
+    },
+    {
+     "frente": "O que o estudo de Cepeda e colegas (2006) diz sobre o intervalo ideal?",
+     "verso": "Ele aumenta com o tempo que você quer lembrar."
+    }
+   ],
+   "aplique": {
+    "titulo": "Monte o seu plano de estudo",
+    "passos": [
+     "Escolha um horário fixo de 20 minutos por dia",
+     "Defina onde você vai estudar",
+     "Escreva o seu se-então: Se for [horário], então eu abro a Biblioteca"
+    ],
+    "ligacao": null
+   },
+   "fontes": [
+    {
+     "referencia": "Dunlosky, Rawson, Marsh, Nathan e Willingham (2013). Improving students' learning with effective learning techniques. Psychological Science in the Public Interest",
+     "link": "https://www.psychologicalscience.org/news/releases/which-study-strategies-make-the-grade.html",
+     "tipo": "secundaria",
+     "observacao": "Comunicado da associação. Conferir no artigo original."
+    },
+    {
+     "referencia": "Roediger e Karpicke (2006). Test-enhanced learning: taking memory tests improves long-term retention. Psychological Science 17(3):249-255",
+     "link": "https://pubmed.ncbi.nlm.nih.gov/16507066/",
+     "tipo": "primaria",
+     "observacao": ""
+    },
+    {
+     "referencia": "Cepeda, Pashler, Vul, Wixted e Rohrer (2006). Distributed practice in verbal recall tasks: a review and quantitative synthesis. Psychological Bulletin 132(3):354-380",
+     "link": "https://pubmed.ncbi.nlm.nih.gov/16719566/",
+     "tipo": "primaria",
+     "observacao": ""
+    }
+   ]
+  }
+ ]
+}

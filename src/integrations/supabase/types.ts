@@ -56,6 +56,63 @@ export type Database = {
         }
         Relationships: []
       }
+      academy_chapters: {
+        Row: {
+          aplique: Json | null
+          blocos: Json
+          flashcards: Json
+          fontes: Json
+          glossario: Json
+          id: string
+          modulo_slug: string
+          nivel_fonte: string
+          ordem: number
+          pergunta_guia: string | null
+          quiz: Json
+          relacionadas: Json
+          slug: string
+          status: string
+          tempo_leitura_min: number | null
+          titulo: string
+        }
+        Insert: {
+          aplique?: Json | null
+          blocos?: Json
+          flashcards?: Json
+          fontes?: Json
+          glossario?: Json
+          id?: string
+          modulo_slug: string
+          nivel_fonte: string
+          ordem?: number
+          pergunta_guia?: string | null
+          quiz?: Json
+          relacionadas?: Json
+          slug: string
+          status?: string
+          tempo_leitura_min?: number | null
+          titulo: string
+        }
+        Update: {
+          aplique?: Json | null
+          blocos?: Json
+          flashcards?: Json
+          fontes?: Json
+          glossario?: Json
+          id?: string
+          modulo_slug?: string
+          nivel_fonte?: string
+          ordem?: number
+          pergunta_guia?: string | null
+          quiz?: Json
+          relacionadas?: Json
+          slug?: string
+          status?: string
+          tempo_leitura_min?: number | null
+          titulo?: string
+        }
+        Relationships: []
+      }
       academy_diagnostic: {
         Row: {
           created_at: string
@@ -122,6 +179,42 @@ export type Database = {
           slug?: string
           titulo?: string
           trilha?: string
+        }
+        Relationships: []
+      }
+      academy_modules: {
+        Row: {
+          capitulos_planejados: Json
+          descricao: string | null
+          id: string
+          ordem: number
+          projeto: Json | null
+          slug: string
+          status: string
+          subtitulo: string | null
+          titulo: string
+        }
+        Insert: {
+          capitulos_planejados?: Json
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          projeto?: Json | null
+          slug: string
+          status?: string
+          subtitulo?: string | null
+          titulo: string
+        }
+        Update: {
+          capitulos_planejados?: Json
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          projeto?: Json | null
+          slug?: string
+          status?: string
+          subtitulo?: string | null
+          titulo?: string
         }
         Relationships: []
       }
@@ -3209,6 +3302,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      chapter_notes: {
+        Row: {
+          bloco_idx: number
+          chapter_slug: string
+          created_at: string
+          id: string
+          texto: string | null
+          tipo: string
+          trecho: string | null
+          user_id: string
+        }
+        Insert: {
+          bloco_idx?: number
+          chapter_slug: string
+          created_at?: string
+          id?: string
+          texto?: string | null
+          tipo: string
+          trecho?: string | null
+          user_id: string
+        }
+        Update: {
+          bloco_idx?: number
+          chapter_slug?: string
+          created_at?: string
+          id?: string
+          texto?: string | null
+          tipo?: string
+          trecho?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chapter_progress: {
+        Row: {
+          aplique_feito: boolean
+          bloco_atual: number
+          chapter_slug: string
+          concluido: boolean
+          concluido_em: string | null
+          dominado: boolean
+          id: string
+          iniciado_em: string
+          progresso_pct: number
+          quiz_score: number | null
+          recall_feito: boolean
+          recall_texto: string | null
+          tempo_lendo_seg: number
+          ultimo_acesso: string
+          user_id: string
+        }
+        Insert: {
+          aplique_feito?: boolean
+          bloco_atual?: number
+          chapter_slug: string
+          concluido?: boolean
+          concluido_em?: string | null
+          dominado?: boolean
+          id?: string
+          iniciado_em?: string
+          progresso_pct?: number
+          quiz_score?: number | null
+          recall_feito?: boolean
+          recall_texto?: string | null
+          tempo_lendo_seg?: number
+          ultimo_acesso?: string
+          user_id: string
+        }
+        Update: {
+          aplique_feito?: boolean
+          bloco_atual?: number
+          chapter_slug?: string
+          concluido?: boolean
+          concluido_em?: string | null
+          dominado?: boolean
+          id?: string
+          iniciado_em?: string
+          progresso_pct?: number
+          quiz_score?: number | null
+          recall_feito?: boolean
+          recall_texto?: string | null
+          tempo_lendo_seg?: number
+          ultimo_acesso?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       chat_messages: {
         Row: {
@@ -6692,6 +6872,45 @@ export type Database = {
         }
         Relationships: []
       }
+      flashcard_state: {
+        Row: {
+          acertos: number
+          caixa: number
+          card_idx: number
+          chapter_slug: string
+          due_at: string
+          erros: number
+          id: string
+          ultimo_resultado: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acertos?: number
+          caixa?: number
+          card_idx: number
+          chapter_slug: string
+          due_at?: string
+          erros?: number
+          id?: string
+          ultimo_resultado?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acertos?: number
+          caixa?: number
+          card_idx?: number
+          chapter_slug?: string
+          due_at?: string
+          erros?: number
+          id?: string
+          ultimo_resultado?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       focus_mode_logs: {
         Row: {
           created_at: string | null
@@ -9372,6 +9591,69 @@ export type Database = {
           perfil_snapshot?: Json | null
           score?: number
           sintomas?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      module_exams: {
+        Row: {
+          antecipada: boolean
+          created_at: string
+          id: string
+          itens: Json
+          modulo_slug: string
+          nota: number
+          tentativa: number
+          user_id: string
+        }
+        Insert: {
+          antecipada?: boolean
+          created_at?: string
+          id?: string
+          itens?: Json
+          modulo_slug: string
+          nota?: number
+          tentativa?: number
+          user_id: string
+        }
+        Update: {
+          antecipada?: boolean
+          created_at?: string
+          id?: string
+          itens?: Json
+          modulo_slug?: string
+          nota?: number
+          tentativa?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      module_projects: {
+        Row: {
+          autoavaliacao: Json
+          entrega: Json
+          id: string
+          modulo_slug: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autoavaliacao?: Json
+          entrega?: Json
+          id?: string
+          modulo_slug: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autoavaliacao?: Json
+          entrega?: Json
+          id?: string
+          modulo_slug?: string
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -13314,6 +13596,33 @@ export type Database = {
           script_id?: string | null
           template?: string
           tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_plan: {
+        Row: {
+          created_at: string
+          dicas_vistas: Json
+          hora_estudo: string | null
+          liberacoes: Json
+          novos_por_dia: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dicas_vistas?: Json
+          hora_estudo?: string | null
+          liberacoes?: Json
+          novos_por_dia?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dicas_vistas?: Json
+          hora_estudo?: string | null
+          liberacoes?: Json
+          novos_por_dia?: number
           user_id?: string
         }
         Relationships: []
