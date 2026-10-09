@@ -80,7 +80,7 @@ async function context(db: DB, uid: string) {
     ...(bank ?? []).map((b: any) => ({ tema: b.tema, abertura: b.abertura ?? "", formula_id: b.formula_id, funcoes: (b.estrutura?.blocos ?? []).map((x: any) => x.funcao).join("|") })),
     ...(scripts ?? []).map((s: any) => ({ tema: s.tema, abertura: s.roteiro?.blocos?.[0]?.fala ?? "", formula_id: s.formula_id, funcoes: (s.roteiro?.blocos ?? []).map((x: any) => x.funcao).join("|") })),
   ];
-  return { matrix: (cps ?? []) as Pillar[], angles: (angs ?? []).map((a: any) => a.nome as string).filter((a: string) => cases?.length || a !== "caso real"), hasCase: !!cases?.length, cases: cases ?? [], pillarPerf: mean(byP), comboPerf: mean(byPA), pillars, niches: prof?.niches ?? [], voice: voice ?? null, patterns: patterns ?? [], formulas: formulas ?? [], stats: stats ?? [], plan: plan ?? [], priors };
+  return { matrix: (cps ?? []) as Pillar[], angles: (angs ?? []).map((a: any) => a.nome as string).filter((a: string) => cases?.length || a !== "caso real"), hasCase: !!cases?.length, cases: cases ?? [], pillarPerf: mean(byP), comboPerf: mean(byPA), pillars, niches: prof?.niches ?? [], voice: voice ?? null, patterns: patterns ?? [], formulas: formulas ?? [], stats: stats ?? [], plan: plan ?? [], priors, prompts };
 }
 
 async function ideate(db: DB, batch: any, counter: { n: number }) {
@@ -194,8 +194,6 @@ async function runBatch(db: DB, cronKey: string, batchId: string, budget: number
   if (!batch) return { skipped: "locked_or_done" };
   const { data: s } = await db.from("reel_factory_settings").select("pausado").eq("user_id", batch.user_id).maybeSingle();
   if (s?.pausado) { await db.from("reel_factory_batches").update({ status: "pausado", erro: "Fábrica pausada pelo usuário.", lease_until: null }).eq("id", batch.id); return { paused: true }; }
-
-  }
   const counter = { n: 0 };
   try {
     let patch: Record<string, unknown> = {};
