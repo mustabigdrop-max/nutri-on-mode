@@ -180,7 +180,7 @@ export default function SocialOnSignalPanel() {
             }}>S</div>
             <div>
               <div style={{ fontFamily: F.t, fontSize: 22, fontWeight: 900, color: C.white, letterSpacing: 2, lineHeight: 1 }}>SIGNAL</div>
-              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: 2, marginTop: 2 }}>DAILY BRIEF</div>
+              <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, letterSpacing: 2, marginTop: 2 }}>BRIEFING DO DIA</div>
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
@@ -195,7 +195,7 @@ export default function SocialOnSignalPanel() {
           <div style={{ fontFamily: F.t, fontSize: 24, fontWeight: 800, color: C.white, lineHeight: 1.25, marginBottom: 12 }}>{data.signal_message}</div>
           {data.mce_daily && (
             <div style={{ display: "flex", gap: 10, padding: "10px 14px", background: `${C.gold}08`, borderRadius: 8, alignItems: "flex-start" }}>
-              <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold, letterSpacing: 1, padding: "2px 6px", border: `1px solid ${C.gold}40`, borderRadius: 3, flexShrink: 0 }}>MCE</span>
+              <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold, letterSpacing: 1, padding: "2px 6px", border: `1px solid ${C.gold}40`, borderRadius: 3, flexShrink: 0 }}>Frase MCE do dia</span>
               <span style={{ fontFamily: F.b, fontSize: 12, color: C.gold, lineHeight: 1.5, fontStyle: "italic" }}>{data.mce_daily}</span>
             </div>
           )}
@@ -203,7 +203,7 @@ export default function SocialOnSignalPanel() {
 
         {/* Yesterday Review */}
         {data.yesterday_review && (
-          <Section icon="📊" title="ONTEM" color={C.purple}>
+          <Section icon="📊" title="Ontem" color={C.purple}>
             <div style={{ fontFamily: F.b, fontSize: 13, color: C.text, lineHeight: 1.6, marginBottom: 14 }}>{data.yesterday_review.summary}</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               {[
@@ -221,7 +221,7 @@ export default function SocialOnSignalPanel() {
         )}
 
         {/* Today's Actions */}
-        <Section icon="⚡" title="AÇÕES DE HOJE" color={C.cyan} badge={`${data.today_actions?.length ?? 0}`}>
+        <Section icon="⚡" title="Hoje" color={C.cyan} badge={`${data.today_actions?.length ?? 0}`}>
           {data.today_actions?.map((a, i) => <ActionItem key={i} action={a} i={i} />)}
         </Section>
 
@@ -278,7 +278,7 @@ export default function SocialOnSignalPanel() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12, marginBottom: 12 }}>
           {data.recycle_opportunity && (
             <div style={{ background: C.s1, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
-              <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: C.purple, marginBottom: 14 }}>♻️ RECICLAR</div>
+              <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: C.purple, marginBottom: 14 }}>♻️ Oportunidade</div>
               <div style={{ fontFamily: F.t, fontSize: 15, fontWeight: 700, color: C.white, marginBottom: 10 }}>{data.recycle_opportunity.original}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, fontFamily: F.m, fontSize: 10, color: C.muted }}>
                 Original <span style={{ color: C.purple }}>→</span>
@@ -291,7 +291,7 @@ export default function SocialOnSignalPanel() {
 
           {data.trend_alert && (
             <div style={{ background: C.s1, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
-              <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: C.orange, marginBottom: 14 }}>🔥 TREND ALERT</div>
+              <div style={{ fontFamily: F.m, fontSize: 10, letterSpacing: 3, color: C.orange, marginBottom: 14 }}>🔥 Alerta</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8 }}>
                 <span style={{ fontFamily: F.t, fontSize: 15, fontWeight: 700, color: C.white }}>{data.trend_alert.trend}</span>
                 <div style={{ display: "flex", gap: 3 }}>{heatBars(data.trend_alert.heat)}</div>

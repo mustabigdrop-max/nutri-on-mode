@@ -314,7 +314,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
   const alertas = useMemo(() => {
     const a: { tipo: string; txt: string; cor: string }[] = [];
-    if (ontem && !ontemResult) a.push({ tipo: "RESULTADO", txt: "O reel de ontem ainda não tem retenção lançada.", cor: C.gold });
+    if (ontem && !ontemResult) a.push({ tipo: "RESULTADO", txt: "Lance a retenção de ontem. É isso que afina o próximo lote.", cor: C.gold });
     const fracos = blocos.filter(b => b.nota != null && b.nota < 7);
     if (fracos.length) a.push({ tipo: "RITMO", txt: `${fracos.length} bloco(s) do reel de hoje abaixo de 7: ${fracos.map(b => b.id).join(", ")}.`, cor: C.red });
     if (meta && meta.real < meta.planejado) a.push({ tipo: "META", txt: `Abaixo do planejado: ${meta.real}% real x ${meta.planejado}% esperado no dia ${meta.dia}.`, cor: C.cyan });
@@ -347,16 +347,16 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
             <Label color={C.cyan}>{loaded ? "ATIVO" : "CARREGANDO"}</Label>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontFamily: F.m, fontSize: 10, color: C.gold }}>🔥 {streak} {streak === 1 ? "DIA" : "DIAS"}</span>
+            <span style={{ fontFamily: F.m, fontSize: 10, color: C.gold }}>🔥 {streak} dias seguidos. Mantenha.</span>
             <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>{hoje}</span>
           </div>
         </div>
 
-        <Panel glow={C.cyan}><Nucleo score={score} subs={subs} /></Panel>
+        <Panel glow={C.cyan}><Label color={C.cyan}>Núcleo de Atenção</Label><Nucleo score={score} subs={subs} /></Panel>
 
         {/* Missão de hoje */}
         <Panel glow={C.gold}>
-          <Label color={C.gold}>MISSÃO DE HOJE</Label>
+          <Label color={C.gold}>Missão de hoje</Label>
           {reel ? (
             <>
               <div style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.white, lineHeight: 1.25, marginTop: 6 }}>{reel.tema}</div>
@@ -382,13 +382,13 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             {busy ? (
-              <div style={{ ...btn(true), textAlign: "center", cursor: "wait" }}>{STAGE_LABEL[stage!] ?? "Projetando atenção..."}</div>
+              <div style={{ ...btn(true), textAlign: "center", cursor: "wait" }}>{STAGE_LABEL[stage ?? "arquiteto"] ?? "Projetando atenção..."}</div>
             ) : reel && !temaOpen ? (
               <>
                 <button type="button" onClick={() => setTemaOpen(true)} style={btn()}>TROCAR TEMA</button>
                 <button type="button" onClick={() => setGravando(true)} disabled={!blocos.length} style={{ ...btn(true), position: "relative", overflow: "hidden" }}>
                   <span className="cc-anim" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "40%", background: "linear-gradient(90deg, transparent, #ffffff30, transparent)", animation: "ccSweep 2.8s ease infinite" }} />
-                  ▶ GRAVAR AGORA
+                  ▶ Gravar agora
                 </button>
               </>
             ) : (
@@ -407,15 +407,15 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
         <div className="cc-grid">
           <Panel>
             <div id="cc-linha-atencao" style={{ scrollMarginTop: 80 }}>
-              <Label color={C.cyan}>LINHA DA ATENÇÃO</Label>
+              <Label color={C.cyan}>Linha da Atenção</Label>
               <div style={{ marginTop: 10 }}><LinhaAtencao blocos={blocos} open={blocoAberto} onToggle={setBlocoAberto} /></div>
             </div>
           </Panel>
 
           {/* Resultado de ontem */}
           <Panel>
-            <Label color={C.gold}>RESULTADO DE ONTEM</Label>
-            {!ontem ? <Empty>Nenhum reel gerado ontem.</Empty> : (
+            <Label color={C.gold}>Resultado de ontem</Label>
+            {!ontem ? <Empty>Sem dados reais ainda. Lance o resultado do último reel.</Empty> : (
               <>
                 <div style={{ fontFamily: F.m, fontSize: 10, color: C.text, marginTop: 6 }}>{ontem.tema}</div>
                 {(calib || ontemResult) && comp.length > 1 && (
@@ -439,6 +439,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                 )}
                 {!calib && (
                   <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {!ontemResult && <Empty>Sem dados reais ainda. Lance o resultado do último reel.</Empty>}
                     {ontemResult && <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>Já lançado: {dash(ontemResult.pct_3s)}% passou dos 3s · {dash(ontemResult.tempo_medio)}s médio. Enviar de novo atualiza os números.</div>}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                       <input style={inp} inputMode="decimal" value={pct3} onChange={e => setPct3(e.target.value)} placeholder="% passou dos 3s" />
@@ -448,7 +449,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))", gap: 6 }}>
                       {ontemBlocos.map(b => <input key={String(b.id)} style={inp} inputMode="decimal" value={faixas[b.id] ?? ""} onChange={e => setFaixas(f => ({ ...f, [b.id]: e.target.value }))} placeholder={`B${b.id} · ${dash(b.tempo)}`} />)}
                     </div>
-                    <button type="button" onClick={calibrar} disabled={calibBusy} style={{ ...btn(true), flex: "none", cursor: calibBusy ? "wait" : "pointer" }}>{calibBusy ? "Comparando previsto x real..." : "SALVAR E CALIBRAR"}</button>
+                    <button type="button" onClick={calibrar} disabled={calibBusy} style={{ ...btn(true), flex: "none", cursor: calibBusy ? "wait" : "pointer" }}>{calibBusy ? "Comparando previsto x real..." : "Lançar retenção"}</button>
                   </div>
                 )}
               </>
@@ -457,7 +458,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
           {/* Suas fórmulas */}
           <Panel>
-            <Label color={C.cyan}>SUAS FÓRMULAS</Label>
+            <Label color={C.cyan}>Suas fórmulas</Label>
             {!formulas.length ? <Empty>Nenhuma fórmula com resultado ainda. Lance a retenção dos reels para formar o ranking.</Empty> : (
               <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto", paddingBottom: 4 }}>
                 {formulas.map((f, i) => (
@@ -474,7 +475,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
           {/* Alertas */}
           <Panel>
-            <Label color={C.red}>ALERTAS E OPORTUNIDADES</Label>
+            <Label color={C.red}>Alertas e oportunidades</Label>
             {!alertas.length ? <Empty>Nenhum alerta agora.</Empty> : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
                 {alertas.map((a) => (
@@ -490,7 +491,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           {/* Meta 90 dias */}
           <Panel>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <Label color={C.cyan}>META 90 DIAS</Label>
+              <Label color={C.cyan}>Meta de 90 dias</Label>
               {meta && <span style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.gold }}>{meta.real}%</span>}
             </div>
             {meta ? (
