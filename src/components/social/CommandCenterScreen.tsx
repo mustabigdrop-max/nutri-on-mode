@@ -196,19 +196,19 @@ function LinhaAtencao({ blocos, open, onToggle }: { blocos: Bloco[]; open: numbe
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 60, display: "block" }}>
         <path d={path} fill="none" stroke={`${C.cyan}60`} strokeWidth={1.5} strokeDasharray="3 3" />
-        {pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={3} fill={corNota(blocos[i].nota)} />)}
+        {pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={3} fill={corSeg(blocos[i].nota)} />)}
       </svg>
       <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
         {blocos.map((b, i) => (
-          <button key={String(b.id)} type="button" onClick={() => onToggle(open === i ? null : i)} className="cc-anim"
-            style={{ flex: 1, border: `1px solid ${open === i ? corNota(b.nota) : `${corNota(b.nota)}40`}`, background: open === i ? `${corNota(b.nota)}22` : `${corNota(b.nota)}0d`, borderRadius: 0, padding: "6px 2px", cursor: "pointer", animation: `ccBlockIn .4s ease ${i * 0.08}s both` }}>
-            <div style={{ fontFamily: F.t, fontSize: 15, fontWeight: 700, color: corNota(b.nota) }}>{dash(b.nota)}</div>
+          <button key={String(b.id)} type="button" onClick={() => onToggle(open === i ? null : i)} title={`${dash(b.tempo)} · nota ${dash(b.nota)}`} className="cc-anim"
+            style={{ flex: 1, border: `1px solid ${open === i ? corSeg(b.nota) : `${corSeg(b.nota)}40`}`, background: open === i ? `${corSeg(b.nota)}22` : `${corSeg(b.nota)}0d`, borderRadius: 0, padding: "6px 2px", cursor: "pointer", animation: `ccBlockIn .4s ease ${i * 0.08}s both` }}>
+            <div style={{ fontFamily: F.t, fontSize: 15, fontWeight: 700, color: corSeg(b.nota) }}>{dash(b.nota)}</div>
             <div style={{ fontFamily: F.m, fontSize: 7, color: C.muted }}>{dash(b.tempo)}</div>
           </button>
         ))}
       </div>
       {sel && (
-        <div style={{ marginTop: 8, borderLeft: `2px solid ${corNota(sel.nota)}`, padding: "8px 12px", background: `${C.cyan}08` }}>
+        <div style={{ marginTop: 8, borderLeft: `2px solid ${corSeg(sel.nota)}`, padding: "8px 12px", background: `${C.cyan}08` }}>
           <div style={{ fontFamily: F.t, fontSize: 15, fontWeight: 700, color: C.white, lineHeight: 1.3 }}>“{dash(sel.fala)}”</div>
           <div style={{ display: "flex", gap: 14, marginTop: 6, flexWrap: "wrap" }}>
             <span style={{ fontFamily: F.m, fontSize: 9, color: C.cyan }}>TELA: {dash(sel.texto_tela)}</span>
