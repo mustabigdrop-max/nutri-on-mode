@@ -1,0 +1,675 @@
+[
+ {
+  "slug": "p2-01-carbo-noite",
+  "ordem_lote": 6,
+  "titulo": "Mito: carboidrato à noite engorda",
+  "formula": "Mito x Verdade",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Antítese",
+  "risco": "Evidência mista. Não afirmar que o horário não importa.",
+  "fonte_status": "parcial",
+  "ajuste_obrigatorio": "Dizer 'não engorda por si só'. Nunca 'o horário não importa'.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Conferir no original a revisão observacional (PMC9010393): 4 de 10 estudos com associação positiva, 5 sem, 1 inversa",
+   "Conferir autor e ano do ensaio de carboidrato noturno citado só por resumo de site",
+   "Não mostrar o estudo de Jerusalém como prova a favor"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "[ÊNFASE]Mito: carboidrato à noite engorda.",
+    "MITO: CARBO À NOITE ENGORDA",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Não engorda [ÊNFASE]por si só. [PAUSA 0,4s] Mas os estudos não concordam.",
+    "NÃO ENGORDA POR SI SÓ",
+    "B"
+   ],
+   [
+    "6-14s",
+    "Numa revisão de dez estudos observacionais, quatro ligam comer à noite a mais peso. Cinco não.",
+    "4 DE 10 LIGAM. 5 NÃO.",
+    "A"
+   ],
+   [
+    "14-22s",
+    "A pegadinha: estudo que observa gente mostra associação, não causa.",
+    "ASSOCIAÇÃO ≠ CAUSA",
+    "B"
+   ],
+   [
+    "22-30s",
+    "Com as calorias iguais, o horário não mudou a composição corporal. Olhe o total do dia.",
+    "PRIMEIRO: O TOTAL DO DIA",
+    "B"
+   ],
+   [
+    "30-35s",
+    "Carboidrato à noite não engorda por si só. Comenta MITO que eu trago o próximo.",
+    "COMENTA: MITO",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "OBSERVACIONAL: 4 DE 10 ESTUDOS LIGAM COMER À NOITE A MAIS PESO. 5 NÃO.",
+    "referencia": "Revisão sobre horário das refeições e risco de ganho de peso",
+    "link": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9010393/",
+    "tipo": "primaria",
+    "observacao": ""
+   },
+   {
+    "rotulo_card": "",
+    "referencia": "Resumo do ensaio de carboidrato noturno com calorias equalizadas",
+    "link": "https://www.strengthlog.com/carbs-in-the-evening",
+    "tipo": "secundaria",
+    "observacao": "Sem autor e ano no trecho"
+   }
+  ]
+ },
+ {
+  "slug": "p2-02-refeicoes-3-3",
+  "ordem_lote": 4,
+  "titulo": "Comer de 3 em 3 horas",
+  "formula": "Contraintuitivo",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Pergunta retórica",
+  "risco": "O estudo mede composição corporal, não metabolismo.",
+  "fonte_status": "verificada",
+  "ajuste_obrigatorio": "Trocar 'metabolismo' por 'perda de gordura'.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Confirmar volume, número e páginas: Nutrition Reviews 73(2):69-82",
+   "Confirmar que o estudo isolado era com boxeadores, 2 semanas"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "Comer de 3 em 3 horas [ÊNFASE]não garante [PAUSA 0,4s] mais perda de gordura.",
+    "3 EM 3 HORAS = MAIS GORDURA PERDIDA?",
+    "B"
+   ],
+   [
+    "2-6s",
+    "A ideia vem de estudos reais. Mas tem um detalhe que quase ninguém conta.",
+    "O DETALHE",
+    "B"
+   ],
+   [
+    "6-14s",
+    "Uma meta-análise juntou 15 estudos. A vantagem aparecia, mas vinha de um único estudo.",
+    "15 ESTUDOS. 1 DECIDIU.",
+    "A"
+   ],
+   [
+    "14-22s",
+    "Era um estudo de duas semanas com boxeadores. Sem ele, o efeito deixou de ser significativo.",
+    "SEM ESSE ESTUDO, SEM EFEITO",
+    "B"
+   ],
+   [
+    "22-30s",
+    "Então não vale nada comer mais vezes? Vale, se você consegue manter. Escolha a frequência que você sustenta.",
+    "ESCOLHA A QUE VOCÊ SUSTENTA",
+    "B"
+   ],
+   [
+    "30-35s",
+    "Então, de 3 em 3 horas? Só se for o que você mantém. Comenta REFEIÇÕES pro próximo mito.",
+    "COMENTA: REFEIÇÕES",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "META-ANÁLISE: 15 ESTUDOS · SCHOENFELD ET AL., 2015",
+    "referencia": "Schoenfeld, Aragon e Krieger (2015). Effects of meal frequency on weight loss and body composition: a meta-analysis. Nutrition Reviews 73(2):69-82",
+    "link": "https://pubmed.ncbi.nlm.nih.gov/26024494/",
+    "tipo": "primaria",
+    "observacao": ""
+   },
+   {
+    "rotulo_card": "",
+    "referencia": "Boxeadores e a meta-análise de frequência",
+    "link": "https://muscleevo.net/six-small-meals-a-day/",
+    "tipo": "secundaria",
+    "observacao": "Detalhe do estudo isolado"
+   }
+  ]
+ },
+ {
+  "slug": "p2-03-suor-gordura",
+  "ordem_lote": 10,
+  "titulo": "Suar muito não queima mais gordura",
+  "formula": "Contraintuitivo",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Analogia (ventilador x combustível)",
+  "risco": "Sem artigo primário localizado.",
+  "fonte_status": "sem_fonte_primaria",
+  "ajuste_obrigatorio": "Sem card de dado. Manter como explicação fisiológica, sem mostrar fonte na tela.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Candidata de fonte: posição do ACSM sobre reposição de líquidos (2007). Citada de memória, conferir antes de usar",
+   "Não mostrar estudo nem número na tela enquanto não houver fonte primária"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "[ÊNFASE]Suar muito não significa queimar mais gordura.",
+    "SUOR ≠ GORDURA QUEIMADA",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Você vai dizer: 'mas eu saio encharcado'. Calma. Eu explico esse suor.",
+    "\"MAS EU SAIO ENCHARCADO\"",
+    "B"
+   ],
+   [
+    "6-14s",
+    "Suor é o sistema de resfriamento do corpo. É o ventilador, não o combustível.",
+    "VENTILADOR ≠ COMBUSTÍVEL",
+    "B"
+   ],
+   [
+    "14-22s",
+    "O peso que cai logo depois de suar é água. Ele volta quando você se hidrata.",
+    "ÁGUA VOLTA. GORDURA, NÃO.",
+    "D"
+   ],
+   [
+    "22-30s",
+    "O que pesa é o gasto de energia ao longo das semanas, não o suor.",
+    "ENERGIA AO LONGO DAS SEMANAS",
+    "B"
+   ],
+   [
+    "30-35s",
+    "Suor não mede gordura. Comenta SUOR pro próximo mito.",
+    "COMENTA: SUOR",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "",
+    "referencia": "Checagem de fatos sobre suor e perda de peso",
+    "link": "https://www.theweek.in/news/health/2025/10/20/fact-check-does-sweating-really-cause-weight-loss.amp.html",
+    "tipo": "secundaria",
+    "observacao": "Divulgação. Não usar como card"
+   }
+  ]
+ },
+ {
+  "slug": "p2-04-abdominal-barriga",
+  "ordem_lote": 1,
+  "titulo": "Abdominal não escolhe de onde sai a gordura",
+  "formula": "Contraintuitivo",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Prolepse",
+  "risco": "Existe um ensaio contrário. Usar 'a maioria dos estudos'.",
+  "fonte_status": "verificada",
+  "ajuste_obrigatorio": "Dizer 'a maioria dos estudos'. Nunca 'nunca'.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Confirmar: Vispute et al., J Strength Cond Res 25(9):2559-64, 24 pessoas, 6 semanas, dieta estável",
+   "Ler o ensaio contrário (PMC10680576) para saber o que responder se perguntarem"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "Abdominal [ÊNFASE]não escolhe [PAUSA 0,4s] de onde sai a gordura.",
+    "ABDOMINAL NÃO ESCOLHE",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Você vai dizer que sente a barriga trabalhar. Ela trabalha. Só não escolhe o que sai.",
+    "\"SINTO A BARRIGA TRABALHAR\"",
+    "B"
+   ],
+   [
+    "6-16s",
+    "Num ensaio com 24 pessoas, seis semanas de abdominal, com dieta estável, não mudaram a gordura abdominal.",
+    "24 PESSOAS · 6 SEMANAS",
+    "A"
+   ],
+   [
+    "16-24s",
+    "Elas ficaram mais fortes no abdominal. Mas a circunferência e a gordura da barriga não mudaram.",
+    "MAIS FORÇA ≠ MENOS GORDURA",
+    "B"
+   ],
+   [
+    "24-31s",
+    "Uma meta-análise chegou à mesma linha. Um estudo isolado discorda. A maioria aponta o contrário.",
+    "A MAIORIA DOS ESTUDOS",
+    "B"
+   ],
+   [
+    "31-36s",
+    "Abdominal fortalece o abdômen. Comenta MITO que eu mando o próximo.",
+    "COMENTA: MITO",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "6 SEMANAS DE ABDOMINAL: MAIS FORÇA, SEM EFEITO NA GORDURA ABDOMINAL · VISPUTE ET AL., 2011",
+    "referencia": "Vispute et al. (2011). The effect of abdominal exercise on abdominal fat. J Strength Cond Res 25(9):2559-64",
+    "link": "https://nutrition-evidence.com/article/161088/the-effect-of-abdominal-exercise-on-abdominal-fat",
+    "tipo": "primaria",
+    "observacao": ""
+   },
+   {
+    "rotulo_card": "",
+    "referencia": "Revisão sistemática com meta-análise sobre redução localizada (2022)",
+    "link": "https://doi.org/10.5114/HM.2022.110373",
+    "tipo": "primaria",
+    "observacao": ""
+   },
+   {
+    "rotulo_card": "",
+    "referencia": "Ensaio contrário: exercício abdominal de resistência e redução localizada",
+    "link": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10680576/",
+    "tipo": "primaria",
+    "observacao": "Contraponto. Ler antes de gravar"
+   }
+  ]
+ },
+ {
+  "slug": "p2-05-musculo-gordura",
+  "ordem_lote": 8,
+  "titulo": "Músculo não vira gordura",
+  "formula": "Identidade direta",
+  "estrutura": "Micro-história em 3 batidas",
+  "figura": "Antítese",
+  "risco": "A frase 'um não vira o outro' não tem fonte primária localizada.",
+  "fonte_status": "parcial",
+  "ajuste_obrigatorio": "Card de dado só no bloco do destreino. Na frase 'um não vira o outro', sem card.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Conferir a revisão sobre destreino (DOI 10.1177/2050312120936956): 12 estudos em humanos, indícios de supercompensação de gordura",
+   "Buscar um livro-texto de fisiologia para a frase 'um tecido não vira o outro'"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "Músculo [ÊNFASE]não vira gordura [PAUSA 0,4s] quando você para de treinar.",
+    "MÚSCULO ≠ GORDURA",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Então por que parece que vira? Duas coisas acontecem ao mesmo tempo.",
+    "2 COISAS ACONTECEM",
+    "B"
+   ],
+   [
+    "6-14s",
+    "Primeira: sem treino, o músculo diminui. Isso se chama atrofia.",
+    "1. O MÚSCULO DIMINUI",
+    "B"
+   ],
+   [
+    "14-22s",
+    "Segunda: a gordura pode subir. Uma revisão de 12 estudos em humanos achou indícios de rebote de gordura.",
+    "2. A GORDURA PODE SUBIR",
+    "A"
+   ],
+   [
+    "22-30s",
+    "Mas são tecidos diferentes. Um não vira o outro. Um diminui, o outro cresce.",
+    "UM DIMINUI. OUTRO CRESCE.",
+    "D"
+   ],
+   [
+    "30-35s",
+    "Parou de treinar? Comenta VOLTEI que eu te digo por onde recomeçar.",
+    "COMENTA: VOLTEI",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "PAROU DE TREINAR: O MÚSCULO DIMINUI, A GORDURA PODE SUBIR.",
+    "referencia": "Revisão sobre destreino e metabolismo de gordura (12 estudos em humanos)",
+    "link": "https://doi.org/10.1177/2050312120936956",
+    "tipo": "primaria",
+    "observacao": ""
+   }
+  ]
+ },
+ {
+  "slug": "p2-06-proteina-rim",
+  "ordem_lote": 3,
+  "titulo": "Proteína alta e rim saudável",
+  "formula": "Mito x Verdade",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Prolepse",
+  "risco": "Ressalva para doença renal é obrigatória.",
+  "fonte_status": "verificada",
+  "ajuste_obrigatorio": "Manter a ressalva: quem tem doença renal fala com o médico antes.",
+  "ressalva_obrigatoria": "Atenção: ninguém ali tinha doença renal crônica. Se você tem, fale com o médico antes.",
+  "checklist": [
+   "Confirmar: Devries et al., J Nutr 148(11):1760-1775, DOI 10.1093/jn/nxy197, 28 artigos, 1.358 participantes",
+   "Não cortar o bloco da ressalva para encurtar"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "Proteína alta [ÊNFASE]não destrói [PAUSA 0,4s] o rim de quem tem rim saudável.",
+    "PROTEÍNA ALTA × RIM SAUDÁVEL",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Essa ideia vem dos anos 80. Veja o que a ciência testou.",
+    "DESDE OS ANOS 80",
+    "B"
+   ],
+   [
+    "6-16s",
+    "Uma meta-análise juntou 28 estudos, com mais de mil pessoas. Alta proteína: 1,5 g por quilo ou mais.",
+    "28 ESTUDOS · 1.358 PESSOAS",
+    "A"
+   ],
+   [
+    "16-24s",
+    "Resultado: nos adultos saudáveis, a função renal não piorou com mais proteína.",
+    "FUNÇÃO RENAL: SEM PIORA",
+    "B"
+   ],
+   [
+    "24-31s",
+    "Atenção: ninguém ali tinha doença renal crônica. Se você tem, fale com o médico antes.",
+    "COM DOENÇA RENAL: MÉDICO PRIMEIRO",
+    "B"
+   ],
+   [
+    "31-36s",
+    "Para rim saudável, o medo não se sustenta. Comenta PROTEÍNA pro próximo mito.",
+    "COMENTA: PROTEÍNA",
+    "B"
+   ]
+  ],
+  "ressalva_bloco_indice": 4,
+  "fontes": [
+   {
+    "rotulo_card": "META-ANÁLISE: 28 ESTUDOS, 1.358 PESSOAS · DEVRIES ET AL., 2018",
+    "referencia": "Devries et al. (2018). Changes in kidney function do not differ between healthy adults consuming higher- compared with lower- or normal-protein diets. J Nutr 148(11):1760-1775",
+    "link": "https://experts.mcmaster.ca/scholarly-works/1607295",
+    "tipo": "primaria",
+    "observacao": ""
+   }
+  ]
+ },
+ {
+  "slug": "p2-07-dor-muscular",
+  "ordem_lote": 5,
+  "titulo": "Dor no dia seguinte não prova treino bom",
+  "formula": "Contraintuitivo",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Antítese",
+  "risco": "A fonte é revisão narrativa, evidência mais fraca.",
+  "fonte_status": "verificada",
+  "ajuste_obrigatorio": "Mostrar no card que é revisão.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Confirmar: Schoenfeld e Contreras (2013), Strength and Conditioning Journal, DOI 10.1519/SSC.0b013e3182a61820",
+   "Lembrar que é revisão narrativa, não meta-análise"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "Dor no dia seguinte [ÊNFASE]não prova [PAUSA 0,4s] que o treino foi bom.",
+    "DOR ≠ TREINO BOM",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Se você só sente que treinou quando está dolorido, presta atenção.",
+    "SÓ TREINEI SE DOEU?",
+    "B"
+   ],
+   [
+    "6-14s",
+    "Uma revisão reuniu cinco linhas de evidência. Dor muscular é um indicador fraco de crescimento.",
+    "5 LINHAS DE EVIDÊNCIA",
+    "A"
+   ],
+   [
+    "14-22s",
+    "Com o tempo, o mesmo treino dói menos. E o músculo continua crescendo.",
+    "A DOR DIMINUI. O MÚSCULO CONTINUA.",
+    "D"
+   ],
+   [
+    "22-30s",
+    "Então o que acompanhar? Carga e repetições, ao longo das semanas.",
+    "REGISTRE CARGA E REPETIÇÕES",
+    "B"
+   ],
+   [
+    "30-35s",
+    "Dor não é recibo de treino. Comenta REGISTRO que eu te mando um modelo.",
+    "COMENTA: REGISTRO",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "DOR NÃO É UM BOM INDICADOR DE CRESCIMENTO · SCHOENFELD E CONTRERAS, 2013 (REVISÃO)",
+    "referencia": "Schoenfeld e Contreras (2013). Is postexercise muscle soreness a valid indicator of muscular adaptations? Strength Cond J",
+    "link": "https://fitchef.com/shorts/does-muscle-soreness-mean-good-workout/",
+    "tipo": "secundaria",
+    "observacao": "Resumo de terceiros: conferir no original (DOI 10.1519/SSC.0b013e3182a61820)"
+   }
+  ]
+ },
+ {
+  "slug": "p2-08-mulher-musculo",
+  "ordem_lote": 9,
+  "titulo": "Mulher ganha músculo em proporção parecida",
+  "formula": "Identidade direta",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Antítese",
+  "risco": "Não afirmar que a mulher 'não fica grande demais'. Sem imagem de físico.",
+  "fonte_status": "verificada",
+  "ajuste_obrigatorio": "Dizer 'responde em proporção semelhante, e o ganho absoluto tende a ser menor'.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Confirmar: Refalo et al. (2025), PeerJ, 29 estudos",
+   "Não usar imagem de físico em nenhum corte"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "Mulher ganha músculo [ÊNFASE]em proporção parecida [PAUSA 0,4s] com a do homem.",
+    "GANHO RELATIVO PARECIDO",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Pode soar estranho. Mas uma meta-análise recente mostra isso. Já explico a diferença.",
+    "RELATIVO × ABSOLUTO",
+    "B"
+   ],
+   [
+    "6-16s",
+    "Foram 29 estudos com homens e mulheres no mesmo treino. O ganho relativo foi semelhante.",
+    "29 ESTUDOS",
+    "A"
+   ],
+   [
+    "16-24s",
+    "Em valor absoluto, o homem ganhou um pouco mais. Ele começa com mais massa.",
+    "ABSOLUTO: HOMEM UM POUCO MAIS",
+    "B"
+   ],
+   [
+    "24-31s",
+    "Na prática, o treino funciona nos dois. A diferença está no tamanho absoluto, não na resposta.",
+    "A RESPOSTA É SEMELHANTE",
+    "D"
+   ],
+   [
+    "31-36s",
+    "O treino funciona nos dois. Comenta TREINO que eu trago o próximo mito.",
+    "COMENTA: TREINO",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "MULHERES E HOMENS: GANHO RELATIVO SEMELHANTE · REFALO ET AL., 2025",
+    "referencia": "Refalo et al. (2025). Sex differences in absolute and relative changes in muscle size following resistance training in healthy adults. PeerJ",
+    "link": "https://doaj.org/article/dbf856c9d64840b59318c009c4abd626",
+    "tipo": "primaria",
+    "observacao": ""
+   },
+   {
+    "rotulo_card": "",
+    "referencia": "Meta-análise em adultos com mais de 50 anos (30 estudos)",
+    "link": "https://www.sciencedaily.com/releases/2021/01/210107112423.htm",
+    "tipo": "secundaria",
+    "observacao": "Comunicado de imprensa"
+   }
+  ]
+ },
+ {
+  "slug": "p2-09-janela-anabolica",
+  "ordem_lote": 2,
+  "titulo": "A janela anabólica de 30 minutos é exagero",
+  "formula": "Contraintuitivo",
+  "estrutura": "Mito-Verdade-Prova",
+  "figura": "Pergunta retórica",
+  "risco": "Dizer que o efeito sumiu ao controlar variáveis, não que o horário nunca importa.",
+  "fonte_status": "verificada",
+  "ajuste_obrigatorio": "Manter 'quando controlaram as variáveis, a diferença sumiu'.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Confirmar: Schoenfeld, Aragon e Krieger (2013), JISSN 10:53, 23 estudos, 525 participantes",
+   "Conferir o ensaio de 2017 (PeerJ) citado no bloco 24-31s"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "A janela anabólica de 30 minutos [ÊNFASE]é exagero.",
+    "JANELA DE 30 MIN: EXAGERO?",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Você corre pro shake depois do treino? Veja o que 23 estudos mostram.",
+    "CORRE PRO SHAKE?",
+    "B"
+   ],
+   [
+    "6-16s",
+    "Foram 23 estudos. No começo, parecia haver um efeito pequeno do horário.",
+    "23 ESTUDOS · 525 PESSOAS",
+    "A"
+   ],
+   [
+    "16-24s",
+    "Mas quando controlaram as variáveis, a diferença sumiu. O total de proteína pesou mais.",
+    "O TOTAL PESOU MAIS QUE O HORÁRIO",
+    "B"
+   ],
+   [
+    "24-31s",
+    "Um ensaio com a mesma dose antes ou depois do treino, em homens treinados, achou efeitos parecidos.",
+    "ANTES OU DEPOIS: EFEITOS PARECIDOS",
+    "A"
+   ],
+   [
+    "31-36s",
+    "A janela é mais larga do que se vendeu. Comenta JANELA pro próximo mito.",
+    "COMENTA: JANELA",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "META-ANÁLISE: 23 ESTUDOS · O TOTAL DE PROTEÍNA PESA MAIS QUE O HORÁRIO · SCHOENFELD ET AL., 2013",
+    "referencia": "Schoenfeld, Aragon e Krieger (2013). The effect of protein timing on muscle strength and hypertrophy: a meta-analysis. JISSN 10:53",
+    "link": "https://nutrition-evidence.com/article/204381/the-effect-of-protein-timing-on-muscle-strength-and-hypertrophy-a-meta-analysis",
+    "tipo": "primaria",
+    "observacao": ""
+   },
+   {
+    "rotulo_card": "ANTES OU DEPOIS: EFEITOS PARECIDOS",
+    "referencia": "Schoenfeld et al. (2017). Pre- versus post-exercise protein intake has similar effects on muscular adaptations. PeerJ",
+    "link": "https://peerj.com/articles/2825",
+    "tipo": "primaria",
+    "observacao": ""
+   }
+  ]
+ },
+ {
+  "slug": "p2-10-suco-detox",
+  "ordem_lote": 7,
+  "titulo": "Suco detox promete limpar o que o corpo já limpa",
+  "formula": "Inimigo comum",
+  "estrutura": "Micro-história",
+  "figura": "Analogia",
+  "risco": "'Sem evidência convincente' não é 'provado que não funciona'.",
+  "fonte_status": "verificada",
+  "ajuste_obrigatorio": "Dizer 'não há evidência convincente'. Evitar afirmação absoluta.",
+  "ressalva_obrigatoria": null,
+  "checklist": [
+   "Confirmar: Klein e Kiat (2015), J Hum Nutr Diet 28(6):675-686, DOI 10.1111/jhn.12286"
+  ],
+  "blocos": [
+   [
+    "0-2s",
+    "Suco detox [ÊNFASE]promete limpar [PAUSA 0,4s] o que seu corpo já limpa.",
+    "DETOX LIMPA O QUÊ?",
+    "B"
+   ],
+   [
+    "2-6s",
+    "Pesquisadores revisaram o que existe. O resultado é incômodo pra esse mercado.",
+    "O QUE A CIÊNCIA ACHOU",
+    "B"
+   ],
+   [
+    "6-16s",
+    "A revisão achou pouca evidência clínica. Os poucos estudos eram pequenos e com falhas.",
+    "REVISÃO CRÍTICA",
+    "A"
+   ],
+   [
+    "16-24s",
+    "Até onde os autores sabiam, não existia nenhum ensaio randomizado em humanos sobre detox comercial.",
+    "NENHUM ENSAIO RANDOMIZADO",
+    "B"
+   ],
+   [
+    "24-31s",
+    "Ou seja: não há evidência convincente de que detox elimine toxinas ou emagreça.",
+    "SEM EVIDÊNCIA CONVINCENTE",
+    "B"
+   ],
+   [
+    "31-36s",
+    "Seu corpo já tem esse sistema. Comenta DETOX pro próximo mito.",
+    "COMENTA: DETOX",
+    "B"
+   ]
+  ],
+  "fontes": [
+   {
+    "rotulo_card": "REVISÃO CRÍTICA: SEM EVIDÊNCIA CONVINCENTE PARA DETOX · KLEIN E KIAT, 2015",
+    "referencia": "Klein e Kiat (2015). Detox diets for toxin elimination and weight management: a critical review of the evidence. J Hum Nutr Diet 28(6):675-686",
+    "link": "https://pubmed.ncbi.nlm.nih.gov/25522674/",
+    "tipo": "primaria",
+    "observacao": ""
+   }
+  ]
+ }
+]
