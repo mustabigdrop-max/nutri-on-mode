@@ -10,6 +10,7 @@ import {
 import { CardTemplate, DEFAULT_BRAND, type Brand } from "./cardStudio/CardTemplate";
 import { Scene, SCENE_NAMES } from "./cardStudio/Scenes";
 import { KitAgente, KitMini } from "./cardStudio/KitAgente";
+import { KitCardView } from "./cardStudio/KitCardView";
 
 const T = { bg: "#020205", s1: "#0A0A0F", s2: "#111118", cyan: "#00D4FF", gold: "#B8922A", green: "#5DCAA5", red: "#EF4444", muted: "#888", text: "#E8E8F0", ft: "'Rajdhani',sans-serif", fm: "'Space Mono',monospace" };
 const AVISO_GERADA = "Ilustrações estilizadas e conceituais costumam ficar fora das regras de rótulo, mas confira as regras atuais do Instagram e do TikTok sobre conteúdo gerado antes de publicar.";
@@ -275,7 +276,7 @@ export default function CardStudioPanel() {
     {filtered.length === 0 ? <p style={{ fontSize: 12, color: T.muted }}>Nenhum card ainda. Digite um comando acima.</p> :
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(110px,1fr))", gap: 8, marginTop: 8 }}>
         {filtered.map(r => <div key={r.id} style={{ background: T.s2, padding: 4, border: `1px solid ${edit?.id === r.id ? T.cyan : "#ffffff10"}` }}>
-          {(r.conteudo as any)?.kit ? <KitMini c={(r.conteudo as any).card} formato={r.formato} brand={brand} variante={(r.conteudo as any).variante === "foto" ? "sem" : (r.conteudo as any).variante} width={102} /> : <div onClick={() => setEdit(r)} style={{ cursor: "pointer" }}><Thumb p={{ template: r.template, conteudo: r.conteudo }} formato={r.formato} brand={brand} width={102} fundo={r.ilustracao_origem === "gerada" ? urls[r.id] : null} gerada={r.ilustracao_origem === "gerada"} /></div>
+          {(r.conteudo as any)?.kit ? <KitMini c={(r.conteudo as any).card} formato={r.formato} brand={brand} variante={(r.conteudo as any).variante === "foto" ? "sem" : (r.conteudo as any).variante} width={102} /> : <div onClick={() => setEdit(r)} style={{ cursor: "pointer" }}><Thumb p={{ template: r.template, conteudo: r.conteudo }} formato={r.formato} brand={brand} width={102} fundo={r.ilustracao_origem === "gerada" ? urls[r.id] : null} gerada={r.ilustracao_origem === "gerada"} /></div>}
           <div style={{ fontFamily: T.fm, fontSize: 8, color: T.cyan, margin: "3px 0" }}>{r.tipo} · {r.formato}{r.bloco_ref ? ` · B${r.bloco_ref}` : ""}</div>
           <div style={{ display: "flex", gap: 3 }}><button style={{ ...btn(T.gold), padding: "3px 5px", fontSize: 8 }} onClick={() => downloadPng(r)}>PNG</button>
             <button style={{ ...btn(T.text), padding: "3px 5px", fontSize: 8 }} onClick={() => duplicate(r)}>DUP</button>
@@ -284,7 +285,7 @@ export default function CardStudioPanel() {
       </div>}
 
     {stage.length > 0 && <div style={{ position: "fixed", left: -20000, top: 0, pointerEvents: "none" }} aria-hidden>
-      {stage.map(r => <CardTemplate key={r.id} ref={el => (stageRefs.current[r.id] = el)} template={r.template} conteudo={r.conteudo} formato={r.formato} brand={brand}
+      {stage.map(r => (r.conteudo as any)?.kit ? <KitCardView key={r.id} ref={el => (stageRefs.current[r.id] = el)} c={(r.conteudo as any).card} formato={r.formato} brand={brand} variante={(r.conteudo as any).variante === "foto" ? "sem" : (r.conteudo as any).variante} /> : <CardTemplate key={r.id} ref={el => (stageRefs.current[r.id] = el)} template={r.template} conteudo={r.conteudo} formato={r.formato} brand={brand}
         fundoUrl={r.ilustracao_origem === "gerada" ? urls[r.id] : null} gerada={r.ilustracao_origem === "gerada"} />)}
     </div>}
   </div>;
