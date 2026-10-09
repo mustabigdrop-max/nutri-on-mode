@@ -36,6 +36,7 @@ export async function runGerarReel(
       const ev = JSON.parse(line);
       if (ev.etapa === "erro") throw new Error(ev.error);
       if (ev.etapa === "pronto") return ev.script;
+      if (ev.etapa === "teste") return ev.resultado;
       onStage(ev.etapa);
     }
   }
