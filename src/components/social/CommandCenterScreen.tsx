@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ReelFactoryPanel from "./ReelFactoryPanel";
-import CommandCenterAutomation from "./CommandCenterAutomation";
+import CommandCenterLower from "./CommandCenterLower";
 import EngineInstructionsPanel from "./EngineInstructionsPanel";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
@@ -309,22 +309,33 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const MOTOR_INSTRUCOES = { ativas: engRows.length ? CORE_KEYS.length - vazias.length : 0, total: CORE_KEYS.length };
   const abrirInstrucoes = () => { setEngOpen(true); setTimeout(() => document.getElementById("cc-instrucoes")?.scrollIntoView({ behavior: "smooth" }), 50); };
   const [fresh, setFresh] = useState(false);
+  const [atlas, setAtlas] = useState<{ id: number; nome: string }[]>([]);
+  const [bankAll, setBankAll] = useState<any[] | null>(null);
+  const [pillarsAll, setPillarsAll] = useState<any[] | null>(null);
+  const [leadsCount, setLeadsCount] = useState<number | null>(null);
+  const [dica, setDica] = useState<{ id: number; nome: string } | null>(null);
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoaded(true); return; }
     const since = new Date(Date.now() - 120 * 864e5).toISOString();
-    const [s, r, f, h, g, a, bk, pl] = await Promise.all([
-      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
+    const [s, r, f, h, g, a, bk, pl, ba, pa, ld] = await Promise.all([
+      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
       supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
       supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media").eq("user_id", user.id),
-      supabase.from("hook_formulas").select("id, nome"),
+      supabase.from("hook_formulas").select("id, nome").order("id"),
       supabase.from("creator_goals").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("cc_automation_settings").select("limite_diario, pausado").eq("user_id", user.id).maybeSingle(),
       supabase.from("reel_bank").select("tema").eq("user_id", user.id).in("status", ["novo", "guardado"]).order("nota", { ascending: false }).limit(12),
       supabase.from("content_pillars").select("nome, ativo").eq("user_id", user.id).eq("ativo", true).order("ordem").limit(8),
+      supabase.from("reel_bank").select("id, tema, pilar, status, created_at, updated_at, script_id, agendado_para").eq("user_id", user.id).neq("status", "descartado").order("created_at", { ascending: false }).limit(1000),
+      supabase.from("content_pillars").select("nome, chave, created_at").eq("user_id", user.id).eq("ativo", true),
+      supabase.from("leads").select("id", { count: "exact", head: true }),
     ]);
     setScripts(s.data ?? []); setResults(r.data ?? []);
+    setAtlas((h.data ?? []) as any[]);
+    setBankAll(ba.error ? null : (ba.data ?? [])); setPillarsAll(pa.error ? null : (pa.data ?? []));
+    setLeadsCount(ld.error ? null : (ld.count ?? null));
     setFormulas(((f.data ?? []) as any[]).map(x => ({ ...x, nome: (h.data ?? []).find((y: any) => y.id === x.formula_id)?.nome ?? `Fórmula ${x.formula_id}` }))
       .sort((a, b) => Number(b.retencao_3s_media ?? -1) - Number(a.retencao_3s_media ?? -1)));
     setAuto(a.data ?? null);
@@ -358,7 +369,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     if (!tema.trim()) return toast.error("Escreva o tema do reel");
     setGenErr(null); setStage("arquiteto");
     try {
-      const script = await runGerarReel({ tema: tema.trim(), objetivo, tom: "direto" }, setStage);
+      const script = await runGerarReel({ tema: tema.trim(), objetivo, tom: "direto", ...(dica ? { formula_dica: dica.id } : {}) } as any, setStage);
+      setDica(null);
       toast.success("Reel de hoje pronto");
       setTemaOpen(false); setTema(""); setBlocoAberto(null);
       await load(); setTodayIdx(0); setFresh(true);
@@ -396,23 +408,18 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     return { planejado, real, atual: Math.round(atual * 10) / 10, alvo: Number(goal.alvo), dia: Math.floor(dias) };
   }, [goal, results]);
 
-  const alertas = useMemo(() => {
-    const a: { tipo: string; txt: string; cor: string }[] = [];
-    if (ontem && !ontemResult) a.push({ tipo: "RESULTADO", txt: "Lance a retenção de ontem. É isso que afina o próximo lote.", cor: C.gold });
-    const fracos = blocos.filter(b => b.nota != null && b.nota < 7);
-    if (fracos.length) a.push({ tipo: "RITMO", txt: `${fracos.length} bloco(s) do reel de hoje abaixo de 7: ${fracos.map(b => b.id).join(", ")}.`, cor: C.red });
-    if (meta && meta.real < meta.planejado) a.push({ tipo: "META", txt: `Abaixo do planejado: ${meta.real}% real x ${meta.planejado}% esperado no dia ${meta.dia}.`, cor: C.cyan });
-    return a;
-  }, [ontem, ontemResult, blocos, meta]);
-
   const hoje = useMemo(() => new Date().toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "short" }).toUpperCase(), []);
-  const atalhos: { id: string; nome: string; zone?: string; tool?: string }[] = [
-    { id: "studio", nome: "STUDIO", tool: "studio" },
-    { id: "strategy", nome: "STRATEGY", zone: "strategy" },
-    { id: "planner", nome: "PLANNER", tool: "calendario" },
-    { id: "growth", nome: "GROWTH", zone: "growth" },
-    { id: "learn", nome: "LEARN", zone: "learn" },
-  ];
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const testarFormula = (id: number, nome: string) => {
+    setDica({ id, nome }); setTemaOpen(true); scrollTo("cc-missao");
+    toast.success(`${nome} vai como sugestão na próxima geração`);
+  };
+  const rodarAgora = () => {
+    const lim = auto?.limite_diario ?? 1;
+    if (doDia.length >= lim) return toast.error(`Limite de hoje atingido: ${doDia.length} de ${lim} gerações.`);
+    if (!window.confirm(`Rodar agora usa 1 geração (3 passes: Arquiteto, Redator e Crítico).\nHoje: ${doDia.length} de ${lim} usadas. Continuar?`)) return;
+    setTemaOpen(true); if (!tema && chips[0]) setTema(chips[0]); scrollTo("cc-missao");
+  };
   const busy = stage !== null;
   const abertura = reel ? (blocos[0]?.fala ?? reel.roteiro?.gancho) : null;
   const comp: any[] = calib?.comparacao ?? ontemResult?.curva_real?.comparacao ?? [];
@@ -455,7 +462,14 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
         {/* Missão de hoje */}
         <Panel glow={C.gold}>
+          <div id="cc-missao" style={{ scrollMarginTop: 80 }} />
           <Label color={C.gold}>Missão de hoje</Label>
+          {dica && (
+            <div style={{ marginTop: 6, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", fontFamily: F.m, fontSize: 9, color: C.cyan, border: `1px solid ${C.cyan}40`, padding: "4px 8px" }}>
+              Fórmula sugerida ao Arquiteto: {dica.nome}
+              <button type="button" onClick={() => setDica(null)} style={{ fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: "none", cursor: "pointer" }}>remover</button>
+            </div>
+          )}
           {engRows.length > 0 && (
             <button type="button" onClick={vazias.length ? abrirInstrucoes : undefined} style={{ marginTop: 6, fontFamily: F.m, fontSize: 9, letterSpacing: 1, color: vazias.length ? "#EF9F27" : "#5DCAA5", background: "none", border: `1px solid ${vazias.length ? "#EF9F27" : "#5DCAA5"}50`, padding: "2px 8px", cursor: vazias.length ? "pointer" : "default", borderRadius: 0 }}>
               Motor: {MOTOR_INSTRUCOES.ativas} de {MOTOR_INSTRUCOES.total} instruções ativas
@@ -570,6 +584,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
 
         <Panel glow={C.gold}>
+          <div id="cc-fabrica" style={{ scrollMarginTop: 80 }} />
           <ReelFactoryPanel onChosen={load} />
         </Panel>
 
@@ -585,6 +600,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
           {/* Resultado de ontem */}
           <Panel>
+            <div id="cc-resultado" style={{ scrollMarginTop: 80 }} />
             <Label color={C.gold}>Resultado de ontem</Label>
             {!ontem ? <Empty>Sem dados reais ainda. Lance o resultado do último reel.</Empty> : (
               <>
@@ -627,87 +643,12 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
             )}
           </Panel>
 
-          {/* Suas fórmulas */}
-          <Panel>
-            <Label color={C.cyan}>Suas fórmulas</Label>
-            {!formulas.length ? <Empty>Nenhuma fórmula com resultado ainda. Lance a retenção dos reels para formar o ranking.</Empty> : (
-              <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto", paddingBottom: 4 }}>
-                {formulas.map((f, i) => (
-                  <div key={f.formula_id} style={{ minWidth: 120, border: `1px solid ${i === 0 ? `${C.gold}60` : `${C.cyan}25`}`, background: i === 0 ? `${C.gold}10` : `${C.cyan}06`, padding: "10px 12px", flexShrink: 0 }}>
-                    <div style={{ fontFamily: F.m, fontSize: 8, color: i === 0 ? C.gold : C.muted }}>#{i + 1} · {f.usos} {f.usos === 1 ? "REEL" : "REELS"}</div>
-                    <div style={{ fontFamily: F.t, fontSize: 13, fontWeight: 700, color: C.white, marginTop: 2 }}>{f.nome}</div>
-                    <div style={{ height: 3, background: C.dim, marginTop: 8 }}><div style={{ height: "100%", width: `${Math.min(100, Number(f.retencao_3s_media ?? 0))}%`, background: i === 0 ? C.gold : C.cyan }} /></div>
-                    <div style={{ fontFamily: F.t, fontSize: 15, fontWeight: 700, color: i === 0 ? C.gold : C.cyan, marginTop: 4 }}>{f.retencao_3s_media == null ? "—" : `${f.retencao_3s_media}%`}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Panel>
-
-          {/* Alertas */}
-          <Panel>
-            <Label color={C.red}>Alertas e oportunidades</Label>
-            {!alertas.length ? <Empty>Nenhum alerta agora.</Empty> : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-                {alertas.map((a) => (
-                  <div key={a.tipo} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <span style={{ fontFamily: F.m, fontSize: 8, color: a.cor, border: `1px solid ${a.cor}50`, padding: "2px 6px", flexShrink: 0, marginTop: 1 }}>{a.tipo}</span>
-                    <span style={{ fontFamily: F.m, fontSize: 10, color: C.text, lineHeight: 1.5 }}>{a.txt}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Panel>
-
-          {/* Meta 90 dias */}
-          <Panel>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <Label color={C.cyan}>Meta de 90 dias</Label>
-              {meta && <span style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.gold }}>{meta.real}%</span>}
-            </div>
-            {meta ? (
-              <>
-                <div style={{ fontFamily: F.m, fontSize: 9, color: C.text, marginTop: 6 }}>
-                  {goal.metrica === "reels_publicados" ? `${meta.atual}/${meta.alvo} reels com resultado lançado` : `${meta.atual}% / ${meta.alvo}% média passou dos 3s`} · DIA {meta.dia}/90
-                </div>
-                <div style={{ position: "relative", height: 8, background: C.dim, marginTop: 10 }}>
-                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${meta.planejado}%`, background: `${C.cyan}30` }} />
-                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${meta.real}%`, background: C.gold }} />
-                  <div style={{ position: "absolute", left: `${meta.planejado}%`, top: -3, bottom: -3, width: 1, background: C.cyan }} />
-                </div>
-                <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
-                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.cyan }}>▮ PLANEJADO {meta.planejado}%</span>
-                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>▮ REAL {meta.real}%</span>
-                  <button type="button" onClick={() => setGoal(null)} style={{ marginLeft: "auto", fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: "none", cursor: "pointer" }}>EDITAR</button>
-                </div>
-              </>
-            ) : (
-              <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                <select style={inp} value={goalForm.metrica} onChange={e => setGoalForm(g => ({ ...g, metrica: e.target.value }))}>
-                  <option value="reels_publicados">Reels com resultado lançado</option>
-                  <option value="retencao_3s">Média de % que passou dos 3s</option>
-                </select>
-                <input style={inp} inputMode="decimal" value={goalForm.alvo} onChange={e => setGoalForm(g => ({ ...g, alvo: e.target.value }))} placeholder="Alvo em 90 dias" />
-                <button type="button" onClick={salvarMeta} style={{ ...btn(true), flex: "none" }}>DEFINIR META</button>
-              </div>
-            )}
-          </Panel>
-
-          <Panel>
-            <CommandCenterAutomation onChanged={load} />
-          </Panel>
-
-          <Panel>
-            <Label>ATALHOS</Label>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(90px, 1fr))", gap: 6, marginTop: 10 }}>
-              {atalhos.map((a) => (
-                <button key={a.id} type="button" onClick={() => (a.zone ? onOpenZone?.(a.zone) : a.tool ? onOpenTool?.(a.tool) : undefined)}
-                  style={{ background: `${C.cyan}08`, border: `1px solid ${C.cyan}25`, color: C.text, fontFamily: F.t, fontWeight: 700, fontSize: 12, letterSpacing: 1, padding: "12px 4px", cursor: "pointer", borderRadius: 0 }}>
-                  {a.nome}
-                </button>
-              ))}
-            </div>
-          </Panel>
+          <CommandCenterLower loaded={loaded} scripts={scripts} results={results} stats={formulas} atlas={atlas}
+            bank={bankAll} pillars={pillarsAll} leadsCount={leadsCount} goal={goal} meta={meta} goalForm={goalForm}
+            setGoalForm={setGoalForm} salvarMeta={salvarMeta} streak={streak} reelsHoje={doDia.length}
+            blocosFracos={blocos.filter(b => b.nota != null && b.nota < 7)}
+            onTestar={testarFormula} onRodarAgora={rodarAgora} onLancar={() => scrollTo("cc-resultado")} onFabrica={() => scrollTo("cc-fabrica")}
+            onOpenZone={onOpenZone} onOpenTool={onOpenTool} reload={load} />
         </div>
       </div>
 

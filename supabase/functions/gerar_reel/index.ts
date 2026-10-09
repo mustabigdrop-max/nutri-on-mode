@@ -78,7 +78,8 @@ Deno.serve(async (req) => {
       const untested = all.filter(f => !measured.some(s => s.formula_id === f.id)).map(f => f.id);
       const permitidas = explorar ? (untested.length ? untested : [...measured].sort((a, b) => a.usos - b.usos).slice(0, 3).map(s => s.formula_id)) : all.map(f => f.id);
       // Data, not instructions; absent values stay null.
-      const contexto = { pedido: { tema, objetivo, tom, rede, quero_mais }, formulas_atlas: all, ranking_formulas: ranking,
+      const dicaId = Number(body.formula_dica); const dica_formula = Number.isInteger(dicaId) && all.some(f => f.id === dicaId) ? dicaId : null;
+      const contexto = { pedido: { tema, objetivo, tom, rede, quero_mais, dica_formula }, formulas_atlas: all, ranking_formulas: ranking,
         selecao_formula: { modo: explorar ? "explorar" : "priorizar", permitidas }, voz_do_criador: voice ?? null,
         padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes };
 
