@@ -146,6 +146,35 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
         <span style={{ fontFamily: F.m, fontSize: 9, color: cfg?.pausado ? C.gold : C.muted }}>{cfg?.pausado ? "PAUSADA" : cfg?.automatico ? `AUTOMÁTICA · ${String(cfg.hora).padStart(2, "0")}:00` : "MANUAL"}</span>
       </div>
 
+      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={row}>
+          <span style={lbl}>Ideias por lote</span>
+          <span style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.cyan }}>{form.n_ideias}</span>
+        </div>
+        <input type="range" min={5} max={100} step={5} value={form.n_ideias} className="cc-range" aria-label="Ideias por lote"
+          onChange={e => setForm(p => ({ ...p, n_ideias: Number(e.target.value) }))}
+          onPointerUp={() => salvar()} onKeyUp={() => salvar()} />
+        <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>ESTIMATIVA: ~{estimateCalls(Math.min(form.n_ideias, form.limite_roteiros_dia))} solicitações de Análise</div>
+        {batches[0] && (() => {
+          const b0 = batches[0]; const p = b0.n_ideias ? Math.min(100, Math.round((b0.cursor / b0.n_ideias) * 100)) : 0;
+          return (
+            <>
+              <div style={{ height: 4, background: C.dim, position: "relative", overflow: "hidden", marginTop: 4 }}>
+                <div style={{ position: "absolute", inset: 0, width: `${p}%`, background: C.cyan, boxShadow: `0 0 8px ${C.cyan}`, transition: "width .6s ease" }} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                {([["GERADOS", b0.cursor, C.cyan], ["APROVADOS", b0.aprovados, C.gold], ["DESCARTADOS", b0.descartados, C.muted]] as const).map(([l, v, c]) => (
+                  <div key={l} style={{ border: `1px solid ${c}30`, padding: "6px 8px" }}>
+                    <div style={{ fontFamily: F.t, fontSize: 18, fontWeight: 700, color: c }}>{v ?? 0}</div>
+                    <div style={{ ...lbl, fontSize: 8, letterSpacing: 1 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          );
+        })()}
+      </div>
+
       {batches[0] && (
         <div style={{ marginTop: 8, fontFamily: F.m, fontSize: 10, color: C.text, lineHeight: 1.6 }}>
           LOTE {new Date(`${batches[0].data}T12:00:00`).toLocaleDateString("pt-BR")} · <span style={{ color: batches[0].status === "erro" ? C.red : C.cyan }}>{ST_LABEL[batches[0].status]}</span>
@@ -164,11 +193,11 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
         </>} />)}
 
       <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
-        <button type="button" disabled={busy || !!ativo || cfg?.pausado} onClick={gerar} style={{ ...sm(C.gold), background: C.gold, color: "#0A0A0A" }}>{ativo ? "LOTE EM ANDAMENTO" : "GERAR LOTE"}</button>
-        <button type="button" onClick={() => setOpen(open === "banco" ? "" : "banco")} style={sm(C.cyan)}>Banco de reels</button>
+        <button type="button" disabled={busy || !!ativo || cfg?.pausado} onClick={gerar} style={{ ...sm(C.gold), background: C.gold, color: "#0A0A0A" }}>{ativo ? "LOTE EM ANDAMENTO" : "⚡ GERAR LOTE"}</button>
+        <button type="button" onClick={() => setOpen(open === "banco" ? "" : "banco")} style={sm(C.cyan)}>▤ Banco de reels</button>
         <button type="button" onClick={() => setOpen(open === "matriz" ? "" : "matriz")} style={sm(C.gold)}>Matriz</button>
-        <button type="button" onClick={() => setOpen(open === "config" ? "" : "config")} style={sm(C.cyan)}>CONFIGURAR</button>
-        <button type="button" onClick={() => setOpen(open === "historico" ? "" : "historico")} style={sm(C.muted)}>HISTÓRICO</button>
+        <button type="button" onClick={() => setOpen(open === "config" ? "" : "config")} style={sm(C.cyan)}>⚙ CONFIGURAR</button>
+        <button type="button" onClick={() => setOpen(open === "historico" ? "" : "historico")} style={sm(C.muted)}>⟲ HISTÓRICO</button>
       </div>
 
       {open === "matriz" && <ContentMatrixPanel />}
