@@ -2882,6 +2882,75 @@ export type Database = {
           },
         ]
       }
+      card_kits: {
+        Row: {
+          cards: Json
+          created_at: string
+          id: string
+          pacote: string
+          subtema_slug: string
+          topic_slug: string
+          user_id: string
+          variante_imagem: string
+          verificacao: Json
+        }
+        Insert: {
+          cards?: Json
+          created_at?: string
+          id?: string
+          pacote: string
+          subtema_slug: string
+          topic_slug: string
+          user_id: string
+          variante_imagem?: string
+          verificacao?: Json
+        }
+        Update: {
+          cards?: Json
+          created_at?: string
+          id?: string
+          pacote?: string
+          subtema_slug?: string
+          topic_slug?: string
+          user_id?: string
+          variante_imagem?: string
+          verificacao?: Json
+        }
+        Relationships: []
+      }
+      card_topics: {
+        Row: {
+          aliases: Json
+          aviso_tema: string | null
+          id: string
+          slug: string
+          subtemas: Json
+          titulo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aliases?: Json
+          aviso_tema?: string | null
+          id?: string
+          slug: string
+          subtemas?: Json
+          titulo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aliases?: Json
+          aviso_tema?: string | null
+          id?: string
+          slug?: string
+          subtemas?: Json
+          titulo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cardio_sessions: {
         Row: {
           calorias: number | null
@@ -13557,46 +13626,76 @@ export type Database = {
       }
       studio_cards: {
         Row: {
+          alt_texto: string | null
           bloco_ref: number | null
           conteudo: Json
           created_at: string
+          dica: string | null
           formato: string
           id: string
           ilustracao_origem: string | null
           imagem_path: string | null
+          kit_id: string | null
           nome: string | null
+          pacote: string | null
+          prova_ref: Json | null
           script_id: string | null
+          selo: string | null
+          subtema_slug: string | null
           template: string
           tipo: string
+          topic_slug: string | null
           user_id: string
+          variante_imagem: string | null
+          verif_status: string | null
         }
         Insert: {
+          alt_texto?: string | null
           bloco_ref?: number | null
           conteudo?: Json
           created_at?: string
+          dica?: string | null
           formato?: string
           id?: string
           ilustracao_origem?: string | null
           imagem_path?: string | null
+          kit_id?: string | null
           nome?: string | null
+          pacote?: string | null
+          prova_ref?: Json | null
           script_id?: string | null
+          selo?: string | null
+          subtema_slug?: string | null
           template: string
           tipo: string
+          topic_slug?: string | null
           user_id: string
+          variante_imagem?: string | null
+          verif_status?: string | null
         }
         Update: {
+          alt_texto?: string | null
           bloco_ref?: number | null
           conteudo?: Json
           created_at?: string
+          dica?: string | null
           formato?: string
           id?: string
           ilustracao_origem?: string | null
           imagem_path?: string | null
+          kit_id?: string | null
           nome?: string | null
+          pacote?: string | null
+          prova_ref?: Json | null
           script_id?: string | null
+          selo?: string | null
+          subtema_slug?: string | null
           template?: string
           tipo?: string
+          topic_slug?: string | null
           user_id?: string
+          variante_imagem?: string | null
+          verif_status?: string | null
         }
         Relationships: []
       }
@@ -15098,6 +15197,30 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           weight?: number | null
+        }
+        Relationships: []
+      }
+      user_photos: {
+        Row: {
+          created_at: string
+          id: string
+          rotulo: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rotulo?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rotulo?: string
+          url?: string
+          user_id?: string
         }
         Relationships: []
       }
