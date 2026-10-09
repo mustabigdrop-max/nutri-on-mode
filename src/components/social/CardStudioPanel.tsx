@@ -9,6 +9,8 @@ import {
 } from "@/lib/cardStudio";
 import { CardTemplate, DEFAULT_BRAND, type Brand } from "./cardStudio/CardTemplate";
 import { Scene, SCENE_NAMES } from "./cardStudio/Scenes";
+import { KitAgente, KitMini } from "./cardStudio/KitAgente";
+import { KitCardView } from "./cardStudio/KitCardView";
 
 const T = { bg: "#020205", s1: "#0A0A0F", s2: "#111118", cyan: "#00D4FF", gold: "#B8922A", green: "#5DCAA5", red: "#EF4444", muted: "#888", text: "#E8E8F0", ft: "'Rajdhani',sans-serif", fm: "'Space Mono',monospace" };
 const AVISO_GERADA = "Ilustrações estilizadas e conceituais costumam ficar fora das regras de rótulo, mas confira as regras atuais do Instagram e do TikTok sobre conteúdo gerado antes de publicar.";
@@ -16,7 +18,7 @@ const btn = (c: string, solid = false): React.CSSProperties => ({ background: so
 const input: React.CSSProperties = { width: "100%", background: T.s2, border: "1px solid #ffffff20", color: T.text, borderRadius: 0, padding: 8, fontSize: 13, boxSizing: "border-box" };
 const label: React.CSSProperties = { fontFamily: T.fm, fontSize: 9, color: T.muted, letterSpacing: 1, margin: "8px 0 3px", display: "block" };
 
-interface Row { id: string; script_id: string | null; bloco_ref: number | null; tipo: CardTipo; template: TemplateId; formato: Formato; conteudo: CardContent; ilustracao_origem: string | null; imagem_path: string | null; nome: string | null; created_at: string }
+interface Row { topic_slug?: string | null; subtema_slug?: string | null; pacote?: string | null; variante_imagem?: string | null; verif_status?: string | null; id: string; script_id: string | null; bloco_ref: number | null; tipo: CardTipo; template: TemplateId; formato: Formato; conteudo: CardContent; ilustracao_origem: string | null; imagem_path: string | null; nome: string | null; created_at: string }
 interface Reel { id: string; tema: string; titulo: string | null; roteiro: any; fonte_status: string | null; tipo_afirmacao: string | null }
 
 function Thumb({ p, formato, brand, width = 150, fundo, gerada }: { p: Proposal; formato: Formato; brand: Brand; width?: number; fundo?: string | null; gerada?: boolean }) {
@@ -46,6 +48,9 @@ export default function CardStudioPanel() {
   const [busy, setBusy] = useState<string | null>(null);
   const [fReel, setFReel] = useState(""); const [fTipo, setFTipo] = useState(""); const [fFormato, setFFormato] = useState("");
   const [stage, setStage] = useState<Row[]>([]);
+  const [assunto, setAssunto] = useState("");
+  const [proibidas, setProibidas] = useState<string[]>([]);
+  const [fTema, setFTema] = useState(""); const [fSub, setFSub] = useState(""); const [fPac, setFPac] = useState(""); const [fVar, setFVar] = useState(""); const [fVer, setFVer] = useState("");
   const stageRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   async function signed(path: string) { const { data } = await supabase.storage.from("cuts").createSignedUrl(path, 3600); return data?.signedUrl ?? null; }
@@ -64,6 +69,8 @@ export default function CardStudioPanel() {
     if (bk.data) { const logo = bk.data.logo_url ? await signed(bk.data.logo_url) : null;
       setBrand({ ...bk.data, logo, handle: bk.data.handle || (ig ? `@${String(ig).replace(/^@/, "")}` : null) } as any); setLimiteGerada(bk.data.limite_diario_gerada); }
     setReels((rs.data ?? []) as Reel[]);
+    const pr = await supabase.from("engine_prompts").select("conteudo").eq("user_id", u.user.id).eq("chave", "proibidas").maybeSingle();
+    setProibidas(String((pr.data as any)?.conteudo ?? "").split("\n").map(x => x.trim()).filter(Boolean));
     const list = (cs.data ?? []) as unknown as Row[]; setRows(list);
     const m: Record<string, string> = {}; for (const r of list) if (r.imagem_path) { const s = await signed(r.imagem_path); if (s) m[r.id] = s; } setUrls(m);
     const q = await supabase.functions.invoke("gerar_card_ilustracao", { body: { action: "quota" } }); setQuota(q.data ?? { disponivel: false, limite: 5, restantes: 0, custo_estimado: 0 });
@@ -91,7 +98,11 @@ export default function CardStudioPanel() {
     setBrand(b => ({ ...b, logo: null })); load();
   }
 
-  function runAgent() { setMsg(null); setReply(agenteCards(cmd, fonte)); }
+  function runAgent(x = cmd) {
+    setMsg(null); const b = bloqueio(x);
+    if (b) { setReply(agenteCards(x, fonte)); setAssunto(""); return; }
+    setReply(null); setAssunto(x.replace(/^(cards?|kit)\s+(sobre|de)\s+/i, "").trim());
+  }
 
   async function insertCard(p: Proposal & { bloco_ref?: number | null; nome?: string; tipo?: CardTipo }, formato: Formato = "9:16") {
     if (!uid) throw new Error("Faça login.");
@@ -152,7 +163,8 @@ export default function CardStudioPanel() {
     const a = document.createElement("a"); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" })); a.download = "cards.zip"; a.click(); setBusy(null);
   }
 
-  const filtered = useMemo(() => rows.filter(r => (!fReel || r.script_id === fReel) && (!fTipo || r.tipo === fTipo) && (!fFormato || r.formato === fFormato)), [rows, fReel, fTipo, fFormato]);
+  const filtered = useMemo(() => rows.filter(r => (!fReel || r.script_id === fReel) && (!fTipo || r.tipo === fTipo) && (!fFormato || r.formato === fFormato) && (!fTema || r.topic_slug === fTema) && (!fSub || r.subtema_slug === fSub) && (!fPac || r.pacote === fPac) && (!fVar || r.variante_imagem === fVar) && (!fVer || r.verif_status === fVer)), [rows, fReel, fTipo, fFormato, fTema, fSub, fPac, fVar, fVer]);
+  const uniq = (k: keyof Row) => [...new Set(rows.map(r => r[k]).filter(Boolean) as string[])];
   const upd = (patch: Partial<CardContent>) => edit && setEdit({ ...edit, conteudo: { ...edit.conteudo, ...patch } });
   const nPal = edit ? palavras(edit.conteudo.titulo) : 0;
 
@@ -183,11 +195,11 @@ export default function CardStudioPanel() {
 
     <span style={label}>COMANDO</span>
     <div style={{ display: "flex", gap: 6 }}>
-      <input style={input} value={cmd} onChange={e => setCmd(e.target.value)} onKeyDown={e => e.key === "Enter" && runAgent()} placeholder='Ex.: "card sobre intenção versus ação"' />
-      <button style={btn(T.cyan, true)} onClick={runAgent}>GERAR</button>
+      <input style={input} value={cmd} onChange={e => setCmd(e.target.value)} onKeyDown={e => e.key === "Enter" && runAgent()} placeholder='Ex.: "creatina"' />
+      <button style={btn(T.cyan, true)} onClick={() => runAgent()}>GERAR</button>
     </div>
     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
-      {["card sobre intenção versus ação", "3 passos do se-então", "capa da série de mitos"].map(x => <button key={x} style={btn(T.muted)} onClick={() => { setCmd(x); setReply(agenteCards(x, fonte)); }}>{x}</button>)}
+      {["creatina", "intenção versus ação", "sono"].map(x => <button key={x} style={btn(T.muted)} onClick={() => { setCmd(x); runAgent(x); }}>{x}</button>)}
     </div>
     <span style={label}>REEL (OPCIONAL)</span>
     <div style={{ display: "flex", gap: 6 }}>
@@ -199,13 +211,7 @@ export default function CardStudioPanel() {
       <div style={{ color: T.gold }}>{reply.mensagem}</div>
       {reply.alternativa && <div style={{ display: "flex", gap: 8, marginTop: 8 }}>{reply.alternativa.map((p, i) => <div key={i} onClick={() => choose(p)} style={{ cursor: "pointer" }}><Thumb p={p} formato="9:16" brand={brand} width={110} /><div style={{ fontFamily: T.fm, fontSize: 9, color: T.cyan }}>USAR CARD DE TEXTO</div></div>)}</div>}
     </div>}
-    {reply?.tipo === "propostas" && <div style={{ display: "flex", gap: 10, marginTop: 10, overflowX: "auto" }}>
-      {reply.propostas.map((p, i) => <button key={i} onClick={() => choose(p)} style={{ background: T.s2, border: "1px solid #ffffff15", padding: 6, cursor: "pointer", color: T.text, textAlign: "left" }}>
-        <Thumb p={p} formato="9:16" brand={brand} width={130} />
-        <div style={{ fontFamily: T.fm, fontSize: 9, color: T.cyan, marginTop: 4 }}>{TEMPLATES.find(t => t.id === p.template)?.nome}</div>
-        <div style={{ fontFamily: T.fm, fontSize: 9, color: T.muted }}>{p.conteudo.cena ? SCENE_NAMES[p.conteudo.cena] : "sem cena"}</div>
-      </button>)}
-    </div>}
+    {assunto && <KitAgente uid={uid} assunto={assunto} brand={brand} proibidas={proibidas} geradorDisponivel={!!quota?.disponivel} onSaved={load} />}
     {msg && <p style={{ fontSize: 12, color: T.gold, margin: "8px 0 0" }}>{msg}</p>}
 
     {edit && <div style={{ background: T.s2, padding: 12, marginTop: 12, display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 10 }}>
@@ -260,10 +266,17 @@ export default function CardStudioPanel() {
       <select style={input} value={fTipo} onChange={e => setFTipo(e.target.value)}><option value="">Tipo</option><option value="A">A · dado</option><option value="B">B · texto</option><option value="D">D · diagrama</option><option value="C">C · ilustração</option></select>
       <select style={input} value={fFormato} onChange={e => setFFormato(e.target.value)}><option value="">Formato</option><option>9:16</option><option>4:5</option><option>1:1</option></select>
     </div>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6, marginTop: 6 }}>
+      <select style={input} value={fTema} onChange={e => setFTema(e.target.value)} aria-label="Tema"><option value="">Tema</option>{uniq("topic_slug").map(x => <option key={x}>{x}</option>)}</select>
+      <select style={input} value={fSub} onChange={e => setFSub(e.target.value)} aria-label="Subtema"><option value="">Subtema</option>{uniq("subtema_slug").map(x => <option key={x}>{x}</option>)}</select>
+      <select style={input} value={fPac} onChange={e => setFPac(e.target.value)} aria-label="Pacote"><option value="">Pacote</option><option value="reel">Reel</option><option value="carrossel">Carrossel</option></select>
+      <select style={input} value={fVar} onChange={e => setFVar(e.target.value)} aria-label="Imagem"><option value="">Imagem</option><option value="sem">Sem imagem</option><option value="ilustracao">Ilustração</option><option value="foto">Foto minha</option><option value="gerada">Gerada</option></select>
+      <select style={input} value={fVer} onChange={e => setFVer(e.target.value)} aria-label="Verificador"><option value="">Verificador</option><option value="ok">OK</option><option value="aviso">Aviso</option><option value="bloqueio">Bloqueio</option></select>
+    </div>
     {filtered.length === 0 ? <p style={{ fontSize: 12, color: T.muted }}>Nenhum card ainda. Digite um comando acima.</p> :
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(110px,1fr))", gap: 8, marginTop: 8 }}>
         {filtered.map(r => <div key={r.id} style={{ background: T.s2, padding: 4, border: `1px solid ${edit?.id === r.id ? T.cyan : "#ffffff10"}` }}>
-          <div onClick={() => setEdit(r)} style={{ cursor: "pointer" }}><Thumb p={{ template: r.template, conteudo: r.conteudo }} formato={r.formato} brand={brand} width={102} fundo={r.ilustracao_origem === "gerada" ? urls[r.id] : null} gerada={r.ilustracao_origem === "gerada"} /></div>
+          {(r.conteudo as any)?.kit ? <KitMini c={(r.conteudo as any).card} formato={r.formato} brand={brand} variante={(r.conteudo as any).variante === "foto" ? "sem" : (r.conteudo as any).variante} width={102} /> : <div onClick={() => setEdit(r)} style={{ cursor: "pointer" }}><Thumb p={{ template: r.template, conteudo: r.conteudo }} formato={r.formato} brand={brand} width={102} fundo={r.ilustracao_origem === "gerada" ? urls[r.id] : null} gerada={r.ilustracao_origem === "gerada"} /></div>}
           <div style={{ fontFamily: T.fm, fontSize: 8, color: T.cyan, margin: "3px 0" }}>{r.tipo} · {r.formato}{r.bloco_ref ? ` · B${r.bloco_ref}` : ""}</div>
           <div style={{ display: "flex", gap: 3 }}><button style={{ ...btn(T.gold), padding: "3px 5px", fontSize: 8 }} onClick={() => downloadPng(r)}>PNG</button>
             <button style={{ ...btn(T.text), padding: "3px 5px", fontSize: 8 }} onClick={() => duplicate(r)}>DUP</button>
@@ -272,7 +285,7 @@ export default function CardStudioPanel() {
       </div>}
 
     {stage.length > 0 && <div style={{ position: "fixed", left: -20000, top: 0, pointerEvents: "none" }} aria-hidden>
-      {stage.map(r => <CardTemplate key={r.id} ref={el => (stageRefs.current[r.id] = el)} template={r.template} conteudo={r.conteudo} formato={r.formato} brand={brand}
+      {stage.map(r => (r.conteudo as any)?.kit ? <KitCardView key={r.id} ref={el => (stageRefs.current[r.id] = el)} c={(r.conteudo as any).card} formato={r.formato} brand={brand} variante={(r.conteudo as any).variante === "foto" ? "sem" : (r.conteudo as any).variante} /> : <CardTemplate key={r.id} ref={el => (stageRefs.current[r.id] = el)} template={r.template} conteudo={r.conteudo} formato={r.formato} brand={brand}
         fundoUrl={r.ilustracao_origem === "gerada" ? urls[r.id] : null} gerada={r.ilustracao_origem === "gerada"} />)}
     </div>}
   </div>;

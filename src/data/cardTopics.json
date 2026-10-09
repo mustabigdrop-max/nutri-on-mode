@@ -1,0 +1,275 @@
+[
+ {
+  "slug": "creatina",
+  "titulo": "Creatina",
+  "aliases": [
+   "creatina",
+   "creatine",
+   "monohidrato de creatina"
+  ],
+  "aviso_tema": "Não use a frase 'mais de 30 anos de estudos' e não cite doses em número até confirmar numa fonte. Evite números em quilos nos cards.",
+  "subtemas": [
+   {
+    "slug": "forca-e-musculo",
+    "titulo": "Força e músculo",
+    "veredito": "misto",
+    "melhor_para": "autoridade",
+    "mito": "Creatina dá músculo sozinha.",
+    "verdade": "Com treino de força, os resultados variam: há análises que somam ensaios e mostram mais massa magra, e há um ensaio de 12 semanas em que os grupos terminaram iguais.",
+    "fala_segura": "Pode ajudar quem treina força, mas o resultado varia de estudo para estudo.",
+    "nao_dizer": [
+     "Ganha quilos de músculo",
+     "Dá músculo sem treinar",
+     "Funciona para todo mundo"
+    ],
+    "ressalva_obrigatoria": null,
+    "dado_card": {
+     "rotulo": "63 PESSOAS · 12 SEMANAS DE TREINO · GRUPOS IGUAIS",
+     "selo": "ENSAIO RANDOMIZADO · DESAI ET AL., 2025"
+    },
+    "provas": [
+     {
+      "selo": "ENSAIO · 63 PESSOAS · 2025",
+      "referencia": "Desai et al. (2025). Nutrients 17(6):1081",
+      "link": "https://www.mdpi.com/2072-6643/17/6/1081",
+      "tipo_fonte": "ensaio_randomizado",
+      "nivel": "primaria",
+      "limites": "Amostra pequena. Em 7 dias sem treino, o ganho de peso tende a ser água (interpretação provável). Em 12 semanas de treino, os grupos terminaram iguais."
+     },
+     {
+      "selo": "META-ANÁLISE · 12 ESTUDOS · 2024",
+      "referencia": "Meta-análise publicada no Journal of Strength and Conditioning Research (2024), via resumo de terceiros",
+      "link": "https://mtntactical.com/knowledge/research-review-creatine-supplementation-increases-muscle-growth-and-reduces-fat-during-resistance-training/",
+      "tipo_fonte": "meta_analise",
+      "nivel": "secundaria",
+      "limites": "Resumo de terceiros: conferir no original antes de usar qualquer número."
+     }
+    ],
+    "dicas": [
+     "Abra com a pergunta e mostre o card de prova entre 6 e 14 segundos, por 2 a 3 segundos.",
+     "Não mostre quilos nem físico na tela. Fale: o resultado varia.",
+     "O ensaio em que os grupos terminaram iguais é um gancho honesto: ficou igual desperta curiosidade."
+    ],
+    "ilustracao_chave": "haltere",
+    "alt_texto": "Card sobre creatina e treino de força: o resultado varia entre estudos.",
+    "bloqueio_prova": null
+   },
+   {
+    "slug": "vegetarianos",
+    "titulo": "Quem come pouca carne",
+    "veredito": "sustentado_com_ressalva",
+    "melhor_para": "alcance",
+    "mito": "Creatina é igual para todo mundo.",
+    "verdade": "Em quem come pouca ou nenhuma carne, a suplementação costuma elevar a creatina nos músculos. O efeito no desempenho é misto, e a creatina no cérebro não mudou.",
+    "fala_segura": "Quem come pouca carne tende a elevar a creatina muscular com o suplemento. Se isso melhora o treino, os estudos divergem.",
+    "nao_dizer": [
+     "Vegetariano precisa de creatina",
+     "Sem carne você perde músculo"
+    ],
+    "ressalva_obrigatoria": null,
+    "dado_card": {
+     "rotulo": "POUCA CARNE: CREATINA NO MÚSCULO COSTUMA SUBIR",
+     "selo": "REVISÃO SISTEMÁTICA · KAVIANI ET AL., 2020"
+    },
+    "provas": [
+     {
+      "selo": "REVISÃO SISTEMÁTICA · 2020",
+      "referencia": "Kaviani et al. (2020). International Journal of Environmental Research and Public Health",
+      "link": "https://pubmed.ncbi.nlm.nih.gov/32349356/",
+      "tipo_fonte": "revisao_sistematica",
+      "nivel": "primaria",
+      "limites": "Resultados mistos no desempenho. Conferir o tipo de estudo e os detalhes no original."
+     }
+    ],
+    "dicas": [
+     "Boa abertura para alcance: fale diretamente com quem come pouca carne.",
+     "Não generalize para todo vegetariano.",
+     "Mantenha no áudio a frase: o efeito no desempenho é misto."
+    ],
+    "ilustracao_chave": "folha",
+    "alt_texto": "Card sobre creatina em quem come pouca carne.",
+    "bloqueio_prova": null
+   },
+   {
+    "slug": "sono-e-privacao",
+    "titulo": "Sono e noite sem dormir",
+    "veredito": "sustentado_com_ressalva",
+    "melhor_para": "alcance",
+    "mito": "Creatina compensa noite mal dormida.",
+    "verdade": "Em estudos com privação de sono (cerca de 21 horas acordado), uma dose única alta melhorou testes cognitivos. Não é dose de uso caseiro e não mostra que a dose diária proteja o cérebro de noites mal dormidas.",
+    "fala_segura": "Em laboratório, com mais de 20 horas sem dormir e dose única alta, houve melhora cognitiva. Não é recomendação para o dia a dia.",
+    "nao_dizer": [
+     "Creatina protege o cérebro à noite",
+     "Tome para compensar o sono",
+     "Dose de 20 g"
+    ],
+    "ressalva_obrigatoria": null,
+    "dado_card": {
+     "rotulo": "21 HORAS SEM DORMIR · DOSE ÚNICA ALTA · MELHORA COGNITIVA",
+     "selo": "ESTUDO EM LABORATÓRIO · SCI REP, 2024"
+    },
+    "provas": [
+     {
+      "selo": "ESTUDO · SCI REP · 2024",
+      "referencia": "Estudo sobre creatina e privação de sono. Scientific Reports (2024)",
+      "link": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10902318/",
+      "tipo_fonte": "estudo_experimental",
+      "nivel": "primaria",
+      "limites": "Contexto específico de privação aguda de sono, com dose única alta. Conferir o desenho no original."
+     },
+     {
+      "selo": "ESTUDO · NUTRIENTS · 2026",
+      "referencia": "Estudo sobre creatina e privação de sono. Nutrients (2026)",
+      "link": "https://pub.dzne.de/record/286366/files/DZNE-2026-00469.pdf",
+      "tipo_fonte": "estudo_experimental",
+      "nivel": "primaria",
+      "limites": "Conferir o desenho no original."
+     }
+    ],
+    "dicas": [
+     "Use como curiosidade, nunca como recomendação.",
+     "Deixe claro: em laboratório e dose única alta.",
+     "Evite o formato dica de produtividade."
+    ],
+    "ilustracao_chave": "lua",
+    "alt_texto": "Card sobre creatina e privação de sono em estudos de laboratório.",
+    "bloqueio_prova": null
+   },
+   {
+    "slug": "cognicao-adultos-saudaveis",
+    "titulo": "Cérebro em adultos saudáveis",
+    "veredito": "misto",
+    "melhor_para": "alcance",
+    "mito": "Creatina deixa você mais inteligente.",
+    "verdade": "Em adultos saudáveis, o efeito é inconclusivo. Uma meta-análise de 2024 achou efeito na memória, mas uma correção em 2025 e um comentário em 2026 mostraram que a significância some, exceto em idosos.",
+    "fala_segura": "Para o cérebro de adultos saudáveis, a evidência ainda é inconclusiva. Em idosos, os sinais são mais claros.",
+    "nao_dizer": [
+     "Aumenta a memória",
+     "Deixa mais inteligente"
+    ],
+    "ressalva_obrigatoria": null,
+    "dado_card": {
+     "rotulo": "CÉREBRO: EVIDÊNCIA INCONCLUSIVA EM ADULTOS SAUDÁVEIS",
+     "selo": "META-ANÁLISE 2024 · CORREÇÃO 2025 · COMENTÁRIO 2026"
+    },
+    "provas": [
+     {
+      "selo": "META-ANÁLISE · 2024",
+      "referencia": "Meta-análise sobre creatina e cognição (2024)",
+      "link": "https://pubmed.ncbi.nlm.nih.gov/39070254/",
+      "tipo_fonte": "meta_analise",
+      "nivel": "primaria",
+      "limites": "Resultado revisto pela correção de 2025."
+     },
+     {
+      "selo": "CORREÇÃO · FRONTIERS · 2025",
+      "referencia": "Correção da meta-análise, Frontiers in Nutrition (2025)",
+      "link": "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2025.1570800/full",
+      "tipo_fonte": "correcao",
+      "nivel": "primaria",
+      "limites": "Conferir o que mudou no original."
+     },
+     {
+      "selo": "COMENTÁRIO · FRONTIERS · 2026",
+      "referencia": "Comentário sobre a meta-análise, Frontiers in Nutrition (2026)",
+      "link": "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2026.1716285/full",
+      "tipo_fonte": "comentario",
+      "nivel": "primaria",
+      "limites": "Comentário crítico, não é um estudo novo."
+     }
+    ],
+    "dicas": [
+     "A ciência ainda discute é um gancho forte e honesto.",
+     "Mostre a correção como parte da história: ciência se corrige.",
+     "Evite qualquer promessa cognitiva."
+    ],
+    "ilustracao_chave": "cerebro",
+    "alt_texto": "Card sobre creatina e cognição: evidência inconclusiva em adultos saudáveis.",
+    "bloqueio_prova": null
+   },
+   {
+    "slug": "rim-e-seguranca",
+    "titulo": "Rim e segurança",
+    "veredito": "sustentado_com_ressalva",
+    "melhor_para": "autoridade",
+    "mito": "Creatina faz mal para o rim.",
+    "verdade": "Em adultos saudáveis, as revisões recentes não apontam dano renal. A creatinina no exame pode subir como subproduto muscular, sem significar lesão. Quem tem doença renal deve falar com o médico antes.",
+    "fala_segura": "Em adultos saudáveis, as revisões não apontam dano renal. Se você tem doença renal, fale com o médico antes.",
+    "nao_dizer": [
+     "É 100% segura",
+     "Pode tomar mesmo com doença renal"
+    ],
+    "ressalva_obrigatoria": "Se você tem doença renal, fale com o médico antes de usar.",
+    "dado_card": {
+     "rotulo": "ADULTOS SAUDÁVEIS: SEM SINAL DE DANO RENAL NAS REVISÕES",
+     "selo": "REVISÃO · 2025/2026 · RESUMO DE TERCEIROS"
+    },
+    "provas": [
+     {
+      "selo": "REVISÃO · 2025/2026 (RESUMO)",
+      "referencia": "Revisão sobre creatina e rim, via resumo de terceiros",
+      "link": "https://planfit.ai/en/blog/is-creatine-bad-for-kidneys",
+      "tipo_fonte": "blog",
+      "nivel": "secundaria",
+      "limites": "Fonte secundária: confira a revisão original e a posição da sociedade científica antes de usar o card."
+     }
+    ],
+    "dicas": [
+     "Coloque a ressalva em card próprio, por 3 segundos, com texto grande.",
+     "Explique a creatinina em uma frase: ela sobe como subproduto muscular.",
+     "Sugira conversar com o médico sobre exames."
+    ],
+    "ilustracao_chave": "escudo",
+    "alt_texto": "Card sobre creatina e rim em adultos saudáveis, com ressalva para doença renal.",
+    "bloqueio_prova": null
+   },
+   {
+    "slug": "dopamina-e-humor",
+    "titulo": "Dopamina e humor",
+    "veredito": "sem_evidencia",
+    "melhor_para": "alcance",
+    "mito": "Creatina aumenta a dopamina.",
+    "verdade": "Em humanos, o efeito conhecido é energético: a creatina participa da regeneração de ATP. Não há base para afirmar aumento direto de dopamina ou serotonina. Uma revisão de 2026 aponta sinais promissores como apoio em depressão em alguns grupos, o que não é tratamento.",
+    "fala_segura": "A creatina participa da energia das células. Dizer que aumenta a dopamina vai além do que os estudos mostram.",
+    "nao_dizer": [
+     "Aumenta dopamina",
+     "Trata depressão",
+     "Substitui acompanhamento profissional"
+    ],
+    "ressalva_obrigatoria": null,
+    "dado_card": null,
+    "provas": [],
+    "dicas": [
+     "Bom tema de mito de redes: desmonta uma afirmação popular.",
+     "Sem card de dado: use texto e ilustração.",
+     "Nunca fale de depressão como indicação."
+    ],
+    "ilustracao_chave": "bateria",
+    "alt_texto": "Card sobre creatina e energia celular, sem evidência de aumento de dopamina.",
+    "bloqueio_prova": "Sem fonte com link verificado para este tema. Pesquise antes de usar um card de dado."
+   },
+   {
+    "slug": "dose-e-uso",
+    "titulo": "Dose e uso",
+    "veredito": "bloqueado",
+    "melhor_para": "conversao",
+    "mito": null,
+    "verdade": null,
+    "fala_segura": "Antes de falar de dose, confirme na posição de consenso da sociedade científica.",
+    "nao_dizer": [
+     "Qualquer dose em número, enquanto não confirmada",
+     "Fase de saturação como obrigatória"
+    ],
+    "ressalva_obrigatoria": null,
+    "dado_card": null,
+    "provas": [],
+    "dicas": [
+     "Dose é o ponto em que um erro vira risco. Só publique com fonte conferida."
+    ],
+    "ilustracao_chave": "colher",
+    "alt_texto": "Card sobre dose de creatina.",
+    "bloqueio_prova": "A dose não foi verificada em fonte. Pesquise antes. Cards permitidos: capa e CTA."
+   }
+  ]
+ }
+]
