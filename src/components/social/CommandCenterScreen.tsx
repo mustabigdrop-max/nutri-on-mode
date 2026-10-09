@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ReelFactoryPanel from "./ReelFactoryPanel";
 import CommandCenterLower from "./CommandCenterLower";
 import EngineInstructionsPanel from "./EngineInstructionsPanel";
+import CardStudioPanel from "./CardStudioPanel";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
 import { BlockQuality, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
@@ -613,6 +614,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           <div id="cc-fabrica" style={{ scrollMarginTop: 80 }} />
           <ReelFactoryPanel onChosen={load} />
         </Panel>
+
+        <Panel glow={C.cyan}><div id="cc-cards" style={{ scrollMarginTop: 80 }} /><CardStudioPanel /></Panel>
 
         {engUser && <Panel glow={C.cyan}><EngineInstructionsPanel rows={engRows} userId={engUser} open={engOpen} onToggle={() => setEngOpen(o => !o)} onChanged={loadEngine} /></Panel>}
 
