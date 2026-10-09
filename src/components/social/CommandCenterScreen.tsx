@@ -455,7 +455,14 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
         {/* Missão de hoje */}
         <Panel glow={C.gold}>
+          <div id="cc-missao" style={{ scrollMarginTop: 80 }} />
           <Label color={C.gold}>Missão de hoje</Label>
+          {dica && (
+            <div style={{ marginTop: 6, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", fontFamily: F.m, fontSize: 9, color: C.cyan, border: `1px solid ${C.cyan}40`, padding: "4px 8px" }}>
+              Fórmula sugerida ao Arquiteto: {dica.nome}
+              <button type="button" onClick={() => setDica(null)} style={{ fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: "none", cursor: "pointer" }}>remover</button>
+            </div>
+          )}
           {engRows.length > 0 && (
             <button type="button" onClick={vazias.length ? abrirInstrucoes : undefined} style={{ marginTop: 6, fontFamily: F.m, fontSize: 9, letterSpacing: 1, color: vazias.length ? "#EF9F27" : "#5DCAA5", background: "none", border: `1px solid ${vazias.length ? "#EF9F27" : "#5DCAA5"}50`, padding: "2px 8px", cursor: vazias.length ? "pointer" : "default", borderRadius: 0 }}>
               Motor: {MOTOR_INSTRUCOES.ativas} de {MOTOR_INSTRUCOES.total} instruções ativas
@@ -570,6 +577,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
 
         <Panel glow={C.gold}>
+          <div id="cc-fabrica" style={{ scrollMarginTop: 80 }} />
           <ReelFactoryPanel onChosen={load} />
         </Panel>
 
@@ -585,6 +593,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
           {/* Resultado de ontem */}
           <Panel>
+            <div id="cc-resultado" style={{ scrollMarginTop: 80 }} />
             <Label color={C.gold}>Resultado de ontem</Label>
             {!ontem ? <Empty>Sem dados reais ainda. Lance o resultado do último reel.</Empty> : (
               <>
