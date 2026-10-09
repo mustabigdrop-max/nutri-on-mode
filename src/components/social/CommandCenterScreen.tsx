@@ -433,8 +433,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
             {[
-              { t: `🔥 ${streak} ${streak === 1 ? "DIA" : "DIAS"}`, c: C.gold },
-              { t: `HOJE ${doDia.length} DE ${auto?.limite_diario ?? "—"}`, c: C.cyan },
+              { t: `STREAK ${streak} ${streak === 1 ? "DIA" : "DIAS"}`, c: C.gold },
+              { t: auto?.limite_diario ? `HOJE ${doDia.length} DE ${auto.limite_diario}` : `HOJE ${doDia.length} ${doDia.length === 1 ? "REEL" : "REELS"}`, c: C.cyan },
               { t: `MOTOR: ${MOTOR_INSTRUCOES.ativas} DE ${MOTOR_INSTRUCOES.total} INSTRUÇÕES ATIVAS`, c: motorOk ? "#5DCAA5" : "#EF9F27" },
             ].map(x => <span key={x.t} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: x.c, border: `1px solid ${x.c}40`, padding: "2px 6px", whiteSpace: "nowrap" }}>{x.t}</span>)}
           </div>
