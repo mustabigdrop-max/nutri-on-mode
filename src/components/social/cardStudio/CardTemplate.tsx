@@ -22,7 +22,8 @@ export const CardTemplate = forwardRef<HTMLDivElement, Props>(function CardTempl
   const short = h < 1400;
   const T = (size: number, color = txt): React.CSSProperties => ({ fontFamily: FT, fontWeight: 700, fontSize: size, lineHeight: 1.02, color, textTransform: "uppercase", margin: 0, overflowWrap: "anywhere" });
   const sceneSize = short ? 300 : 460;
-  const scene = c.cena && !fundoUrl ? <div style={{ display: "flex", justifyContent: "center" }}><Scene id={c.cena} cor={pri} acento={sec} intensidade={c.intensidade ?? 0.85} size={sceneSize} /></div> : null;
+  const sceneAt = (f: number) => c.cena && !fundoUrl ? <div style={{ display: "flex", justifyContent: "center" }}><Scene id={c.cena} cor={pri} acento={sec} intensidade={c.intensidade ?? 0.85} size={Math.round(sceneSize * f)} /></div> : null;
+  const scene = sceneAt(1);
   const itens = (c.itens ?? []).filter(x => x !== undefined);
 
   let inner: JSX.Element;
@@ -30,7 +31,7 @@ export const CardTemplate = forwardRef<HTMLDivElement, Props>(function CardTempl
     case "mito_verdade":
       inner = <div style={{ display: "flex", flexDirection: "column", gap: short ? 24 : 40, flex: 1, justifyContent: "center" }}>
         <div style={{ borderLeft: `14px solid #EF4444`, paddingLeft: 32 }}><p style={{ fontFamily: FM, fontSize: 34, color: "#EF9A9A", margin: 0 }}>MITO</p><p style={{ ...T(fit(c.esquerda ?? "", 96)), textDecoration: "line-through", textDecorationColor: "#EF4444", opacity: .8 }}>{c.esquerda}</p></div>
-        {scene && <div style={{ transform: "scale(.6)", margin: short ? -80 : -100 }}>{scene}</div>}
+        {sceneAt(0.6)}
         <div style={{ borderLeft: `14px solid ${pri}`, paddingLeft: 32 }}><p style={{ fontFamily: FM, fontSize: 34, color: pri, margin: 0 }}>VERDADE</p><p style={T(fit(c.direita ?? c.titulo, 110))}>{c.direita ?? c.titulo}</p></div>
       </div>; break;
     case "numero":
@@ -46,7 +47,7 @@ export const CardTemplate = forwardRef<HTMLDivElement, Props>(function CardTempl
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
           {[c.esquerda, c.direita].map((v, i) => <div key={i} style={{ border: `6px solid ${i ? pri : sec}`, padding: 36, minHeight: short ? 220 : 420, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center" }}><p style={T(fit(v ?? "", 72), i ? pri : sec)}>{v}</p></div>)}
         </div>
-        {scene && <div style={{ transform: "scale(.55)", margin: -120 }}>{scene}</div>}
+        {sceneAt(0.55)}
       </div>; break;
     case "passos": case "timeline": case "lista3": {
       const list = template === "lista3" ? itens.slice(0, 3) : itens.slice(0, 5);
@@ -58,7 +59,7 @@ export const CardTemplate = forwardRef<HTMLDivElement, Props>(function CardTempl
             <span style={{ fontFamily: FM, fontSize: 40, color: i % 2 ? sec : pri, minWidth: 70 }}>{template === "lista3" ? "■" : String(i + 1).padStart(2, "0")}</span>
             <span style={T(fit(it, short ? 54 : 64))}>{it}</span></div>)}
         </div>
-        {scene && !short && list.length <= 3 && <div style={{ transform: "scale(.6)", margin: -90 }}>{scene}</div>}
+        {!short && list.length <= 3 && sceneAt(0.6)}
       </div>; break;
     }
     case "pergunta":
