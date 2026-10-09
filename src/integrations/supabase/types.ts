@@ -11403,53 +11403,95 @@ export type Database = {
       }
       retention_scripts: {
         Row: {
+          ajuste_obrigatorio: string | null
+          checklist: Json | null
           created_at: string
           estrutura: Json
+          estrutura_nome: string | null
+          figura: string | null
+          fonte_conferida_em: string | null
+          fonte_status: string | null
+          formula: string | null
           formula_id: number | null
           id: string
           nota_geral: number | null
           notas: Json
           objetivo: string
+          ordem_lote: number | null
           origem: string
+          pilar: number | null
           quero_mais: string | null
           rede: string
+          ressalva_obrigatoria: string | null
           revisao: string
+          risco: string | null
           roteiro: Json
+          slug: string | null
+          status: string | null
           tema: string
+          titulo: string | null
           tom: string
           user_id: string
         }
         Insert: {
+          ajuste_obrigatorio?: string | null
+          checklist?: Json | null
           created_at?: string
           estrutura?: Json
+          estrutura_nome?: string | null
+          figura?: string | null
+          fonte_conferida_em?: string | null
+          fonte_status?: string | null
+          formula?: string | null
           formula_id?: number | null
           id?: string
           nota_geral?: number | null
           notas?: Json
           objetivo: string
+          ordem_lote?: number | null
           origem?: string
+          pilar?: number | null
           quero_mais?: string | null
           rede?: string
+          ressalva_obrigatoria?: string | null
           revisao?: string
+          risco?: string | null
           roteiro?: Json
+          slug?: string | null
+          status?: string | null
           tema: string
+          titulo?: string | null
           tom: string
           user_id: string
         }
         Update: {
+          ajuste_obrigatorio?: string | null
+          checklist?: Json | null
           created_at?: string
           estrutura?: Json
+          estrutura_nome?: string | null
+          figura?: string | null
+          fonte_conferida_em?: string | null
+          fonte_status?: string | null
+          formula?: string | null
           formula_id?: number | null
           id?: string
           nota_geral?: number | null
           notas?: Json
           objetivo?: string
+          ordem_lote?: number | null
           origem?: string
+          pilar?: number | null
           quero_mais?: string | null
           rede?: string
+          ressalva_obrigatoria?: string | null
           revisao?: string
+          risco?: string | null
           roteiro?: Json
+          slug?: string | null
+          status?: string | null
           tema?: string
+          titulo?: string | null
           tom?: string
           user_id?: string
         }
@@ -11673,6 +11715,68 @@ export type Database = {
           summary?: string | null
           topic?: string | null
           week_reference?: string | null
+        }
+        Relationships: []
+      }
+      script_sources: {
+        Row: {
+          id: string
+          link: string | null
+          observacao: string | null
+          ordem: number
+          referencia: string | null
+          rotulo_card: string | null
+          script_id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          link?: string | null
+          observacao?: string | null
+          ordem?: number
+          referencia?: string | null
+          rotulo_card?: string | null
+          script_id: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          link?: string | null
+          observacao?: string | null
+          ordem?: number
+          referencia?: string | null
+          rotulo_card?: string | null
+          script_id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "script_sources_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "retention_scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      script_templates: {
+        Row: {
+          payload: Json
+          pilar: number
+          slug: string
+        }
+        Insert: {
+          payload: Json
+          pilar: number
+          slug: string
+        }
+        Update: {
+          payload?: Json
+          pilar?: number
+          slug?: string
         }
         Relationships: []
       }
@@ -15175,6 +15279,7 @@ export type Database = {
         Args: { _patient_id: string; _professional_id: string }
         Returns: boolean
       }
+      mark_fonte_conferida: { Args: { _script_id: string }; Returns: string }
       my_challenge_ids: { Args: { _user_id: string }; Returns: string[] }
       owns_challenge_gym: {
         Args: { _gym_id: string; _gym_slug: string; _user_id: string }
@@ -15231,6 +15336,7 @@ export type Database = {
         }
       }
       seed_content_pillars: { Args: { _user_id: string }; Returns: undefined }
+      seed_pilar_templates: { Args: { _pilar: number }; Returns: number }
       team_role_of: {
         Args: { _patient_id: string; _professional_id: string }
         Returns: Database["public"]["Enums"]["professional_role"]
