@@ -12496,36 +12496,54 @@ export type Database = {
       }
       script_sources: {
         Row: {
+          ano: number | null
+          autores: string | null
           id: string
           link: string | null
+          n_participantes: number | null
           observacao: string | null
           ordem: number
+          organizacao: string | null
+          periodico: string | null
           referencia: string | null
           rotulo_card: string | null
           script_id: string
           tipo: string
+          tipo_estudo: string | null
           user_id: string
         }
         Insert: {
+          ano?: number | null
+          autores?: string | null
           id?: string
           link?: string | null
+          n_participantes?: number | null
           observacao?: string | null
           ordem?: number
+          organizacao?: string | null
+          periodico?: string | null
           referencia?: string | null
           rotulo_card?: string | null
           script_id: string
           tipo: string
+          tipo_estudo?: string | null
           user_id: string
         }
         Update: {
+          ano?: number | null
+          autores?: string | null
           id?: string
           link?: string | null
+          n_participantes?: number | null
           observacao?: string | null
           ordem?: number
+          organizacao?: string | null
+          periodico?: string | null
           referencia?: string | null
           rotulo_card?: string | null
           script_id?: string
           tipo?: string
+          tipo_estudo?: string | null
           user_id?: string
         }
         Relationships: [

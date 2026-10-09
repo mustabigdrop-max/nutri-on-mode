@@ -26,7 +26,7 @@ export const VEREDITO: Record<Veredito, { label: string; cor: string; ordem: num
 };
 export const MELHOR_LABEL: Record<MelhorPara, string> = { alcance: "alcance", autoridade: "autoridade", conversao: "conversão" };
 
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
+export const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
 export const palavras = (s: string | null | undefined) => String(s ?? "").trim().split(/\s+/).filter(Boolean).length;
 export const corte = (s: string | null | undefined, n: number) => String(s ?? "").trim().split(/\s+/).filter(Boolean).slice(0, n).join(" ");
 const primeiraFrase = (s: string | null | undefined) => String(s ?? "").split(/(?<=[.!?])\s+/)[0]?.trim() ?? "";
@@ -164,9 +164,9 @@ export interface Achado { nivel: Exclude<Nivel, "ok">; motivo: string }
 export const ABSOLUTAS = ["prova", "garante", "nunca", "sempre", "todo mundo", "100%"];
 export const BLOQUEIO_FIXO = ["melhora a inteligencia", "aumenta a dopamina", "aumenta a serotonina"];
 export const PROIBIDAS_PADRAO = ["crucial", "muda tudo", "o segredo", "segredo"];
-const NUMERO_OU_ESTUDO = /\d|por\s*cento|\bestudos?\b|\bpesquisas?\b|meta-?an[aá]lise|\bensaio\b|\brevis[aã]o\b/i;
-const contem = (texto: string, termo: string) => { const t = ` ${norm(texto)} `, q = norm(termo); return q.length > 0 && new RegExp(`(^|[^a-z0-9])${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`).test(t); };
-const textoVisivel = (c: KitCard) => [c.principal, c.secundario, c.esquerda, c.direita, ...(c.papel === "dizer" || c.papel === "fontes" || c.papel === "limites" ? [] : c.itens ?? [])].filter(Boolean).join(" ");
+export const NUMERO_OU_ESTUDO = /\d|por\s*cento|\bestudos?\b|\bpesquisas?\b|meta-?an[aá]lise|\bensaio\b|\brevis[aã]o\b/i;
+export const contem = (texto: string, termo: string) => { const t = ` ${norm(texto)} `, q = norm(termo); return q.length > 0 && new RegExp(`(^|[^a-z0-9])${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`).test(t); };
+export const textoVisivel = (c: KitCard) => [c.principal, c.secundario, c.esquerda, c.direita, ...(c.papel === "dizer" || c.papel === "fontes" || c.papel === "limites" ? [] : c.itens ?? [])].filter(Boolean).join(" ");
 
 export function verificarCard(c: KitCard, s: Subtema, proibidas: string[] = []): Achado[] {
   const out: Achado[] = []; const txt = textoVisivel(c);
