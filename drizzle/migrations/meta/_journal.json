@@ -204,6 +204,13 @@
       "when": 1791511413595,
       "tag": "0028_engine_prompts",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791513609952,
+      "tag": "0029_reel_quality_k1",
+      "breakpoints": true
     }
   ]
 }
