@@ -193,11 +193,11 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
         </>} />)}
 
       <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
-        <button type="button" disabled={busy || !!ativo || cfg?.pausado} onClick={gerar} style={{ ...sm(C.gold), background: C.gold, color: "#0A0A0A" }}>{ativo ? "LOTE EM ANDAMENTO" : "GERAR LOTE"}</button>
-        <button type="button" onClick={() => setOpen(open === "banco" ? "" : "banco")} style={sm(C.cyan)}>Banco de reels</button>
+        <button type="button" disabled={busy || !!ativo || cfg?.pausado} onClick={gerar} style={{ ...sm(C.gold), background: C.gold, color: "#0A0A0A" }}>{ativo ? "LOTE EM ANDAMENTO" : "⚡ GERAR LOTE"}</button>
+        <button type="button" onClick={() => setOpen(open === "banco" ? "" : "banco")} style={sm(C.cyan)}>▤ Banco de reels</button>
         <button type="button" onClick={() => setOpen(open === "matriz" ? "" : "matriz")} style={sm(C.gold)}>Matriz</button>
-        <button type="button" onClick={() => setOpen(open === "config" ? "" : "config")} style={sm(C.cyan)}>CONFIGURAR</button>
-        <button type="button" onClick={() => setOpen(open === "historico" ? "" : "historico")} style={sm(C.muted)}>HISTÓRICO</button>
+        <button type="button" onClick={() => setOpen(open === "config" ? "" : "config")} style={sm(C.cyan)}>⚙ CONFIGURAR</button>
+        <button type="button" onClick={() => setOpen(open === "historico" ? "" : "historico")} style={sm(C.muted)}>⟲ HISTÓRICO</button>
       </div>
 
       {open === "matriz" && <ContentMatrixPanel />}
