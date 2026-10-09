@@ -1,5 +1,5 @@
 import { VERIFICADOR_REGRAS } from "../../../supabase/functions/_shared/reelVerifier";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ENGINE_LABEL, ENGINE_PROMPT_KEYS, rowState, saveInstruction, validateInstruction, type EngineRow, type EnginePromptKey } from "@/lib/engineInstructions";
