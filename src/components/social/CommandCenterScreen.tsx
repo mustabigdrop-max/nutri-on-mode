@@ -7,6 +7,8 @@ import CommandCenterLower from "./CommandCenterLower";
 import EngineInstructionsPanel from "./EngineInstructionsPanel";
 import CardStudioPanel from "./CardStudioPanel";
 import AcademyPanel from "./AcademyPanel";
+import BibliotecaPanel, { type TreinoAlvo } from "./BibliotecaPanel";
+import { EstudoHojeCard, useRevisoesHoje } from "./EstudoHoje";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
 import { ReelTecnicas, TecnicasRetencao } from "./ReelTecnicas";
 import { BlockQuality, Critico2Panel, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
@@ -309,7 +311,11 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const [dica, setDica] = useState<{ id: number; nome: string } | null>(null);
   const [tecDica, setTecDica] = useState<string | null>(null);
   useEffect(() => { const h = (e: Event) => { const t = String((e as CustomEvent).detail ?? ""); if (!t) return; setTecDica(t); setTemaOpen(true); toast.success(`Técnica "${t}" vai como dica ao Arquiteto`); }; window.addEventListener("cc-tecnica-dica", h); return () => window.removeEventListener("cc-tecnica-dica", h); }, []);
-  const [academiaLab, setAcademiaLab] = useState<"fala" | undefined>(undefined);
+  const [academiaLab, setAcademiaLab] = useState<"gancho" | "figuras" | "fala" | undefined>(undefined);
+  const [biblioteca, setBiblioteca] = useState(false);
+  const [academiaErros, setAcademiaErros] = useState(false);
+  const revHoje = useRevisoesHoje(biblioteca);
+  const abrirTreinos = (a: TreinoAlvo) => { setBiblioteca(false); setAcademiaErros(a === "erros"); setAcademiaLab(a === "gancho" || a === "figuras" || a === "fala" ? a : undefined); setAcademia(true); };
   const [fxLevel, setFxLevel] = useFxLevel();
   const [fxOpen, setFxOpen] = useState(false);
   const [foco, setFoco] = useState(false);
@@ -465,7 +471,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const paletteActions: PaletteAction[] = [
     { id: "gerar", label: "Gerar reel de hoje", hint: "MISSÃO", run: () => { setFoco(false); setTemaOpen(true); scrollTo("cc-missao"); } },
     { id: "banco", label: "Abrir Banco de reels", hint: "FÁBRICA", run: () => { setFoco(false); window.dispatchEvent(new Event("cc-open-banco")); scrollTo("cc-fabrica"); } },
-    { id: "academia", label: "Abrir Academia", run: () => { setFoco(false); setAcademiaLab(undefined); setAcademia(true); } },
+    { id: "academia", label: "Abrir Academia", run: () => { setFoco(false); setBiblioteca(true); } },
     { id: "fala", label: "Abrir Laboratório de Fala", hint: "ACADEMIA", run: () => { setFoco(false); setAcademiaLab("fala"); setAcademia(false); setTimeout(() => setAcademia(true), 0); } },
     { id: "cards", label: "Abrir Estúdio de Cards", run: () => { setFoco(false); scrollTo("cc-cards"); } },
     { id: "resultado", label: "Lançar resultado", hint: "RETENÇÃO", run: () => { setFoco(false); scrollTo("cc-resultado"); } },
@@ -500,7 +506,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
               { t: `MOTOR: ${MOTOR_INSTRUCOES.ativas} DE ${MOTOR_INSTRUCOES.total} INSTRUÇÕES ATIVAS`, c: motorOk ? "#5DCAA5" : "#EF9F27" },
             ].map(x => <span key={x.t} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: x.c, border: `1px solid ${x.c}40`, padding: "2px 6px", whiteSpace: "nowrap" }}>{x.t}</span>)}
             {!foco && <button type="button" onClick={abrirInstrucoes} style={sigBtn(C.cyan)}>INSTRUÇÕES</button>}
-            {!foco && <button type="button" onClick={() => setAcademia(true)} style={sigBtn(C.gold)}>ACADEMIA</button>}
+            {!foco && <button type="button" onClick={() => setBiblioteca(true)} style={sigBtn(C.gold)}>ACADEMIA{revHoje > 0 ? ` · ${revHoje} REVISÕES` : ""}</button>}
             <button type="button" onClick={() => setFoco(f => !f)} aria-pressed={foco} style={sigBtn("#EF9F27", foco)}>{foco ? "SAIR DO FOCO · ESC" : "FOCO"}</button>
             {!foco && <div style={{ position: "relative" }}>
               <button type="button" onClick={() => setFxOpen(o => !o)} aria-expanded={fxOpen} style={sigBtn(C.cyan)}>EFEITOS · {FX_LABEL[fxLevel].toUpperCase()}</button>
@@ -666,7 +672,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           <ReelFactoryPanel onChosen={load} />
         </Panel>
 
-        {academia && <AcademyPanel initialLab={academiaLab} onClose={() => { setAcademia(false); setAcademiaLab(undefined); }} />}
+        {academia && <AcademyPanel initialLab={academiaLab} initialErros={academiaErros} onClose={() => { setAcademia(false); setAcademiaLab(undefined); setAcademiaErros(false); }} />}
+        {biblioteca && <BibliotecaPanel onClose={() => setBiblioteca(false)} onTreinos={abrirTreinos} />}
         <Panel glow={C.cyan}><div id="cc-cards" style={{ scrollMarginTop: 80 }} /><CardStudioPanel /></Panel>
 
         {engUser && <Panel glow={C.cyan}><EngineInstructionsPanel rows={engRows} userId={engUser} open={engOpen} onToggle={() => setEngOpen(o => !o)} onChanged={loadEngine} /></Panel>}
