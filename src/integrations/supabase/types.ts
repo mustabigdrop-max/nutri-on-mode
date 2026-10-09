@@ -2523,6 +2523,48 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_kit: {
+        Row: {
+          cor_fundo: string
+          cor_primaria: string
+          cor_secundaria: string
+          fonte_titulo: string
+          handle: string | null
+          limite_diario_gerada: number
+          logo_url: string | null
+          margem_base: number
+          margem_topo: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cor_fundo?: string
+          cor_primaria?: string
+          cor_secundaria?: string
+          fonte_titulo?: string
+          handle?: string | null
+          limite_diario_gerada?: number
+          logo_url?: string | null
+          margem_base?: number
+          margem_topo?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cor_fundo?: string
+          cor_primaria?: string
+          cor_secundaria?: string
+          fonte_titulo?: string
+          handle?: string | null
+          limite_diario_gerada?: number
+          logo_url?: string | null
+          margem_base?: number
+          margem_topo?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       breakdown_sessions: {
         Row: {
           analyses: Json
@@ -12979,6 +13021,51 @@ export type Database = {
           tipo_treino?: string | null
           user_id?: string
           volume_total?: number | null
+        }
+        Relationships: []
+      }
+      studio_cards: {
+        Row: {
+          bloco_ref: number | null
+          conteudo: Json
+          created_at: string
+          formato: string
+          id: string
+          ilustracao_origem: string | null
+          imagem_path: string | null
+          nome: string | null
+          script_id: string | null
+          template: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          bloco_ref?: number | null
+          conteudo?: Json
+          created_at?: string
+          formato?: string
+          id?: string
+          ilustracao_origem?: string | null
+          imagem_path?: string | null
+          nome?: string | null
+          script_id?: string | null
+          template: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          bloco_ref?: number | null
+          conteudo?: Json
+          created_at?: string
+          formato?: string
+          id?: string
+          ilustracao_origem?: string | null
+          imagem_path?: string | null
+          nome?: string | null
+          script_id?: string | null
+          template?: string
+          tipo?: string
+          user_id?: string
         }
         Relationships: []
       }
