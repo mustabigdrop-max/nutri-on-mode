@@ -7,12 +7,23 @@ export const STAGE_LABEL: Record<string, string> = {
   critico: "Testando o gancho...",
   reescrita: "Reescrevendo pontos fracos...",
   originalidade: "Filtrando o que se repete...",
+  tema: "Escolhendo o tema...",
+  verificador: "Verificando fontes e regras...",
+  revisao: "Revisando os pontos fracos...",
 };
+
+/** Etapas visíveis do Diretor de Reels, na ordem. */
+export const DIRETOR_ETAPAS = [
+  { k: "tema", l: "Escolhendo o tema" }, { k: "angulo", l: "Escolhendo o ângulo" }, { k: "arquiteto", l: "Arquitetando" },
+  { k: "redator", l: "Escrevendo" }, { k: "verificador", l: "Verificando fontes e regras" }, { k: "critico", l: "Críticos" },
+  { k: "revisao", l: "Revisão" }, { k: "pronto", l: "Resultado" },
+] as const;
 
 /** Runs gerar_reel and streams step events. Resolves with the saved script. */
 export async function runGerarReel(
-  body: { tema: string; objetivo: string; tom: string; quero_mais?: string },
-  onStage: (stage: string) => void,
+  body: { tema: string; objetivo: string; tom: string; quero_mais?: string; diretor?: boolean },
+  onStage: (stage: string, ev?: any) => void,
+  signal?: AbortSignal,
 ): Promise<any> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("Entre na sua conta para gerar");
@@ -20,7 +31,7 @@ export async function runGerarReel(
   const res = await fetch(`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/gerar_reel`, {
     method: "POST",
     headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(body), signal,
   });
   if (!res.ok || !res.body) {
     let msg = "Falha ao gerar reel";
@@ -38,7 +49,7 @@ export async function runGerarReel(
       if (ev.etapa === "erro") throw new Error(ev.error);
       if (ev.etapa === "pronto") return ev.script;
       if (ev.etapa === "teste") return ev.resultado;
-      onStage(ev.etapa);
+      onStage(ev.etapa, ev);
     }
   }
   throw new Error("A geração foi interrompida. Tente novamente.");
