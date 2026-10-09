@@ -1,0 +1,240 @@
+[
+ {
+  "slug": "t1-ethos-pathos-logos",
+  "trilha": "Retórica clássica",
+  "ordem": 1,
+  "titulo": "Ethos, pathos e logos",
+  "fonte_nivel": "classica",
+  "conceito": "Aristóteles, na Retórica, descreve três meios de persuasão: o caráter de quem fala (ethos), a emoção despertada no público (pathos) e o argumento em si (logos).",
+  "no_reel": "Abra com pathos (0 a 2s: uma tensão). Mostre ethos entre 2 e 6s com prova ou demonstração, não com adjetivo. Sustente o corpo com logos: dado, passo ou critério.",
+  "fraco": "Sou especialista, confia em mim e para de errar.",
+  "forte": "Uma meta-análise juntou 47 experimentos sobre isso. Veja o que eles mediram.",
+  "exercicio": "Pegue a abertura do seu último reel. Troque um adjetivo de autoridade por uma prova que você consiga mostrar.",
+  "fontes": [
+   {
+    "ref": "Aristóteles, Retórica (tradição clássica)",
+    "url": null
+   }
+  ]
+ },
+ {
+  "slug": "t1-cinco-canones",
+  "trilha": "Retórica clássica",
+  "ordem": 2,
+  "titulo": "Os 5 cânones de Cícero",
+  "fonte_nivel": "classica",
+  "conceito": "A tradição retórica romana organiza a preparação de um discurso em cinco partes: invenção (o que dizer), disposição (em que ordem), elocução (com que estilo), memória (o que fica) e ação (como entregar).",
+  "no_reel": "Invenção é a tensão do reel. Disposição são os blocos de tempo. Elocução são 1 a 2 figuras. Memória é uma frase-assinatura de até 6 palavras que o público repete. Ação são as marcas de voz no teleprompter.",
+  "fraco": "Reel sem frase-assinatura: ninguém lembra do que você disse.",
+  "forte": "Frase-assinatura repetida na série: Comportamento primeiro. Comida depois.",
+  "exercicio": "Escreva 3 frases-assinatura de até 6 palavras para o Método MCE e escolha uma.",
+  "fontes": [
+   {
+    "ref": "Tradição retórica romana (Cícero)",
+    "url": null
+   }
+  ]
+ },
+ {
+  "slug": "t1-figuras",
+  "trilha": "Retórica clássica",
+  "ordem": 3,
+  "titulo": "Figuras que seguram atenção",
+  "fonte_nivel": "classica",
+  "conceito": "Figuras organizam a frase para o ouvido. As mais úteis em vídeo curto: antítese (contraste), anáfora (repetição no início), regra de três (ritmo), pergunta retórica (respondida) e prolepse (responder à objeção antes que ela apareça).",
+  "no_reel": "Use no máximo 1 a 2 por vídeo. Mais que isso soa ensaiado. (Orientação prática do GRAVITAS.)",
+  "fraco": "Você precisa ter mais disciplina e mais motivação.",
+  "forte": "Não é falta de disciplina. É falta de plano.",
+  "exercicio": "Escreva a mesma ideia com antítese e com regra de três. Leia em voz alta e fique com a que soa mais natural.",
+  "fontes": [
+   {
+    "ref": "Tradição retórica clássica",
+    "url": null
+   }
+  ]
+ },
+ {
+  "slug": "t2-lacuna",
+  "trilha": "Persuasão com ciência",
+  "ordem": 4,
+  "titulo": "Lacuna de informação",
+  "fonte_nivel": "verificada",
+  "conceito": "Loewenstein (1994) propôs que a curiosidade nasce de uma lacuna entre o que a pessoa sabe e o que quer saber. A lacuna precisa ter o tamanho certo: nem grande demais, nem pequena demais.",
+  "no_reel": "Prometa um detalhe específico que a pessoa não sabe e feche esse detalhe no payoff. Dicas de dieta não abre lacuna. O erro de domingo à noite que desmonta a semana abre.",
+  "fraco": "Vou te dar dicas para melhorar a dieta.",
+  "forte": "Existe um erro de domingo à noite que desmonta a sua semana inteira. É o segundo da lista.",
+  "exercicio": "Transforme 'dicas de treino' em uma lacuna específica e fechável.",
+  "fontes": [
+   {
+    "ref": "Loewenstein (1994), Psychological Bulletin",
+    "url": "https://www.cmu.edu/dietrich/sds/docs/loewenstein/PsychofCuriosity.pdf"
+   }
+  ]
+ },
+ {
+  "slug": "t2-narrativa",
+  "trilha": "Persuasão com ciência",
+  "ordem": 5,
+  "titulo": "Transporte narrativo",
+  "fonte_nivel": "verificada",
+  "conceito": "Green e Brock (2000, Journal of Personality and Social Psychology 79) mostraram que quem se envolve com uma história reduz a contra-argumentação. Uma meta-análise posterior (van Laer e colegas, 76 artigos) confirma o efeito.",
+  "no_reel": "Micro-história em 3 batidas: situação, virada, aprendizado, em cerca de 15 segundos.",
+  "fraco": "Muita gente erra na dieta.",
+  "forte": "Segunda, 6h: marmita pronta. Quarta, 19h: já tinha desistido. O que mudou nesse intervalo? (Exemplo ilustrativo, não é caso real.)",
+  "exercicio": "Escreva uma micro-história de 3 frases para o tema 'pular o treino'.",
+  "fontes": [
+   {
+    "ref": "Green e Brock (2000)",
+    "url": "https://gwern.net/docs/www/pdfs.semanticscholar.org/39691cee32e52fbfc33f1a0316aa0d008cb699a4.pdf"
+   }
+  ]
+ },
+ {
+  "slug": "t2-intencao-acao",
+  "trilha": "Persuasão com ciência",
+  "ordem": 6,
+  "titulo": "Intenção não é ação",
+  "fonte_nivel": "verificada",
+  "conceito": "Webb e Sheeran (2006), em 47 experimentos, viram que uma mudança de média a grande na intenção (d = 0,66) gera uma mudança de pequena a média no comportamento (d = 0,36). Gollwitzer e Sheeran (2006), em 94 testes, acharam efeito de médio a grande (d = 0,65) de planos no formato se-então.",
+  "no_reel": "Faça o CTA pequeno e concreto, com quando e onde.",
+  "fraco": "Começa a se cuidar!",
+  "forte": "Se bater a vontade de pular o treino, então calça o tênis e faz só 5 minutos.",
+  "exercicio": "Escreva um CTA no formato se-então para o seu próximo reel.",
+  "fontes": [
+   {
+    "ref": "Webb e Sheeran (2006)",
+    "url": "https://eprints.whiterose.ac.uk/1580"
+   },
+   {
+    "ref": "Gollwitzer e Sheeran (2006)",
+    "url": "https://kops.uni-konstanz.de/entities/publication/2e749bfb-8533-437c-8203-7e788c910c5f"
+   }
+  ]
+ },
+ {
+  "slug": "t2-porque",
+  "trilha": "Persuasão com ciência",
+  "ordem": 7,
+  "titulo": "O efeito do 'porque'",
+  "fonte_nivel": "verificada",
+  "conceito": "Langer, Blank e Chanowitz (1978, Journal of Personality and Social Psychology 36) observaram que pedidos acompanhados de uma razão tendem a ter mais adesão, sobretudo em pedidos pequenos. O efeito é discutido para pedidos maiores.",
+  "no_reel": "Todo CTA com motivo.",
+  "fraco": "Comenta PLANO.",
+  "forte": "Comenta PLANO, porque eu te mando o modelo hoje.",
+  "exercicio": "Reescreva 3 CTAs seus acrescentando um motivo curto.",
+  "fontes": [
+   {
+    "ref": "Discussão crítica do estudo",
+    "url": "https://languagelog.ldc.upenn.edu/nll/?p=1396"
+   }
+  ]
+ },
+ {
+  "slug": "t3-dois-segundos",
+  "trilha": "Atenção e retenção",
+  "ordem": 8,
+  "titulo": "Os 2 primeiros segundos",
+  "fonte_nivel": "tecnica_de_producao",
+  "conceito": "Regra de produção do GRAVITAS: abrir com tensão em até 12 palavras, sem saudação e sem contexto vago. As 12 fórmulas do Atlas existem para isso.",
+  "no_reel": "Escolha uma fórmula do Atlas e escreva a abertura antes do resto.",
+  "fraco": "Oi, pessoal, tudo bem? Hoje eu vou falar sobre dieta.",
+  "forte": "Quase todo mundo começa a dieta pelo cardápio. Errado.",
+  "exercicio": "Reescreva 3 aberturas de reels seus com 3 fórmulas diferentes do Atlas.",
+  "fontes": [
+   {
+    "ref": "Atlas de Atenção (GRAVITAS)",
+    "url": null
+   }
+  ]
+ },
+ {
+  "slug": "t3-loop-aberto",
+  "trilha": "Atenção e retenção",
+  "ordem": 9,
+  "titulo": "Loop aberto e final em loop",
+  "fonte_nivel": "verificada",
+  "conceito": "Deixar uma pergunta aberta e fechá-la depois dá um motivo para a pessoa ficar. A explicação sustentada é a tendência de retomar o que ficou interrompido (Ovsiankina; cerca de dois terços retomam). Uma meta-análise de 2025 (Ghibellini e Meier) não encontrou que tarefas inacabadas sejam mais lembradas.",
+  "no_reel": "Abra 3 loops e feche todos até o payoff. Termine retomando a abertura.",
+  "fraco": "Vou te contar um segredo no final.",
+  "forte": "São 3 erros. O terceiro é o que mais atrapalha. (E o vídeo entrega os 3.)",
+  "exercicio": "Escreva uma abertura com um loop e o ponto exato do vídeo onde ele fecha.",
+  "fontes": [
+   {
+    "ref": "Ghibellini e Meier (2025)",
+    "url": "https://ideas.repec.org/a/pal/palcom/v12y2025i1d10.1057_s41599-025-05000-w.html"
+   }
+  ]
+ },
+ {
+  "slug": "t3-ritmo",
+  "trilha": "Atenção e retenção",
+  "ordem": 10,
+  "titulo": "Ritmo e mudança visual",
+  "fonte_nivel": "tecnica_de_producao",
+  "conceito": "Regra de produção do GRAVITAS, não um achado de estudo: 2,5 a 3 palavras por segundo, mudança visual a cada 2 a 3 segundos e reinício de atenção a cada 5 a 7 segundos.",
+  "no_reel": "Marque os pontos de corte, zoom ou texto novo no roteiro antes de gravar.",
+  "fraco": "Plano fixo de 12 segundos falando sem nenhum corte.",
+  "forte": "Corte, zoom ou texto novo a cada 2 a 3 segundos.",
+  "exercicio": "Marque pontos de corte num roteiro seu e compare com a sua curva de retenção na Calibração.",
+  "fontes": [
+   {
+    "ref": "Regra de produção do GRAVITAS",
+    "url": null
+   }
+  ]
+ },
+ {
+  "slug": "t4-voz",
+  "trilha": "Oratória na câmera",
+  "ordem": 11,
+  "titulo": "Voz: pausa, ênfase e queda",
+  "fonte_nivel": "tecnica_de_producao",
+  "conceito": "A pausa antes do ponto central cria expectativa. A ênfase marca a palavra que carrega o sentido. A queda de tom no fim da frase soa como certeza; o tom subindo soa como dúvida. É técnica de oratória, não achado de estudo.",
+  "no_reel": "Use [ÊNFASE], [PAUSA 0,4s] e [QUEDA] no teleprompter.",
+  "fraco": "Ler tudo no mesmo tom, sem pausa.",
+  "forte": "Abdominal não escolhe [PAUSA 0,4s] de onde sai a gordura.",
+  "exercicio": "Grave a mesma frase 3 vezes: sem pausa, com pausa, com pausa e queda. Compare no Laboratório de Fala.",
+  "fontes": [
+   {
+    "ref": "Técnica de oratória",
+    "url": null
+   }
+  ]
+ },
+ {
+  "slug": "t4-presenca",
+  "trilha": "Oratória na câmera",
+  "ordem": 12,
+  "titulo": "Presença na câmera",
+  "fonte_nivel": "tecnica_de_producao",
+  "conceito": "Olhe para a lente, não para a tela. Enquadre do peito para cima. Comece falando no primeiro quadro, sem respiração audível nem 'então...' antes.",
+  "no_reel": "Grave a abertura 3 vezes e fique com a primeira em que você fala já no quadro zero.",
+  "fraco": "Respirar fundo e dizer 'então...' antes de começar.",
+  "forte": "Falar a primeira palavra no primeiro quadro.",
+  "exercicio": "Grave 3 aberturas e escolha a melhor.",
+  "fontes": [
+   {
+    "ref": "Técnica de produção",
+    "url": null
+   }
+  ]
+ },
+ {
+  "slug": "t4-lote",
+  "trilha": "Oratória na câmera",
+  "ordem": 13,
+  "titulo": "Ensaio e gravação em lote",
+  "fonte_nivel": "tecnica_de_producao",
+  "conceito": "Ensaie cada reel duas vezes antes de gravar. Grave todas as aberturas primeiro, quando a energia está mais alta. Uma ou duas sessões por semana rendem a semana inteira. Defina o seu se-então de gravação.",
+  "no_reel": "Se for terça ou sábado, então gravo 5 reels em 90 minutos pelo Modo Gravação.",
+  "fraco": "Gravar quando der vontade.",
+  "forte": "Se for terça às 19h, então gravo 5 reels em lote.",
+  "exercicio": "Escreva o seu se-então de gravação e coloque no Planner.",
+  "fontes": [
+   {
+    "ref": "Gollwitzer e Sheeran (2006), plano se-então",
+    "url": "https://kops.uni-konstanz.de/entities/publication/2e749bfb-8533-437c-8203-7e788c910c5f"
+   }
+  ]
+ }
+]
