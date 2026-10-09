@@ -5433,6 +5433,71 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_prompt_versions: {
+        Row: {
+          conteudo: string
+          created_at: string
+          id: string
+          prompt_id: string
+          user_id: string
+          versao: number
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          id?: string
+          prompt_id: string
+          user_id: string
+          versao: number
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          prompt_id?: string
+          user_id?: string
+          versao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "engine_prompt_versions_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "engine_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      engine_prompts: {
+        Row: {
+          chave: string
+          conteudo: string
+          id: string
+          padrao: string
+          updated_at: string
+          user_id: string
+          versao: number
+        }
+        Insert: {
+          chave: string
+          conteudo?: string
+          id?: string
+          padrao?: string
+          updated_at?: string
+          user_id: string
+          versao?: number
+        }
+        Update: {
+          chave?: string
+          conteudo?: string
+          id?: string
+          padrao?: string
+          updated_at?: string
+          user_id?: string
+          versao?: number
+        }
+        Relationships: []
+      }
       ergo_checkins: {
         Row: {
           analise_ia: string | null
