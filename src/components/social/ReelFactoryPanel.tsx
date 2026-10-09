@@ -14,6 +14,10 @@ const row: React.CSSProperties = { display: "flex", justifyContent: "space-betwe
 export const estimateCalls = (n: number) => 1 + n * 2 + Math.ceil(n * 0.8) + Math.ceil(n * 0.8 * 0.5) * 2;
 const STATUS = ["novo", "escolhido", "guardado", "gravado", "postado"];
 const ST_LABEL: Record<string, string> = { fila: "NA FILA", rodando: "GERANDO", concluido: "CONCLUÍDO", erro: "ERRO", pausado: "PAUSADO" };
+const riscoAberto = (x: any) => Array.isArray(x?.notas?.riscos_de_conteudo) && x.notas.riscos_de_conteudo.length > 0;
+const TEMA_SAUDE = /(saud|treino|trein|suplement|creatin|whey|proteina|dieta|caloria|aliment|comida|nutri|emagrec|gordura|musculo|hipertrof|vitamin|sono|horm|jejum|carbo|acucar|exame)/;
+const ehSaude = (x: any) => TEMA_SAUDE.test(`${x.tema ?? ""} ${x.pilar ?? ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+const PesquisarAntes = () => <button type="button" disabled title="Disponível com a Sala de Pesquisa" style={{ ...sm(C.muted), opacity: 0.5, cursor: "not-allowed" }}>Pesquisar antes</button>;
 const corNota = (n: any) => (n == null ? C.muted : n >= 8 ? C.gold : n >= 6 ? C.cyan : C.red);
 
 async function call(body: any) {
@@ -81,14 +85,17 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
   const [f, setF] = useState({ q: "", pilar: "", formula: "", nota: "", status: "", descartados: false });
   const [sel, setSel] = useState<string[]>([]);
   const [lote, setLote] = useState<any[] | null>(null);
+  const [refCount, setRefCount] = useState<number | null>(null);
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser(); if (!user) return;
     const [s, b, k] = await Promise.all([
       supabase.from("reel_factory_settings").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("reel_factory_batches").select("id, data, origem, status, etapa, n_ideias, cursor, aprovados, descartados, chamadas, estimativa_chamadas, tentativas, erro, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
-      supabase.from("reel_bank").select("id, batch_id, pilar, angulo, formula_id, formula_nome, tema, abertura, duracao_seg, nota, roteiro, status, motivo_descarte, agendado_para, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(500),
+      supabase.from("reel_bank").select("id, batch_id, pilar, angulo, formula_id, formula_nome, tema, abertura, duracao_seg, nota, roteiro, status, motivo_descarte, agendado_para, created_at, notas").eq("user_id", user.id).order("created_at", { ascending: false }).limit(500),
     ]);
+    const { count } = await supabase.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", user.id).or("slug.like.p1-%,slug.like.p2-%");
+    setRefCount(count ?? 0);
     setCfg(s.data); if (s.data) setForm({ n_ideias: s.data.n_ideias, limite_roteiros_dia: s.data.limite_roteiros_dia, hora: s.data.hora, pausado: s.data.pausado, automatico: s.data.automatico, limite_agendados_dia: s.data.limite_agendados_dia, ritmo_semana: s.data.ritmo_semana });
     setBatches(b.data ?? []); setBank(k.data ?? []);
   };
@@ -123,7 +130,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
   const pilares = [...new Set(bank.map(x => x.pilar).filter(Boolean))];
   const formulas = [...new Map(bank.filter(x => x.formula_id).map(x => [x.formula_id, x.formula_nome ?? `Fórmula ${x.formula_id}`])).entries()];
   const filtrado = useMemo(() => bank.filter(x =>
-    (f.descartados ? ["reprovado", "descartado"].includes(x.status) : !["reprovado", "descartado"].includes(x.status)) &&
+    (f.descartados ? (["reprovado", "descartado"].includes(x.status) || Number(x.nota ?? 0) < 7 || riscoAberto(x)) : !["reprovado", "descartado"].includes(x.status) && Number(x.nota ?? 0) >= 7 && !riscoAberto(x)) &&
     (!f.status || x.status === f.status) && (!f.pilar || x.pilar === f.pilar) && (!f.formula || String(x.formula_id) === f.formula) &&
     (!f.nota || Number(x.nota ?? 0) >= Number(f.nota)) && (!f.q || `${x.tema} ${x.abertura ?? ""}`.toLowerCase().includes(f.q.toLowerCase()))), [bank, f]);
 
@@ -190,6 +197,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
         top.map(x => <Item key={x.id} x={x} actions={<>
           <button type="button" onClick={() => escolher(x.id)} style={sm(C.gold)}>Escolher pra hoje</button>
           <button type="button" onClick={() => setStatus(x.id, "guardado")} style={sm(C.cyan)}>Guardar no banco</button>
+          {ehSaude(x) && <PesquisarAntes />}
           <button type="button" onClick={() => setStatus(x.id, "descartado")} style={sm(C.muted)}>DESCARTAR</button>
         </>} />)}
 
@@ -232,6 +240,8 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
 
       {open === "banco" && (
         <div style={{ marginTop: 10 }}>
+          {refCount != null && refCount < 20 && <div style={{ fontFamily: F.m, fontSize: 10, color: C.gold, border: `1px solid ${C.gold}50`, padding: "6px 8px", marginBottom: 8 }}>Faltam os reels de referência (Pilares 1 e 2) · {refCount} de 20 carregados.</div>}
+          <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted, marginBottom: 6 }}>Mostrando só nota 7 ou mais e sem risco aberto. O resto fica em Ver descartados.</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
             <input style={{ ...inp, gridColumn: "1 / -1" }} placeholder="Buscar tema ou abertura" value={f.q} onChange={e => setF(p => ({ ...p, q: e.target.value }))} />
             <select style={inp} value={f.pilar} onChange={e => setF(p => ({ ...p, pilar: e.target.value }))}><option value="">Todos os pilares</option>{pilares.map(p => <option key={p} value={p}>{p}</option>)}</select>
@@ -248,6 +258,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
             {["novo", "guardado"].includes(x.status) && <button type="button" onClick={() => escolher(x.id)} style={sm(C.gold)}>Escolher pra hoje</button>}
             {x.status !== "gravado" && x.status !== "postado" && <button type="button" onClick={() => setStatus(x.id, "gravado")} style={sm(C.cyan)}>GRAVADO</button>}
             {x.status !== "postado" && <button type="button" onClick={() => setStatus(x.id, "postado")} style={sm(C.cyan)}>POSTADO</button>}
+            {ehSaude(x) && <PesquisarAntes />}
             <button type="button" onClick={() => setStatus(x.id, "descartado")} style={sm(C.muted)}>DESCARTAR</button>
           </>} />)}
           <PillarReelsPanel />
