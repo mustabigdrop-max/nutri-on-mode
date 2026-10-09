@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Aplicar textos oficiais no Command Center, Fábrica, avisos e SIGNAL; localizar GRAVITAS
+- [x] Aplicar textos oficiais no Command Center, Fábrica, avisos e SIGNAL; conferir tela autenticada
+- [ ] Aplicar textos no GRAVITAS — módulo não encontrado neste projeto; aguarda identificação pelo usuário
 
 - [x] Integrar crítico de retenção com contagens objetivas, revisão de até duas rodadas e notas visíveis
 - [x] Testar limites do crítico e geração autenticada com revisão no Command Center
