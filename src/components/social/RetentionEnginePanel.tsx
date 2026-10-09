@@ -81,7 +81,7 @@ export default function RetentionEnginePanel() {
     <button onClick={run} disabled={busy} style={{ marginTop: 16, width: "100%", padding: 16, borderRadius: 0, border: "none", cursor: busy ? "wait" : "pointer", background: T.purple, color: T.bg, fontFamily: T.ft, fontWeight: 700, fontSize: 18, letterSpacing: 1 }}>
       {busy ? STAGES[stage!] ?? "Projetando atenção..." : "GERAR REEL"}</button>
 
-    {r && <RetentionResultView key={gen?.id} r={r} blocks={blocks} />}
+    {r && <RetentionResultView key={gen?.id} r={r} blocks={blocks} scriptId={gen?.id} />}
 
     {history.length > 0 && <div style={card}>
       <div style={label}>HISTÓRICO</div>

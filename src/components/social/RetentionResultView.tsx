@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { copyText } from "./socialUi";
+import CutGeneratorPanel from "./CutGeneratorPanel";
 
 const T = { bg: "#020205", s1: "#0A0A0F", s2: "#111118", cyan: "#00D4FF", gold: "#B8922A", green: "#5DCAA5", red: "#EF4444", yellow: "#EF9F27", purple: "#AFA9EC", muted: "#888", text: "#E8E8F0", white: "#F5F0E8",
   ft: "'Rajdhani',sans-serif", fm: "'Space Mono',monospace" };
@@ -40,7 +41,7 @@ function RecordMode({ blocks, onClose }: { blocks: any[]; onClose: (gravado: boo
   </div>;
 }
 
-export default function RetentionResultView({ r, blocks }: { r: any; blocks: any[] }) {
+export default function RetentionResultView({ r, blocks, scriptId }: { r: any; blocks: any[]; scriptId?: string }) {
   const total = blocks.reduce((n, b) => n + span(String(b.tempo)), 0) || 1;
   const [rec, setRec] = useState(false); const [gravado, setGravado] = useState(false);
   const [checks, setChecks] = useState<boolean[]>(CHECKS.map(() => false));
@@ -90,6 +91,8 @@ export default function RetentionResultView({ r, blocks }: { r: any; blocks: any
       <button onClick={() => setRec(true)} disabled={!blocks.length} style={{ marginTop: 12, width: "100%", padding: 12, background: T.s2, color: T.cyan, border: `1px solid ${T.cyan}`, borderRadius: 0, fontFamily: T.ft, fontWeight: 700, fontSize: 16, letterSpacing: 1, cursor: "pointer" }}>
         {gravado ? "✓ GRAVADO · MODO GRAVAÇÃO" : "MODO GRAVAÇÃO"}</button>
     </div>
+
+    <CutGeneratorPanel scriptId={scriptId} blocks={blocks} />
 
     <div style={card}>
       <div style={label}>ROTEIRO BLOCO A BLOCO</div>
