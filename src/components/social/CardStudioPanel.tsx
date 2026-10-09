@@ -210,7 +210,7 @@ export default function CardStudioPanel() {
         <label><span style={label}>FORMATO</span><select style={input} value={edit.formato} onChange={e => setEdit({ ...edit, formato: e.target.value as Formato })}>{(["9:16", "4:5", "1:1"] as Formato[]).map(f => <option key={f}>{f}</option>)}</select></label>
       </div>
       <label><span style={label}>TEXTO PRINCIPAL · {nPal}/{MAX_PALAVRAS} PALAVRAS</span>
-        <input style={input} value={edit.conteudo.titulo} onChange={e => upd({ titulo: limitarPalavras(e.target.value + (e.target.value.endsWith(" ") ? " " : "")).concat(e.target.value.endsWith(" ") && palavras(e.target.value) < MAX_PALAVRAS ? " " : "") })} /></label>
+        <input style={input} value={edit.conteudo.titulo} onChange={e => { const v = e.target.value; upd({ titulo: palavras(v) > MAX_PALAVRAS ? limitarPalavras(v) : v }); }} /></label>
       {(edit.template === "mito_verdade" || edit.template === "comparacao") && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <label><span style={label}>{edit.template === "mito_verdade" ? "MITO" : "ESQUERDA"}</span><input style={input} value={edit.conteudo.esquerda ?? ""} onChange={e => upd({ esquerda: e.target.value })} /></label>
         <label><span style={label}>{edit.template === "mito_verdade" ? "VERDADE" : "DIREITA"}</span><input style={input} value={edit.conteudo.direita ?? ""} onChange={e => upd({ direita: e.target.value })} /></label></div>}
