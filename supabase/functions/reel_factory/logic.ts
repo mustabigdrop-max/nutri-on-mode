@@ -70,3 +70,67 @@ export function dedupThemes(temas: string[], previous: string[]): { keep: boolea
 
 /** Request-count estimate shown before running: ideation + Architect + Writer per idea + Critic (+1 rewrite & re-critic for ~half). */
 export const estimateCalls = (n: number) => 1 + n * 2 + Math.ceil(n * 0.8) + Math.ceil(n * 0.8 * 0.5) * 2;
+
+// ---------- Content matrix (pillars x angles) ----------
+export type Pillar = { chave: string | null; nome: string; publico: string; qtd_diaria: number; objetivo: string[]; mecanismo: string; exige_caso_real: boolean; ativo: boolean };
+export const REDISTRIBUTE_TO = ["comportamento", "mitos", "profissionais"];
+export const ANGLE_MAX_SHARE = 0.3;
+export const MIN_ANGLES = 5;
+
+/** Largest-remainder apportionment of n slots by weight. */
+function apportion(n: number, weights: number[]): number[] {
+  const tot = weights.reduce((a, b) => a + b, 0);
+  if (!tot || n <= 0) return weights.map(() => 0);
+  const raw = weights.map(w => (w / tot) * n);
+  const out = raw.map(Math.floor);
+  const order = raw.map((r, i) => [r - Math.floor(r), i]).sort((a, b) => b[0] - a[0]);
+  for (let k = 0; out.reduce((a, b) => a + b, 0) < n; k++) out[order[k % order.length][1]]++;
+  return out;
+}
+
+/** Effective daily quantity per pillar: inactive -> 0; a pillar needing a real case with none registered gives its share to comportamento/mitos/profissionais. */
+export function effectiveQuotas(pillars: Pillar[], hasRealCase: boolean): number[] {
+  const q = pillars.map(p => (p.ativo ? Math.max(0, p.qtd_diaria) : 0));
+  pillars.forEach((p, i) => {
+    if (!p.exige_caso_real || hasRealCase || !q[i]) return;
+    const targets = pillars.map((t, j) => (t.ativo && t.chave && REDISTRIBUTE_TO.includes(t.chave) ? j : -1)).filter(j => j >= 0);
+    const share = apportion(q[i], targets.map(() => 1));
+    targets.forEach((j, k) => (q[j] += share[k]));
+    q[i] = 0;
+  });
+  return q;
+}
+
+/** Pillar index per slot: 80% follows quota x measured retention, 20% follows the plain quota (exploration). */
+export function allocatePillars(n: number, pillars: Pillar[], hasRealCase: boolean, perf: Record<string, number | null> = {}): number[] {
+  const q = effectiveQuotas(pillars, hasRealCase);
+  const measured = pillars.map(p => perf[p.nome]).filter((v): v is number => v != null);
+  const max = measured.length ? Math.max(...measured) || 1 : 1;
+  const nExplore = measured.length ? Math.round(n * EXPLORE_SHARE) : 0;
+  const exploit = apportion(n - nExplore, q.map((w, i) => (perf[pillars[i].nome] != null ? w * (0.5 + Number(perf[pillars[i].nome]) / max) : w)));
+  const explore = apportion(nExplore, q);
+  const counts = exploit.map((c, i) => c + explore[i]);
+  const out: number[] = [];
+  // interleave pillars so every chunk mixes them
+  while (out.length < n && counts.some(c => c > 0)) counts.forEach((c, i) => { if (c > 0 && out.length < n) { out.push(i); counts[i]--; } });
+  return out;
+}
+
+/** Angles for k slots of one pillar: >= min(5,k) distinct, none above 30% (min 1), ~20% on angles never measured for this pillar. */
+export function assignAngles(k: number, angles: string[], comboPerf: Record<string, number | null> = {}): string[] {
+  if (k <= 0 || !angles.length) return [];
+  const cap = Math.max(1, Math.floor(k * ANGLE_MAX_SHARE));
+  const untested = angles.filter(a => comboPerf[a] == null);
+  const ranked = [...angles].sort((a, b) => (comboPerf[b] ?? -1) - (comboPerf[a] ?? -1));
+  const used: Record<string, number> = {};
+  const out: string[] = [];
+  const take = (a: string) => { if ((used[a] ?? 0) >= cap) return false; used[a] = (used[a] ?? 0) + 1; out.push(a); return true; };
+  const nExplore = untested.length && untested.length < angles.length ? Math.max(1, Math.round(k * EXPLORE_SHARE)) : 0;
+  for (let i = 0; i < nExplore && out.length < k; i++) take(untested[i % untested.length]);
+  // distinct floor first
+  for (const a of ranked) { if (Object.keys(used).length >= Math.min(MIN_ANGLES, k, angles.length) || out.length >= k) break; if (!used[a]) take(a); }
+  // fill by rank up to the cap
+  let guard = 0;
+  while (out.length < k && guard++ < k * angles.length) for (const a of ranked) { if (out.length >= k) break; take(a); }
+  return out;
+}

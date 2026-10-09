@@ -176,6 +176,13 @@
       "when": 1791503377799,
       "tag": "0024_reel_factory",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791509082930,
+      "tag": "0025_content_matrix",
+      "breakpoints": true
     }
   ]
 }

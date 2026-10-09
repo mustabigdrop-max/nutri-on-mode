@@ -4595,6 +4595,99 @@ export type Database = {
         }
         Relationships: []
       }
+      content_angles: {
+        Row: {
+          id: number
+          nome: string
+        }
+        Insert: {
+          id: number
+          nome: string
+        }
+        Update: {
+          id?: number
+          nome?: string
+        }
+        Relationships: []
+      }
+      content_cases: {
+        Row: {
+          ativo: boolean
+          autorizado: boolean
+          created_at: string
+          descricao: string
+          id: string
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          autorizado?: boolean
+          created_at?: string
+          descricao?: string
+          id?: string
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          autorizado?: boolean
+          created_at?: string
+          descricao?: string
+          id?: string
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      content_pillars: {
+        Row: {
+          ativo: boolean
+          chave: string | null
+          created_at: string
+          exige_caso_real: boolean
+          id: string
+          mecanismo: string
+          nome: string
+          objetivo: string[]
+          ordem: number
+          publico: string
+          qtd_diaria: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          chave?: string | null
+          created_at?: string
+          exige_caso_real?: boolean
+          id?: string
+          mecanismo?: string
+          nome: string
+          objetivo?: string[]
+          ordem?: number
+          publico?: string
+          qtd_diaria?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          chave?: string | null
+          created_at?: string
+          exige_caso_real?: boolean
+          id?: string
+          mecanismo?: string
+          nome?: string
+          objetivo?: string[]
+          ordem?: number
+          publico?: string
+          qtd_diaria?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -10770,6 +10863,7 @@ export type Database = {
         Row: {
           abertura: string | null
           agendado_para: string | null
+          angulo: string | null
           batch_id: string | null
           created_at: string
           duracao_seg: number | null
@@ -10778,20 +10872,25 @@ export type Database = {
           formula_nome: string | null
           id: string
           idx: number | null
+          mecanismo: string | null
           motivo_descarte: string | null
           nota: number | null
           notas: Json | null
+          objetivo: string | null
           pilar: string | null
+          publico: string | null
           roteiro: Json | null
           script_id: string | null
           status: string
           tema: string
+          tensao: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           abertura?: string | null
           agendado_para?: string | null
+          angulo?: string | null
           batch_id?: string | null
           created_at?: string
           duracao_seg?: number | null
@@ -10800,20 +10899,25 @@ export type Database = {
           formula_nome?: string | null
           id?: string
           idx?: number | null
+          mecanismo?: string | null
           motivo_descarte?: string | null
           nota?: number | null
           notas?: Json | null
+          objetivo?: string | null
           pilar?: string | null
+          publico?: string | null
           roteiro?: Json | null
           script_id?: string | null
           status?: string
           tema: string
+          tensao?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           abertura?: string | null
           agendado_para?: string | null
+          angulo?: string | null
           batch_id?: string | null
           created_at?: string
           duracao_seg?: number | null
@@ -10822,14 +10926,18 @@ export type Database = {
           formula_nome?: string | null
           id?: string
           idx?: number | null
+          mecanismo?: string | null
           motivo_descarte?: string | null
           nota?: number | null
           notas?: Json | null
+          objetivo?: string | null
           pilar?: string | null
+          publico?: string | null
           roteiro?: Json | null
           script_id?: string | null
           status?: string
           tema?: string
+          tensao?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -15026,6 +15134,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      seed_content_pillars: { Args: { _user_id: string }; Returns: undefined }
       team_role_of: {
         Args: { _patient_id: string; _professional_id: string }
         Returns: Database["public"]["Enums"]["professional_role"]

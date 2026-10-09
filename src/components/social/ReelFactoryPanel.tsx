@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ContentMatrixPanel from "./ContentMatrixPanel";
 
 const C = { cyan: "#00D4FF", gold: "#B8922A", red: "#EF4444", text: "#C8C8D8", white: "#F0F0F8", muted: "#555566", dim: "#333340" };
 const F = { t: "'Rajdhani',sans-serif", m: "'Space Mono',monospace" };
@@ -73,7 +74,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
   const [form, setForm] = useState({ n_ideias: 100, limite_roteiros_dia: 100, hora: 6, pausado: false, automatico: false, limite_agendados_dia: 1, ritmo_semana: 5 });
   const [batches, setBatches] = useState<any[]>([]);
   const [bank, setBank] = useState<any[]>([]);
-  const [open, setOpen] = useState<"" | "config" | "banco" | "historico">("");
+  const [open, setOpen] = useState<"" | "config" | "banco" | "historico" | "matriz">("");
   const [busy, setBusy] = useState(false);
   const [f, setF] = useState({ q: "", pilar: "", formula: "", nota: "", status: "", descartados: false });
   const [sel, setSel] = useState<string[]>([]);
@@ -84,7 +85,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
     const [s, b, k] = await Promise.all([
       supabase.from("reel_factory_settings").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("reel_factory_batches").select("id, data, origem, status, etapa, n_ideias, cursor, aprovados, descartados, chamadas, estimativa_chamadas, tentativas, erro, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
-      supabase.from("reel_bank").select("id, batch_id, pilar, formula_id, formula_nome, tema, abertura, duracao_seg, nota, roteiro, status, motivo_descarte, agendado_para, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(500),
+      supabase.from("reel_bank").select("id, batch_id, pilar, angulo, formula_id, formula_nome, tema, abertura, duracao_seg, nota, roteiro, status, motivo_descarte, agendado_para, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(500),
     ]);
     setCfg(s.data); if (s.data) setForm({ n_ideias: s.data.n_ideias, limite_roteiros_dia: s.data.limite_roteiros_dia, hora: s.data.hora, pausado: s.data.pausado, automatico: s.data.automatico, limite_agendados_dia: s.data.limite_agendados_dia, ritmo_semana: s.data.ritmo_semana });
     setBatches(b.data ?? []); setBank(k.data ?? []);
@@ -130,7 +131,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
         <div style={{ fontFamily: F.t, fontSize: 14, fontWeight: 700, color: C.white, lineHeight: 1.2 }}>{x.tema}</div>
         <span style={{ fontFamily: F.t, fontSize: 18, fontWeight: 700, color: corNota(x.nota) }}>{x.nota ?? "—"}</span>
       </div>
-      <div style={{ fontFamily: F.m, fontSize: 9, color: C.cyan, marginTop: 3 }}>{(x.formula_nome ?? "—").toUpperCase()} · {x.pilar ?? "—"} · {x.duracao_seg ? `${x.duracao_seg}s` : "—"} · {x.status.toUpperCase()}</div>
+      <div style={{ fontFamily: F.m, fontSize: 9, color: C.cyan, marginTop: 3 }}>{(x.formula_nome ?? "—").toUpperCase()} · {x.pilar ?? "—"}{x.angulo ? ` · ${x.angulo}` : ""} · {x.duracao_seg ? `${x.duracao_seg}s` : "—"} · {x.status.toUpperCase()}</div>
       {x.abertura && <div style={{ fontFamily: F.m, fontSize: 10, color: C.text, marginTop: 4 }}>“{x.abertura}”</div>}
       {x.motivo_descarte && <div style={{ fontFamily: F.m, fontSize: 9, color: C.red, marginTop: 4 }}>MOTIVO: {x.motivo_descarte}</div>}
       <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>{actions}</div>
@@ -164,10 +165,12 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
       <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
         <button type="button" disabled={busy || !!ativo || cfg?.pausado} onClick={gerar} style={{ ...sm(C.gold), background: C.gold, color: "#0A0A0A" }}>{ativo ? "LOTE EM ANDAMENTO" : "GERAR LOTE"}</button>
         <button type="button" onClick={() => setOpen(open === "banco" ? "" : "banco")} style={sm(C.cyan)}>Banco de reels</button>
+        <button type="button" onClick={() => setOpen(open === "matriz" ? "" : "matriz")} style={sm(C.gold)}>Matriz</button>
         <button type="button" onClick={() => setOpen(open === "config" ? "" : "config")} style={sm(C.cyan)}>CONFIGURAR</button>
         <button type="button" onClick={() => setOpen(open === "historico" ? "" : "historico")} style={sm(C.muted)}>HISTÓRICO</button>
       </div>
 
+      {open === "matriz" && <ContentMatrixPanel />}
       {open === "config" && (
         <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
           {([["n_ideias", "IDEIAS POR LOTE", 5, 100], ["limite_roteiros_dia", "LIMITE DE GERAÇÕES POR DIA", 5, 200], ["limite_agendados_dia", "REELS AGENDADOS POR DIA", 1, 10], ["ritmo_semana", "RITMO (REELS POR SEMANA)", 1, 70]] as const).map(([k, l, mi, ma]) => (
