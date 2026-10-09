@@ -192,8 +192,8 @@ export function lightBurst(color = "#00D4FF") {
 export function Nucleus3D({ shown, score, exemplo, color, dashed, max = 100, children }: { shown: number; score: number | null; exemplo: boolean; color?: string; dashed?: boolean; max?: number; children: React.ReactNode }) {
   const col = color ?? (exemplo ? "#EF9F27" : "#00D4FF");
   const s = score ?? 0;
-  const thick = 3 + (s / 100) * 7;
-  const glow = 4 + (s / 100) * 14;
+  const thick = 3 + (Math.min(s, max) / max) * 7;
+  const glow = 4 + (Math.min(s, max) / max) * 14;
   const R = 78, circ = 2 * Math.PI * R;
   return (
     <div className="cc-n3d" style={{ position: "relative", width: 220, height: 220, perspective: 700 }}>
