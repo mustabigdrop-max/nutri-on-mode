@@ -297,21 +297,33 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const [pct3, setPct3] = useState(""); const [medio, setMedio] = useState(""); const [faixas, setFaixas] = useState<Record<string, string>>({});
   const [calib, setCalib] = useState<any>(null); const [calibBusy, setCalibBusy] = useState(false);
   const [goalForm, setGoalForm] = useState({ metrica: "reels_publicados", alvo: "" });
+  const [auto, setAuto] = useState<any>(null);
+  const [chips, setChips] = useState<string[]>([]);
+  const [genErr, setGenErr] = useState<string | null>(null);
+  const [fresh, setFresh] = useState(false);
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoaded(true); return; }
     const since = new Date(Date.now() - 120 * 864e5).toISOString();
-    const [s, r, f, h, g] = await Promise.all([
+    const [s, r, f, h, g, a, bk, pl] = await Promise.all([
       supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
       supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
       supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media").eq("user_id", user.id),
       supabase.from("hook_formulas").select("id, nome"),
       supabase.from("creator_goals").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.from("cc_automation_settings").select("limite_diario, pausado").eq("user_id", user.id).maybeSingle(),
+      supabase.from("reel_bank").select("tema").eq("user_id", user.id).in("status", ["novo", "guardado"]).order("nota", { ascending: false }).limit(12),
+      supabase.from("content_pillars").select("nome, ativo").eq("user_id", user.id).eq("ativo", true).order("ordem").limit(8),
     ]);
     setScripts(s.data ?? []); setResults(r.data ?? []);
     setFormulas(((f.data ?? []) as any[]).map(x => ({ ...x, nome: (h.data ?? []).find((y: any) => y.id === x.formula_id)?.nome ?? `Fórmula ${x.formula_id}` }))
       .sort((a, b) => Number(b.retencao_3s_media ?? -1) - Number(a.retencao_3s_media ?? -1)));
+    setAuto(a.data ?? null);
+    const bankT = ((bk.data ?? []) as any[]).map(x => x.tema).filter(Boolean);
+    const pilT = ((pl.data ?? []) as any[]).map(x => x.nome).filter(Boolean);
+    const mix: string[] = []; for (let i = 0; mix.length < 6 && (i < bankT.length || i < pilT.length); i++) { if (bankT[i]) mix.push(bankT[i]); if (pilT[i] && mix.length < 6) mix.push(pilT[i]); }
+    setChips([...new Set(mix)].slice(0, 6));
     setGoal(g.data ?? null); setLoaded(true);
   };
   useEffect(() => { load(); }, []);
@@ -336,13 +348,14 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
   const gerar = async () => {
     if (!tema.trim()) return toast.error("Escreva o tema do reel");
+    setGenErr(null); setStage("arquiteto");
     try {
       const script = await runGerarReel({ tema: tema.trim(), objetivo, tom: "direto" }, setStage);
       toast.success("Reel de hoje pronto");
       setTemaOpen(false); setTema(""); setBlocoAberto(null);
-      await load(); setTodayIdx(0);
+      await load(); setTodayIdx(0); setFresh(true);
       void script;
-    } catch (e: any) { toast.error(e.message); } finally { setStage(null); }
+    } catch (e: any) { setGenErr(e?.message || "Não foi possível gerar o reel."); } finally { setStage(null); }
   };
 
   const calibrar = async () => {
