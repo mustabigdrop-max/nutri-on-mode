@@ -22,7 +22,7 @@ interface Reel { id: string; tema: string; titulo: string | null; roteiro: any; 
 function Thumb({ p, formato, brand, width = 150, fundo, gerada }: { p: Proposal; formato: Formato; brand: Brand; width?: number; fundo?: string | null; gerada?: boolean }) {
   const { w, h } = FORMATOS[formato]; const k = width / w;
   return <div style={{ width, height: h * k, overflow: "hidden", position: "relative", border: "1px solid #ffffff15" }}>
-    <div style={{ transform: `scale(${k})`, transformOrigin: "top left", position: "absolute" }}><CardTemplate template={p.template} conteudo={p.conteudo} formato={formato} brand={brand} fundoUrl={fundo} gerada={gerada} /></div>
+    <div style={{ transform: `scale(${k})`, transformOrigin: "top left", position: "absolute", left: 0, top: 0, width: w, height: h, maxWidth: "none" }}><CardTemplate template={p.template} conteudo={p.conteudo} formato={formato} brand={brand} fundoUrl={fundo} gerada={gerada} /></div>
   </div>;
 }
 

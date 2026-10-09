@@ -77,7 +77,7 @@ export const CardTemplate = forwardRef<HTMLDivElement, Props>(function CardTempl
       </div>; break;
   }
 
-  return <div ref={ref} style={{ width: w, height: h, background: brand.cor_fundo, position: "relative", overflow: "hidden", boxSizing: "border-box" }}>
+  return <div ref={ref} style={{ width: w, height: h, minWidth: w, maxWidth: "none", flexShrink: 0, background: brand.cor_fundo, position: "relative", overflow: "hidden", boxSizing: "border-box" }}>
     {fundoUrl && <><img src={fundoUrl} crossOrigin="anonymous" alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, ${brand.cor_fundo}66, ${brand.cor_fundo}E6)` }} /></>}
     <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${pri}10 1px, transparent 1px), linear-gradient(90deg, ${pri}10 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
