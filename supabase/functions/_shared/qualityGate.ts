@@ -45,7 +45,7 @@ export function blocosParaRevisar(notas: { id: number; nota: number }[], pend: P
 }
 
 type RevBlock = { id: number; tempo: string; funcao: string; fala: string; texto_tela: string; estimulo_visual: string; gatilho: string };
-const digits = (s: string) => (s.match(/\d+(?:[.,]\d+)?/g) ?? []);
+const digits = (s: string): string[] => s.match(/\d+(?:[.,]\d+)?/g) ?? [];
 
 /**
  * Applies the Revisor output in code: only allowed ids change, no new numbers may appear,
