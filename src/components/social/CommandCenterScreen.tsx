@@ -627,7 +627,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               {reel && !temaOpen ? (
                 <>
-                  <button type="button" onClick={() => setTemaOpen(true)} style={btn()}>TROCAR TEMA</button>
+                  <button type="button" className="cc-hide-focus" onClick={() => setTemaOpen(true)} style={btn()}>TROCAR TEMA</button>
                   <button type="button" onClick={() => setGravando(true)} disabled={!blocos.length} style={{ ...btn(true), position: "relative", overflow: "hidden" }}>
                     <span className="cc-anim" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "35%", background: "linear-gradient(90deg, transparent, #ffffff40, transparent)", animation: "ccSweep4 4s ease infinite" }} />
                     ▶ Gravar agora
