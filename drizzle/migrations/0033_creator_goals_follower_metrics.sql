@@ -1,0 +1,2 @@
+ALTER TABLE public.creator_goals DROP CONSTRAINT IF EXISTS creator_goals_metrica_check;
+ALTER TABLE public.creator_goals ADD CONSTRAINT creator_goals_metrica_check CHECK (metrica IN ('reels_publicados','retencao_3s','seguidores_instagram','seguidores_tiktok','seguidores_youtube'));
