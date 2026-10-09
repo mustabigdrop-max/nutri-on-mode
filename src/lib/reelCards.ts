@@ -15,7 +15,7 @@ export const MAX_CARDS = 7;
 export const CHIP_METODO = "POSIÇÃO DO MÉTODO";
 export const MSG_SEM_PALAVRA = "Defina a palavra-chave do reel";
 export const AVISO_FORA_DO_TEMA = "A afirmação não está no tema. Conferir.";
-export const RESSALVA_PADRAO = "Suplemento é sugestão para revisão profissional. Converse com seu nutricionista.";
+export const RESSALVA_PADRAO = "Suplemento não substitui orientação profissional. Converse com seu nutricionista antes de usar.";
 const STATUS_SEM_PROVA = ["sem_fonte_primaria", "posicao_do_metodo"];
 const NOME: Record<string, string> = { capa: "Capa", mecanismo: "Mecanismo", prova: "Prova", ha_falta: "Há × Falta", ressalva: "Ressalva", cta: "CTA", fontes: "Fontes" };
 
@@ -30,8 +30,10 @@ export function palavraChave(roteiro: any): string | null {
   const campo = roteiro?.palavra_chave ?? roteiro?.cta_palavra ?? roteiro?.cta?.palavra_chave;
   if (typeof campo === "string" && campo.trim() && !/palavra-?chave/i.test(campo)) return campo.trim().toUpperCase();
   const txt = [...blocosDe(roteiro).map(b => `${limpar(b.fala)} ${limpar(b.texto_tela)}`), String(roteiro?.legenda ?? "")].join(" ");
-  const m = txt.match(/coment[ae]\s+["“']?([A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9]{3,})["”']?/);
-  return m && !/^PALAVRA/.test(m[1]) ? m[1] : null;
+  for (const m of txt.matchAll(/\bcoment[ae]\s+["“']?([A-Za-zÀ-ÿ0-9]{3,})/gi)) {
+    const w = m[1]; if (w === w.toUpperCase() && !/^PALAVRA/.test(w)) return w;
+  }
+  return null;
 }
 export function entregaDoCta(texto: string): string | null {
   const m = limpar(texto).match(/(?:para receber|pra receber|que eu te mando|e receba|e eu te mando)\s+([^.!?]+)/i);
@@ -106,7 +108,7 @@ export function cardsProDoReel(reel: ReelIn, o: Opcoes): ReelCardP3[] {
   const ress = sub?.ressalva_obrigatoria ?? (precisa ? RESSALVA_PADRAO : null);
   const cta = out.findIndex(c => c.papel === "cta"); const cards = cta >= 0 ? out.splice(cta, 1) : [];
   const fontesCard = provas.length && !semProva ? [mk("fontes", null, { principal: "Fontes", provas, itens: provas.map(p => [autoresCurto(p.autores), p.ano, p.periodico].filter(Boolean).join(", ") || p.referencia), alt: "Referências do reel." })] : [];
-  const fixos = [...(ress ? [mk("ressalva", null, { principal: corte(ress, 12), secundario: palavras(ress) > 12 ? corte(ress, 25) : null, alt: ress })] : []), ...cards, ...fontesCard];
+  const fixos = [...(ress ? [mk("ressalva", null, { principal: corte(frases(ress)[0] ?? ress, 12), secundario: frases(ress).slice(1).join(" ") || null, alt: ress })] : []), ...cards, ...fontesCard];
   const corpo = out.slice(0, Math.max(1, MAX_CARDS - fixos.length));
   return [...corpo, ...fixos].map((c, i) => ({ ...c, idx: i, rotulo: `${c.blocoRef ? `Bloco ${c.blocoRef}` : "Fecho"}${c.tempo ? ` · ${c.tempo}` : ""} · ${c.template}` }));
 }
