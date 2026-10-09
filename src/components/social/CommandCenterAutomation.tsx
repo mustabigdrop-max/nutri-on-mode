@@ -22,10 +22,11 @@ function Briefing({ b }: { b: any }) {
   </>;
   const r = c.revisao_ontem;
   return <>
-    {line("ONTEM", r ? `${r.tema} · prevista ${r.nota_prevista ?? "—"} · ${r.pct_3s ?? "—"}% nos 3s${r.pendente ? ` · ${r.pendente}` : ""}` : "nenhum reel ontem")}
-    {line("AÇÃO DO DIA", c.acao_do_dia ? `${c.acao_do_dia.texto}${c.acao_do_dia.horario ? ` · ${c.acao_do_dia.horario}` : " · horário não definido no Planner"}` : null)}
-    {line("RECICLAGEM", c.reciclagem ? `${c.reciclagem.tema} · ${c.reciclagem.texto}` : "nenhum candidato ainda")}
-    {line("TENDÊNCIA", c.tendencia ?? c.tendencia_nota)}
+    {line("Ontem", r ? `${r.tema} · prevista ${r.nota_prevista ?? "—"} · ${r.pct_3s ?? "—"}% nos 3s${r.maior_queda ? ` · queda de ${r.maior_queda.queda_pontos} pontos no bloco ${r.maior_queda.bloco ?? "—"}` : ""}${r.pendente ? ` · ${r.pendente}` : ""}` : "Sem dados reais ainda. Lance o resultado do último reel.")}
+    {line("Hoje", c.acao_do_dia ? `${c.acao_do_dia.texto} · fórmula: ${c.acao_do_dia.formula ?? "não informada"}${c.acao_do_dia.horario ? ` · ${c.acao_do_dia.horario}` : " · horário não definido no Planner"}` : "Nenhum reel escolhido ainda.")}
+    {line("Oportunidade", c.reciclagem ? `${c.reciclagem.tema} · ${c.reciclagem.texto}` : "Nenhum conteúdo para reciclar ainda.")}
+    {line("Alerta", c.tendencia ?? c.tendencia_nota ?? "Nenhum alerta agora.")}
+    {line("Frase MCE do dia", c.frase_mce ?? "Transformação é sistema.")}
   </>;
 }
 

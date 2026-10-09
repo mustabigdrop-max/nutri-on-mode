@@ -70,11 +70,12 @@ async function daily(db: DB, cronKey: string, uid: string, today: string, limite
       tema: ontem.tema, nota_prevista: ontem.nota_geral,
       pct_3s: ontemRes?.pct_3s ?? null, tempo_medio: ontemRes?.tempo_medio ?? null,
       maior_queda: (ontemRes as any)?.curva_real?.maior_queda ?? null,
-      pendente: !ontemRes ? "Retenção de ontem ainda não lançada." : null,
+      pendente: !ontemRes ? "Lance a retenção de ontem. É isso que afina o próximo lote." : null,
     } : null,
-    acao_do_dia: { texto: `Gravar e revisar o reel: ${script.tema}`, horario: plan?.scheduled_time ? String(plan.scheduled_time).slice(0, 5) : null },
+    acao_do_dia: { texto: `Gravar e revisar o reel: ${script.tema}`, formula: script.estrutura?.formula_nome ?? null, horario: plan?.scheduled_time ? String(plan.scheduled_time).slice(0, 5) : null },
     reciclagem: best && bestScript ? { tema: bestScript.tema, pct_3s: best.pct_3s, texto: `Reteve ${best.pct_3s}% nos 3s. Candidato a novo formato.` } : null,
     tendencia: null, tendencia_nota: "Nenhuma fonte de tendência conectada.",
+    frase_mce: "Transformação é sistema.",
   };
   await db.from("cc_briefings").upsert({ user_id: uid, data: today, tipo: "diario", conteudo, script_id: script.id, status: "pronto_para_revisar" }, { onConflict: "user_id,data,tipo" });
   await notify(db, uid, "Seu reel de hoje está pronto.", `${script.tema} · pronto para revisar.`);
@@ -107,7 +108,7 @@ async function weekly(db: DB, uid: string, today: string) {
       ajuste_plano: ritmo != null ? `Ritmo necessário: ${ritmo} reel(s) com resultado por semana até o dia 90.` : `Média necessária: ${goal.alvo}% passando dos 3s.` };
   }
   const alerta = meta && meta.abaixo_pct > 15 ? {
-    texto: `Você está ${meta.abaixo_pct}% abaixo da curva da meta.`,
+    texto: "Você está abaixo da meta desta semana. Veja a ação sugerida.",
     acao: meta.metrica === "reels_publicados" ? `Esta semana: gravar, postar e lançar a retenção de ${Math.max(1, Math.ceil(meta.esperado - meta.atual))} reel(s).` : "Esta semana: reusar a fórmula que mais reteve no topo do ranking e reforçar os 3 primeiros segundos.",
   } : null;
 
@@ -118,7 +119,7 @@ async function weekly(db: DB, uid: string, today: string) {
     meta, alerta,
   };
   await db.from("cc_briefings").upsert({ user_id: uid, data: today, tipo: "semanal", conteudo, status: "pronto_para_revisar" }, { onConflict: "user_id,data,tipo" });
-  if (alerta) await notify(db, uid, "Meta 90 dias abaixo da curva", `${alerta.texto} ${alerta.acao}`);
+  if (alerta) await notify(db, uid, "Você está abaixo da meta desta semana. Veja a ação sugerida.", alerta.acao);
   else await notify(db, uid, "Revisão da semana pronta", "Sua revisão semanal está pronta para revisar.");
   return { reels: conteudo.reels_semana, alerta: !!alerta };
 }

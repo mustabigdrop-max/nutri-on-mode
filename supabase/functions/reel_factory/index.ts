@@ -189,7 +189,7 @@ async function runBatch(db: DB, cronKey: string, batchId: string, budget: number
     await db.from("reel_factory_batches").update({ ...patch, chamadas: batch.chamadas + counter.n, status: done ? "concluido" : "rodando", lease_until: null, updated_at: new Date().toISOString() }).eq("id", batch.id);
     if (done) {
       await db.from("cc_automation_runs").insert({ user_id: batch.user_id, tipo: "fabrica", status: "ok", tentativas: batch.tentativas + 1, detalhes: { batch_id: batch.id, aprovados: patch.aprovados, descartados: patch.descartados, chamadas: batch.chamadas + counter.n } });
-      await notify(db, batch.user_id, "Seu lote de reels está pronto para revisar.", `${patch.aprovados} roteiros aprovados no filtro. Nada foi publicado.`);
+      await notify(db, batch.user_id, "Seu lote de hoje está pronto.", `${Math.min(10, Number(patch.aprovados) || 0)} reels esperando você.`);
       return { done: true };
     }
     if (budget > 0) (globalThis as any).EdgeRuntime?.waitUntil(kick(cronKey, batch.id, budget - 1));
