@@ -409,72 +409,145 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const abertura = reel ? (blocos[0]?.fala ?? reel.roteiro?.gancho) : null;
   const comp: any[] = calib?.comparacao ?? ontemResult?.curva_real?.comparacao ?? [];
 
+  const exemplo = loaded && results.length === 0;
+  const stepIdx = stage === "arquiteto" ? 0 : stage === "redator" ? 1 : stage ? 2 : -1;
+  const motorOk = MOTOR_INSTRUCOES.ativas === MOTOR_INSTRUCOES.total && !auto?.pausado;
+  const led = !loaded ? C.muted : motorOk ? "#5DCAA5" : "#EF9F27";
+  const fontes: any[] = (reel?.roteiro?.fontes ?? reel?.estrutura?.fontes ?? []) as any[];
+  const notaR = reel?.nota_geral == null ? null : Number(reel.nota_geral);
+  const Skel = ({ h }: { h: number }) => <div className="cc-skel" style={{ height: h, marginTop: 8 }} />;
+
   return (
-    <div className="cc-anim" style={{ position: "relative", background: C.bg, borderRadius: 0, overflow: "hidden", padding: "14px 14px 20px", margin: "-16px -16px 0" }}>
+    <div className="cc-anim cc-root" style={{ position: "relative", background: C.bg, borderRadius: 0, overflow: "hidden", overflowX: "hidden", padding: "14px 14px 20px", margin: "-16px -16px 0" }}>
       <style>{CSS}</style>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.04, backgroundImage: `linear-gradient(${C.cyan} 1px, transparent 1px), linear-gradient(90deg, ${C.cyan} 1px, transparent 1px)`, backgroundSize: "36px 36px" }} />
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.05, mixBlendMode: "overlay", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")" }} />
 
-      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="cc-stack" style={{ position: "relative", display: "flex", flexDirection: "column", gap: 14 }}>
+        {/* Barra SIGNAL */}
+        <div className="cc-rise" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, borderBottom: `1px solid ${C.cyan}22`, paddingBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="cc-anim" style={{ width: 7, height: 7, borderRadius: "50%", background: C.cyan, boxShadow: `0 0 8px ${C.cyan}`, animation: "ccDot 1.6s ease infinite" }} />
+            <span className="cc-anim" style={{ width: 7, height: 7, borderRadius: "50%", background: led, boxShadow: `0 0 8px ${led}`, animation: "ccDot 1.6s ease infinite" }} />
             <span style={{ fontFamily: F.t, fontSize: 18, fontWeight: 700, color: C.white, letterSpacing: 2 }}>SIGNAL</span>
-            <Label color={C.cyan}>{loaded ? "ATIVO" : "CARREGANDO"}</Label>
+            <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>{hoje}</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontFamily: F.m, fontSize: 10, color: C.gold }}>🔥 {streak} dias seguidos. Mantenha.</span>
-            <span style={{ fontFamily: F.m, fontSize: 10, color: C.muted }}>{hoje}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+            {[
+              { t: `🔥 ${streak} ${streak === 1 ? "DIA" : "DIAS"}`, c: C.gold },
+              { t: `HOJE ${doDia.length} DE ${auto?.limite_diario ?? "—"}`, c: C.cyan },
+              { t: `MOTOR: ${MOTOR_INSTRUCOES.ativas} DE ${MOTOR_INSTRUCOES.total} INSTRUÇÕES ATIVAS`, c: motorOk ? "#5DCAA5" : "#EF9F27" },
+            ].map(x => <span key={x.t} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: x.c, border: `1px solid ${x.c}40`, padding: "2px 6px", whiteSpace: "nowrap" }}>{x.t}</span>)}
           </div>
         </div>
 
-        <Panel glow={C.cyan}><Label color={C.cyan}>Núcleo de Atenção</Label><Nucleo score={score} subs={subs} /></Panel>
+        <Panel glow={C.cyan}><Label color={C.cyan}>Núcleo de Atenção</Label>
+          {loaded ? <Nucleo score={score} subs={subs} exemplo={exemplo} /> : <><div className="cc-skel" style={{ width: 180, height: 180, borderRadius: "50%", margin: "14px auto 0" }} /><Skel h={40} /></>}
+        </Panel>
 
         {/* Missão de hoje */}
         <Panel glow={C.gold}>
           <Label color={C.gold}>Missão de hoje</Label>
-          {reel ? (
-            <>
-              <div style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.white, lineHeight: 1.25, marginTop: 6 }}>{reel.tema}</div>
-              <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-                {reel.estrutura?.formula_nome && <span style={{ fontFamily: F.m, fontSize: 9, color: C.cyan, border: `1px solid ${C.cyan}40`, padding: "2px 8px" }}>{String(reel.estrutura.formula_nome).toUpperCase()}</span>}
-                <span style={{ fontFamily: F.m, fontSize: 9, color: corNota(reel.nota_geral ?? undefined), border: `1px solid ${C.dim}`, padding: "2px 8px" }}>NOTA {dash(reel.nota_geral)}</span>
-                {doDia.length > 1 && <button type="button" onClick={() => { setTodayIdx((todayIdx + 1) % doDia.length); setBlocoAberto(null); }} style={{ fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: `1px solid ${C.dim}`, padding: "2px 8px", cursor: "pointer", borderRadius: 0 }}>OPÇÃO {Math.min(todayIdx, doDia.length - 1) + 1}/{doDia.length} ↻</button>}
+          {!loaded ? <><Skel h={22} /><Skel h={36} /><Skel h={42} /></> : reel ? (
+            <div className={fresh ? "cc-rise" : undefined}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 6 }}>
+                <svg width={46} height={46} viewBox="0 0 46 46" style={{ flexShrink: 0 }} aria-label={`Nota ${dash(notaR)}`}>
+                  <circle cx={23} cy={23} r={19} fill="none" stroke={`${C.cyan}18`} strokeWidth={4} />
+                  <circle cx={23} cy={23} r={19} fill="none" stroke={corSeg(notaR ?? undefined)} strokeWidth={4} strokeDasharray={`${((notaR ?? 0) / 10) * 119.4} 119.4`} transform="rotate(-90 23 23)" />
+                  <text x={23} y={28} textAnchor="middle" fill={C.white} fontFamily={F.t} fontWeight={700} fontSize={14}>{dash(notaR)}</text>
+                </svg>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.white, lineHeight: 1.2 }}>{reel.tema}</div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                    {reel.estrutura?.formula_nome && <span style={{ fontFamily: F.m, fontSize: 9, color: C.cyan, border: `1px solid ${C.cyan}40`, padding: "2px 8px" }}>{String(reel.estrutura.formula_nome).toUpperCase()}</span>}
+                    {fontes.length > 0 && <span style={{ fontFamily: F.m, fontSize: 9, color: "#5DCAA5", border: "1px solid #5DCAA550", padding: "2px 8px" }}>{fontes.length} {fontes.length === 1 ? "FONTE" : "FONTES"}</span>}
+                    {doDia.length > 1 && <button type="button" onClick={() => { setTodayIdx((todayIdx + 1) % doDia.length); setBlocoAberto(null); }} style={{ fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: `1px solid ${C.dim}`, padding: "2px 8px", cursor: "pointer", borderRadius: 0 }}>OPÇÃO {Math.min(todayIdx, doDia.length - 1) + 1}/{doDia.length} ↻</button>}
+                  </div>
+                </div>
               </div>
-              {abertura && <div style={{ fontFamily: F.m, fontSize: 11, color: C.text, marginTop: 10, lineHeight: 1.5 }}>ABERTURA: “{String(abertura)}”</div>}
-            </>
-          ) : <Empty>{loaded ? "Nenhum reel gerado hoje." : "Carregando..."}</Empty>}
+              {blocos.length > 0 ? (
+                <div style={{ marginTop: 12, borderLeft: `1px solid ${C.cyan}30`, marginLeft: 6, paddingLeft: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                  {blocos.map((b, i) => (
+                    <div key={String(b.id)} className="cc-anim" style={{ position: "relative", animation: `ccBlockIn .4s ease ${i * 0.06}s both` }}>
+                      <span style={{ position: "absolute", left: -19, top: 4, width: 9, height: 9, background: corSeg(b.nota), boxShadow: `0 0 6px ${corSeg(b.nota)}` }} />
+                      <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>{dash(b.tempo)} · NOTA <span style={{ color: corSeg(b.nota) }}>{dash(b.nota)}</span></div>
+                      <div style={{ fontFamily: F.m, fontSize: 11, color: C.text, lineHeight: 1.5, marginTop: 2 }}>{dash(b.fala)}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : abertura && <div style={{ fontFamily: F.m, fontSize: 11, color: C.text, marginTop: 10, lineHeight: 1.5 }}>ABERTURA: “{String(abertura)}”</div>}
+            </div>
+          ) : <Empty>Nenhum reel gerado hoje.</Empty>}
 
-          {(temaOpen || (!reel && loaded)) && (
-            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-              <input style={inp} value={tema} onChange={e => setTema(e.target.value)} placeholder="Tema do reel" disabled={busy} />
-              <div style={{ display: "flex", gap: 6 }}>
-                {[["alcance", "Alcance"], ["autoridade", "Autoridade"], ["venda", "Venda"]].map(([id, l]) => (
-                  <button key={id} type="button" onClick={() => setObjetivo(id)} style={{ ...btn(), flex: 1, fontSize: 11, padding: "6px 0", color: objetivo === id ? C.gold : C.muted, borderColor: objetivo === id ? C.gold : C.dim }}>{l}</button>
-                ))}
+          {loaded && (temaOpen || !reel) && !busy && (
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+              <input style={{ ...inp, fontSize: 12, padding: "10px 12px", borderColor: `${C.cyan}40` }} value={tema} onChange={e => setTema(e.target.value)} placeholder="Tema do reel" />
+              {chips.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {chips.map(c => (
+                    <button key={c} type="button" onClick={() => setTema(c)} style={{ fontFamily: F.m, fontSize: 9, color: tema === c ? C.cyan : C.text, background: tema === c ? `${C.cyan}18` : `${C.cyan}06`, border: `1px solid ${tema === c ? C.cyan : `${C.cyan}25`}`, padding: "4px 8px", cursor: "pointer", borderRadius: 0, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c}</button>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 6 }}>
+                {[["alcance", "Alcance", "◎"], ["autoridade", "Autoridade", "◆"], ["venda", "Venda", "➚"]].map(([id, l, ic]) => {
+                  const on = objetivo === id;
+                  return (
+                    <button key={id} type="button" onClick={() => setObjetivo(id)} aria-pressed={on}
+                      style={{ background: on ? `${C.cyan}14` : "transparent", border: `1px solid ${on ? C.cyan : C.dim}`, color: on ? C.cyan : C.muted, boxShadow: on ? `0 0 12px -2px ${C.cyan}90, inset 0 0 8px ${C.cyan}30` : "none", fontFamily: F.t, fontWeight: 700, fontSize: 12, padding: "8px 0", cursor: "pointer", borderRadius: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                      <span style={{ fontSize: 16, lineHeight: 1 }}>{ic}</span>{l}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            {busy ? (
-              <div style={{ ...btn(true), textAlign: "center", cursor: "wait" }}>{STAGE_LABEL[stage ?? "arquiteto"] ?? "Projetando atenção..."}</div>
-            ) : reel && !temaOpen ? (
-              <>
-                <button type="button" onClick={() => setTemaOpen(true)} style={btn()}>TROCAR TEMA</button>
-                <button type="button" onClick={() => setGravando(true)} disabled={!blocos.length} style={{ ...btn(true), position: "relative", overflow: "hidden" }}>
-                  <span className="cc-anim" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "40%", background: "linear-gradient(90deg, transparent, #ffffff30, transparent)", animation: "ccSweep 2.8s ease infinite" }} />
-                  ▶ Gravar agora
-                </button>
-              </>
-            ) : (
-              <>
-                {reel && <button type="button" onClick={() => setTemaOpen(false)} style={btn()}>CANCELAR</button>}
-                <button type="button" onClick={gerar} style={btn(true)}>{reel ? "GERAR OUTRA OPÇÃO" : "GERAR REEL DE HOJE"}</button>
-              </>
-            )}
-          </div>
+          {busy && (
+            <div style={{ marginTop: 14 }} role="status" aria-live="polite">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 4 }}>
+                {["Arquitetando", "Redigindo", "Criticando"].map((l, i) => (
+                  <div key={l}>
+                    <div style={{ height: 4, background: i < stepIdx ? C.cyan : i === stepIdx ? `${C.cyan}` : C.dim, opacity: i === stepIdx ? 1 : i < stepIdx ? 0.7 : 1, boxShadow: i <= stepIdx ? `0 0 8px ${C.cyan}` : "none", position: "relative", overflow: "hidden" }}>
+                      {i === stepIdx && <span className="cc-anim" style={{ position: "absolute", inset: 0, width: "40%", background: "linear-gradient(90deg, transparent, #ffffffaa, transparent)", animation: "ccSweep 1.2s linear infinite" }} />}
+                    </div>
+                    <div style={{ fontFamily: F.m, fontSize: 9, marginTop: 5, color: i <= stepIdx ? C.cyan : C.muted, letterSpacing: 1 }}>{i < stepIdx ? "✓ " : ""}{l.toUpperCase()}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontFamily: F.m, fontSize: 10, color: C.text, marginTop: 8 }}>{STAGE_LABEL[stage ?? "arquiteto"] ?? "Projetando atenção..."}</div>
+            </div>
+          )}
+
+          {genErr && !busy && (
+            <div style={{ marginTop: 12, border: `1px solid ${C.red}50`, background: `${C.red}0c`, padding: "8px 10px" }}>
+              <div style={{ fontFamily: F.m, fontSize: 10, color: C.red, lineHeight: 1.5 }}>{genErr}</div>
+              <button type="button" onClick={gerar} style={{ ...btn(), flex: "none", marginTop: 8, padding: "6px 14px", borderColor: `${C.red}70`, color: C.red }}>TENTAR DE NOVO</button>
+            </div>
+          )}
+
+          {loaded && !busy && (
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              {reel && !temaOpen ? (
+                <>
+                  <button type="button" onClick={() => setTemaOpen(true)} style={btn()}>TROCAR TEMA</button>
+                  <button type="button" onClick={() => setGravando(true)} disabled={!blocos.length} style={{ ...btn(true), position: "relative", overflow: "hidden" }}>
+                    <span className="cc-anim" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "35%", background: "linear-gradient(90deg, transparent, #ffffff40, transparent)", animation: "ccSweep4 4s ease infinite" }} />
+                    ▶ Gravar agora
+                  </button>
+                </>
+              ) : (
+                <>
+                  {reel && <button type="button" onClick={() => setTemaOpen(false)} style={btn()}>CANCELAR</button>}
+                  <button type="button" onClick={gerar} style={{ ...btn(true), position: "relative", overflow: "hidden", padding: "13px 0", fontSize: 15, letterSpacing: 1, boxShadow: `0 0 18px -6px ${C.gold}` }}>
+                    <span className="cc-anim" style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: "35%", background: "linear-gradient(90deg, transparent, #ffffff55, transparent)", animation: "ccSweep4 4s ease infinite" }} />
+                    {reel ? "GERAR OUTRA OPÇÃO" : "GERAR REEL DE HOJE"}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </Panel>
+
 
         <Panel glow={C.gold}>
           <ReelFactoryPanel onChosen={load} />
