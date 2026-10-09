@@ -35,8 +35,19 @@ A nota média esperada de um primeiro rascunho é 5 a 7. Se você der 8 ou mais 
 Para todo bloco com nota abaixo de 8, devolva a frase exata que é fraca e uma instrução objetiva de reescrita.
 Acrescente ao JSON de saída: "frases_fracas":[{"bloco":0,"frase":"","correcao":""}]` },
 };
+/** PROMPT M1 addenda: appended once (by marker) after the K1 addenda; never duplicated. */
+export const ENGINE_ADDENDA_M1: Partial<Record<EnginePromptKey, { marcador: string; texto: string }>> = {
+  bloco_0: { marcador: "CONTEXTO BRASIL", texto: `CONTEXTO BRASIL: o público é brasileiro. Considere alimentos e hábitos do Brasil (arroz e feijão, supermercado brasileiro, preços em reais). Não importe regras de dieta de outros países sem fonte. Regras universais de alimentação, treino ou suplementação só entram no roteiro se houver fonte em FONTES VERIFICADAS DISPONÍVEIS; sem fonte, escreva em linguagem condicional.` },
+  critico: { marcador: "Afirmações do tipo regra universal", texto: `Afirmações do tipo regra universal ('compre só no perímetro', 'nunca coma X', 'evite Y') só podem passar com fonte verificada. Sem fonte: nota máxima 5 no bloco e veredito 'reescrever'. CTA sem entrega concreta: nota máxima 6.` },
+  proibidas: { marcador: "truque infalível", texto: "ninguém te contou\nninguém te fala\no que ninguém\nsegredo\nmilagre\ntruque infalível" },
+};
+export const hasAddendum = (key: EnginePromptKey) => !!(ENGINE_ADDENDA[key] || ENGINE_ADDENDA_M1[key]);
 export function withAddendum(key: EnginePromptKey, text: string): string {
-  const a = ENGINE_ADDENDA[key];
-  return !a || text.includes(a.marcador) ? text : `${text.trimEnd()}\n\n${a.texto}`;
+  let out = text;
+  for (const a of [ENGINE_ADDENDA[key], ENGINE_ADDENDA_M1[key]]) {
+    if (!a || out.includes(a.marcador)) continue;
+    out = `${out.trimEnd()}${key === "proibidas" ? "\n" : "\n\n"}${a.texto}`;
+  }
+  return out;
 }
-for (const k of Object.keys(ENGINE_ADDENDA) as EnginePromptKey[]) ENGINE_PROMPT_DEFAULTS[k] = withAddendum(k, ENGINE_PROMPT_DEFAULTS[k]);
+for (const k of [...new Set([...Object.keys(ENGINE_ADDENDA), ...Object.keys(ENGINE_ADDENDA_M1)])] as EnginePromptKey[]) ENGINE_PROMPT_DEFAULTS[k] = withAddendum(k, ENGINE_PROMPT_DEFAULTS[k]);

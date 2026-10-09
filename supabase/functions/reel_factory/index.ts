@@ -1,6 +1,8 @@
 // Fábrica de Reels: batch ideation -> Architect/Writer (light model) -> pre-filter -> Critic (1 rewrite max) -> originality.
 // Bounded chunks per invocation, per-batch lease, self-chaining with a hop budget and cooldown. Nothing is published.
 import { adminClient, requireUser } from "../_shared/auth.ts";
+import { verificarReel, termoProibido, VERIFICADOR_REGRAS } from "../_shared/reelVerifier.ts";
+import { rodarCritico2, limitarInflacao } from "../_shared/critico2.ts";
 import { CRITIC_LIMITS, normalizeCritique, objectiveChecks } from "../_shared/retentionCritic.ts";
 import { loadEnginePrompts } from "../_shared/enginePrompts.ts";
 import { IDEIAS_PROMPT } from "./prompts.ts";
@@ -104,7 +106,8 @@ async function ideate(db: DB, batch: any, counter: { n: number }) {
   const tens = new Map(list.map((i: any) => [Number(i?.idx), str(i?.tensao, 240)]));
   const temas = slots.map(s => got.get(s.idx) ?? "");
   const dd = dedupThemes(temas, ctx.priors.map(p => p.tema));
-  const ideias = slots.map((s, i) => ({ ...s, tema: temas[i], tensao: tens.get(s.idx) || null, descarte: dd[i].keep ? null : dd[i].motivo }));
+  const ideias = slots.map((s, i) => { const proib = temas[i] ? termoProibido(`${temas[i]} ${tens.get(s.idx) ?? ""}`, ctx.prompts.proibidas ?? []) : null;
+    return { ...s, tema: temas[i], tensao: tens.get(s.idx) || null, descarte: proib ? `Termo proibido no título: "${proib}"` : dd[i].keep ? null : dd[i].motivo }; });
   // Record discarded themes with reason right away.
   const rejected = ideias.filter(i => i.descarte).map(i => ({ user_id: batch.user_id, batch_id: batch.id, idx: i.idx, pilar: i.pilar, angulo: i.angulo, publico: i.publico, objetivo: i.objetivo, mecanismo: i.mecanismo, tensao: i.tensao, formula_id: i.formula_id, tema: i.tema || "(sem tema)", status: "reprovado", motivo_descarte: i.descarte }));
   if (rejected.length) await db.from("reel_bank").upsert(rejected, { onConflict: "batch_id,idx", ignoreDuplicates: true });
@@ -129,8 +132,19 @@ async function buildOne(ctx: any, idea: any, counter: { n: number }) {
 
   const critique = async () => {
     const sb = blocks.map((b: any) => ({ id: b.id, tempo: b.tempo, fala: b.fala, caminho: [] as (string | number)[] }));
-    const raw = await pass(CRITIC_MODEL, ctx.prompts.critico, { ...contexto, estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks) }, counter);
-    return normalizeCritique(raw, sb);
+    const ver = verificarReel(blocks, { proibidas: ctx.prompts.proibidas ?? [], tipoAfirmacao: null, temFonte: false });
+    const raw = await pass(CRITIC_MODEL, ctx.prompts.critico, { ...contexto, estrutura, blocos: blocks, checagens_objetivas: sb.map(objectiveChecks), verificador: ver }, counter);
+    const c = normalizeCritique(raw, sb);
+    const c2 = await rodarCritico2((sys, inp) => pass(CRITIC_MODEL, sys, inp, counter), blocks, VERIFICADOR_REGRAS.join("\n"), c.notas_por_bloco.map(n => n.nota));
+    for (const n of c.notas_por_bloco) {
+      const v = ver.find(x => x.id === n.id);
+      n.nota = Math.min(n.nota, c2.notas.get(n.id) ?? 10, v?.teto ?? 10);
+      for (const r of v?.riscos ?? []) if (!c.riscos_de_conteudo.some(x => x.id === n.id && x.risco === r)) c.riscos_de_conteudo.push({ id: n.id, risco: r });
+    }
+    const cortados = limitarInflacao(c.notas_por_bloco);
+    c.nota_geral = Math.round(c.notas_por_bloco.reduce((a, b) => a + b.nota, 0) / Math.max(1, c.notas_por_bloco.length) * 10) / 10;
+    (c as any).critico2 = { pontos_fracos: c2.pontos_fracos, leniente: c2.leniente, inflacao: c2.leniente || cortados.length > 0, aviso: c2.leniente || cortados.length ? "Notas revisadas por inflação" : null };
+    return c;
   };
   const historico = [];
   let current = await critique(); historico.push(current);

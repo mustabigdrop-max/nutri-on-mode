@@ -4965,6 +4965,33 @@ export type Database = {
           },
         ]
       }
+      creator_goal_values: {
+        Row: {
+          created_at: string
+          data: string
+          id: string
+          metrica: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          id?: string
+          metrica: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          id?: string
+          metrica?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       creator_goals: {
         Row: {
           alvo: number
@@ -11619,6 +11646,7 @@ export type Database = {
           angulo: Json | null
           checklist: Json | null
           created_at: string
+          critico2: Json | null
           estrutura: Json
           estrutura_nome: string | null
           exemplo_ouro: boolean
@@ -11655,6 +11683,7 @@ export type Database = {
           angulo?: Json | null
           checklist?: Json | null
           created_at?: string
+          critico2?: Json | null
           estrutura?: Json
           estrutura_nome?: string | null
           exemplo_ouro?: boolean
@@ -11691,6 +11720,7 @@ export type Database = {
           angulo?: Json | null
           checklist?: Json | null
           created_at?: string
+          critico2?: Json | null
           estrutura?: Json
           estrutura_nome?: string | null
           exemplo_ouro?: boolean

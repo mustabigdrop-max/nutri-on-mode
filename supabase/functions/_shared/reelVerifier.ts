@@ -12,6 +12,10 @@ export const VERIFICADOR_REGRAS = [
   "'siga', 'segue o perfil', 'me segue': teto 3, exceto se o bloco citar a próxima parte de uma série",
   "Número, percentual, 'estudo', 'pesquisa' ou 'meta-análise' sem achado científico com fonte: risco 'dado sem fonte' e reescrita obrigatória",
   "'prova', 'garante', 'nunca', 'sempre', 'todo mundo': aviso 'linguagem absoluta'",
+  "Regra universal ('compre apenas', 'fuja de', 'nunca coma', 'elimine', 'o vilão'...) sem fonte verificada: teto 5 e risco 'regra universal sem fonte'",
+  "Variações de frases proibidas ('ninguém te conta/contou/fala', 'o que ninguém', 'segredo', 'milagre', 'truque infalível'): teto 5",
+  "CTA 'comenta X' sem entrega ('que eu mando/mostro Y'): teto 6",
+  "Nota 10 só com número que tenha fonte verificada; sem isso, máximo 9",
 ];
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -26,6 +30,23 @@ const SERIE = /(parte\s*\d|proxima parte|amanha tem|episodio\s*\d|continua amanh
 const DADO = /(\d|%|\bestudos?\b|\bpesquisas?\b|meta-?analise)/;
 const ABSOLUTA = ["prova", "garante", "nunca", "sempre", "todo mundo"];
 
+const REGRA_UNIVERSAL = /\b(compre (apenas|somente|so)|fuja d[eoa]s?|nunca coma|nunca beba|evite sempre|corte completamente|elimine|eliminar|proibid[oa]s?|regra de ouro|o vilao|a vila|armadilha)\b/;
+/** Forbidden phrases matched by stem after normalizing (lowercase, no accents). */
+export const PROIBIDAS_RADICAL: [RegExp, string][] = [
+  [/ninguem (te |lhe |nunca )?(cont|fal|diz|diss)\w*/, "ninguém te conta"],
+  [/o que ninguem/, "o que ninguém"],
+  [/\bsegred\w*/, "segredo"],
+  [/\bmilagr\w*/, "milagre"],
+  [/\btruques? infaliv\w*/, "truque infalível"],
+];
+export function termoProibido(texto: string, proibidas: string[] = []): string | null {
+  const t = norm(stripMarks(texto));
+  for (const [re, nome] of PROIBIDAS_RADICAL) if (re.test(t)) return nome;
+  return has(t, proibidas.filter(Boolean)) ?? null;
+}
+const CTA_COMENTA = /\bcomenta(r|m)?\s+["'“]?[\p{L}\p{N}]+/u;
+const CTA_ENTREGA = /\bque (eu )?(te )?(mando|mostro|envio|passo|entrego|mando no direct)\b/;
+
 const startsAtZero = (tempo: string) => /^\s*0(?:[.,]0+)?\s*(s|[-–])/.test(tempo);
 
 export function verificarBloco(b: VerifyBlock, idx: number, o: VerifyOpts): VerifyResult {
@@ -39,9 +60,13 @@ export function verificarBloco(b: VerifyBlock, idx: number, o: VerifyOpts): Veri
   if (abertura && words(raw).length > 12) cap(5, `Abertura com ${words(raw).length} palavras (máx. 12)`);
   const longa = raw.split(/[.!?…]+/).map(s => words(s).length).find(n => n > 14);
   if (longa) cap(7, `Frase com ${longa} palavras (máx. 14)`);
-  const p = has(t, o.proibidas.filter(Boolean)); if (p) cap(5, `Termo proibido: "${p}"`);
+  const p = termoProibido(raw, o.proibidas); if (p) cap(5, `Termo proibido: "${p}"`);
+  const u = t.match(REGRA_UNIVERSAL);
+  if (u && !o.temFonte) { cap(5, `Regra universal sem fonte: "${u[0]}". Use linguagem condicional ou pesquise antes`); r.riscos.push("regra universal sem fonte"); r.forcar_reescrita = true; }
+  if (CTA_COMENTA.test(t) && !CTA_ENTREGA.test(t)) cap(6, "CTA sem entrega: use 'Comenta X que eu mando/mostro Y'");
   const s = has(t, SIGA); if (s && !SERIE.test(t)) cap(3, `Pedido de seguir: "${s}"`);
   if (DADO.test(t) && !(o.tipoAfirmacao === "achado_cientifico" && o.temFonte)) { r.riscos.push("dado sem fonte"); r.forcar_reescrita = true; r.motivos.push("Dado sem fonte: reescrever sem número ou como posição do Método"); }
+  if (r.teto === 10 && !(/\d/.test(t) && o.temFonte)) r.teto = 9; // 10 only with sourced concrete number
   const a = has(t, ABSOLUTA); if (a) r.avisos.push(`linguagem absoluta: "${a}"`);
   return r;
 }

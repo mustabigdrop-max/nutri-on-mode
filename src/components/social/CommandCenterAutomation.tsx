@@ -30,7 +30,7 @@ function Briefing({ b }: { b: any }) {
   </>;
 }
 
-export default function CommandCenterAutomation({ onChanged }: { onChanged?: () => void }) {
+export default function CommandCenterAutomation({ onChanged, embedded = false }: { onChanged?: () => void; embedded?: boolean }) {
   const [cfg, setCfg] = useState<any>(null);
   const [form, setForm] = useState({ hora: 7, pausado: false, limite_diario: 1 });
   const [runs, setRuns] = useState<any[]>([]);
@@ -63,12 +63,12 @@ export default function CommandCenterAutomation({ onChanged }: { onChanged?: () 
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {!embedded && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ ...lbl, color: C.cyan }}>AUTOMAÇÃO DIÁRIA</div>
         <span style={{ fontFamily: F.m, fontSize: 9, color: !cfg ? C.muted : cfg.pausado ? C.gold : C.cyan }}>
           {!cfg ? "DESLIGADA" : cfg.pausado ? "PAUSADA" : `ATIVA · ${String(cfg.hora).padStart(2, "0")}:00 BRASÍLIA`}
         </span>
-      </div>
+      </div>}
 
       {briefs.map(b => (
         <div key={b.id} style={{ marginTop: 10, borderLeft: `2px solid ${C.gold}`, padding: "8px 10px", background: `${C.gold}0a` }}>

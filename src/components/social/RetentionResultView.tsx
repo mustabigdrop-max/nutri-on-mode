@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { copyText } from "./socialUi";
 import CutGeneratorPanel from "./CutGeneratorPanel";
-import { BlockQuality, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
+import { BlockQuality, Critico2Panel, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
 
 const T = { bg: "#020205", s1: "#0A0A0F", s2: "#111118", cyan: "#00D4FF", gold: "#B8922A", green: "#5DCAA5", red: "#EF4444", yellow: "#EF9F27", purple: "#AFA9EC", muted: "#888", text: "#E8E8F0", white: "#F5F0E8",
   ft: "'Rajdhani',sans-serif", fm: "'Space Mono',monospace" };
@@ -113,6 +113,7 @@ export default function RetentionResultView({ r, blocks, scriptId, onUpdated }: 
         {b.nota != null && b.nota < 8 && b.correcao && <p style={{ fontSize: 11, color: T.muted, margin: "4px 0 0" }}>Feedback: {b.correcao}</p>}
         <BlockQuality scriptId={scriptId} blocoId={b.id} motivo={(r.motivos_nota ?? []).find((m: any) => m.id === b.id)} onUpdated={onUpdated} />
       </div>)}
+      <Critico2Panel c2={r.critico2} />
     </div>
 
     <div style={card}>

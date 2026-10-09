@@ -10,7 +10,7 @@ const OBJ = [{ id: "alcance", label: "Alcance" }, { id: "autoridade", label: "Au
 const scoreColor = (n: number | null) => n === null ? T.muted : n >= 8 ? T.green : n >= 7 ? T.gold : n >= 5 ? T.orange : T.red;
 const span = (t: string) => { const m = t.match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)/); return m ? Math.max(1, Number(m[2]) - Number(m[1])) : 1; };
 
-type Gen = { id: string; created_at: string; tema: string; objetivo: string; tom: string; roteiro: any; notas: any; nota_geral: number | null; estrutura?: any; angulo?: any; motivos_nota?: any; status_qualidade?: string | null };
+type Gen = { id: string; created_at: string; tema: string; objetivo: string; tom: string; roteiro: any; notas: any; nota_geral: number | null; estrutura?: any; angulo?: any; motivos_nota?: any; critico2?: any; status_qualidade?: string | null };
 const card: React.CSSProperties = { background: T.s1, border: "1px solid #ffffff10", padding: 16, marginTop: 12 };
 const label: React.CSSProperties = { fontFamily: T.fm, fontSize: 10, letterSpacing: 1, color: T.muted, marginBottom: 6 };
 const input: React.CSSProperties = { width: "100%", background: T.s2, border: "1px solid #ffffff14", color: T.text, padding: 10, fontSize: 13, borderRadius: 0, boxSizing: "border-box" };
@@ -28,7 +28,7 @@ export default function RetentionEnginePanel() {
   const busy = stage !== null;
 
   const loadHistory = async () => {
-    const { data } = await supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, angulo, motivos_nota, status_qualidade").order("created_at", { ascending: false }).limit(20);
+    const { data } = await supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, angulo, motivos_nota, critico2, status_qualidade").order("created_at", { ascending: false }).limit(20);
     setHistory((data as Gen[]) ?? []);
   };
   useEffect(() => { loadHistory(); }, []);
@@ -60,7 +60,7 @@ export default function RetentionEnginePanel() {
     } catch (e: any) { toast.error(e.message); } finally { setStage(null); }
   };
 
-  const r = gen ? { ...gen.roteiro, ...gen.notas, nota_geral: gen.nota_geral, formula_nome: gen.estrutura?.formula_nome, formula_motivo: gen.estrutura?.formula_motivo, formula_modo: gen.estrutura?.formula_modo, angulo: gen.angulo, motivos_nota: gen.motivos_nota, status_qualidade: gen.status_qualidade } : null;
+  const r = gen ? { ...gen.roteiro, ...gen.notas, nota_geral: gen.nota_geral, formula_nome: gen.estrutura?.formula_nome, formula_motivo: gen.estrutura?.formula_motivo, formula_modo: gen.estrutura?.formula_modo, angulo: gen.angulo, motivos_nota: gen.motivos_nota, critico2: gen.critico2, status_qualidade: gen.status_qualidade } : null;
   const blocks: any[] = Array.isArray(r?.blocos) ? r.blocos.map((b: any) => ({ ...b, ...(gen?.notas?.notas_por_bloco ?? []).find((n: any) => n.id === b.id), fala: b.fala })) : [];
   const total = blocks.reduce((n, b) => n + span(String(b.tempo)), 0) || 1;
 

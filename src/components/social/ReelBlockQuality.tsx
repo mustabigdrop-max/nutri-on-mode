@@ -49,7 +49,7 @@ export function BlockQuality({ scriptId, blocoId, motivo, onUpdated }: { scriptI
     </div>
     {open && <div style={{ background: C.s2, padding: 8, marginTop: 4, fontFamily: FM, fontSize: 10, color: C.text, lineHeight: 1.6 }}>
       {!motivo ? <span style={{ color: C.muted }}>Sem detalhamento salvo para este bloco.</span> : <>
-        <div>Nota final {motivo.nota ?? "—"} · Crítico {motivo.nota_critico ?? "—"} · teto do Verificador {motivo.teto ?? "—"}</div>
+        <div>Nota final {motivo.nota ?? "—"} · Crítico 1 {motivo.nota_critico ?? "—"} · Crítico 2 {motivo.nota_critico2 ?? "—"} · teto do Verificador {motivo.teto ?? "—"}</div>
         {(motivo.regras ?? []).map((t: string) => <div key={t} style={{ color: C.amber }}>• {t}</div>)}
         {(motivo.riscos ?? []).map((t: string) => <div key={t} style={{ color: C.red }}>• Risco: {t}</div>)}
         {(motivo.avisos ?? []).map((t: string) => <div key={t} style={{ color: C.muted }}>• Aviso: {t}</div>)}
@@ -61,5 +61,16 @@ export function BlockQuality({ scriptId, blocoId, motivo, onUpdated }: { scriptI
       <input value={inst} onChange={e => setInst(e.target.value)} placeholder="Instrução (opcional)" style={{ flex: 1, minWidth: 0, fontFamily: FM, fontSize: 10, color: C.text, background: "#020205", border: "1px solid #333340", padding: "4px 6px", borderRadius: 0 }} />
       <button type="button" disabled={busy} onClick={rewrite} style={btn}>{busy ? "Reescrevendo..." : "Reescrever"}</button>
     </div>}
+  </div>;
+}
+
+/** "Pontos fracos (Crítico 2)": adversarial editor that saw only the final script. */
+export function Critico2Panel({ c2 }: { c2?: any }) {
+  if (!c2) return null;
+  const pts: any[] = Array.isArray(c2.pontos_fracos) ? c2.pontos_fracos : [];
+  return <div style={{ background: C.s2, padding: 8, marginTop: 8, fontFamily: FM, fontSize: 10, color: C.text, lineHeight: 1.6 }}>
+    <div style={{ color: C.red, letterSpacing: 1 }}>PONTOS FRACOS (CRÍTICO 2)</div>
+    {c2.aviso && <div style={{ color: C.amber }}>⚠ {c2.aviso}</div>}
+    {!pts.length ? <div style={{ color: C.muted }}>Nenhum ponto fraco apontado.</div> : pts.map((p, i) => <div key={i}>• Bloco {p.bloco}: {p.frase ? `“${p.frase}” — ` : ""}{p.problema}</div>)}
   </div>;
 }

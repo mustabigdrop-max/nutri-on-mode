@@ -177,56 +177,91 @@ export function metaCalc(alvo: number, atual: number, dia: number) {
   const status = dia < 1 ? "No ritmo" : atual > ref * 1.05 ? "Adiantado" : atual < ref * 0.95 ? "Atrasado" : "No ritmo";
   return { faltamDias, ritmo, ref, status, pct: alvo > 0 ? Math.min(100, (atual / alvo) * 100) : 0 };
 }
+const SEGUIDORES: Record<string, string> = { seguidores_instagram: "Seguidores no Instagram", seguidores_tiktok: "Seguidores no TikTok", seguidores_youtube: "Inscritos no YouTube" };
+const METRICA_NOME: Record<string, string> = { ...SEGUIDORES, reels_publicados: "Reels com resultado lançado", retencao_3s: "Média de % que passou dos 3s" };
 function Meta(p: LowerProps & { calc: ReturnType<typeof metaCalc> | null; curva: { d: number; v: number }[] }) {
-  const { loaded, goal, meta, calc, curva, goalForm, setGoalForm, salvarMeta } = p;
+  const { loaded, goal, goalForm, setGoalForm, salvarMeta } = p;
   const [edit, setEdit] = useState(false);
-  const reels = goal?.metrica !== "retencao_3s";
-  const un = reels ? "reels" : "%";
+  const [vals, setVals] = useState<{ data: string; valor: number }[]>([]);
+  const [hoje, setHoje] = useState("");
+  const metrica = goal?.metrica ?? goalForm.metrica ?? "seguidores_instagram";
+  const seg = metrica in SEGUIDORES;
+  const loadVals = async () => {
+    if (!seg) return setVals([]);
+    const { data: { user } } = await supabase.auth.getUser(); if (!user) return;
+    const { data } = await supabase.from("creator_goal_values").select("data, valor").eq("user_id", user.id).eq("metrica", metrica).order("data");
+    setVals(((data ?? []) as any[]).map(r => ({ data: r.data, valor: Number(r.valor) })));
+  };
+  useEffect(() => { loadVals(); }, [metrica]);
+  // Start: the goal start date, else the first value logged, else today.
+  const ini = goal?.inicio ? new Date(`${goal.inicio}T00:00:00`) : vals[0] ? new Date(`${vals[0].data}T00:00:00`) : new Date(new Date().toDateString());
+  const dia = Math.max(0, Math.min(90, Math.floor((Date.now() - ini.getTime()) / DAY)));
+  const alvo = goal?.alvo != null && Number(goal.alvo) > 0 ? Number(goal.alvo) : null;
+  const base = seg ? (vals.find(v => new Date(`${v.data}T00:00:00`) >= ini)?.valor ?? null) : 0;
+  const ultimo = seg ? (vals.length ? vals[vals.length - 1].valor : null) : p.meta?.atual ?? 0;
+  // Followers: progress is the growth since the first value inside the window toward the target.
+  const atual = ultimo ?? 0;
+  const calc = alvo != null ? metaCalc(seg && base != null ? alvo - base : alvo, seg && base != null ? atual - base : atual, dia) : null;
+  const curva = seg ? vals.filter(v => new Date(`${v.data}T00:00:00`) >= ini).map(v => ({ d: Math.min(90, (new Date(`${v.data}T00:00:00`).getTime() - ini.getTime()) / DAY), v: v.valor })) : p.curva;
   const W = 300, H = 90;
-  const x = (d: number) => (d / 90) * W, y = (v: number) => H - (meta && meta.alvo ? Math.min(1, v / meta.alvo) : 0) * (H - 6) - 3;
+  const top = alvo ?? Math.max(1, ...curva.map(c => c.v)) * 1.1;
+  const bot = seg && base != null ? Math.min(base, ...curva.map(c => c.v)) : 0;
+  const x = (d: number) => (d / 90) * W, y = (v: number) => H - Math.max(0, Math.min(1, (v - bot) / Math.max(1e-9, top - bot))) * (H - 6) - 3;
   const pct = useCountUp(calc?.pct ?? 0);
   const corSt = calc?.status === "Atrasado" ? C.red : calc?.status === "Adiantado" ? C.green : C.cyan;
+  const un = seg ? "seguidores" : metrica === "retencao_3s" ? "%" : "reels";
+  const registrar = async () => {
+    if (!seg) return p.onLancar?.();
+    const v = Number(hoje.replace(/\./g, "").replace(",", "."));
+    if (!Number.isFinite(v) || v < 0) return toast.error("Informe um número válido");
+    const { data: { user } } = await supabase.auth.getUser(); if (!user) return;
+    const d = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
+    const { error } = await supabase.from("creator_goal_values").upsert({ user_id: user.id, metrica, data: d, valor: v }, { onConflict: "user_id,metrica,data" });
+    if (error) return toast.error(error.message);
+    setHoje(""); toast.success("Valor de hoje registrado"); loadVals();
+  };
   const form = (
     <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
       <select style={inp} value={goalForm.metrica} onChange={e => setGoalForm(g => ({ ...g, metrica: e.target.value }))}>
-        <option value="reels_publicados">Reels com resultado lançado</option>
-        <option value="retencao_3s">Média de % que passou dos 3s</option>
+        {Object.entries(METRICA_NOME).map(([k, n]) => <option key={k} value={k}>{n}</option>)}
       </select>
       <input style={inp} inputMode="decimal" value={goalForm.alvo} onChange={e => setGoalForm(g => ({ ...g, alvo: e.target.value }))} placeholder="Alvo em 90 dias" />
-      <button type="button" onClick={() => { salvarMeta(); setEdit(false); }} style={{ ...btn(!goal), flex: "none" }}>{goal ? "SALVAR META" : "DEFINIR META"}</button>
+      <button type="button" onClick={() => { salvarMeta(); setEdit(false); }} style={{ ...btn(!goal), flex: "none" }}>{goal ? "SALVAR META" : "DEFINIR ALVO"}</button>
     </div>
   );
   return (
     <Panel id="cc-meta">
       <Label color={C.cyan}>Meta de 90 dias</Label>
-      {!loaded ? <><div className="cc-skel" style={{ width: 120, height: 120, borderRadius: "50%", margin: "12px auto 0" }} /><Skel h={60} /></> : !goal || !meta || !calc ? form : (
+      {!loaded ? <><div className="cc-skel" style={{ width: 120, height: 120, borderRadius: "50%", margin: "12px auto 0" }} /><Skel h={60} /></> : (
         <>
           <div style={{ display: "flex", gap: 14, alignItems: "center", marginTop: 10, flexWrap: "wrap" }}>
             <svg width={110} height={110} viewBox="0 0 110 110" style={{ flexShrink: 0 }}>
               <circle cx={55} cy={55} r={46} fill="none" stroke={`${C.cyan}18`} strokeWidth={7} />
               <circle cx={55} cy={55} r={46} fill="none" stroke={C.cyan} strokeWidth={7} strokeDasharray={`${(pct / 100) * 289} 289`} transform="rotate(-90 55 55)" />
-              <text x={55} y={52} textAnchor="middle" fill={C.white} fontFamily={F.t} fontWeight={700} fontSize={22}>{Math.round(pct)}%</text>
-              <text x={55} y={70} textAnchor="middle" fill={C.text} fontFamily={F.m} fontSize={9}>{String(meta.atual).replace(".", ",")} / {String(meta.alvo).replace(".", ",")}</text>
+              <text x={55} y={52} textAnchor="middle" fill={C.white} fontFamily={F.t} fontWeight={700} fontSize={22}>{calc ? `${Math.round(pct)}%` : "—"}</text>
+              <text x={55} y={70} textAnchor="middle" fill={C.text} fontFamily={F.m} fontSize={9}>{ultimo == null ? "—" : String(ultimo).replace(".", ",")} / {alvo == null ? "—" : String(alvo).replace(".", ",")}</text>
             </svg>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0, flex: 1 }}>
-              <span style={{ alignSelf: "flex-start", fontFamily: F.m, fontSize: 9, color: corSt, border: `1px solid ${corSt}60`, padding: "2px 8px" }}>{calc.status}</span>
-              <Txt c={C.white} s={11}>Dia {meta.dia} de 90 · Faltam {calc.faltamDias} dias</Txt>
-              <Txt>Ritmo necessário: {calc.ritmo.toFixed(1).replace(".", ",")} {un} por semana</Txt>
-              <Txt c={C.muted} s={9}>{reels ? "Reels com resultado lançado" : "Média de % que passou dos 3s"}</Txt>
+              {calc && <span style={{ alignSelf: "flex-start", fontFamily: F.m, fontSize: 9, color: corSt, border: `1px solid ${corSt}60`, padding: "2px 8px" }}>{calc.status}</span>}
+              <Txt c={C.white} s={11}>Dia {dia} de 90 · Faltam {90 - dia} dias</Txt>
+              <Txt>{calc ? `Ritmo necessário: ${calc.ritmo.toFixed(1).replace(".", ",")} ${un} por semana` : "Ritmo necessário: —"}</Txt>
+              {!alvo && <Txt c={C.gold} s={9}>Defina o alvo para calcular o ritmo</Txt>}
+              <Txt c={C.muted} s={9}>{METRICA_NOME[metrica] ?? metrica}</Txt>
             </div>
           </div>
           <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ marginTop: 10, display: "block" }} preserveAspectRatio="none">
-            <line x1={x(0)} y1={y(0)} x2={x(90)} y2={y(meta.alvo)} stroke={C.muted} strokeDasharray="4 4" strokeWidth={1.2} />
+            <line x1={x(0)} y1={y(seg && base != null ? base : 0)} x2={x(90)} y2={alvo != null ? y(alvo) : 3} stroke={C.muted} strokeDasharray="4 4" strokeWidth={1.2} />
             <text x={W - 4} y={12} textAnchor="end" fill={C.muted} fontFamily={F.m} fontSize={8}>referência</text>
             {curva.length > 0 && <polyline fill="none" stroke={C.gold} strokeWidth={2} points={curva.map(c => `${x(c.d)},${y(c.v)}`).join(" ")} />}
-            <line x1={x(meta.dia)} y1={0} x2={x(meta.dia)} y2={H} stroke={`${C.cyan}50`} strokeWidth={1} />
+            <line x1={x(dia)} y1={0} x2={x(dia)} y2={H} stroke={`${C.cyan}50`} strokeWidth={1} />
           </svg>
-          {!curva.length && <Txt c={C.muted} s={9}>Lance o primeiro valor para começar a curva.</Txt>}
+          {!curva.length && <Txt c={C.muted} s={9}>Registre o primeiro valor para começar a curva.</Txt>}
           <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
-            <button type="button" style={btn()} onClick={p.onLancar}>Registrar valor de hoje</button>
-            <button type="button" style={{ ...mini(C.muted), padding: "8px 12px" }} onClick={() => setEdit(e => !e)}>{edit ? "Fechar" : "Editar meta"}</button>
+            {seg && <input style={{ ...inp, width: 130, flex: "none" }} inputMode="numeric" value={hoje} onChange={e => setHoje(e.target.value)} placeholder="Valor de hoje" />}
+            <button type="button" style={btn()} onClick={registrar}>Registrar valor de hoje</button>
+            <button type="button" style={{ ...mini(C.muted), padding: "8px 12px" }} onClick={() => setEdit(e => !e)}>{edit ? "Fechar" : alvo ? "Editar meta" : "Definir alvo"}</button>
           </div>
-          <Txt c={C.muted} s={9}>O valor vem dos resultados lançados: registrar abre o lançamento da retenção.</Txt>
+          {!seg && <Txt c={C.muted} s={9}>O valor vem dos resultados lançados: registrar abre o lançamento da retenção.</Txt>}
           {edit && form}
         </>
       )}
@@ -269,7 +304,7 @@ function Automacao({ loaded, onRodarAgora, reload }: LowerProps) {
   return (
     <Panel id="cc-automacao">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-        <Label color={C.cyan}>Automação diária</Label>
+        <Label color={C.cyan}>Automação diária{cfg && !cfg.pausado ? ` · ${hh} Brasília` : ""}</Label>
         <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.m, fontSize: 9, color: ativa ? C.green : C.muted }}>
           <span className="cc-anim" style={{ width: 7, height: 7, borderRadius: "50%", background: ativa ? C.green : C.muted, boxShadow: ativa ? `0 0 8px ${C.green}` : "none", animation: ativa ? "ccDot 1.6s ease infinite" : "none" }} />
           {cfg === undefined ? "…" : ativa ? "ATIVA" : cfg ? "PAUSADA" : "DESLIGADA"}
@@ -296,7 +331,7 @@ function Automacao({ loaded, onRodarAgora, reload }: LowerProps) {
             <button type="button" style={{ ...btn(true), minWidth: 110 }} onClick={onRodarAgora}>Rodar agora</button>
             <button type="button" style={{ ...btn(), minWidth: 90 }} onClick={toggle}>{ativa ? "Pausar" : "Ativar"}</button>
           </div>
-          <div style={{ marginTop: 10 }}><CommandCenterAutomation onChanged={() => { setK(x => x + 1); reload(); }} /></div>
+          <div style={{ marginTop: 10 }}><CommandCenterAutomation embedded onChanged={() => { setK(x => x + 1); reload(); }} /></div>
         </>
       )}
     </Panel>

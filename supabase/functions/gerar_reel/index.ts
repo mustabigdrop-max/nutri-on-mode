@@ -1,7 +1,8 @@
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { CRITIC_LIMITS, normalizeCritique, objectiveChecks } from "../_shared/retentionCritic.ts";
 import { loadEnginePrompts } from "../_shared/enginePrompts.ts";
-import { verificarReel, temaAmplo } from "../_shared/reelVerifier.ts";
+import { verificarReel, temaAmplo, VERIFICADOR_REGRAS } from "../_shared/reelVerifier.ts";
+import { rodarCritico2, limitarInflacao } from "../_shared/critico2.ts";
 // Highest-quality model for Ângulo, Redator and Crítico; lighter one for the Arquiteto plan.
 const MODEL_PRO = "google/gemini-2.5-pro", MODEL_LIGHT = "google/gemini-2.5-flash";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
@@ -74,18 +75,24 @@ async function avaliar(P: any, contexto: unknown, estrutura: unknown, blocks: Bl
   const f: any = raw.forca_gancho ?? {};
   const forca = FORCA.every(k => Number.isFinite(Number(f[k]))) ? Object.fromEntries(FORCA.map(k => [k, Math.max(0, Math.min(2, Math.round(Number(f[k]))))])) : null;
   const frases_fracas = (Array.isArray(raw.frases_fracas) ? raw.frases_fracas : []).map((x: any) => ({ bloco: Number(x?.bloco), frase: str(x?.frase, 300), correcao: str(x?.correcao, 300) })).filter((x: any) => blocks.some(b => b.id === x.bloco) && x.frase);
+  // Crítico 2 sees only the final script and the rubric.
+  const c2 = await rodarCritico2((sys, inp) => pass(sys, inp), blocks, VERIFICADOR_REGRAS.join("\n"), critica.notas_por_bloco.map(n => n.nota));
   const motivos = critica.notas_por_bloco.map(n => {
     const v = ver.find(x => x.id === n.id)!;
     const nota_critico = n.nota;
-    n.nota = Math.min(n.nota, v.teto);
+    const nota_critico2 = c2.notas.get(n.id) ?? null;
+    n.nota = Math.min(n.nota, nota_critico2 ?? 10, v.teto);
     if (v.motivos.length) n.causa_da_queda = [n.causa_da_queda, ...v.motivos].filter(Boolean).join(" ");
     for (const r of v.riscos) if (!critica.riscos_de_conteudo.some(x => x.id === n.id && x.risco === r)) critica.riscos_de_conteudo.push({ id: n.id, risco: r });
-    return { id: n.id, nota: n.nota, nota_critico, teto: v.teto, regras: v.motivos, avisos: v.avisos, riscos: v.riscos, comentario: n.causa_da_queda, frases_fracas: frases_fracas.filter((x: any) => x.bloco === n.id) };
+    return { id: n.id, nota: n.nota, nota_critico, nota_critico2, teto: v.teto, regras: v.motivos, avisos: v.avisos, riscos: v.riscos, comentario: n.causa_da_queda, frases_fracas: frases_fracas.filter((x: any) => x.bloco === n.id) };
   });
+  const cortados = limitarInflacao(critica.notas_por_bloco);
+  for (const id of cortados) { const m = motivos.find(x => x.id === id); if (m) { m.nota = 8; m.regras = [...m.regras, "Notas revisadas por inflação (máx. 40% dos blocos com 9 ou 10)"]; } }
+  const critico2 = { pontos_fracos: c2.pontos_fracos, leniente: c2.leniente, inflacao: c2.leniente || cortados.length > 0, aviso: c2.leniente || cortados.length ? "Notas revisadas por inflação" : null };
   critica.nota_geral = Math.round(critica.notas_por_bloco.reduce((a, b) => a + b.nota, 0) / Math.max(1, critica.notas_por_bloco.length) * 10) / 10;
   const reescrever = critica.notas_por_bloco.filter(n => n.nota < CRITIC_LIMITS.rewriteBelow || ver.find(v => v.id === n.id)?.forcar_reescrita).map(n => n.id);
   critica.blocos_para_reescrever = reescrever;
-  return { critica, motivos, frases_fracas, forca, reescrever };
+  return { critica, motivos, frases_fracas, forca, reescrever, critico2 };
 }
 
 /** "Reescrever este bloco": rewrites one block of a saved reel, then re-runs Verificador and Crítico for that block only. */
@@ -113,7 +120,7 @@ async function reescreverBloco(userId: string, body: any) {
   const nota_geral = notasPB.length ? Math.round(notasPB.reduce((a: number, b: any) => a + Number(b.nota ?? 0), 0) / notasPB.length * 10) / 10 : s.nota_geral;
   const motivos = [...(s.motivos_nota ?? []).filter((m: any) => m.id !== blocoId), r.motivos.find(m => m.id === blocoId)].sort((a: any, b: any) => a.id - b.id);
   const notas = { ...s.notas, notas_por_bloco: notasPB, riscos_de_conteudo: riscos, nota_geral };
-  const { data, error } = await db.from("retention_scripts").update({ roteiro, notas, nota_geral, motivos_nota: motivos, status_qualidade: portao({ nota_geral, riscos_de_conteudo: riscos }) }).eq("id", s.id).select("*").single();
+  const { data, error } = await db.from("retention_scripts").update({ roteiro, notas, nota_geral, motivos_nota: motivos, critico2: r.critico2, status_qualidade: portao({ nota_geral, riscos_de_conteudo: riscos }) }).eq("id", s.id).select("*").single();
   if (error) return { error: "Não foi possível salvar o bloco." };
   return { script: data };
 }
@@ -173,6 +180,19 @@ Deno.serve(async (req) => {
       else if (!teste && temaAmplo(tema, (pilares ?? []).map((p: any) => p.nome))) {
         send({ etapa: "angulo" });
         angulo = normAngulo(await pass(P.angulo, { tema_amplo: tema, objetivo, voz_do_criador: voice ?? null, padroes_confirmados: contexto.padroes_confirmados }));
+      }
+      // Pilar: the chosen angle must belong to the requested pillar; otherwise try the other angles.
+      const pilarPedido = str(body.pilar, 120);
+      if (angulo && pilarPedido && !teste) {
+        const cands = [angulo.escolhido, ...angulo.outros];
+        let ok: any = null;
+        for (const c of cands.slice(0, 5)) {
+          const v = await pass('Responda SOMENTE JSON {"resposta":"sim"} ou {"resposta":"nao"}.', { pergunta: `O ângulo "${c.titulo}" pertence ao pilar "${pilarPedido}"? sim/não` }, MODEL_LIGHT);
+          if (/^s/i.test(String(v.resposta ?? ""))) { ok = c; break; }
+        }
+        if (ok && ok !== angulo.escolhido) angulo = { escolhido: ok, outros: cands.filter(c => c !== ok).slice(0, 4) };
+        if (!ok) angulo.pilar_aviso = `Nenhum ângulo confirmado no pilar "${pilarPedido}".`;
+        angulo.pilar = pilarPedido;
       }
       if (angulo?.escolhido?.titulo) Object.assign(contexto.pedido, { tema: angulo.escolhido.titulo, tema_original: tema, angulo: angulo.escolhido });
       if (teste) {
@@ -241,7 +261,7 @@ Deno.serve(async (req) => {
       const notas = { ...crit, rodadas, historico, frases_fracas: current.frases_fracas, forca_gancho: forca, forca_gancho_total: forca ? Object.values(forca as Record<string, number>).reduce((a, b) => a + b, 0) : null,
         avisos: crit.notas_por_bloco.filter(n => n.nota < CRITIC_LIMITS.warnBelow).map(n => ({ id: n.id, texto: `Este trecho está fraco. Sugestão de gravação: ${n.correcao}` })) };
       const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: crit.nota_geral, origem,
-        angulo, motivos_nota: current.motivos, status_qualidade: portao(crit) })
+        angulo, motivos_nota: current.motivos, critico2: current.critico2, status_qualidade: portao(crit) })
         .select("*").single();
       if (error) throw new HttpError(500, "Reel gerado, mas não foi possível salvar no histórico.");
       send({ etapa: "pronto", script: data });

@@ -225,6 +225,20 @@
       "when": 1791516418029,
       "tag": "0031_academia_gravitas",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791549900574,
+      "tag": "0032_creator_goal_values",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791550189577,
+      "tag": "0033_creator_goals_follower_metrics",
+      "breakpoints": true
     }
   ]
 }
