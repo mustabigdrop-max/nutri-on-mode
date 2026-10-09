@@ -4,7 +4,7 @@ import { adminClient, requireUser } from "../_shared/auth.ts";
 import { CRITIC_LIMITS, normalizeCritique, objectiveChecks } from "../_shared/retentionCritic.ts";
 import { ARQUITETO_PROMPT, ATLAS, CRITICO_PROMPT, REDATOR_PROMPT } from "../_shared/retentionPrompts.ts";
 import { IDEIAS_PROMPT } from "./prompts.ts";
-import { allocateFormulas, dedupThemes, estimateCalls, originality, preFilter, type Prior } from "./logic.ts";
+import { allocateFormulas, allocatePillars, assignAngles, type Pillar, dedupThemes, estimateCalls, originality, preFilter, type Prior } from "./logic.ts";
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-key" };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
@@ -60,28 +60,52 @@ async function context(db: DB, uid: string) {
     db.from("reel_bank").select("tema, abertura, formula_id, estrutura").eq("user_id", uid).gte("created_at", since).neq("status", "reprovado").limit(1000),
     db.from("retention_scripts").select("tema, formula_id, roteiro").eq("user_id", uid).gte("created_at", since).limit(500),
   ]);
+  await db.rpc("seed_content_pillars", { _user_id: uid });
+  const [{ data: cps }, { data: angs }, { data: cases }, { data: posted }, { data: results }] = await Promise.all([
+    db.from("content_pillars").select("chave, nome, publico, qtd_diaria, objetivo, mecanismo, exige_caso_real, ativo").eq("user_id", uid).order("ordem"),
+    db.from("content_angles").select("nome").order("id"),
+    db.from("content_cases").select("id").eq("user_id", uid).eq("autorizado", true).eq("ativo", true).limit(1),
+    db.from("reel_bank").select("pilar, angulo, script_id").eq("user_id", uid).not("script_id", "is", null).limit(2000),
+    db.from("retention_results").select("script_id, pct_3s").eq("user_id", uid),
+  ]);
+  // Learning: measured 3s retention per pillar and per pillar|angle, from posted reels with retention entered.
+  const r3 = new Map((results ?? []).filter((r: any) => r.pct_3s != null).map((r: any) => [r.script_id, Number(r.pct_3s)]));
+  const acc = (m: Map<string, number[]>, k: string, v: number) => m.set(k, [...(m.get(k) ?? []), v]);
+  const byP = new Map<string, number[]>(), byPA = new Map<string, number[]>();
+  for (const b of posted ?? []) { const v = r3.get(b.script_id); if (v == null || !b.pilar) continue; acc(byP, b.pilar, v); if (b.angulo) acc(byPA, `${b.pilar}|${b.angulo}`, v); }
+  const mean = (m: Map<string, number[]>) => Object.fromEntries([...m].map(([k, xs]) => [k, xs.reduce((a, b) => a + b, 0) / xs.length]));
   const pillars = (Array.isArray(prof?.content_pillars) ? prof!.content_pillars : []).map((p: any) => str(typeof p === "string" ? p : p?.nome ?? p?.name ?? p?.titulo, 80)).filter(Boolean);
   const priors: Prior[] = [
     ...(bank ?? []).map((b: any) => ({ tema: b.tema, abertura: b.abertura ?? "", formula_id: b.formula_id, funcoes: (b.estrutura?.blocos ?? []).map((x: any) => x.funcao).join("|") })),
     ...(scripts ?? []).map((s: any) => ({ tema: s.tema, abertura: s.roteiro?.blocos?.[0]?.fala ?? "", formula_id: s.formula_id, funcoes: (s.roteiro?.blocos ?? []).map((x: any) => x.funcao).join("|") })),
   ];
-  return { pillars, niches: prof?.niches ?? [], voice: voice ?? null, patterns: patterns ?? [], formulas: formulas ?? [], stats: stats ?? [], plan: plan ?? [], priors };
+  return { matrix: (cps ?? []) as Pillar[], angles: (angs ?? []).map((a: any) => a.nome as string), hasCase: !!cases?.length, pillarPerf: mean(byP), comboPerf: mean(byPA), pillars, niches: prof?.niches ?? [], voice: voice ?? null, patterns: patterns ?? [], formulas: formulas ?? [], stats: stats ?? [], plan: plan ?? [], priors };
 }
 
 async function ideate(db: DB, batch: any, counter: { n: number }) {
   const ctx = await context(db, batch.user_id);
-  const pillars = ctx.pillars.length ? ctx.pillars : (ctx.plan.map((p: any) => p.pillar).filter(Boolean) as string[]);
-  const pil = pillars.length ? [...new Set(pillars)] : ["geral"];
   const formulaIds = allocateFormulas(batch.n_ideias, ctx.formulas.map((f: any) => f.id), ctx.stats as any);
-  const slots = formulaIds.map((fid, idx) => ({ idx, pilar: pil[idx % pil.length], formula_id: fid }));
-  const out = await pass(LIGHT, IDEIAS_PROMPT, { perfil: { nicho: ctx.niches, voz: ctx.voice, pilares: pil }, planner: ctx.plan, padroes_vencedores: ctx.patterns.filter((p: any) => p.confirmado),
+  type Slot = { idx: number; pilar: string; angulo: string | null; publico: string | null; objetivo: string | null; mecanismo: string | null; formula_id: number };
+  let slots: Slot[];
+  if (ctx.matrix.length && ctx.angles.length) {
+    const pIdx = allocatePillars(batch.n_ideias, ctx.matrix, ctx.hasCase, ctx.pillarPerf);
+    const angBy = new Map<number, string[]>();
+    for (const i of new Set(pIdx)) { const nome = ctx.matrix[i].nome; const combo = Object.fromEntries(ctx.angles.map(a => [a, ctx.comboPerf[`${nome}|${a}`] ?? null])); angBy.set(i, assignAngles(pIdx.filter(x => x === i).length, ctx.angles, combo)); }
+    slots = pIdx.map((pi, idx) => { const p = ctx.matrix[pi]; return { idx, pilar: p.nome, angulo: angBy.get(pi)!.shift() ?? null, publico: p.publico, objetivo: p.objetivo.join(" e "), mecanismo: p.mecanismo, formula_id: formulaIds[idx] }; });
+  } else {
+    const pil = ctx.pillars.length ? [...new Set(ctx.pillars)] : ["geral"];
+    slots = formulaIds.map((fid, idx) => ({ idx, pilar: pil[idx % pil.length], angulo: null, publico: null, objetivo: null, mecanismo: null, formula_id: fid }));
+  }
+  const out = await pass(LIGHT, IDEIAS_PROMPT, { perfil: { nicho: ctx.niches, voz: ctx.voice }, planner: ctx.plan, padroes_vencedores: ctx.patterns.filter((p: any) => p.confirmado),
     temas_recentes: ctx.priors.map(p => p.tema).slice(0, 200), slots }, counter);
-  const got = new Map((Array.isArray(out.ideias) ? out.ideias : []).map((i: any) => [Number(i?.idx), str(i?.tema, 200)]));
+  const list = Array.isArray(out.ideias) ? out.ideias : [];
+  const got = new Map(list.map((i: any) => [Number(i?.idx), str(i?.tema, 200)]));
+  const tens = new Map(list.map((i: any) => [Number(i?.idx), str(i?.tensao, 240)]));
   const temas = slots.map(s => got.get(s.idx) ?? "");
   const dd = dedupThemes(temas, ctx.priors.map(p => p.tema));
-  const ideias = slots.map((s, i) => ({ ...s, tema: temas[i], descarte: dd[i].keep ? null : dd[i].motivo }));
+  const ideias = slots.map((s, i) => ({ ...s, tema: temas[i], tensao: tens.get(s.idx) || null, descarte: dd[i].keep ? null : dd[i].motivo }));
   // Record discarded themes with reason right away.
-  const rejected = ideias.filter(i => i.descarte).map(i => ({ user_id: batch.user_id, batch_id: batch.id, idx: i.idx, pilar: i.pilar, formula_id: i.formula_id, tema: i.tema || "(sem tema)", status: "reprovado", motivo_descarte: i.descarte }));
+  const rejected = ideias.filter(i => i.descarte).map(i => ({ user_id: batch.user_id, batch_id: batch.id, idx: i.idx, pilar: i.pilar, angulo: i.angulo, publico: i.publico, objetivo: i.objetivo, mecanismo: i.mecanismo, tensao: i.tensao, formula_id: i.formula_id, tema: i.tema || "(sem tema)", status: "reprovado", motivo_descarte: i.descarte }));
   if (rejected.length) await db.from("reel_bank").upsert(rejected, { onConflict: "batch_id,idx", ignoreDuplicates: true });
   return { ideias, descartados: rejected.length };
 }
@@ -91,7 +115,7 @@ const span = (t: string) => { const m = t.match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+
 
 async function buildOne(ctx: any, idea: any, counter: { n: number }) {
   const formula = ctx.formulas.find((f: any) => f.id === idea.formula_id) ?? null;
-  const contexto = { pedido: { tema: idea.tema, objetivo: "alcance", tom: "direto", rede: "instagram", pilar: idea.pilar }, formulas_atlas: ctx.formulas,
+  const contexto = { pedido: { tema: idea.tema, objetivo: idea.objetivo ?? "alcance", tom: "direto", rede: "instagram", pilar: idea.pilar, angulo: idea.angulo, publico: idea.publico, mecanismo: idea.mecanismo, tensao: idea.tensao }, formulas_atlas: ctx.formulas,
     selecao_formula: { modo: "fixa", permitidas: [idea.formula_id] }, voz_do_criador: ctx.voice,
     padroes_confirmados: ctx.patterns.filter((p: any) => p.confirmado), indicios: ctx.patterns.filter((p: any) => !p.confirmado) };
   const estrutura = await pass(LIGHT, ARQUITETO_PROMPT + `\n\nUse formula_id ${idea.formula_id}. Inclua "formula_id" e "loops_abertos" no JSON.`, contexto, counter);
@@ -147,7 +171,7 @@ async function processChunk(db: DB, batch: any, counter: { n: number }) {
     let motivo: string | null = r.motivo ?? null;
     if (!motivo) motivo = originality({ tema: idea.tema, abertura: abertura ?? "", formula_id: idea.formula_id, funcoes }, ctx.priors);
     const dur = Number(r.estrutura?.duracao_total_seg) || (r.blocks ?? []).reduce((s: number, b: any) => s + span(b.tempo), 0) || null;
-    const row = { user_id: batch.user_id, batch_id: batch.id, idx: idea.idx, pilar: idea.pilar, formula_id: idea.formula_id, formula_nome: r.estrutura?.formula_nome ?? null,
+    const row = { user_id: batch.user_id, batch_id: batch.id, idx: idea.idx, pilar: idea.pilar, angulo: idea.angulo ?? null, publico: idea.publico ?? null, objetivo: idea.objetivo ?? null, mecanismo: idea.mecanismo ?? null, tensao: idea.tensao ?? null, formula_id: idea.formula_id, formula_nome: r.estrutura?.formula_nome ?? null,
       tema: idea.tema, abertura, duracao_seg: dur, nota: r.nota ?? null, estrutura: r.estrutura ?? null, roteiro: r.roteiro ?? (r.blocks ? { blocos: r.blocks } : null), notas: r.notas ?? null,
       status: motivo ? "reprovado" : "novo", motivo_descarte: motivo };
     await db.from("reel_bank").upsert(row, { onConflict: "batch_id,idx", ignoreDuplicates: true });
