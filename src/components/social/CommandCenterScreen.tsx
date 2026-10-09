@@ -627,87 +627,12 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
             )}
           </Panel>
 
-          {/* Suas fórmulas */}
-          <Panel>
-            <Label color={C.cyan}>Suas fórmulas</Label>
-            {!formulas.length ? <Empty>Nenhuma fórmula com resultado ainda. Lance a retenção dos reels para formar o ranking.</Empty> : (
-              <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto", paddingBottom: 4 }}>
-                {formulas.map((f, i) => (
-                  <div key={f.formula_id} style={{ minWidth: 120, border: `1px solid ${i === 0 ? `${C.gold}60` : `${C.cyan}25`}`, background: i === 0 ? `${C.gold}10` : `${C.cyan}06`, padding: "10px 12px", flexShrink: 0 }}>
-                    <div style={{ fontFamily: F.m, fontSize: 8, color: i === 0 ? C.gold : C.muted }}>#{i + 1} · {f.usos} {f.usos === 1 ? "REEL" : "REELS"}</div>
-                    <div style={{ fontFamily: F.t, fontSize: 13, fontWeight: 700, color: C.white, marginTop: 2 }}>{f.nome}</div>
-                    <div style={{ height: 3, background: C.dim, marginTop: 8 }}><div style={{ height: "100%", width: `${Math.min(100, Number(f.retencao_3s_media ?? 0))}%`, background: i === 0 ? C.gold : C.cyan }} /></div>
-                    <div style={{ fontFamily: F.t, fontSize: 15, fontWeight: 700, color: i === 0 ? C.gold : C.cyan, marginTop: 4 }}>{f.retencao_3s_media == null ? "—" : `${f.retencao_3s_media}%`}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Panel>
-
-          {/* Alertas */}
-          <Panel>
-            <Label color={C.red}>Alertas e oportunidades</Label>
-            {!alertas.length ? <Empty>Nenhum alerta agora.</Empty> : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
-                {alertas.map((a) => (
-                  <div key={a.tipo} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <span style={{ fontFamily: F.m, fontSize: 8, color: a.cor, border: `1px solid ${a.cor}50`, padding: "2px 6px", flexShrink: 0, marginTop: 1 }}>{a.tipo}</span>
-                    <span style={{ fontFamily: F.m, fontSize: 10, color: C.text, lineHeight: 1.5 }}>{a.txt}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Panel>
-
-          {/* Meta 90 dias */}
-          <Panel>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <Label color={C.cyan}>Meta de 90 dias</Label>
-              {meta && <span style={{ fontFamily: F.t, fontSize: 20, fontWeight: 700, color: C.gold }}>{meta.real}%</span>}
-            </div>
-            {meta ? (
-              <>
-                <div style={{ fontFamily: F.m, fontSize: 9, color: C.text, marginTop: 6 }}>
-                  {goal.metrica === "reels_publicados" ? `${meta.atual}/${meta.alvo} reels com resultado lançado` : `${meta.atual}% / ${meta.alvo}% média passou dos 3s`} · DIA {meta.dia}/90
-                </div>
-                <div style={{ position: "relative", height: 8, background: C.dim, marginTop: 10 }}>
-                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${meta.planejado}%`, background: `${C.cyan}30` }} />
-                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${meta.real}%`, background: C.gold }} />
-                  <div style={{ position: "absolute", left: `${meta.planejado}%`, top: -3, bottom: -3, width: 1, background: C.cyan }} />
-                </div>
-                <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
-                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.cyan }}>▮ PLANEJADO {meta.planejado}%</span>
-                  <span style={{ fontFamily: F.m, fontSize: 9, color: C.gold }}>▮ REAL {meta.real}%</span>
-                  <button type="button" onClick={() => setGoal(null)} style={{ marginLeft: "auto", fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: "none", cursor: "pointer" }}>EDITAR</button>
-                </div>
-              </>
-            ) : (
-              <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-                <select style={inp} value={goalForm.metrica} onChange={e => setGoalForm(g => ({ ...g, metrica: e.target.value }))}>
-                  <option value="reels_publicados">Reels com resultado lançado</option>
-                  <option value="retencao_3s">Média de % que passou dos 3s</option>
-                </select>
-                <input style={inp} inputMode="decimal" value={goalForm.alvo} onChange={e => setGoalForm(g => ({ ...g, alvo: e.target.value }))} placeholder="Alvo em 90 dias" />
-                <button type="button" onClick={salvarMeta} style={{ ...btn(true), flex: "none" }}>DEFINIR META</button>
-              </div>
-            )}
-          </Panel>
-
-          <Panel>
-            <CommandCenterAutomation onChanged={load} />
-          </Panel>
-
-          <Panel>
-            <Label>ATALHOS</Label>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(90px, 1fr))", gap: 6, marginTop: 10 }}>
-              {atalhos.map((a) => (
-                <button key={a.id} type="button" onClick={() => (a.zone ? onOpenZone?.(a.zone) : a.tool ? onOpenTool?.(a.tool) : undefined)}
-                  style={{ background: `${C.cyan}08`, border: `1px solid ${C.cyan}25`, color: C.text, fontFamily: F.t, fontWeight: 700, fontSize: 12, letterSpacing: 1, padding: "12px 4px", cursor: "pointer", borderRadius: 0 }}>
-                  {a.nome}
-                </button>
-              ))}
-            </div>
-          </Panel>
+          <CommandCenterLower loaded={loaded} scripts={scripts} results={results} stats={formulas} atlas={atlas}
+            bank={bankAll} pillars={pillarsAll} leadsCount={leadsCount} goal={goal} meta={meta} goalForm={goalForm}
+            setGoalForm={setGoalForm} salvarMeta={salvarMeta} streak={streak} reelsHoje={doDia.length}
+            blocosFracos={blocos.filter(b => b.nota != null && b.nota < 7)}
+            onTestar={testarFormula} onRodarAgora={rodarAgora} onLancar={() => scrollTo("cc-resultado")} onFabrica={() => scrollTo("cc-fabrica")}
+            onOpenZone={onOpenZone} onOpenTool={onOpenTool} reload={load} />
         </div>
       </div>
 
