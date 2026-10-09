@@ -52,12 +52,12 @@ function Radar({ v, exemplo }: { v: Record<string, number>; exemplo: boolean }) 
   </div>;
 }
 
-export default function AcademyPanel({ onClose }: { onClose: () => void }) {
+export default function AcademyPanel({ onClose, initialLab }: { onClose: () => void; initialLab?: "gancho" | "figuras" | "fala" }) {
   const [uid, setUid] = useState<string | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>(lessonsSeed as Lesson[]);
   const [prog, setProg] = useState<Record<string, { concluida: boolean }>>({});
   const [attempts, setAttempts] = useState<Attempt[]>([]);
-  const [view, setView] = useState<View>({ k: "home" });
+  const [view, setView] = useState<View>(initialLab ? { k: "lab", lab: initialLab } : { k: "home" });
 
   const load = async () => {
     const { data: s } = await supabase.auth.getSession(); const u = s.session?.user?.id ?? null; setUid(u);
@@ -156,6 +156,7 @@ function Aula({ l, uid, done, onDone }: { l: Lesson; uid: string | null; done: b
   const concluir = async () => {
     if (!uid) return;
     await supabase.from("academy_progress").upsert({ user_id: uid, lesson_slug: l.slug, concluida: true, quiz_acertos: acertos, resposta_exercicio: resp || null, concluida_em: new Date().toISOString() }, { onConflict: "user_id,lesson_slug" });
+    window.dispatchEvent(new CustomEvent("cc-burst", { detail: "#B8922A" }));
     onDone();
   };
   const sec = (t: string, v: string, c?: string) => <div style={{ ...box, marginBottom: 8 }}><div style={lbl(c)}>{t}</div><div style={{ fontFamily: F.m, fontSize: 12, color: C.white, lineHeight: 1.6 }}>{v}</div></div>;
