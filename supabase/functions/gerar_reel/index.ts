@@ -3,6 +3,7 @@ import { CRITIC_LIMITS, normalizeCritique, objectiveChecks } from "../_shared/re
 import { loadEnginePrompts } from "../_shared/enginePrompts.ts";
 import { verificarReel, temaAmplo, VERIFICADOR_REGRAS } from "../_shared/reelVerifier.ts";
 import { rodarCritico2, limitarInflacao } from "../_shared/critico2.ts";
+import { detectarTecnicas, errosDoReel } from "../_shared/academyRules.ts";
 // Highest-quality model for Ângulo, Redator and Crítico; lighter one for the Arquiteto plan.
 const MODEL_PRO = "google/gemini-2.5-pro", MODEL_LIGHT = "google/gemini-2.5-flash";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
@@ -168,8 +169,9 @@ Deno.serve(async (req) => {
       const untested = all.filter(f => !measured.some(s => s.formula_id === f.id)).map(f => f.id);
       const permitidas = explorar ? (untested.length ? untested : [...measured].sort((a, b) => a.usos - b.usos).slice(0, 3).map(s => s.formula_id)) : all.map(f => f.id);
       // Data, not instructions; absent values stay null.
+      const tecnica_dica = str(body.tecnica_dica, 80) || null;
       const dicaId = Number(body.formula_dica); const dica_formula = Number.isInteger(dicaId) && all.some(f => f.id === dicaId) ? dicaId : null;
-      const contexto = { pedido: { tema, objetivo, tom, rede, quero_mais, dica_formula }, formulas_atlas: all, ranking_formulas: ranking,
+      const contexto = { pedido: { tema, objetivo, tom, rede, quero_mais, dica_formula, tecnica_dica }, formulas_atlas: all, ranking_formulas: ranking,
         selecao_formula: { modo: explorar ? "explorar" : "priorizar", permitidas }, voz_do_criador: voice ?? null,
         padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes };
 
@@ -261,9 +263,12 @@ Deno.serve(async (req) => {
       const notas = { ...crit, rodadas, historico, frases_fracas: current.frases_fracas, forca_gancho: forca, forca_gancho_total: forca ? Object.values(forca as Record<string, number>).reduce((a, b) => a + b, 0) : null,
         avisos: crit.notas_por_bloco.filter(n => n.nota < CRITIC_LIMITS.warnBelow).map(n => ({ id: n.id, texto: `Este trecho está fraco. Sugestão de gravação: ${n.correcao}` })) };
       const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: crit.nota_geral, origem,
-        angulo, motivos_nota: current.motivos, critico2: current.critico2, status_qualidade: portao(crit) })
+        angulo, motivos_nota: current.motivos, critico2: current.critico2, status_qualidade: portao(crit),
+        tecnicas: [...new Set([...detectarTecnicas(blocks, formula?.nome), ...(tecnica_dica ? [tecnica_dica] : [])])] })
         .select("*").single();
       if (error) throw new HttpError(500, "Reel gerado, mas não foi possível salvar no histórico.");
+      // Caderno de erros: até 3 frases reprovadas por reel; o índice único impede duplicar.
+      for (const e of errosDoReel(current.motivos as any, blocks)) await db.from("error_notebook").insert({ ...e, user_id: auth.userId, origem: "reel", origem_id: data.id }).then(() => {}, () => {});
       send({ etapa: "pronto", script: data });
     } catch (e) {
       send({ etapa: "erro", error: e instanceof Error ? e.message : "Erro", status: e instanceof HttpError ? e.status : 500 });

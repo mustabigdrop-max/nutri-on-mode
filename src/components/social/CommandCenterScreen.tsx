@@ -8,6 +8,7 @@ import EngineInstructionsPanel from "./EngineInstructionsPanel";
 import CardStudioPanel from "./CardStudioPanel";
 import AcademyPanel from "./AcademyPanel";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
+import { ReelTecnicas, TecnicasRetencao } from "./ReelTecnicas";
 import { BlockQuality, Critico2Panel, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
 
@@ -306,6 +307,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const [pillarsAll, setPillarsAll] = useState<any[] | null>(null);
   const [leadsCount, setLeadsCount] = useState<number | null>(null);
   const [dica, setDica] = useState<{ id: number; nome: string } | null>(null);
+  const [tecDica, setTecDica] = useState<string | null>(null);
+  useEffect(() => { const h = (e: Event) => { const t = String((e as CustomEvent).detail ?? ""); if (!t) return; setTecDica(t); setTemaOpen(true); toast.success(`Técnica "${t}" vai como dica ao Arquiteto`); }; window.addEventListener("cc-tecnica-dica", h); return () => window.removeEventListener("cc-tecnica-dica", h); }, []);
   const [academiaLab, setAcademiaLab] = useState<"fala" | undefined>(undefined);
   const [fxLevel, setFxLevel] = useFxLevel();
   const [fxOpen, setFxOpen] = useState(false);
@@ -329,7 +332,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     if (!user) { setLoaded(true); return; }
     const since = new Date(Date.now() - 120 * 864e5).toISOString();
     const [s, r, f, h, g, a, bk, pl, ba, pa, ld] = await Promise.all([
-      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em, angulo, motivos_nota, critico2, status_qualidade").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
+      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em, angulo, motivos_nota, critico2, tecnicas, status_qualidade").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
       supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
       supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media").eq("user_id", user.id),
       supabase.from("hook_formulas").select("id, nome").order("id"),
@@ -385,8 +388,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     if (!tema.trim()) return toast.error("Escreva o tema do reel");
     setGenErr(null); setStage("arquiteto");
     try {
-      const script = await runGerarReel({ tema: tema.trim(), objetivo, tom: "direto", ...(dica ? { formula_dica: dica.id } : {}) } as any, setStage);
-      setDica(null);
+      const script = await runGerarReel({ tema: tema.trim(), objetivo, tom: "direto", ...(dica ? { formula_dica: dica.id } : {}), ...(tecDica ? { tecnica_dica: tecDica } : {}) } as any, setStage);
+      setDica(null); setTecDica(null);
       toast.success("Reel de hoje pronto");
       setTemaOpen(false); setTema(""); setBlocoAberto(null);
       await load(); setTodayIdx(0); setFresh(true); setPulseKey(k => k + 1); lightBurst(C.cyan);
@@ -522,6 +525,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
         {/* Missão de hoje */}
         <Panel glow={C.gold} className="cc-keep">
           <div id="cc-missao" style={{ scrollMarginTop: 80 }} />
+          {tecDica && <div style={{ fontFamily: F.m, fontSize: 10, color: C.gold, marginBottom: 6 }}>TÉCNICA DA AULA: {tecDica} <button type="button" onClick={() => setTecDica(null)} style={{ fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: "none", cursor: "pointer" }}>remover</button></div>}
           <Label color={C.gold}>Missão de hoje</Label>
           {dica && (
             <div style={{ marginTop: 6, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", fontFamily: F.m, fontSize: 9, color: C.cyan, border: `1px solid ${C.cyan}40`, padding: "4px 8px" }}>
@@ -580,6 +584,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                     </div>
                   ))}
                   <Critico2Panel c2={reel.critico2} />
+                  <ReelTecnicas key={reel.id} reel={reel} onSaved={load} />
                 </div>
               ) : abertura && <div style={{ fontFamily: F.m, fontSize: 11, color: C.text, marginTop: 10, lineHeight: 1.5 }}>ABERTURA: “{String(abertura)}”</div>}
             </div>
@@ -726,6 +731,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
               </>
             )}
           </Panel>
+
+          <Panel><Label color={C.gold}>Técnicas × retenção</Label><div style={{ marginTop: 8 }}><TecnicasRetencao scripts={scripts} results={results} /></div></Panel>
 
           <CommandCenterLower loaded={loaded} scripts={scripts} results={results} stats={formulas} atlas={atlas}
             bank={bankAll} pillars={pillarsAll} leadsCount={leadsCount} goal={goal} meta={meta} goalForm={goalForm}
