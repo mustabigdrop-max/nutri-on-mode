@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ReelFactoryPanel from "./ReelFactoryPanel";
 import CommandCenterAutomation from "./CommandCenterAutomation";
+import EngineInstructionsPanel from "./EngineInstructionsPanel";
+import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
 
 /* ═══════════════════════════════════════════════════
@@ -59,8 +61,6 @@ function useCountUp(target: number, ms = 1200) {
   }, [target, ms]);
   return v;
 }
-/** Instruções do motor: CONTEXTO_COMUM, ARQUITETO, REDATOR e CRITICO. Hoje estão vazias no servidor. */
-const MOTOR_INSTRUCOES = { ativas: 0, total: 4 };
 
 /** Painel de vidro escuro com canto cortado e brilho fino no topo. */
 function Panel({ children, style, glow }: { children: React.ReactNode; style?: React.CSSProperties; glow?: string }) {
@@ -300,6 +300,14 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const [auto, setAuto] = useState<any>(null);
   const [chips, setChips] = useState<string[]>([]);
   const [genErr, setGenErr] = useState<string | null>(null);
+  const [engRows, setEngRows] = useState<EngineRow[]>([]);
+  const [engUser, setEngUser] = useState("");
+  const [engOpen, setEngOpen] = useState(false);
+  const loadEngine = async () => { const { data: { user } } = await supabase.auth.getUser(); if (!user) return; setEngUser(user.id); setEngRows(await loadAndSeed(user.id)); };
+  useEffect(() => { loadEngine(); }, []);
+  const vazias = engRows.length ? emptyCore(engRows) : [];
+  const MOTOR_INSTRUCOES = { ativas: engRows.length ? CORE_KEYS.length - vazias.length : 0, total: CORE_KEYS.length };
+  const abrirInstrucoes = () => { setEngOpen(true); setTimeout(() => document.getElementById("cc-instrucoes")?.scrollIntoView({ behavior: "smooth" }), 50); };
   const [fresh, setFresh] = useState(false);
 
   const load = async () => {
@@ -437,6 +445,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
               { t: auto?.limite_diario ? `HOJE ${doDia.length} DE ${auto.limite_diario}` : `HOJE ${doDia.length} ${doDia.length === 1 ? "REEL" : "REELS"}`, c: C.cyan },
               { t: `MOTOR: ${MOTOR_INSTRUCOES.ativas} DE ${MOTOR_INSTRUCOES.total} INSTRUÇÕES ATIVAS`, c: motorOk ? "#5DCAA5" : "#EF9F27" },
             ].map(x => <span key={x.t} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: x.c, border: `1px solid ${x.c}40`, padding: "2px 6px", whiteSpace: "nowrap" }}>{x.t}</span>)}
+            <button type="button" onClick={abrirInstrucoes} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: C.cyan, background: "none", border: `1px solid ${C.cyan}60`, padding: "2px 6px", cursor: "pointer", borderRadius: 0 }}>INSTRUÇÕES</button>
           </div>
         </div>
 
@@ -447,6 +456,17 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
         {/* Missão de hoje */}
         <Panel glow={C.gold}>
           <Label color={C.gold}>Missão de hoje</Label>
+          {engRows.length > 0 && (
+            <button type="button" onClick={vazias.length ? abrirInstrucoes : undefined} style={{ marginTop: 6, fontFamily: F.m, fontSize: 9, letterSpacing: 1, color: vazias.length ? "#EF9F27" : "#5DCAA5", background: "none", border: `1px solid ${vazias.length ? "#EF9F27" : "#5DCAA5"}50`, padding: "2px 8px", cursor: vazias.length ? "pointer" : "default", borderRadius: 0 }}>
+              Motor: {MOTOR_INSTRUCOES.ativas} de {MOTOR_INSTRUCOES.total} instruções ativas
+            </button>
+          )}
+          {vazias.length > 0 && (
+            <div style={{ marginTop: 8, border: `1px solid ${C.red}60`, padding: 8, fontFamily: F.m, fontSize: 10, color: C.red }}>
+              Instrução vazia: {vazias.map(k => ENGINE_LABEL[k]).join(", ")}.{" "}
+              <button type="button" onClick={abrirInstrucoes} style={{ fontFamily: F.m, fontSize: 10, color: C.white, background: "none", border: `1px solid ${C.red}`, padding: "2px 8px", cursor: "pointer", borderRadius: 0 }}>Abrir instruções do motor</button>
+            </div>
+          )}
           {!loaded ? <><Skel h={22} /><Skel h={36} /><Skel h={42} /></> : reel ? (
             <div className={fresh ? "cc-rise" : undefined}>
               <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 6 }}>
@@ -552,6 +572,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
         <Panel glow={C.gold}>
           <ReelFactoryPanel onChosen={load} />
         </Panel>
+
+        {engUser && <Panel glow={C.cyan}><EngineInstructionsPanel rows={engRows} userId={engUser} open={engOpen} onToggle={() => setEngOpen(o => !o)} onChanged={loadEngine} /></Panel>}
 
         <div className="cc-grid">
           <Panel>
