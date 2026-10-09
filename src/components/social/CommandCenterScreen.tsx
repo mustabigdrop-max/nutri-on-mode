@@ -361,7 +361,13 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const doDia = scripts.filter(s => new Date(s.created_at) >= hojeIni);
   const reel = doDia[Math.min(todayIdx, Math.max(0, doDia.length - 1))] ?? null;
   const blocos: Bloco[] = useMemo(() => mergeBlocks(reel), [reel]);
-  const ontem = scripts.find(s => { const d = new Date(s.created_at); return d >= ontemIni && d < hojeIni; }) ?? null;
+  // Último reel com status 'postado' no Banco (mais recente primeiro).
+  const ontem = useMemo(() => {
+    const post = (bankAll ?? []).filter(b => b.status === "postado" && b.script_id).sort((a, b) => +new Date(b.updated_at ?? b.created_at) - +new Date(a.updated_at ?? a.created_at));
+    for (const b of post) { const sc = scripts.find(s => s.id === b.script_id); if (sc) return sc; }
+    return null;
+  }, [bankAll, scripts]);
+  void ontemIni;
   const ontemBlocos: Bloco[] = useMemo(() => mergeBlocks(ontem), [ontem]);
   const ontemResult = ontem ? results.find(r => r.script_id === ontem.id) : null;
   const { score, subs } = useMemo(() => contentScore(scripts, results), [scripts, results]);
@@ -442,6 +448,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     setTemaOpen(true); if (!tema && chips[0]) setTema(chips[0]); scrollTo("cc-missao");
   };
   const busy = stage !== null;
+  const pctOk = (v: string) => { const n = Number(String(v).replace(",", ".")); return String(v).trim() !== "" && Number.isFinite(n) && n >= 0 && n <= 100; };
+  const resultadoCompleto = ontemBlocos.length > 0 && pctOk(pct3) && Number(String(medio).replace(",", ".")) > 0 && ontemBlocos.every(b => pctOk(faixas[b.id] ?? ""));
   const abertura = reel ? (blocos[0]?.fala ?? reel.roteiro?.gancho) : null;
   const comp: any[] = calib?.comparacao ?? ontemResult?.curva_real?.comparacao ?? [];
 
@@ -667,11 +675,11 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
             </div>
           </Panel>
 
-          {/* Resultado de ontem */}
+          {/* Resultado do último reel postado */}
           <Panel>
             <div id="cc-resultado" style={{ scrollMarginTop: 80 }} />
-            <Label color={C.gold}>Resultado de ontem</Label>
-            {!ontem ? <Empty>Sem dados reais ainda. Lance o resultado do último reel.</Empty> : (
+            <Label color={C.gold}>Resultado do último reel postado</Label>
+            {!ontem ? <Empty>Nenhum reel marcado como postado. Marque POSTADO no Banco de reels para lançar o resultado.</Empty> : (
               <>
                 <div style={{ fontFamily: F.m, fontSize: 10, color: C.text, marginTop: 6 }}>{ontem.tema}</div>
                 {(calib || ontemResult) && comp.length > 1 && (
@@ -698,14 +706,21 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                     {!ontemResult && <Empty>Sem dados reais ainda. Lance o resultado do último reel.</Empty>}
                     {ontemResult && <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>Já lançado: {dash(ontemResult.pct_3s)}% passou dos 3s · {dash(ontemResult.tempo_medio)}s médio. Enviar de novo atualiza os números.</div>}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                      <input style={inp} inputMode="decimal" value={pct3} onChange={e => setPct3(e.target.value)} placeholder="% passou dos 3s" />
-                      <input style={inp} inputMode="decimal" value={medio} onChange={e => setMedio(e.target.value)} placeholder="Tempo médio (s)" />
+                      <label style={{ display: "flex", flexDirection: "column", gap: 3 }}><span style={{ fontFamily: F.m, fontSize: 9, color: C.text }}>% que passou dos 3s</span>
+                        <input style={{ ...inp, borderColor: pctOk(pct3) || !pct3 ? undefined : C.red }} inputMode="decimal" value={pct3} onChange={e => setPct3(e.target.value)} placeholder="0 a 100" /></label>
+                      <label style={{ display: "flex", flexDirection: "column", gap: 3 }}><span style={{ fontFamily: F.m, fontSize: 9, color: C.text }}>Tempo médio (s)</span>
+                        <input style={inp} inputMode="decimal" value={medio} onChange={e => setMedio(e.target.value)} placeholder="segundos" /></label>
                     </div>
                     <Label>% de audiência no fim de cada faixa</Label>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))", gap: 6 }}>
-                      {ontemBlocos.map(b => <input key={String(b.id)} style={inp} inputMode="decimal" value={faixas[b.id] ?? ""} onChange={e => setFaixas(f => ({ ...f, [b.id]: e.target.value }))} placeholder={`B${b.id} · ${dash(b.tempo)}`} />)}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                      {ontemBlocos.map(b => { const v = faixas[b.id] ?? ""; return (
+                        <label key={String(b.id)} style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+                          <span style={{ fontFamily: F.m, fontSize: 10, color: C.white }}>B{b.id} · {dash(b.tempo)}</span>
+                          <input style={{ ...inp, fontSize: 13, borderColor: v && !pctOk(v) ? C.red : undefined }} inputMode="decimal" value={v} onChange={e => setFaixas(f => ({ ...f, [b.id]: e.target.value }))} placeholder="0 a 100" />
+                        </label>); })}
                     </div>
-                    <button type="button" onClick={calibrar} disabled={calibBusy} style={{ ...btn(true), flex: "none", cursor: calibBusy ? "wait" : "pointer" }}>{calibBusy ? "Comparando previsto x real..." : "Lançar retenção"}</button>
+                    {!resultadoCompleto && <div style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>Preencha todos os campos com valores de 0 a 100 para lançar.</div>}
+                    <button type="button" onClick={calibrar} disabled={calibBusy || !resultadoCompleto} style={{ ...btn(true), flex: "none", opacity: resultadoCompleto ? 1 : 0.4, cursor: calibBusy ? "wait" : resultadoCompleto ? "pointer" : "not-allowed" }}>{calibBusy ? "Comparando previsto x real..." : "Lançar retenção"}</button>
                   </div>
                 )}
               </>
