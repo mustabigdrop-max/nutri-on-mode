@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AttentionField, CommandPalette, FX_LABEL, Nucleus3D, SURREAL_CSS, WaveStrip, lightBurst, useFxLevel, useParallax, type FxLevel, type PaletteAction } from "./ccSurreal";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ReelFactoryPanel from "./ReelFactoryPanel";
@@ -66,10 +67,10 @@ function useCountUp(target: number, ms = 1200) {
 }
 
 /** Painel de vidro escuro com canto cortado e brilho fino no topo. */
-function Panel({ children, style, glow }: { children: React.ReactNode; style?: React.CSSProperties; glow?: string }) {
+function Panel({ children, style, glow, className }: { children: React.ReactNode; style?: React.CSSProperties; glow?: string; className?: string }) {
   return (
     <div
-      className="cc-rise"
+      className={`cc-rise cc-panel${className ? " " + className : ""}`}
       style={{
         backdropFilter: "blur(6px)",
         boxShadow: `inset 0 1px 0 ${glow || C.cyan}22`,
@@ -153,24 +154,10 @@ function Nucleo({ score, subs, exemplo }: { score: number | null; subs: Sub[]; e
     <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", padding: "6px 0 4px" }}>
       {exemplo && <span style={{ position: "absolute", top: 0, right: 0, fontFamily: F.m, fontSize: 9, letterSpacing: 2, color: "#EF9F27", border: "1px solid #EF9F2770", padding: "2px 8px", background: "#EF9F2712" }}>EXEMPLO</span>}
       <div style={{ position: "absolute", inset: -40, pointerEvents: "none", background: `radial-gradient(circle at 50% 42%, ${C.cyan}16, transparent 60%)` }} />
-      <div style={{ position: "relative", width: 220, height: 220 }}>
-        <svg width={220} height={220} viewBox="0 0 220 220" style={{ position: "absolute", inset: 0 }}>
-          <g className="cc-anim" style={{ transformOrigin: "110px 110px", animation: "ccSpin 40s linear infinite" }}>
-            <circle cx={CX} cy={CY} r={102} fill="none" stroke={`${C.cyan}55`} strokeWidth={1} strokeDasharray="2 7" />
-            <circle cx={CX} cy={CY} r={96} fill="none" stroke={`${C.cyan}22`} strokeWidth={1} strokeDasharray="18 30" />
-          </g>
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke={`${C.cyan}14`} strokeWidth={7} />
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke={exemplo ? "#EF9F27" : C.cyan} strokeWidth={7} strokeLinecap="butt"
-            strokeDasharray={`${(shown / 100) * circ} ${circ}`} transform={`rotate(-90 ${CX} ${CY})`}
-            style={{ filter: `drop-shadow(0 0 8px ${exemplo ? "#EF9F27" : C.cyan}90)` }} />
-          <circle className="cc-anim" cx={CX} cy={CY} r={60} fill={`${C.cyan}08`} stroke={`${C.cyan}40`} strokeWidth={1}
-            style={{ animation: "ccGlow 3.2s ease-in-out infinite", filter: `drop-shadow(0 0 10px ${C.cyan})` }} />
-        </svg>
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ fontFamily: F.t, fontSize: 56, fontWeight: 700, color: C.white, lineHeight: 1, textShadow: `0 0 18px ${C.cyan}60` }}>{sc == null ? "—" : shown}</div>
-          <Label color={C.cyan}>Content Score</Label>
-        </div>
-      </div>
+      <Nucleus3D shown={shown} score={sc} exemplo={exemplo}>
+        <div style={{ fontFamily: F.t, fontSize: 56, fontWeight: 700, color: C.white, lineHeight: 1, textShadow: `0 0 18px ${C.cyan}60` }}>{sc == null ? "—" : shown}</div>
+        <Label color={C.cyan}>Content Score</Label>
+      </Nucleus3D>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 8, marginTop: 8, width: "100%", maxWidth: 340 }}>
         {ss.map((s) => <MiniGauge key={s.k} s={s} />)}
       </div>
@@ -318,6 +305,23 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const [pillarsAll, setPillarsAll] = useState<any[] | null>(null);
   const [leadsCount, setLeadsCount] = useState<number | null>(null);
   const [dica, setDica] = useState<{ id: number; nome: string } | null>(null);
+  const [academiaLab, setAcademiaLab] = useState<"fala" | undefined>(undefined);
+  const [fxLevel, setFxLevel] = useFxLevel();
+  const [fxOpen, setFxOpen] = useState(false);
+  const [foco, setFoco] = useState(false);
+  const [paleta, setPaleta] = useState(false);
+  const [pulseKey, setPulseKey] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  useParallax(rootRef, fxLevel);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setPaleta(p => !p); }
+      else if (e.key === "Escape") setFoco(false);
+    };
+    const onBurst = (e: Event) => lightBurst((e as CustomEvent).detail || C.cyan);
+    window.addEventListener("keydown", onKey); window.addEventListener("cc-burst", onBurst);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("cc-burst", onBurst); };
+  }, []);
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -378,7 +382,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
       setDica(null);
       toast.success("Reel de hoje pronto");
       setTemaOpen(false); setTema(""); setBlocoAberto(null);
-      await load(); setTodayIdx(0); setFresh(true);
+      await load(); setTodayIdx(0); setFresh(true); setPulseKey(k => k + 1); lightBurst(C.cyan);
       void script;
     } catch (e: any) { setGenErr(e?.message || "Não foi possível gerar o reel."); } finally { setStage(null); }
   };
@@ -401,7 +405,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     setCalibBusy(false);
     const msg = (data as any)?.error ?? (error ? (await (error as any).context?.json?.().catch(() => null))?.error ?? "Falha ao calibrar" : null);
     if (msg) return toast.error(msg);
-    setCalib(data); load();
+    setCalib(data); load(); lightBurst(C.gold);
   };
 
   const salvarMeta = async () => {
@@ -449,28 +453,46 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const Skel = ({ h }: { h: number }) => <div className="cc-skel" style={{ height: h, marginTop: 8 }} />;
 
   return (
-    <div className="cc-anim cc-root" style={{ position: "relative", background: C.bg, borderRadius: 0, overflow: "hidden", overflowX: "hidden", padding: "14px 14px 20px", margin: "-16px -16px 0" }}>
+    <div ref={rootRef} className={`cc-anim cc-root cc-fx-${fxLevel}${foco ? " cc-focus" : ""}`} style={{ position: "relative", background: C.bg, borderRadius: 0, overflow: "hidden", overflowX: "hidden", padding: "14px 14px 20px", margin: "-16px -16px 0" }}>
       <style>{CSS}</style>
+      <style>{SURREAL_CSS}</style>
+      <AttentionField level={fxLevel} score={exemplo ? null : score} paused={foco} />
+      {foco && <div className="cc-focus-veil" />}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.04, backgroundImage: `linear-gradient(${C.cyan} 1px, transparent 1px), linear-gradient(90deg, ${C.cyan} 1px, transparent 1px)`, backgroundSize: "36px 36px" }} />
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.05, mixBlendMode: "overlay", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")" }} />
 
       <div className="cc-stack" style={{ position: "relative", display: "flex", flexDirection: "column", gap: 14 }}>
         {/* Barra SIGNAL */}
-        <div className="cc-rise" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, borderBottom: `1px solid ${C.cyan}22`, paddingBottom: 8 }}>
+        <div className="cc-rise cc-keep" style={{ display: "flex", flexDirection: "column", gap: 4, borderBottom: `1px solid ${C.cyan}22`, paddingBottom: 6, boxShadow: "none" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="cc-anim" style={{ width: 7, height: 7, borderRadius: "50%", background: led, boxShadow: `0 0 8px ${led}`, animation: "ccDot 1.6s ease infinite" }} />
             <span style={{ fontFamily: F.t, fontSize: 18, fontWeight: 700, color: C.white, letterSpacing: 2 }}>SIGNAL</span>
             <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted }}>{hoje}</span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-            {[
+            {!foco && [
               { t: `STREAK ${streak} ${streak === 1 ? "DIA" : "DIAS"}`, c: C.gold },
               { t: auto?.limite_diario ? `HOJE ${doDia.length} DE ${auto.limite_diario}` : `HOJE ${doDia.length} ${doDia.length === 1 ? "REEL" : "REELS"}`, c: C.cyan },
               { t: `MOTOR: ${MOTOR_INSTRUCOES.ativas} DE ${MOTOR_INSTRUCOES.total} INSTRUÇÕES ATIVAS`, c: motorOk ? "#5DCAA5" : "#EF9F27" },
             ].map(x => <span key={x.t} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: x.c, border: `1px solid ${x.c}40`, padding: "2px 6px", whiteSpace: "nowrap" }}>{x.t}</span>)}
-            <button type="button" onClick={abrirInstrucoes} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: C.cyan, background: "none", border: `1px solid ${C.cyan}60`, padding: "2px 6px", cursor: "pointer", borderRadius: 0 }}>INSTRUÇÕES</button>
-            <button type="button" onClick={() => setAcademia(true)} style={{ fontFamily: F.m, fontSize: 8, letterSpacing: 1, color: C.gold, background: "none", border: `1px solid ${C.gold}80`, padding: "2px 6px", cursor: "pointer", borderRadius: 0 }}>ACADEMIA</button>
+            {!foco && <button type="button" onClick={abrirInstrucoes} style={sigBtn(C.cyan)}>INSTRUÇÕES</button>}
+            {!foco && <button type="button" onClick={() => setAcademia(true)} style={sigBtn(C.gold)}>ACADEMIA</button>}
+            <button type="button" onClick={() => setFoco(f => !f)} aria-pressed={foco} style={sigBtn("#EF9F27", foco)}>{foco ? "SAIR DO FOCO · ESC" : "FOCO"}</button>
+            {!foco && <div style={{ position: "relative" }}>
+              <button type="button" onClick={() => setFxOpen(o => !o)} aria-expanded={fxOpen} style={sigBtn(C.cyan)}>EFEITOS · {FX_LABEL[fxLevel].toUpperCase()}</button>
+              {fxOpen && (
+                <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 20, background: "rgba(10,10,18,0.96)", border: `1px solid ${C.cyan}50`, display: "flex", flexDirection: "column", minWidth: 140 }}>
+                  {(["completo", "equilibrado", "leve"] as FxLevel[]).map(l => (
+                    <button key={l} type="button" onClick={() => { setFxLevel(l); setFxOpen(false); }} style={{ textAlign: "left", fontFamily: F.m, fontSize: 10, color: l === fxLevel ? C.cyan : C.text, background: l === fxLevel ? `${C.cyan}14` : "none", border: "none", padding: "8px 10px", cursor: "pointer", borderRadius: 0 }}>{l === fxLevel ? "● " : "○ "}{FX_LABEL[l]}</button>
+                  ))}
+                </div>
+              )}
+            </div>}
+            {!foco && <button type="button" onClick={() => setPaleta(true)} title="Ctrl+K" style={sigBtn(C.white)}>⌘ COMANDOS</button>}
           </div>
+        </div>
+        <WaveStrip stage={stage} level={fxLevel} pulseKey={pulseKey} />
         </div>
 
         <Panel glow={C.cyan}><Label color={C.cyan}>Núcleo de Atenção</Label>
@@ -478,7 +500,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
         </Panel>
 
         {/* Missão de hoje */}
-        <Panel glow={C.gold}>
+        <Panel glow={C.gold} className="cc-keep">
           <div id="cc-missao" style={{ scrollMarginTop: 80 }} />
           <Label color={C.gold}>Missão de hoje</Label>
           {dica && (
@@ -618,7 +640,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           <ReelFactoryPanel onChosen={load} />
         </Panel>
 
-        {academia && <AcademyPanel onClose={() => setAcademia(false)} />}
+        {academia && <AcademyPanel initialLab={academiaLab} onClose={() => { setAcademia(false); setAcademiaLab(undefined); }} />}
         <Panel glow={C.cyan}><div id="cc-cards" style={{ scrollMarginTop: 80 }} /><CardStudioPanel /></Panel>
 
         {engUser && <Panel glow={C.cyan}><EngineInstructionsPanel rows={engRows} userId={engUser} open={engOpen} onToggle={() => setEngOpen(o => !o)} onChanged={loadEngine} /></Panel>}
