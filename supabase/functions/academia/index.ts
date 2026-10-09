@@ -43,9 +43,19 @@ Deno.serve(async (req) => {
     if (modo === "quiz") {
       const { data: l } = await db.from("academy_lessons").select("titulo,conceito,no_reel,fraco,forte").eq("slug", String(body.slug)).maybeSingle();
       if (!l) return json({ error: "Aula não encontrada." }, 404);
-      const out = await ask(`Crie 3 perguntas de múltipla escolha (4 opções) usando SOMENTE o texto da aula. Não acrescente nenhuma informação externa. JSON: {"perguntas":[{"pergunta":"","opcoes":["","","",""],"correta":0}]}`, JSON.stringify(l));
+      const out = await ask(`Crie 3 perguntas de múltipla escolha (4 opções) usando SOMENTE o texto da aula. Não acrescente nenhuma informação externa. Cada pergunta traz uma explicação curta tirada do texto. JSON: {"perguntas":[{"pergunta":"","opcoes":["","","",""],"correta":0,"explicacao":""}]}`, JSON.stringify(l));
       const ps = (Array.isArray(out.perguntas) ? out.perguntas : []).filter((p: any) => p?.pergunta && Array.isArray(p.opcoes) && p.opcoes.length >= 2).slice(0, 3);
       return json({ perguntas: ps.map((p: any) => ({ pergunta: String(p.pergunta), opcoes: p.opcoes.map(String).slice(0, 4), correta: clamp(p.correta, 3) })) });
+    }
+
+    if (modo === "diagnostico") {
+      const { data: ls } = await db.from("academy_lessons").select("slug,titulo,conceito,no_reel,fraco,forte").order("ordem");
+      if (!ls?.length) return json({ error: "Aulas não encontradas." }, 404);
+      const out = await ask(`Diagnóstico inicial. Crie 8 perguntas de múltipla escolha (4 opções) usando SOMENTE o texto das aulas recebidas, sem nenhuma informação externa. Cubra os eixos gancho, figuras, prova, ritmo, voz e cta (pelo menos 1 de cada). JSON: {"perguntas":[{"eixo":"gancho","pergunta":"","opcoes":["","","",""],"correta":0,"explicacao":""}]}`, JSON.stringify(ls));
+      const EIX = ["gancho", "figuras", "prova", "ritmo", "voz", "cta"];
+      const ps = (Array.isArray(out.perguntas) ? out.perguntas : []).filter((p: any) => p?.pergunta && Array.isArray(p.opcoes) && p.opcoes.length >= 2 && EIX.includes(String(p.eixo))).slice(0, 8);
+      if (ps.length < 6) return json({ error: "Não consegui montar o diagnóstico. Tente de novo." }, 502);
+      return json({ perguntas: ps.map((p: any) => ({ eixo: String(p.eixo), pergunta: String(p.pergunta), opcoes: p.opcoes.map(String).slice(0, 4), correta: clamp(p.correta, 3), explicacao: String(p.explicacao ?? "") })) });
     }
 
     if (!texto || texto.length > 6000) return json({ error: "Escreva o texto (até 6000 caracteres)." }, 400);
@@ -73,6 +83,13 @@ Deno.serve(async (req) => {
     if (modo === "fala") {
       const out = await ask(`Laboratório de Fala. Analise a transcrição: gancho (Atlas) 0 a 100; especificidade (cite os elementos concretos encontrados); perguntas_sem_resposta (liste); cta (existe? único? tem motivo?) 0 a 100; prova (demonstração ou dado com fonte presente no texto) 0 a 100; voz (variação implícita, frases faladas) 0 a 100; uma figura de retórica detectada (ou "nenhuma"); 3 trechos literais para reescrever, cada um com versão melhor sem inventar dado; nota_qualitativa 0 a 100; 3 ajustes para a próxima gravação. JSON: {"gancho":0,"especificidade":{"nota":0,"elementos":[]},"perguntas_sem_resposta":[],"cta":{"nota":0,"comentario":""},"prova":0,"voz":0,"figura":{"nome":"","trecho":""},"trechos":[{"original":"","melhor":""}],"nota_qualitativa":0,"ajustes":["","",""]}`, texto);
       return json({ analise: out });
+    }
+
+    if (modo === "treino") {
+      const v = verificarBloco({ id: 1, tempo: "0-2s", fala: texto }, 0, { proibidas, temFonte: false });
+      const pedido = String(body.pedido ?? "").slice(0, 400);
+      const out = await ask(`Treino de 60 segundos. Pedido do exercício: ${pedido}. Dê um feedback de 1 a 2 frases e 2 reescritas melhores, sem saudação, até 12 palavras na abertura, sem inventar número ou estudo. JSON: {"feedback":"","reescritas":["",""]}`, texto);
+      return json({ verificador: v, feedback: String(out.feedback ?? ""), reescritas: (Array.isArray(out.reescritas) ? out.reescritas : []).map(String).filter(Boolean).slice(0, 2) });
     }
 
     if (modo === "reescrever") {
