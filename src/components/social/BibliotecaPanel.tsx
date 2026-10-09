@@ -6,7 +6,7 @@ import lessonsSeed from "@/data/academyLessons.json";
 import {
   SELO_FONTE, avaliarCartao, podeVerResposta, recallValido, capituloLido, quizPassou, cartoesIniciais, capituloDominado,
   estadoCapitulo, ritmo, estadoProva, montarProva, provaAprovada, podeRefazerProva, seloModulo, SELO_TEXTO, leituraAtiva,
-  diasSeguidosEstudo, notasMarkdown, capituloDaAula, palavras, PAUSA_MIN, RECALL_MIN, notaProva, tempoLeitura, textoDosBlocos,
+  diasSeguidosEstudo, notasMarkdown, capituloDaAula, palavras, PAUSA_MIN, RECALL_MIN, notaProva, tempoLeitura, questoesCheckpoint, acertosParaAprovar, podeEntregarProjeto, textoDosBlocos,
   type NivelFonte, type Auto, type QItem, type EstadoCap,
 } from "@/lib/bookRules";
 
@@ -21,7 +21,9 @@ type Exam = { id: string; modulo_slug: string; tentativa: number; nota: number; 
 type Proj = { modulo_slug: string; entrega: any; autoavaliacao: any; status: string };
 type Plan = { novos_por_dia: number; hora_estudo: string | null; liberacoes: any[]; dicas_vistas: Record<string, boolean> };
 type View = { k: "home" } | { k: "mod"; slug: string } | { k: "ler"; slug: string } | { k: "revisao" } | { k: "notas" } | { k: "glossario" } | { k: "prova"; slug: string } | { k: "projeto"; slug: string } | { k: "ritmo" };
-export type TreinoAlvo = "home" | "gancho" | "figuras" | "fala" | "erros";
+export type LabK = "gancho" | "figuras" | "fala";
+export type TreinoAlvo = "home" | LabK | "erros" | { aula: string; capSlug: string; capTitulo: string } | { lab: LabK; capSlug: string; capTitulo: string };
+const LABS_EXISTENTES: LabK[] = ["gancho", "figuras", "fala"];
 
 const CSS = `
 .bk-root{background:#020205;background-image:linear-gradient(#00D4FF0a 1px,transparent 1px),linear-gradient(90deg,#00D4FF0a 1px,transparent 1px),radial-gradient(ellipse at 50% -10%,#00D4FF1f,transparent 60%);background-size:28px 28px,28px 28px,100% 100%}
@@ -76,7 +78,7 @@ function baixar(nome: string, conteudo: string) {
   const a = document.createElement("a"); a.href = u; a.download = nome; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000);
 }
 
-export default function BibliotecaPanel({ onClose, onTreinos }: { onClose: () => void; onTreinos: (alvo: TreinoAlvo) => void }) {
+export default function BibliotecaPanel({ onClose, onTreinos, initialCap }: { onClose: () => void; onTreinos: (alvo: TreinoAlvo) => void; initialCap?: string }) {
   const [uid, setUid] = useState<string | null>(null);
   const [mods, setMods] = useState<Mod[]>(bookSeed.modulos as Mod[]);
   const [caps, setCaps] = useState<Cap[]>(bookSeed.capitulos as unknown as Cap[]);
@@ -87,7 +89,7 @@ export default function BibliotecaPanel({ onClose, onTreinos }: { onClose: () =>
   const [projs, setProjs] = useState<Record<string, Proj>>({});
   const [plan, setPlan] = useState<Plan>({ novos_por_dia: 1, hora_estudo: null, liberacoes: [], dicas_vistas: {} });
   const [erros, setErros] = useState<{ regra: string; lesson_slug: string | null; status: string }[]>([]);
-  const [view, setView] = useState<View>({ k: "home" });
+  const [view, setView] = useState<View>(initialCap ? { k: "ler", slug: initialCap } : { k: "home" });
   const [trava, setTrava] = useState<{ slug: string; motivo: string } | null>(null);
   const [busca, setBusca] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -489,9 +491,9 @@ function Leitor({ cap, uid, prog, notas, scrollEl, plan, onDica, prev, next, onA
               {f.observacao && <div style={{ color: C.muted }}>{f.observacao}</div>}
             </div>)}
           </section>}
-          {cap.relacionadas.length > 0 && <section style={{ marginTop: 20 }}>
+          {cap.relacionadas.some(s => (lessonsSeed as any[]).some(x => x.slug === s)) && <section style={{ marginTop: 20 }}>
             <div style={lbl()}>Treinos relacionados</div>
-            {cap.relacionadas.map(s => { const l = (lessonsSeed as any[]).find(x => x.slug === s); return <button key={s} type="button" className="bk-row" style={{ fontFamily: F.m, fontSize: 11 }} onClick={() => onTreinos("home")}>{l?.titulo ?? s} →</button>; })}
+            {cap.relacionadas.map(s => { const l = (lessonsSeed as any[]).find(x => x.slug === s); if (!l) return null; return <button key={s} type="button" className="bk-row" style={{ fontFamily: F.m, fontSize: 11 }} onClick={() => onTreinos({ aula: s, capSlug: cap.slug, capTitulo: cap.titulo })}>{l.titulo} →</button>; })}
           </section>}
           <div className="bk-p" style={{ marginTop: 28, fontFamily: F.m, fontSize: 11 }}>
             {prog?.concluido ? <div style={{ color: C.green }}>Capítulo concluído. Você pode reler quando quiser.</div> : <>
@@ -506,7 +508,7 @@ function Leitor({ cap, uid, prog, notas, scrollEl, plan, onDica, prev, next, onA
           </nav>
         </>}
         {etapa === "recordar" && <Recordar cap={cap} onOk={async (texto) => { await salvar({ recall_texto: texto, recall_feito: true }); setEtapa("checkpoint"); fim(); }} />}
-        {etapa === "checkpoint" && <Checkpoint cap={cap} onReler={(i) => { setEtapa("ler"); setTimeout(() => irPara(i), 150); }}
+        {etapa === "checkpoint" && <Checkpoint cap={{ ...cap, quiz: questoesCheckpoint(cap.quiz as any[]) }} onReler={(i) => { setEtapa("ler"); setTimeout(() => irPara(i), 150); }}
           onOk={async (score) => { await salvar({ quiz_score: score }); setEtapa("aplicar"); fim(); }} onScore={(s) => void salvar({ quiz_score: s })} />}
         {etapa === "aplicar" && <Aplicar cap={cap} feito={!!prog?.aplique_feito} onTreinos={onTreinos} onClose={onClose}
           onFiz={(v) => void salvar({ aplique_feito: v })}
@@ -530,7 +532,7 @@ function Leitor({ cap, uid, prog, notas, scrollEl, plan, onDica, prev, next, onA
       style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 6, background: "#0a0f18", borderTop: `1px solid ${C.cyan}66`, padding: 10 }}>
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
         <div style={{ fontFamily: F.s, fontStyle: "italic", fontSize: 14, color: C.white, marginBottom: 6, maxHeight: 48, overflow: "hidden" }}>“{sel.texto}”</div>
-        {duvidaSalva ? <div style={{ fontFamily: F.m, fontSize: 11 }}>Dúvida salva em Minhas notas. Mentor e Sala de Pesquisa ainda não existem neste app. <button type="button" style={{ ...btn(), padding: "3px 8px" }} onClick={() => setSel(null)}>OK</button></div>
+        {duvidaSalva ? <div style={{ fontFamily: F.m, fontSize: 11 }}>Dúvida salva em Minhas notas. <button type="button" style={{ ...btn(), padding: "3px 8px" }} onClick={() => setSel(null)}>OK</button></div>
           : notaTxt != null ? <div style={{ display: "flex", gap: 6 }}><input autoFocus value={notaTxt} onChange={e => setNotaTxt(e.target.value)} placeholder="Sua nota" style={{ ...ta, minHeight: 0 }} aria-label="Sua nota" /><button type="button" style={btn(true)} onClick={() => salvarNota("nota", notaTxt.trim() || null)}>SALVAR</button></div>
             : <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               <button type="button" style={btn()} onClick={() => setNotaTxt("")}>ANOTAR</button>
@@ -685,7 +687,7 @@ function Aplicar({ cap, feito, onFiz, onConcluir, onTreinos, onClose }: { cap: C
       <h2 style={{ fontFamily: F.t, fontWeight: 700, fontSize: 24, color: C.white, margin: "0 0 8px" }}>{a.titulo}</h2>
       <ol style={{ fontFamily: F.s, fontSize: 16, lineHeight: 1.6 }}>{a.passos.map((p, i) => <li key={i}>{p}</li>)}</ol>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-        {a.ligacao?.startsWith("lab_") && <button type="button" style={btn()} onClick={() => onTreinos(a.ligacao!.slice(4) as TreinoAlvo)}>ABRIR LABORATÓRIO</button>}
+        {a.ligacao?.startsWith("lab_") && LABS_EXISTENTES.includes(a.ligacao.slice(4) as LabK) && <button type="button" style={btn()} onClick={() => onTreinos({ lab: a.ligacao!.slice(4) as LabK, capSlug: cap.slug, capTitulo: cap.titulo })}>ABRIR LABORATÓRIO</button>}
         {a.ligacao === "missao" && <button type="button" style={btn()} onClick={() => { window.dispatchEvent(new CustomEvent("cc-tecnica-dica", { detail: cap.titulo })); onClose(); setTimeout(() => document.getElementById("cc-missao")?.scrollIntoView({ behavior: "smooth" }), 80); }}>USAR NO MEU PRÓXIMO REEL</button>}
       </div>
       <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer", marginBottom: 10 }}><input type="checkbox" checked={f} onChange={e => { setF(e.target.checked); onFiz(e.target.checked); }} /> Fiz (opcional; conta para o domínio)</label>
@@ -731,8 +733,7 @@ function Prova({ uid, modulo, mods, caps, exams, onDone, onAbrir }: { uid: strin
   const toQ = (c: Cap) => c.quiz.map((q, k) => ({ ...q, id: `${c.slug}#${k}`, chapter_slug: c.slug }));
   const [itens] = useState<QItem[]>(() => {
     const doMod = caps.filter(c => c.modulo_slug === modulo.slug).flatMap(toQ);
-    const ant = caps.filter(c => (mods.find(m => m.slug === c.modulo_slug)?.ordem ?? 0) < modulo.ordem).flatMap(toQ);
-    return montarProva(doMod, ant, exams.map(e => (e.itens ?? []).map((x: any) => x.id)));
+    return montarProva(doMod, exams.map(e => (e.itens ?? []).map((x: any) => x.id)));
   });
   const [resp, setResp] = useState<Record<string, number>>({}); const [res, setRes] = useState<{ nota: number; erradas: QItem[] } | null>(null);
   if (!itens.length) return <P>Sem questões disponíveis.</P>;
@@ -741,7 +742,7 @@ function Prova({ uid, modulo, mods, caps, exams, onDone, onAbrir }: { uid: strin
     return <P>
       <div style={lbl()}>Resultado</div>
       <div style={{ fontFamily: F.t, fontWeight: 700, fontSize: 34, color: provaAprovada(res.nota) ? C.green : C.amber }}>{res.nota}% · {provaAprovada(res.nota) ? "APROVADO" : "NÃO APROVADO"}</div>
-      {!provaAprovada(res.nota) && <><div style={{ fontFamily: F.m, fontSize: 11, margin: "6px 0" }}>Aprovação com 70%. Nova tentativa em 24 horas. Capítulos a rever:</div>
+      {!provaAprovada(res.nota) && <><div style={{ fontFamily: F.m, fontSize: 11, margin: "6px 0" }}>{acertosParaAprovar(itens.length)} acertos para aprovar. Nova tentativa em 24 horas. Capítulos a rever:</div>
         {rever.map(s => <button key={s} type="button" className="bk-row" onClick={() => onAbrir(s)}>{caps.find(c => c.slug === s)?.titulo ?? s} →</button>)}</>}
     </P>;
   }
@@ -751,7 +752,7 @@ function Prova({ uid, modulo, mods, caps, exams, onDone, onAbrir }: { uid: strin
     setRes({ nota, erradas }); void onDone();
   };
   return <P>
-    <div style={lbl()}>{itens.length} questões · aprovação com 70%</div>
+    <div style={lbl()}>{itens.length} questões · {acertosParaAprovar(itens.length)} acertos para aprovar</div>
     {itens.map((q, n) => <div key={q.id} style={{ marginBottom: 14 }}>
       <p style={{ fontFamily: F.s, fontSize: 17, color: C.white, margin: "0 0 6px" }}>{n + 1}. {q.pergunta}</p>
       {q.opcoes.map((o, k) => <label key={k} style={{ display: "flex", gap: 8, fontFamily: F.m, fontSize: 12, padding: "4px 0", cursor: "pointer" }}><input type="radio" name={q.id} checked={resp[q.id] === k} onChange={() => setResp(r => ({ ...r, [q.id]: k }))} />{o}</label>)}
@@ -763,23 +764,23 @@ function Prova({ uid, modulo, mods, caps, exams, onDone, onAbrir }: { uid: strin
 /* ───────────── PROJETO ───────────── */
 function Projeto({ uid, modulo, atual, onSaved }: { uid: string | null; modulo: Mod; atual?: Proj; onSaved: () => Promise<void> }) {
   const pj = modulo.projeto ?? {}; const rub: string[] = pj.rubrica ?? [];
-  const [texto, setTexto] = useState<string>(atual?.entrega?.texto ?? ""); const [reels, setReels] = useState<string>(atual?.entrega?.reels ?? "");
+  const [texto, setTexto] = useState<string>(atual?.entrega?.plano ?? atual?.entrega?.texto ?? ""); const [reels, setReels] = useState<string>(atual?.entrega?.balanco ?? atual?.entrega?.reels ?? "");
   const [av, setAv] = useState<Record<string, number>>(atual?.autoavaliacao ?? {});
   const salvar = async (status: "rascunho" | "entregue") => {
     if (!uid) return;
-    await supabase.from("module_projects").upsert({ user_id: uid, modulo_slug: modulo.slug, entrega: { texto, reels }, autoavaliacao: av, status, updated_at: new Date().toISOString() } as any, { onConflict: "user_id,modulo_slug" });
+    await supabase.from("module_projects").upsert({ user_id: uid, modulo_slug: modulo.slug, entrega: { plano: texto, balanco: reels }, autoavaliacao: av, status, updated_at: new Date().toISOString() } as any, { onConflict: "user_id,modulo_slug" });
     toast.success(status === "entregue" ? "Projeto entregue" : "Rascunho salvo"); void onSaved();
   };
   return <P>
     <div style={{ fontFamily: F.t, fontWeight: 700, fontSize: 20, color: C.white }}>{pj.titulo ?? "Projeto"}</div>
     {pj.passos && <ol style={{ fontFamily: F.s, fontSize: 16 }}>{pj.passos.map((p: string, i: number) => <li key={i}>{p}</li>)}</ol>}
-    <textarea value={texto} onChange={e => setTexto(e.target.value)} style={ta} placeholder="Sua entrega" aria-label="Sua entrega" />
-    <input value={reels} onChange={e => setReels(e.target.value)} style={{ ...ta, minHeight: 0, marginTop: 6 }} placeholder="Reels usados (links ou títulos)" aria-label="Reels usados" />
+    <textarea value={texto} onChange={e => setTexto(e.target.value)} style={ta} placeholder="Seu plano" aria-label="Seu plano" />
+    <textarea value={reels} onChange={e => setReels(e.target.value)} style={{ ...ta, marginTop: 6 }} placeholder="Balanço final" aria-label="Balanço final" />
     {rub.length > 0 && <div style={{ marginTop: 8 }}><div style={lbl()}>Autoavaliação (0 a 2)</div>
       {rub.map(r => <div key={r} className="bk-row" style={{ cursor: "default" }}><span style={{ flex: 1, fontFamily: F.m, fontSize: 11 }}>{r}</span>{[0, 1, 2].map(n => <button key={n} type="button" style={{ ...btn(av[r] === n), padding: "2px 8px" }} onClick={() => setAv(a => ({ ...a, [r]: n }))}>{n}</button>)}</div>)}</div>}
     <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
       <button type="button" style={btn()} onClick={() => salvar("rascunho")}>SALVAR RASCUNHO</button>
-      <button type="button" style={btn(true, !texto.trim())} disabled={!texto.trim()} onClick={() => salvar("entregue")}>ENTREGAR</button>
+      {(() => { const ok = podeEntregarProjeto({ plano: texto, balanco: reels, rubrica: rub, av, diasRevisao: null }); return <button type="button" style={btn(true, !ok)} disabled={!ok} onClick={() => salvar("entregue")}>ENTREGAR</button>; })()}
     </div>
   </P>;
 }
