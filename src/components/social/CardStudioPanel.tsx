@@ -4,13 +4,15 @@ import html2canvas from "html2canvas";
 import JSZip from "jszip";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  agenteCards, cardsDoReel, palavraChaveDoCta, bloqueio, recusaBloqueio, limitarPalavras, palavras, tipoDoTemplate,
+  agenteCards, bloqueio, recusaBloqueio, limitarPalavras, palavras, tipoDoTemplate,
   TEMPLATES, ALL_SCENES, FORMATOS, MAX_PALAVRAS, type CardContent, type Formato, type Proposal, type TemplateId, type CardTipo, type SceneId, type FonteCtx,
 } from "@/lib/cardStudio";
 import { CardTemplate, DEFAULT_BRAND, type Brand } from "./cardStudio/CardTemplate";
 import { Scene, SCENE_NAMES } from "./cardStudio/Scenes";
 import { KitAgente, KitMini } from "./cardStudio/KitAgente";
 import { KitCardView } from "./cardStudio/KitCardView";
+import { ReelCards } from "./cardStudio/ReelCards";
+import { acharDuplicados, type CardSalvo } from "@/lib/reelCards";
 
 const T = { bg: "#020205", s1: "#0A0A0F", s2: "#111118", cyan: "#00D4FF", gold: "#B8922A", green: "#5DCAA5", red: "#EF4444", muted: "#888", text: "#E8E8F0", ft: "'Rajdhani',sans-serif", fm: "'Space Mono',monospace" };
 const AVISO_GERADA = "Ilustrações estilizadas e conceituais costumam ficar fora das regras de rótulo, mas confira as regras atuais do Instagram e do TikTok sobre conteúdo gerado antes de publicar.";
@@ -111,23 +113,12 @@ export default function CardStudioPanel() {
   }
   async function choose(p: Proposal) { try { const r = await insertCard(p); setEdit(r); setReply(null); load(); } catch (e: any) { setMsg(e.message); } }
 
-  async function cardsFromReel() {
-    if (!reel) return; setBusy("reel"); setMsg(null);
-    try {
-      const blocos = Array.isArray(reel.roteiro?.blocos) ? reel.roteiro.blocos : Array.isArray(reel.roteiro) ? reel.roteiro : [];
-      const list = cardsDoReel(blocos, { tema: reel.tema, titulo: reel.titulo, ...fonte, palavraChave: palavraChaveDoCta(blocos, reel.roteiro?.legenda) });
-      for (const c of list) await insertCard(c);
-      setFReel(reel.id); await load(); setMsg(`${list.length} cards criados. Revise na grade abaixo.`);
-    } catch (e: any) { setMsg(e.message); }
-    setBusy(null);
-  }
-
   async function saveEdit(r: Row) {
     const t = r.conteudo.titulo; const b = bloqueio(`${t} ${r.conteudo.apoio ?? ""} ${(r.conteudo.itens ?? []).join(" ")}`);
     if (b) { setMsg(recusaBloqueio(b)); return; }
     if (r.template === "numero" && !r.conteudo.fonte) { setMsg("Sem fonte verificada, não gero card de dado. Posso fazer um card conceitual."); return; }
     const tipo = r.ilustracao_origem === "gerada" ? "C" : tipoDoTemplate(r.template);
-    const { error } = await supabase.from("studio_cards").update({ template: r.template, formato: r.formato, conteudo: r.conteudo as any, tipo, nome: r.nome, ilustracao_origem: r.ilustracao_origem }).eq("id", r.id);
+    const { error } = await supabase.from("studio_cards").update({ template: r.template, formato: r.formato, conteudo: { ...r.conteudo, editado: true } as any, tipo, nome: r.nome, ilustracao_origem: r.ilustracao_origem }).eq("id", r.id);
     setMsg(error ? "Não salvou." : "Card salvo."); load();
   }
   async function duplicate(r: Row) { if (!uid) return; await supabase.from("studio_cards").insert({ user_id: uid, script_id: r.script_id, bloco_ref: r.bloco_ref, tipo: r.ilustracao_origem === "gerada" ? tipoDoTemplate(r.template) : r.tipo, template: r.template, formato: r.formato, conteudo: r.conteudo as any, ilustracao_origem: r.conteudo.cena ? "codigo" : null, nome: `${r.nome ?? "card"} (cópia)` }); load(); }
@@ -202,10 +193,8 @@ export default function CardStudioPanel() {
       {["creatina", "intenção versus ação", "sono"].map(x => <button key={x} style={btn(T.muted)} onClick={() => { setCmd(x); runAgent(x); }}>{x}</button>)}
     </div>
     <span style={label}>REEL (OPCIONAL)</span>
-    <div style={{ display: "flex", gap: 6 }}>
-      <select style={input} value={reelId} onChange={e => setReelId(e.target.value)}><option value="">Nenhum</option>{reels.map(r => <option key={r.id} value={r.id}>{r.titulo || r.tema}</option>)}</select>
-      <button style={btn(T.gold)} disabled={!reel || !!busy} onClick={cardsFromReel}>{busy === "reel" ? "..." : "GERAR CARDS DO REEL"}</button>
-    </div>
+    <select style={input} value={reelId} onChange={e => setReelId(e.target.value)}><option value="">Nenhum</option>{reels.map(r => <option key={r.id} value={r.id}>{r.titulo || r.tema}</option>)}</select>
+    <ReelCards uid={uid} reel={reel} brand={brand} rows={rows as any} onSaved={async (id, m) => { setFReel(id); await load(); setMsg(m); }} />
 
     {reply?.tipo === "recusa" && <div style={{ border: `1px solid ${T.gold}`, padding: 10, marginTop: 10, fontSize: 13 }}>
       <div style={{ color: T.gold }}>{reply.mensagem}</div>
@@ -259,8 +248,18 @@ export default function CardStudioPanel() {
 
     <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
       <div style={{ fontFamily: T.ft, fontWeight: 700, fontSize: 16 }}>Meus cards <span style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>{filtered.length}</span></div>
-      <button style={btn(T.gold, true)} disabled={!filtered.length || !!busy} onClick={() => downloadZip(filtered)}>{busy === "zip" ? "MONTANDO..." : "BAIXAR TODOS (ZIP)"}</button>
+      <div style={{ display: "flex", gap: 6 }}>
+        <button style={btn(T.red)} disabled={!!busy} onClick={() => { const d = acharDuplicados(rows as any); setDups(d); if (!d.length) setMsg("Nenhum card duplicado."); }}>REMOVER DUPLICADOS</button>
+        <button style={btn(T.gold, true)} disabled={!filtered.length || !!busy} onClick={() => downloadZip(filtered)}>{busy === "zip" ? "MONTANDO..." : "BAIXAR TODOS (ZIP)"}</button>
+      </div>
     </div>
+    {dups && dups.length > 0 && <div role="dialog" aria-label="Remover duplicados" style={{ border: `1px solid ${T.red}`, padding: 10, marginTop: 8 }}>
+      <div style={{ fontSize: 13 }}>{dups.reduce((n, g) => n + g.apagar.length, 0)} cards duplicados em {dups.length} grupos. Fica um de cada.</div>
+      <div style={{ maxHeight: 180, overflowY: "auto", marginTop: 6 }}>{dups.map((g, i) => <div key={i} style={{ fontFamily: T.fm, fontSize: 10, color: T.muted }}>{g.apagar.length + 1}× {(g.manter as any).conteudo?.rotulo ?? g.manter.nome ?? g.manter.template} — {String((g.manter as any).conteudo?.titulo ?? (g.manter as any).conteudo?.card?.principal ?? "").slice(0, 60)}</div>)}</div>
+      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+        <button style={btn(T.red, true)} onClick={async () => { const ids = dups.flatMap(g => g.apagar.map(r => r.id)); const { error } = await supabase.from("studio_cards").delete().in("id", ids); setDups(null); setMsg(error ? "Não apagou." : `${ids.length} duplicados removidos.`); load(); }}>APAGAR DUPLICADOS</button>
+        <button style={btn(T.muted)} onClick={() => setDups(null)}>CANCELAR</button></div>
+    </div>}
     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 6, marginTop: 6 }}>
       <select style={input} value={fReel} onChange={e => setFReel(e.target.value)}><option value="">Todos os reels</option>{reels.map(r => <option key={r.id} value={r.id}>{r.titulo || r.tema}</option>)}</select>
       <select style={input} value={fTipo} onChange={e => setFTipo(e.target.value)}><option value="">Tipo</option><option value="A">A · dado</option><option value="B">B · texto</option><option value="D">D · diagrama</option><option value="C">C · ilustração</option></select>
@@ -277,7 +276,10 @@ export default function CardStudioPanel() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(110px,1fr))", gap: 8, marginTop: 8 }}>
         {filtered.map(r => <div key={r.id} style={{ background: T.s2, padding: 4, border: `1px solid ${edit?.id === r.id ? T.cyan : "#ffffff10"}` }}>
           {(r.conteudo as any)?.kit ? <KitMini c={(r.conteudo as any).card} formato={r.formato} brand={brand} variante={(r.conteudo as any).variante === "foto" ? "sem" : (r.conteudo as any).variante} width={102} /> : <div onClick={() => setEdit(r)} style={{ cursor: "pointer" }}><Thumb p={{ template: r.template, conteudo: r.conteudo }} formato={r.formato} brand={brand} width={102} fundo={r.ilustracao_origem === "gerada" ? urls[r.id] : null} gerada={r.ilustracao_origem === "gerada"} /></div>}
-          <div style={{ fontFamily: T.fm, fontSize: 8, color: T.cyan, margin: "3px 0" }}>{r.tipo} · {r.formato}{r.bloco_ref ? ` · B${r.bloco_ref}` : ""}</div>
+          <div style={{ fontFamily: T.fm, fontSize: 8, color: T.cyan, margin: "3px 0", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+            <span>{(r.conteudo as any)?.rotulo ?? (r.bloco_ref ? `Bloco ${r.bloco_ref} · ${r.tipo}` : r.tipo)}</span>
+            <span style={{ border: `1px solid ${T.muted}`, color: T.muted, padding: "0 3px" }}>{r.formato}</span>
+            {(r.conteudo as any)?.editado && <span style={{ color: T.gold }}>editado</span>}</div>
           <div style={{ display: "flex", gap: 3 }}><button style={{ ...btn(T.gold), padding: "3px 5px", fontSize: 8 }} onClick={() => downloadPng(r)}>PNG</button>
             <button style={{ ...btn(T.text), padding: "3px 5px", fontSize: 8 }} onClick={() => duplicate(r)}>DUP</button>
             <button style={{ ...btn(T.red), padding: "3px 5px", fontSize: 8 }} onClick={() => remove(r)}>×</button></div>
