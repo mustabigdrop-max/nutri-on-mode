@@ -530,6 +530,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
 
         {/* Missão de hoje */}
         <Panel glow={C.gold} className="cc-keep">
+          {!foco && <EstudoHojeCard onAbrir={() => setBiblioteca(true)} dep={biblioteca} />}
           <div id="cc-missao" style={{ scrollMarginTop: 80 }} />
           {tecDica && <div style={{ fontFamily: F.m, fontSize: 10, color: C.gold, marginBottom: 6 }}>TÉCNICA DA AULA: {tecDica} <button type="button" onClick={() => setTecDica(null)} style={{ fontFamily: F.m, fontSize: 9, color: C.muted, background: "none", border: "none", cursor: "pointer" }}>remover</button></div>}
           <Label color={C.gold}>Missão de hoje</Label>
