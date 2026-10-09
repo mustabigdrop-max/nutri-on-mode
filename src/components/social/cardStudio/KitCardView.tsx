@@ -57,8 +57,8 @@ export const KitCardView = forwardRef<HTMLDivElement, Props>(function KitCardVie
     {foto && <><img src={fotoUrl!} alt="" crossOrigin="anonymous" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, ${brand.cor_fundo}cc, ${brand.cor_fundo}ee 45%, ${brand.cor_fundo}f5)` }} /></>}
     {semImg && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 18, background: pri }} />}
-    <div style={{ position: "absolute", left: 90, right: 90, top, bottom: bot, display: "flex", flexDirection: "column", justifyContent: "center" }}>{body}</div>
-    {c.papel === "prova" && c.mostrarSelo !== false && c.selo && <div style={{ position: "absolute", left: 90, right: 90, bottom: bot - 120, padding: "16px 22px", background: sec2 ? "#EF9F27" : "#5DCAA5", color: "#0A0A0A", fontFamily: FM, fontSize: 28, fontWeight: 700 }}>
+    <div style={{ position: "absolute", left: 90, right: 90, top, bottom: c.papel === "prova" && c.selo && c.mostrarSelo !== false ? bot + 110 : bot, display: "flex", flexDirection: "column", justifyContent: "center" }}>{body}</div>
+    {c.papel === "prova" && c.mostrarSelo !== false && c.selo && <div style={{ position: "absolute", left: 90, right: 90, bottom: bot, padding: "16px 22px", background: sec2 ? "#EF9F27" : "#5DCAA5", color: "#0A0A0A", fontFamily: FM, fontSize: 28, fontWeight: 700 }}>
       {c.selo}{sec2 ? " · CONFERIR NO ORIGINAL" : ""}</div>}
     {c.mostrarHandle !== false && brand.handle && <div style={{ position: "absolute", left: 90, bottom: Math.max(60, bot - 220), fontFamily: FM, fontSize: 30, color: txt, opacity: 0.85 }}>{brand.handle}</div>}
   </div>;
