@@ -57,8 +57,12 @@ export default function CardStudioPanel() {
       supabase.from("retention_scripts").select("id,tema,titulo,roteiro,fonte_status,tipo_afirmacao").order("created_at", { ascending: false }).limit(40),
       supabase.from("studio_cards").select("*").order("created_at", { ascending: false }).limit(200),
     ]);
+    // @ prefilled from the connected profile when the brand kit has none.
+    let ig: string | null = null;
+    try { const st = await supabase.functions.invoke("instagram-publish", { body: { action: "status" } }); ig = (st.data as any)?.result?.account?.username ?? null; } catch { /* sem perfil */ }
+    if (!bk.data?.handle && ig) setBrand(b => ({ ...b, handle: `@${String(ig).replace(/^@/, "")}` }));
     if (bk.data) { const logo = bk.data.logo_url ? await signed(bk.data.logo_url) : null;
-      setBrand({ ...bk.data, logo } as any); setLimiteGerada(bk.data.limite_diario_gerada); }
+      setBrand({ ...bk.data, logo, handle: bk.data.handle || (ig ? `@${String(ig).replace(/^@/, "")}` : null) } as any); setLimiteGerada(bk.data.limite_diario_gerada); }
     setReels((rs.data ?? []) as Reel[]);
     const list = (cs.data ?? []) as unknown as Row[]; setRows(list);
     const m: Record<string, string> = {}; for (const r of list) if (r.imagem_path) { const s = await signed(r.imagem_path); if (s) m[r.id] = s; } setUrls(m);
@@ -159,6 +163,7 @@ export default function CardStudioPanel() {
       <button style={btn(T.gold)} onClick={() => setBrandOpen(o => !o)}>{brandOpen ? "FECHAR BRAND KIT" : "BRAND KIT"}</button>
     </div>
 
+    {!brand.handle && <div style={{ fontFamily: T.fm, fontSize: 10, color: T.gold, marginTop: 8 }}>Preencha o @ para ele aparecer nos cards.</div>}
     {brandOpen && <div style={{ background: T.s2, padding: 12, marginTop: 10 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
         {(["cor_primaria", "cor_secundaria", "cor_fundo"] as const).map(k => <label key={k}><span style={label}>{k.replace("cor_", "COR ").toUpperCase()}</span>
