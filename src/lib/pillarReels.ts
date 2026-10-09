@@ -13,7 +13,7 @@ const norm = (s: string) => String(s ?? "").replace(/\[[^\]]*\]/g, "").replace(/
 export function ressalvaIndex(blocos: { fala?: string }[], ressalva: string | null | undefined): number {
   if (!ressalva) return -1;
   const r = norm(ressalva);
-  return blocos.findIndex(b => { const f = norm(b.fala ?? ""); return !!f && (f.includes(r) || r.includes(f)); });
+  return blocos.findIndex(b => { const f = norm(b.fala ?? ""); return !!f && (f.includes(r) || (f.length >= 15 && r.includes(f))); });
 }
 
 /** Pode pular para o bloco `to`? Nunca passa da ressalva sem ter parado nela. */
