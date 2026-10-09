@@ -27,19 +27,49 @@ const CSS = `
 @keyframes ccPulse { 0%,100%{opacity:.55;transform:scale(1)} 50%{opacity:1;transform:scale(1.02)} }
 @keyframes ccDot { 0%,100%{opacity:.35} 50%{opacity:1} }
 @keyframes ccBlockIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-@keyframes ccSweep { 0%{transform:translateX(-100%)} 100%{transform:translateX(220%)} }
+@keyframes ccSweep { 0%{transform:translateX(-100%)} 100%{transform:translateX(260%)} }
+@keyframes ccSweep4 { 0%,70%{transform:translateX(-120%)} 100%{transform:translateX(320%)} }
+@keyframes ccSpin { to { transform: rotate(360deg) } }
+@keyframes ccGlow { 0%,100%{opacity:.35} 50%{opacity:.9} }
+@keyframes ccScan { 0%{left:-30%} 100%{left:100%} }
+@keyframes ccShimmer { 0%{background-position:-200px 0} 100%{background-position:200px 0} }
+.cc-rise { animation: ccBlockIn .5s ease both; }
+.cc-stack > *:nth-child(1){animation-delay:0ms}.cc-stack > *:nth-child(2){animation-delay:60ms}.cc-stack > *:nth-child(3){animation-delay:120ms}.cc-stack > *:nth-child(4){animation-delay:180ms}.cc-stack > *:nth-child(5){animation-delay:240ms}
+.cc-grid > *:nth-child(1){animation-delay:300ms}.cc-grid > *:nth-child(2){animation-delay:360ms}.cc-grid > *:nth-child(3){animation-delay:420ms}.cc-grid > *:nth-child(4){animation-delay:480ms}.cc-grid > *:nth-child(5){animation-delay:540ms}.cc-grid > *:nth-child(6){animation-delay:600ms}.cc-grid > *:nth-child(7){animation-delay:660ms}
+.cc-root button { transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; }
+.cc-root button:not(:disabled):hover, .cc-root button:not(:disabled):active { transform: translateY(-1px); box-shadow: 0 4px 14px -6px #00D4FF80; filter: brightness(1.12); }
+.cc-skel { background: linear-gradient(90deg, #ffffff08 0px, #00D4FF18 80px, #ffffff08 160px); background-size: 400px 100%; animation: ccShimmer 1.4s linear infinite; }
+.cc-range { width: 100%; accent-color: #00D4FF; }
+.cc-root, .cc-root * { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
-  .cc-anim, .cc-anim * { animation: none !important; transition: none !important; }
+  .cc-anim, .cc-anim *, .cc-root, .cc-root * { animation: none !important; transition: none !important; }
 }
-.cc-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-@media (min-width: 900px) { .cc-grid { grid-template-columns: 1fr 1fr; } }
+.cc-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 14px; }
+@media (min-width: 900px) { .cc-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } }
 `;
+const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function useCountUp(target: number, ms = 1200) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (reducedMotion()) { setV(target); return; }
+    const t0 = performance.now(); let raf = 0;
+    const tick = (t: number) => { const p = Math.min(1, (t - t0) / ms); setV(Math.round(target * (1 - Math.pow(1 - p, 3)))); if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, ms]);
+  return v;
+}
+/** Instruções do motor: CONTEXTO_COMUM, ARQUITETO, REDATOR e CRITICO. Hoje estão vazias no servidor. */
+const MOTOR_INSTRUCOES = { ativas: 0, total: 4 };
 
 /** Painel de vidro escuro com canto cortado e brilho fino no topo. */
 function Panel({ children, style, glow }: { children: React.ReactNode; style?: React.CSSProperties; glow?: string }) {
   return (
     <div
+      className="cc-rise"
       style={{
+        backdropFilter: "blur(6px)",
+        boxShadow: `inset 0 1px 0 ${glow || C.cyan}22`,
         position: "relative",
         background: "rgba(10,10,18,0.72)",
         border: `1px solid ${C.cyan}33`,
@@ -78,53 +108,86 @@ const inp: React.CSSProperties = { width: "100%", boxSizing: "border-box", backg
 const btn = (primary?: boolean): React.CSSProperties => ({ flex: 1, background: primary ? C.gold : "transparent", border: primary ? "none" : `1px solid ${C.cyan}50`, color: primary ? "#0A0A0A" : C.cyan, fontFamily: F.t, fontWeight: 700, fontSize: 13, padding: "10px 0", cursor: "pointer", borderRadius: 0 });
 const Empty = ({ children }: { children: React.ReactNode }) => <div style={{ fontFamily: F.m, fontSize: 10, color: C.muted, marginTop: 10, lineHeight: 1.5 }}>{children}</div>;
 
-/* ── Núcleo de Atenção (anel SVG) ── */
-function Nucleo({ score, subs }: { score: number | null; subs: { k: string; v: number | null }[] }) {
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    const target = score ?? 0;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) { setShown(target); return; }
-    const t0 = performance.now(); let raf = 0;
-    const tick = (t: number) => { const p = Math.min(1, (t - t0) / 1200); setShown(Math.round(target * (1 - Math.pow(1 - p, 3)))); if (p < 1) raf = requestAnimationFrame(tick); };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [score]);
-  const R = 84, CX = 110, CY = 110, circ = 2 * Math.PI * R;
-  const arc = (v: number, i: number) => {
-    const a0 = -90 + i * 90 + 6, r = 64;
-    const p = (a: number) => [CX + r * Math.cos((a * Math.PI) / 180), CY + r * Math.sin((a * Math.PI) / 180)];
-    const [x0, y0] = p(a0), [x1, y1] = p(a0 + (84 * v) / 100);
-    return `M ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1}`;
-  };
+/* ── Núcleo de Atenção (anel SVG em três camadas) ── */
+const EXEMPLO = { score: 72, subs: [
+  { k: "HOOK", v: 78, trend: [60, 66, 63, 71, 78] },
+  { k: "RETENÇÃO", v: 70, trend: [62, 65, 70, 68, 70] },
+  { k: "REAL 3S", v: 64, trend: [55, 58, 61, 60, 64] },
+  { k: "RITMO", v: 76, trend: [57, 71, 71, 86, 76] },
+] };
+type Sub = { k: string; v: number | null; trend?: number[] };
+
+function Spark({ data, color }: { data?: number[]; color: string }) {
+  if (!data || data.length < 2) return <svg width={44} height={12} aria-hidden><line x1={0} y1={6} x2={44} y2={6} stroke={C.dim} strokeDasharray="2 2" /></svg>;
+  const mi = Math.min(...data), ma = Math.max(...data), r = ma - mi || 1;
+  const d = data.map((v, i) => `${i ? "L" : "M"} ${(i * 44) / (data.length - 1)} ${11 - ((v - mi) / r) * 10}`).join(" ");
+  return <svg width={44} height={12} aria-hidden><path d={d} fill="none" stroke={color} strokeWidth={1.2} /></svg>;
+}
+
+function MiniGauge({ s }: { s: Sub }) {
+  const val = useCountUp(s.v ?? 0, 900);
+  const cor = s.v == null ? C.muted : s.v >= 80 ? C.gold : C.cyan;
+  const r = 20, len = Math.PI * r, p = s.v == null ? 0 : (val / 100) * len;
   return (
-    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 0 4px" }}>
-      <div style={{ position: "absolute", inset: -40, pointerEvents: "none", background: `radial-gradient(circle at 50% 45%, ${C.cyan}14, transparent 60%)` }} />
-      <svg width={220} height={220} viewBox="0 0 220 220" className="cc-anim" style={{ animation: "ccPulse 4s ease-in-out infinite" }}>
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke={`${C.cyan}18`} strokeWidth={6} />
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke={C.cyan} strokeWidth={6} strokeDasharray={`${(shown / 100) * circ} ${circ}`} transform={`rotate(-90 ${CX} ${CY})`} style={{ filter: `drop-shadow(0 0 6px ${C.cyan}80)` }} />
-        {subs.map((s, i) => s.v != null && <path key={s.k} d={arc(Math.min(100, s.v), i)} fill="none" stroke={s.v >= 80 ? C.gold : C.cyan} strokeWidth={3} opacity={0.9} />)}
+    <div style={{ textAlign: "center", minWidth: 0 }}>
+      <svg width={56} height={32} viewBox="0 0 56 32" aria-hidden>
+        <path d="M 8 28 A 20 20 0 0 1 48 28" fill="none" stroke={`${C.cyan}18`} strokeWidth={4} />
+        <path d="M 8 28 A 20 20 0 0 1 48 28" fill="none" stroke={cor} strokeWidth={4} strokeDasharray={`${p} ${len}`} style={{ filter: `drop-shadow(0 0 3px ${cor}90)` }} />
+        <text x={28} y={27} textAnchor="middle" fill={C.white} fontFamily={F.t} fontWeight={700} fontSize={13}>{s.v == null ? "—" : val}</text>
       </svg>
-      <div style={{ position: "absolute", top: 88, textAlign: "center" }}>
-        <div style={{ fontFamily: F.t, fontSize: 52, fontWeight: 700, color: C.white, lineHeight: 1 }}>{score == null ? "—" : shown}</div>
-        <Label color={C.cyan}>Content Score</Label>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 2 }}><Spark data={s.trend} color={cor} /></div>
+      <Label>{s.k}</Label>
+    </div>
+  );
+}
+
+function Nucleo({ score, subs, exemplo }: { score: number | null; subs: Sub[]; exemplo: boolean }) {
+  const sc = exemplo ? EXEMPLO.score : score;
+  const ss: Sub[] = exemplo ? EXEMPLO.subs : subs;
+  const shown = useCountUp(sc ?? 0);
+  const CX = 110, CY = 110, R = 78, circ = 2 * Math.PI * R;
+  return (
+    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", padding: "6px 0 4px" }}>
+      {exemplo && <span style={{ position: "absolute", top: 0, right: 0, fontFamily: F.m, fontSize: 9, letterSpacing: 2, color: "#EF9F27", border: "1px solid #EF9F2770", padding: "2px 8px", background: "#EF9F2712" }}>EXEMPLO</span>}
+      <div style={{ position: "absolute", inset: -40, pointerEvents: "none", background: `radial-gradient(circle at 50% 42%, ${C.cyan}16, transparent 60%)` }} />
+      <div style={{ position: "relative", width: 220, height: 220 }}>
+        <svg width={220} height={220} viewBox="0 0 220 220" style={{ position: "absolute", inset: 0 }}>
+          <g className="cc-anim" style={{ transformOrigin: "110px 110px", animation: "ccSpin 40s linear infinite" }}>
+            <circle cx={CX} cy={CY} r={102} fill="none" stroke={`${C.cyan}55`} strokeWidth={1} strokeDasharray="2 7" />
+            <circle cx={CX} cy={CY} r={96} fill="none" stroke={`${C.cyan}22`} strokeWidth={1} strokeDasharray="18 30" />
+          </g>
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke={`${C.cyan}14`} strokeWidth={7} />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke={exemplo ? "#EF9F27" : C.cyan} strokeWidth={7} strokeLinecap="butt"
+            strokeDasharray={`${(shown / 100) * circ} ${circ}`} transform={`rotate(-90 ${CX} ${CY})`}
+            style={{ filter: `drop-shadow(0 0 8px ${exemplo ? "#EF9F27" : C.cyan}90)` }} />
+          <circle className="cc-anim" cx={CX} cy={CY} r={60} fill={`${C.cyan}08`} stroke={`${C.cyan}40`} strokeWidth={1}
+            style={{ animation: "ccGlow 3.2s ease-in-out infinite", filter: `drop-shadow(0 0 10px ${C.cyan})` }} />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ fontFamily: F.t, fontSize: 56, fontWeight: 700, color: C.white, lineHeight: 1, textShadow: `0 0 18px ${C.cyan}60` }}>{sc == null ? "—" : shown}</div>
+          <Label color={C.cyan}>Content Score</Label>
+        </div>
       </div>
-      <div style={{ display: "flex", gap: 18, marginTop: 12 }}>
-        {subs.map((s) => (
-          <div key={s.k} style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: F.t, fontSize: 18, fontWeight: 700, color: s.v != null && s.v >= 80 ? C.gold : C.cyan }}>{dash(s.v)}</div>
-            <Label>{s.k}</Label>
-          </div>
-        ))}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 8, marginTop: 8, width: "100%", maxWidth: 340 }}>
+        {ss.map((s) => <MiniGauge key={s.k} s={s} />)}
       </div>
-      {score == null && <Empty>Gere e lance o resultado dos seus reels para calcular o score.</Empty>}
+      {exemplo && <Empty>Lance o resultado de um reel para ver o seu score.</Empty>}
     </div>
   );
 }
 
 /* ── Linha da Atenção ── */
+const corSeg = (n?: number) => (n == null ? C.muted : n >= 8 ? "#5DCAA5" : n >= 5 ? "#EF9F27" : C.red);
 function LinhaAtencao({ blocos, open, onToggle }: { blocos: Bloco[]; open: number | null; onToggle: (i: number | null) => void }) {
-  if (!blocos.length) return <Empty>Sem reel de hoje. Gere o reel para ver a linha da atenção.</Empty>;
+  if (!blocos.length) return (
+    <div>
+      <div style={{ position: "relative", height: 26, display: "flex", gap: 3, overflow: "hidden" }}>
+        {[1.2, 1, 1.4, 0.9, 1.1, 1].map((w, i) => <div key={i} style={{ flex: w, background: `${C.cyan}0c`, border: `1px solid ${C.cyan}18` }} />)}
+        <div className="cc-anim" style={{ position: "absolute", top: 0, bottom: 0, width: "30%", background: `linear-gradient(90deg, transparent, ${C.cyan}40, transparent)`, animation: "ccScan 2.4s linear infinite" }} />
+      </div>
+      <Empty>Gere um reel para ver a curva de atenção.</Empty>
+    </div>
+  );
   const W = 600, H = 60, n = Math.max(1, blocos.length - 1);
   const pts = blocos.map((b, i) => [20 + (i * (W - 40)) / n, H - 8 - ((b.nota ?? 0) / 10) * (H - 16)]);
   const path = pts.map((p, i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
