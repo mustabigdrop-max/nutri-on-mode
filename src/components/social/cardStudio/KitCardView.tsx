@@ -47,6 +47,7 @@ export const KitCardView = forwardRef<HTMLDivElement, Props>(function KitCardVie
       body = col(36, <>{tag}{ilu(0.85)}
         <p style={H(c.principal, semImg ? 150 : 120)}>{destaque(c.principal)}</p>
         <div style={{ width: 220, height: 8, background: sec }} />
+        <Chip />
         {c.secundario && <p style={S(46, APOIO)}>{c.secundario}</p>}</>); break;
     case "mecanismo": {
       const ps = c.passos ?? [];

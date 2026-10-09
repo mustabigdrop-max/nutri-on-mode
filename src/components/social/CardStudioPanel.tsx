@@ -50,6 +50,7 @@ export default function CardStudioPanel() {
   const [busy, setBusy] = useState<string | null>(null);
   const [fReel, setFReel] = useState(""); const [fTipo, setFTipo] = useState(""); const [fFormato, setFFormato] = useState("");
   const [stage, setStage] = useState<Row[]>([]);
+  const [dups, setDups] = useState<ReturnType<typeof acharDuplicados> | null>(null);
   const [assunto, setAssunto] = useState("");
   const [proibidas, setProibidas] = useState<string[]>([]);
   const [fTema, setFTema] = useState(""); const [fSub, setFSub] = useState(""); const [fPac, setFPac] = useState(""); const [fVar, setFVar] = useState(""); const [fVer, setFVer] = useState("");
