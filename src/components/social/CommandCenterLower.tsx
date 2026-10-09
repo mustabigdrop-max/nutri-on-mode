@@ -269,7 +269,7 @@ function Automacao({ loaded, onRodarAgora, reload }: LowerProps) {
   return (
     <Panel id="cc-automacao">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-        <Label color={C.cyan}>Automação diária</Label>
+        <Label color={C.cyan}>Automação diária{cfg && !cfg.pausado ? ` · ${hh} Brasília` : ""}</Label>
         <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: F.m, fontSize: 9, color: ativa ? C.green : C.muted }}>
           <span className="cc-anim" style={{ width: 7, height: 7, borderRadius: "50%", background: ativa ? C.green : C.muted, boxShadow: ativa ? `0 0 8px ${C.green}` : "none", animation: ativa ? "ccDot 1.6s ease infinite" : "none" }} />
           {cfg === undefined ? "…" : ativa ? "ATIVA" : cfg ? "PAUSADA" : "DESLIGADA"}
@@ -296,7 +296,7 @@ function Automacao({ loaded, onRodarAgora, reload }: LowerProps) {
             <button type="button" style={{ ...btn(true), minWidth: 110 }} onClick={onRodarAgora}>Rodar agora</button>
             <button type="button" style={{ ...btn(), minWidth: 90 }} onClick={toggle}>{ativa ? "Pausar" : "Ativar"}</button>
           </div>
-          <div style={{ marginTop: 10 }}><CommandCenterAutomation onChanged={() => { setK(x => x + 1); reload(); }} /></div>
+          <div style={{ marginTop: 10 }}><CommandCenterAutomation embedded onChanged={() => { setK(x => x + 1); reload(); }} /></div>
         </>
       )}
     </Panel>
