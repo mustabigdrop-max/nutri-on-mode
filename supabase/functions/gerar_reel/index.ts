@@ -1,6 +1,6 @@
 import { adminClient, requireUser } from "../_shared/auth.ts";
 import { CRITIC_LIMITS, normalizeCritique, objectiveChecks } from "../_shared/retentionCritic.ts";
-import { ARQUITETO_PROMPT, ATLAS, CRITICO_PROMPT, PERSUASAO, REDATOR_PROMPT } from "./prompts.ts";
+import { loadEnginePrompts } from "../_shared/enginePrompts.ts";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
 const OBJETIVOS = ["alcance", "autoridade", "venda"];
 const TONS = ["direto", "bem-humorado", "intenso"];
@@ -20,7 +20,7 @@ async function pass(system: string, input: unknown): Promise<Record<string, unkn
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST", headers: { Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model: "google/gemini-2.5-flash", response_format: { type: "json_object" },
-        messages: [{ role: "system", content: `${system}\n\n${ATLAS}\n\n${PERSUASAO}` }, { role: "user", content: JSON.stringify(input) }] }),
+        messages: [{ role: "system", content: system }, { role: "user", content: JSON.stringify(input) }] }),
     });
     if (res.status === 429) throw new HttpError(429, "Limite de uso atingido. Tente em instantes.");
     if (res.status === 402) throw new HttpError(402, "Créditos esgotados no espaço de trabalho.");
@@ -35,7 +35,7 @@ async function pass(system: string, input: unknown): Promise<Record<string, unkn
 }
 
 const toBlock = (v: any): Block => ({ id: Number(v?.id), tempo: str(v?.tempo, 20), funcao: str(v?.funcao, 40), fala: str(v?.fala),
-  texto_tela: str(v?.texto_tela, 200), estimulo_visual: str(v?.estimulo_visual, 300), gatilho: str(v?.gatilho, 80) });
+  texto_tela: str(v?.texto_tela || v?.texto_na_tela, 200), estimulo_visual: str(v?.estimulo_visual, 300), gatilho: str(v?.gatilho, 80) });
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
