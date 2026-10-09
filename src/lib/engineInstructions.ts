@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ENGINE_PROMPT_DEFAULTS, ENGINE_PROMPT_KEYS, ENGINE_ADDENDA, withAddendum, type EnginePromptKey } from "../../supabase/functions/_shared/engineDefaults";
+import { ENGINE_PROMPT_DEFAULTS, ENGINE_PROMPT_KEYS, ENGINE_ADDENDA, hasAddendum, withAddendum, type EnginePromptKey } from "../../supabase/functions/_shared/engineDefaults";
 
 export { ENGINE_PROMPT_KEYS, ENGINE_PROMPT_DEFAULTS, type EnginePromptKey };
 export const ENGINE_LABEL: Record<EnginePromptKey, string> = {
@@ -39,7 +39,7 @@ export async function loadAndSeed(userId: string): Promise<EngineRow[]> {
   // K1 addenda: appended once to the user's current text as a new version; never overwrites edits.
   let changed = false;
   for (const r of (data ?? []) as EngineRow[]) {
-    if (!ENGINE_ADDENDA[r.chave] || !r.conteudo?.trim()) continue;
+    if (!hasAddendum(r.chave) || !r.conteudo?.trim()) continue;
     const next = withAddendum(r.chave, r.conteudo);
     if (next !== r.conteudo) { await saveInstruction(userId, r, next); await supabase.from("engine_prompts").update({ padrao: ENGINE_PROMPT_DEFAULTS[r.chave] }).eq("id", r.id).eq("padrao", r.padrao); changed = true; }
   }
