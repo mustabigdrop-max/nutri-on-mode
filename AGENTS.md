@@ -13,3 +13,4 @@
 
 - The Reel Factory content matrix (content_pillars per user, global content_angles, content_cases) drives batch slots via allocatePillars/assignAngles in reel_factory/logic.ts; pillar and pillar x angle performance is computed on read from reel_bank + retention_results, never stored, so the Matriz heatmap and the allocator always agree with real data.
 - The Cut Generator renders data/text/diagram cuts on canvas client-side (no image model) and only illustration cuts go through gerar_corte, which enforces chosen-reel gating, content blocklist, daily limit, prompt cache and regen cap server-side; text is always drawn by code over images.
+- Curated pillar reels are seeded from versioned templates (script_templates, loaded by seed_pilar) into the caller's retention_scripts via a SECURITY DEFINER upsert keyed by (user_id, slug); source checks write only through mark_fonte_conferida, so reseeding never duplicates and users cannot edit script content directly.

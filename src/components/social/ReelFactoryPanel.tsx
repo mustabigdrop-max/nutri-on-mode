@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ContentMatrixPanel from "./ContentMatrixPanel";
+import PillarReelsPanel from "./PillarReelsPanel";
 
 const C = { cyan: "#00D4FF", gold: "#B8922A", red: "#EF4444", text: "#C8C8D8", white: "#F0F0F8", muted: "#555566", dim: "#333340" };
 const F = { t: "'Rajdhani',sans-serif", m: "'Space Mono',monospace" };
@@ -219,6 +220,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
             {x.status !== "postado" && <button type="button" onClick={() => setStatus(x.id, "postado")} style={sm(C.cyan)}>POSTADO</button>}
             <button type="button" onClick={() => setStatus(x.id, "descartado")} style={sm(C.muted)}>DESCARTAR</button>
           </>} />)}
+          <PillarReelsPanel />
         </div>
       )}
 
