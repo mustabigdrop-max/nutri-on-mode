@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     const { data: bk } = await db.from("brand_kit").select("limite_diario_gerada").eq("user_id", uid).maybeSingle();
     const limite = bk?.limite_diario_gerada ?? 5;
     const since = new Date(); since.setUTCHours(3, 0, 0, 0); if (since > new Date()) since.setUTCDate(since.getUTCDate() - 1);
-    const { count } = await db.from("studio_cards").select("id", { count: "exact", head: true }).eq("user_id", uid).eq("ilustracao_origem", "gerada").gte("created_at", since.toISOString());
+    const { count } = await db.from("cut_image_cache").select("path", { count: "exact", head: true }).eq("user_id", uid).eq("modelo", "card_studio").gte("created_at", since.toISOString());
     const usadas = count ?? 0;
     const disponivel = !!Deno.env.get("LOVABLE_API_KEY");
     if (action === "quota") return json({ disponivel, limite, usadas, restantes: Math.max(0, limite - usadas), custo_estimado: CUSTO_ESTIMADO });
@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
     const path = `${uid}/ilustracao/card_${card_id}_${Date.now()}.png`;
     const up = await db.storage.from("cuts").upload(path, Uint8Array.from(atob(b64), c => c.charCodeAt(0)), { contentType: "image/png", upsert: true });
     if (up.error) return json({ error: "Falha ao salvar a imagem." }, 500);
+    await db.from("cut_image_cache").insert({ user_id: uid, prompt_hash: `card:${path}`, path, modelo: "card_studio" });
     await db.from("studio_cards").update({ imagem_path: path, ilustracao_origem: "gerada", tipo: "C" }).eq("id", card_id).eq("user_id", uid);
     return json({ path });
   } catch (e) {
