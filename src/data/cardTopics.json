@@ -95,97 +95,128 @@
     "titulo": "Sono e noite sem dormir",
     "veredito": "sustentado_com_ressalva",
     "melhor_para": "alcance",
-    "mito": "Creatina compensa noite mal dormida.",
-    "verdade": "Em estudos com privação de sono (cerca de 21 horas acordado), uma dose única alta melhorou testes cognitivos. Não é dose de uso caseiro e não mostra que a dose diária proteja o cérebro de noites mal dormidas.",
-    "fala_segura": "Em laboratório, com mais de 20 horas sem dormir e dose única alta, houve melhora cognitiva. Não é recomendação para o dia a dia.",
+    "mito": "Creatina compensa uma noite mal dormida.",
+    "verdade": "Num ensaio de laboratório com cerca de 21 horas sem dormir, uma dose única e alta (0,35 g/kg) melhorou o desempenho em testes mentais e a velocidade de processamento. Não é dose de uso diário e não prova proteção no dia a dia.",
+    "fala_segura": "Em laboratório, com 21 horas sem dormir e uma dose única alta, houve melhora nos testes. Não é recomendação para o dia a dia.",
     "nao_dizer": [
-     "Creatina protege o cérebro à noite",
-     "Tome para compensar o sono",
-     "Dose de 20 g"
+     "Creatina compensa noite mal dormida",
+     "Tome para render sem dormir",
+     "Dose de 25 g"
     ],
     "ressalva_obrigatoria": null,
     "dado_card": {
-     "rotulo": "21 HORAS SEM DORMIR · DOSE ÚNICA ALTA · MELHORA COGNITIVA",
-     "selo": "ESTUDO EM LABORATÓRIO · SCI REP, 2024"
+     "rotulo": "21 HORAS SEM DORMIR · DOSE ÚNICA ALTA · MELHORA NOS TESTES",
+     "selo": "ENSAIO · SCI REP · 2024",
+     "numero_destaque": "21h",
+     "chip": "NÃO É DOSE DO DIA A DIA"
     },
     "provas": [
      {
-      "selo": "ESTUDO · SCI REP · 2024",
-      "referencia": "Estudo sobre creatina e privação de sono. Scientific Reports (2024)",
-      "link": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10902318/",
-      "tipo_fonte": "estudo_experimental",
+      "selo": "ENSAIO · SCI REP · 2024",
+      "autores": "Gordji-Nejad, Matusch, Kleedörfer, Patel, Drzezga, Elmenhorst, Binkofski e Bauer",
+      "organizacao": "Forschungszentrum Jülich, Alemanha (Instituto de Neurociência e Medicina)",
+      "periodico": "Scientific Reports 14:4937",
+      "ano": 2024,
+      "tipo_estudo": "ensaio_controlado",
+      "n_participantes": null,
+      "desenho_resumo": "Dose única de 0,35 g/kg ou placebo durante cerca de 21 h de privação de sono, com espectroscopia por ressonância e testes cognitivos.",
+      "doi_ou_link": "https://pub.dzne.de/record/268479",
       "nivel": "primaria",
-      "limites": "Contexto específico de privação aguda de sono, com dose única alta. Conferir o desenho no original."
-     },
-     {
-      "selo": "ESTUDO · NUTRIENTS · 2026",
-      "referencia": "Estudo sobre creatina e privação de sono. Nutrients (2026)",
-      "link": "https://pub.dzne.de/record/286366/files/DZNE-2026-00469.pdf",
-      "tipo_fonte": "estudo_experimental",
-      "nivel": "primaria",
-      "limites": "Conferir o desenho no original."
+      "limites": "Contexto de privação aguda de sono, dose única e alta. Os próprios autores dizem que os efeitos do uso prolongado são desconhecidos.",
+      "referencia": "Gordji-Nejad, Matusch, Kleedörfer, Patel, Drzezga, Elmenhorst, Binkofski e Bauer (2024). Scientific Reports 14:4937",
+      "link": "https://pub.dzne.de/record/268479",
+      "tipo_fonte": "ensaio_randomizado"
      }
     ],
     "dicas": [
-     "Use como curiosidade, nunca como recomendação.",
-     "Deixe claro: em laboratório e dose única alta.",
-     "Evite o formato dica de produtividade."
+     "Use como curiosidade de laboratório, nunca como dica de produtividade.",
+     "Mostre 0,35 g/kg só com a frase: dose única, em laboratório.",
+     "Não fale de quilos de creatina nem de dose caseira."
     ],
     "ilustracao_chave": "lua",
-    "alt_texto": "Card sobre creatina e privação de sono em estudos de laboratório.",
-    "bloqueio_prova": null
+    "alt_texto": "Card sobre creatina e privação de sono em laboratório.",
+    "bloqueio_prova": null,
+    "seed_v": 2
    },
    {
     "slug": "cognicao-adultos-saudaveis",
-    "titulo": "Cérebro em adultos saudáveis",
+    "titulo": "Memória e cognição em adultos",
     "veredito": "misto",
-    "melhor_para": "alcance",
+    "melhor_para": "autoridade",
     "mito": "Creatina deixa você mais inteligente.",
-    "verdade": "Em adultos saudáveis, o efeito é inconclusivo. Uma meta-análise de 2024 achou efeito na memória, mas uma correção em 2025 e um comentário em 2026 mostraram que a significância some, exceto em idosos.",
-    "fala_segura": "Para o cérebro de adultos saudáveis, a evidência ainda é inconclusiva. Em idosos, os sinais são mais claros.",
+    "verdade": "Numa meta-análise de 16 ensaios com 492 pessoas, a creatina teve efeito na memória, mas não na cognição geral nem na função executiva. Um artigo de 2025 corrigiu trechos do texto. Uma revisão de 2018 em adultos saudáveis achou possível melhora na memória de curto prazo e no raciocínio, sem mudança em jovens.",
+    "fala_segura": "Os estudos apontam um sinal na memória. Na cognição em geral, o efeito não foi significativo.",
     "nao_dizer": [
-     "Aumenta a memória",
-     "Deixa mais inteligente"
+     "Aumenta a inteligência",
+     "Melhora o foco de todo mundo",
+     "Funciona para a cabeça de qualquer pessoa"
     ],
     "ressalva_obrigatoria": null,
     "dado_card": {
-     "rotulo": "CÉREBRO: EVIDÊNCIA INCONCLUSIVA EM ADULTOS SAUDÁVEIS",
-     "selo": "META-ANÁLISE 2024 · CORREÇÃO 2025 · COMENTÁRIO 2026"
+     "rotulo": "16 ENSAIOS · 492 PESSOAS · SINAL NA MEMÓRIA",
+     "selo": "META-ANÁLISE · FRONTIERS IN NUTRITION · 2024",
+     "numero_destaque": "492",
+     "chip": "CORREÇÃO PUBLICADA EM 2025"
     },
     "provas": [
      {
-      "selo": "META-ANÁLISE · 2024",
-      "referencia": "Meta-análise sobre creatina e cognição (2024)",
-      "link": "https://pubmed.ncbi.nlm.nih.gov/39070254/",
-      "tipo_fonte": "meta_analise",
+      "selo": "META-ANÁLISE · 16 ENSAIOS · 492 PESSOAS · 2024",
+      "autores": "Xu, Bi, Zhang e Luo",
+      "organizacao": "Guizhou Normal University, China",
+      "periodico": "Frontiers in Nutrition 11",
+      "ano": 2024,
+      "tipo_estudo": "meta_analise",
+      "n_participantes": 492,
+      "desenho_resumo": "Ensaios randomizados com creatina monohidratada em adultos; efeito em memória, sem efeito significativo em cognição geral e função executiva.",
+      "doi_ou_link": "https://doi.org/10.3389/fnut.2024.1424972",
       "nivel": "primaria",
-      "limites": "Resultado revisto pela correção de 2025."
+      "limites": "Inclui pessoas com doenças. Há correção publicada em 2025 (doi 10.3389/fnut.2025.1570800): conferir o que mudou no original.",
+      "referencia": "Xu, Bi, Zhang e Luo (2024). Frontiers in Nutrition 11",
+      "link": "https://doi.org/10.3389/fnut.2024.1424972",
+      "tipo_fonte": "meta_analise"
      },
      {
-      "selo": "CORREÇÃO · FRONTIERS · 2025",
-      "referencia": "Correção da meta-análise, Frontiers in Nutrition (2025)",
-      "link": "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2025.1570800/full",
-      "tipo_fonte": "correcao",
+      "selo": "REVISÃO SISTEMÁTICA · 6 ESTUDOS · 281 PESSOAS · 2018",
+      "autores": "Avgerinos, Spyrou, Bougioukas e Kapogiannis",
+      "organizacao": null,
+      "periodico": "Experimental Gerontology 108:166-173",
+      "ano": 2018,
+      "tipo_estudo": "revisao_sistematica",
+      "n_participantes": 281,
+      "desenho_resumo": "Possível melhora na memória de curto prazo e no raciocínio; sem mudança em tarefas cognitivas de jovens; benefício potencial em idosos e sob estresse.",
+      "doi_ou_link": "https://doi.org/10.1016/j.exger.2018.04.013",
       "nivel": "primaria",
-      "limites": "Conferir o que mudou no original."
+      "limites": "Poucos estudos e resultados conflitantes em vários domínios.",
+      "referencia": "Avgerinos, Spyrou, Bougioukas e Kapogiannis (2018). Experimental Gerontology 108:166-173",
+      "link": "https://doi.org/10.1016/j.exger.2018.04.013",
+      "tipo_fonte": "revisao_sistematica"
      },
      {
-      "selo": "COMENTÁRIO · FRONTIERS · 2026",
-      "referencia": "Comentário sobre a meta-análise, Frontiers in Nutrition (2026)",
-      "link": "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2026.1716285/full",
-      "tipo_fonte": "comentario",
+      "selo": "META-ANÁLISE · MEMÓRIA · 2023",
+      "autores": "Prokopidis et al. (conferir lista completa no original)",
+      "organizacao": null,
+      "periodico": "Nutrition Reviews",
+      "ano": 2023,
+      "tipo_estudo": "meta_analise",
+      "n_participantes": null,
+      "desenho_resumo": "8 ensaios na meta-análise; melhora em medidas de memória em adultos saudáveis, sobretudo entre 66 e 76 anos.",
+      "doi_ou_link": "https://doi.org/10.1093/nutrit/nuac064",
       "nivel": "primaria",
-      "limites": "Comentário crítico, não é um estudo novo."
+      "limites": "Conferir autores, n e magnitude do efeito no original antes de usar qualquer número.",
+      "referencia": "Prokopidis et al. (conferir lista completa no original) (2023). Nutrition Reviews",
+      "link": "https://doi.org/10.1093/nutrit/nuac064",
+      "tipo_fonte": "meta_analise"
      }
     ],
     "dicas": [
-     "A ciência ainda discute é um gancho forte e honesto.",
-     "Mostre a correção como parte da história: ciência se corrige.",
-     "Evite qualquer promessa cognitiva."
+     "Ótima abertura de autoridade: o sinal está na memória, não na inteligência.",
+     "Mostre a correção de 2025 como parte da história: ciência se ajusta.",
+     "Evite qualquer promessa sobre foco ou QI."
     ],
     "ilustracao_chave": "cerebro",
-    "alt_texto": "Card sobre creatina e cognição: evidência inconclusiva em adultos saudáveis.",
-    "bloqueio_prova": null
+    "alt_texto": "Card sobre creatina e memória em adultos, com sinal na memória e sem efeito na cognição geral.",
+    "bloqueio_prova": null,
+    "seed_v": 2
    },
    {
     "slug": "rim-e-seguranca",
@@ -225,28 +256,51 @@
    },
    {
     "slug": "dopamina-e-humor",
-    "titulo": "Dopamina e humor",
+    "titulo": "Dopamina e serotonina",
     "veredito": "sem_evidencia",
     "melhor_para": "alcance",
     "mito": "Creatina aumenta a dopamina.",
-    "verdade": "Em humanos, o efeito conhecido é energético: a creatina participa da regeneração de ATP. Não há base para afirmar aumento direto de dopamina ou serotonina. Uma revisão de 2026 aponta sinais promissores como apoio em depressão em alguns grupos, o que não é tratamento.",
-    "fala_segura": "A creatina participa da energia das células. Dizer que aumenta a dopamina vai além do que os estudos mostram.",
+    "verdade": "Há sinais em animais e células de que a creatina interage com receptores e neurotransmissores. Prova em humanos de que a suplementação aumente dopamina ou serotonina ainda não foi demonstrada.",
+    "fala_segura": "Em animais há sinais. Em humanos, aumentar dopamina ou serotonina com creatina ainda não está demonstrado.",
     "nao_dizer": [
-     "Aumenta dopamina",
+     "Aumenta a dopamina",
+     "Aumenta a serotonina",
      "Trata depressão",
      "Substitui acompanhamento profissional"
     ],
     "ressalva_obrigatoria": null,
-    "dado_card": null,
-    "provas": [],
+    "dado_card": {
+     "rotulo": "NEUROTRANSMISSORES: SINAIS EM ANIMAIS, SEM PROVA EM HUMANOS",
+     "selo": "REVISÃO · DADOS EXPERIMENTAIS",
+     "numero_destaque": null
+    },
+    "provas": [
+     {
+      "selo": "REVISÃO · DADOS EXPERIMENTAIS",
+      "autores": "conferir no original",
+      "organizacao": null,
+      "periodico": "conferir no original",
+      "ano": null,
+      "tipo_estudo": "revisao_narrativa",
+      "n_participantes": null,
+      "desenho_resumo": "Revisão de dados experimentais sobre creatina e neuromodulação; vários achados em roedores.",
+      "doi_ou_link": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10787915/",
+      "nivel": "secundaria",
+      "limites": "Autores e periódico ainda não conferidos. Sem prova em humanos de aumento de dopamina ou serotonina.",
+      "referencia": "conferir no original (s/ano). conferir no original",
+      "link": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10787915/",
+      "tipo_fonte": "revisao"
+     }
+    ],
     "dicas": [
-     "Bom tema de mito de redes: desmonta uma afirmação popular.",
-     "Sem card de dado: use texto e ilustração.",
+     "Bom mito de redes: desmonta uma afirmação popular.",
+     "Use o card Há × Falta.",
      "Nunca fale de depressão como indicação."
     ],
-    "ilustracao_chave": "bateria",
-    "alt_texto": "Card sobre creatina e energia celular, sem evidência de aumento de dopamina.",
-    "bloqueio_prova": "Sem fonte com link verificado para este tema. Pesquise antes de usar um card de dado."
+    "ilustracao_chave": "cerebro",
+    "alt_texto": "Card sobre creatina e neurotransmissores: sinais em animais, sem prova em humanos.",
+    "bloqueio_prova": "Conferir autores e periódico no original antes de usar o selo de prova.",
+    "seed_v": 2
    },
    {
     "slug": "dose-e-uso",
@@ -269,6 +323,75 @@
     "ilustracao_chave": "colher",
     "alt_texto": "Card sobre dose de creatina.",
     "bloqueio_prova": "A dose não foi verificada em fonte. Pesquise antes. Cards permitidos: capa e CTA."
+   },
+   {
+    "slug": "energia-cerebral",
+    "titulo": "Energia no cérebro",
+    "veredito": "sustentado_com_ressalva",
+    "melhor_para": "alcance",
+    "mito": "Creatina só serve para o músculo.",
+    "verdade": "O cérebro também usa o sistema da creatina como reserva rápida de energia. A maior parte das evidências do mecanismo vem de laboratório e de animais.",
+    "fala_segura": "O cérebro também usa a creatina como reserva de energia. O que isso muda no dia a dia, os estudos ainda discutem.",
+    "nao_dizer": [
+     "Creatina turbina o cérebro",
+     "Deixa mais inteligente",
+     "Aumenta a dopamina"
+    ],
+    "ressalva_obrigatoria": null,
+    "passos": [
+     "CREATINA|da dieta ou do suplemento",
+     "FOSFOCREATINA|reserva rápida de fosfato",
+     "ATP|energia da célula",
+     "NEURÔNIO|mantém a atividade"
+    ],
+    "dado_card": {
+     "rotulo": "MECANISMO: RESERVA DE ENERGIA NO CÉREBRO",
+     "selo": "REVISÃO · NEUROCHEM INT · 2015",
+     "numero_destaque": null
+    },
+    "provas": [
+     {
+      "selo": "REVISÃO · 2015",
+      "autores": "Rae e Bröer",
+      "organizacao": null,
+      "periodico": "Neurochemistry International 89:249-259",
+      "ano": 2015,
+      "tipo_estudo": "revisao",
+      "n_participantes": null,
+      "desenho_resumo": "Revisão do papel da creatina no cérebro: tampão de energia, eficiência mitocondrial, antioxidante, neuroproteção.",
+      "doi_ou_link": "https://doi.org/10.1016/j.neuint.2015.08.010",
+      "nivel": "primaria",
+      "limites": "Os autores dizem que grande parte das evidências é in vitro ou pré-clínica.",
+      "referencia": "Rae e Bröer (2015). Neurochemistry International 89:249-259",
+      "link": "https://doi.org/10.1016/j.neuint.2015.08.010",
+      "tipo_fonte": "revisao"
+     },
+     {
+      "selo": "REVISÃO · NUTRIENTS · 2021",
+      "autores": "Roschel, Gualano, Ostojic e Rawson",
+      "organizacao": "Universidade de São Paulo (Roschel e Gualano)",
+      "periodico": "Nutrients 13(2):586",
+      "ano": 2021,
+      "tipo_estudo": "revisao_narrativa",
+      "n_participantes": null,
+      "desenho_resumo": "A creatina oral passa pela barreira hematoencefálica; há poucos estudos de creatina no cérebro.",
+      "doi_ou_link": "https://doi.org/10.3390/nu13020586",
+      "nivel": "primaria",
+      "limites": "Pouco se sabe sobre a estratégia ideal para elevar a creatina cerebral.",
+      "referencia": "Roschel, Gualano, Ostojic e Rawson (2021). Nutrients 13(2):586",
+      "link": "https://doi.org/10.3390/nu13020586",
+      "tipo_fonte": "revisao"
+     }
+    ],
+    "dicas": [
+     "Abra com: creatina só serve para o músculo?",
+     "Use o diagrama do fluxo por 3 a 4 segundos.",
+     "Feche com o limite: parte do mecanismo vem de animais."
+    ],
+    "ilustracao_chave": "cerebro",
+    "alt_texto": "Card sobre creatina como reserva de energia no cérebro.",
+    "bloqueio_prova": null,
+    "seed_v": 2
    }
   ]
  }

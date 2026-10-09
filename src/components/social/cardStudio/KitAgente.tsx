@@ -21,10 +21,10 @@ const lbl: React.CSSProperties = { fontFamily: T.fm, fontSize: 9, color: T.muted
 const NIV_COR = { ok: T.green, aviso: T.amber, bloqueio: T.red } as const;
 type Foto = { id: string; url: string; rotulo: string; signed?: string };
 
-function Mini({ c, formato, brand, variante, foto, width = 220, onClick }: { c: KitCard; formato: Formato; brand: Brand; variante: Variante; foto?: string | null; width?: number; onClick?: () => void }) {
+function Mini({ c, formato, brand, variante, foto, width = 220, onClick, total }: { c: KitCard; formato: Formato; brand: Brand; variante: Variante; foto?: string | null; width?: number; onClick?: () => void; total?: number }) {
   const { w, h } = FORMATOS[formato]; const k = width / w;
   return <div onClick={onClick} style={{ width, height: h * k, overflow: "hidden", position: "relative", border: "1px solid #ffffff20", cursor: onClick ? "zoom-in" : "default", flex: "0 0 auto" }}>
-    <div style={{ transform: `scale(${k})`, transformOrigin: "top left", position: "absolute", left: 0, top: 0 }}><KitCardView c={c} formato={formato} brand={brand} variante={variante} fotoUrl={foto} /></div>
+    <div style={{ transform: `scale(${k})`, transformOrigin: "top left", position: "absolute", left: 0, top: 0 }}><KitCardView c={c} formato={formato} brand={brand} variante={variante} fotoUrl={foto} total={total} /></div>
   </div>;
 }
 
@@ -46,6 +46,7 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
   const [busy, setBusy] = useState<string | null>(null);
   const stage = useRef<Record<number, HTMLDivElement | null>>({});
   const [render, setRender] = useState(false);
+  const [stageFmt, setStageFmt] = useState<Formato>("9:16");
   const touch = useRef<number | null>(null);
 
   // Seed idempotente por usuário (upsert por slug) e leitura dos temas.
@@ -55,6 +56,15 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
     const tem = new Set((data ?? []).map((r: any) => r.slug));
     const faltam = (seed as any[]).filter(s => !tem.has(s.slug));
     if (faltam.length) await supabase.from("card_topics").upsert(faltam.map(s => ({ user_id: uid, slug: s.slug, titulo: s.titulo, aliases: s.aliases, aviso_tema: s.aviso_tema, subtemas: s.subtemas })) as any, { onConflict: "user_id,slug", ignoreDuplicates: true });
+    // Mescla por slug de subtema: entra o que falta e troca o que tem seed_v maior. Rodar de novo não muda nada.
+    const { data: atuais } = await supabase.from("card_topics").select("slug,subtemas").eq("user_id", uid);
+    for (const row of (atuais ?? []) as any[]) {
+      const sd = (seed as any[]).find(x => x.slug === row.slug); if (!sd) continue;
+      const cur: any[] = Array.isArray(row.subtemas) ? row.subtemas : []; let mudou = false;
+      const merged = cur.map(x => { const n = sd.subtemas.find((y: any) => y.slug === x.slug); if (n && (n.seed_v ?? 1) > (x.seed_v ?? 1)) { mudou = true; return n; } return x; });
+      for (const n of sd.subtemas) if (!merged.some(x => x.slug === n.slug)) { merged.push(n); mudou = true; }
+      if (mudou) await supabase.from("card_topics").update({ subtemas: merged } as any).eq("user_id", uid).eq("slug", row.slug);
+    }
     const { data: all } = await supabase.from("card_topics").select("*").eq("user_id", uid);
     if (all?.length) setTemas(all as unknown as Topic[]);
     const { data: ph } = await supabase.from("user_photos").select("*").eq("user_id", uid).order("created_at", { ascending: false });
@@ -90,10 +100,10 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
   }
   const usarFoto = (f: Foto) => { if (!fotoPermitida(f.rotulo)) { setMsg(RECUSA_FOTO); return; } setFotoDe(m => ({ ...m, [sel]: f.id })); setVariantes(v => ({ ...v, [sel]: "foto" })); };
 
-  async function capturar(idxs: number[]) {
-    setRender(true); await new Promise(r => setTimeout(r, 150)); await document.fonts.ready;
+  async function capturar(idxs: number[], fmt: Formato = formato) {
+    setStageFmt(fmt); setRender(true); await new Promise(r => setTimeout(r, 200)); await document.fonts.ready;
     const out: Blob[] = [];
-    for (const i of idxs) { const el = stage.current[i]; if (!el) continue; const cv = await html2canvas(el, { useCORS: true, backgroundColor: null, scale: 1, width: FORMATOS[formato].w, height: FORMATOS[formato].h }); out.push(await new Promise<Blob>(res => cv.toBlob(b => res(b!), "image/png"))); }
+    for (const i of idxs) { const el = stage.current[i]; if (!el) continue; const cv = await html2canvas(el, { useCORS: true, backgroundColor: null, scale: 1, width: FORMATOS[fmt].w, height: FORMATOS[fmt].h }); out.push(await new Promise<Blob>(res => cv.toBlob(b => res(b!), "image/png"))); }
     setRender(false); return out;
   }
   const podeExportar = () => {
@@ -101,7 +111,7 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
     if (precisaAvisoSecundaria(cards) && !confirm(AVISO_SECUNDARIA)) return false;
     return true;
   };
-  const nome = (i: number) => `${String(i + 1).padStart(2, "0")}_${tema.slug}_${sub?.slug}_${cards[i].papel}_${formato.replace(":", "x")}.png`;
+  const nome = (i: number, fmt: Formato = formato) => `${String(i + 1).padStart(2, "0")}_${tema.slug}_${sub?.slug}_${cards[i].papel}_${fmt.replace(":", "x")}.png`;
   async function baixarCard() {
     if (!ver || ver.nivelCard[sel] === "bloqueio") { setMsg("Este card tem bloqueio do verificador."); return; }
     if (cards[sel].prova?.nivel === "secundaria" && !confirm(AVISO_SECUNDARIA)) return;
@@ -109,7 +119,8 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
   }
   async function baixarKit() {
     if (!podeExportar()) return; setBusy("zip");
-    const blobs = await capturar(cards.map((_, i) => i)); const zip = new JSZip(); blobs.forEach((b, i) => zip.file(nome(i), b));
+    const zip = new JSZip();
+    for (const fmt of ["9:16", "4:5", "1:1"] as Formato[]) { const blobs = await capturar(cards.map((_, i) => i), fmt); const pasta = zip.folder(fmt.replace(":", "x"))!; blobs.forEach((b, i) => pasta.file(nome(i, fmt), b)); }
     const a = document.createElement("a"); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" })); a.download = `kit_${tema.slug}_${sub?.slug}_${pacote}.zip`; a.click(); setBusy(null);
   }
   async function salvar() {
@@ -118,7 +129,7 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
     const varKit = [...new Set(cards.map(x => varDe(x.idx)))]; const vk = varKit.length === 1 ? varKit[0] : "ilustracao";
     const { data: kit, error } = await supabase.from("card_kits").insert({ user_id: uid, topic_slug: tema.slug, subtema_slug: sub.slug, pacote, variante_imagem: vk, cards: cards as any, verificacao: verif as any }).select("id").single();
     if (error || !kit) { setMsg("Não salvou o kit."); setBusy(null); return; }
-    const tpl: Record<string, string> = { capa: "capa_serie", gancho: "pergunta", mito_verdade: "mito_verdade", dizem_estudos: "comparacao", prova: "numero", dizer: "comparacao", limites: "lista3", fontes: "lista3" };
+    const tpl: Record<string, string> = { mecanismo: "passos", ha_falta: "comparacao", capa: "capa_serie", gancho: "pergunta", mito_verdade: "mito_verdade", dizem_estudos: "comparacao", prova: "numero", dizer: "comparacao", limites: "lista3", fontes: "lista3" };
     await supabase.from("studio_cards").insert(cards.map((x, i) => ({
       user_id: uid, tipo: x.papel === "prova" ? "A" : "B", template: tpl[x.papel] ?? "pergunta", formato, nome: `${String(i + 1).padStart(2, "0")} ${sub.titulo} · ${x.papel}`,
       conteudo: { kit: true, card: x, variante: varDe(x.idx), titulo: x.principal } as any, ilustracao_origem: varDe(x.idx) === "ilustracao" ? "codigo" : null,
@@ -179,11 +190,16 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
     <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8 }}
       onTouchStart={e => (touch.current = e.touches[0].clientX)} onTouchEnd={e => { if (touch.current == null) return; const dx = e.changedTouches[0].clientX - touch.current; if (Math.abs(dx) > 60) setSel(s => Math.max(0, Math.min(cards.length - 1, s + (dx < 0 ? 1 : -1)))); touch.current = null; }}>
       {cards.map((x, i) => <div key={i} style={{ border: `2px solid ${i === sel ? T.cyan : "transparent"}`, padding: 2 }}>
-        <div onClick={() => setSel(i)}><Mini c={x} formato={formato} brand={brand} variante={varDe(i)} foto={fotoUrl(i)} width={220} onClick={() => { setSel(i); setZoom(i); }} /></div>
+        <div onClick={() => setSel(i)} style={{ display: "flex", gap: 6 }}>
+          {([["ilustracao", "COM IMAGEM"], ["sem", "SEM IMAGEM"], ...(fotoUrl(i) ? [["foto", "FOTO MINHA"]] : [])] as [Variante, string][]).map(([v, n]) => <div key={v}>
+            <Mini c={x} formato={formato} brand={brand} variante={v} foto={fotoUrl(i)} width={220} total={cards.length} onClick={() => { setSel(i); setZoom(i); }} />
+            <button style={{ ...btn(T.cyan, varDe(i) === v), marginTop: 4, width: 220 }} onClick={e => { e.stopPropagation(); setVariantes(m => ({ ...m, [i]: v })); }}>{varDe(i) === v ? "✓ " : ""}{n}</button>
+          </div>)}
+        </div>
         <div style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4, fontFamily: T.fm, fontSize: 9 }}>
           <span style={{ width: 8, height: 8, borderRadius: 4, background: NIV_COR[ver?.nivelCard[i] ?? "ok"] }} />{String(i + 1).padStart(2, "0")} · {x.papel.replace("_", " ")}
         </div>
-        <div style={{ fontFamily: T.fm, fontSize: 9, color: T.gold, maxWidth: 220 }} title={x.dica}>DICA · {x.dica}</div>
+        <div style={{ fontFamily: T.fm, fontSize: 9, color: T.gold, maxWidth: 446 }} title={x.dica}>DICA · {x.dica}</div>
         {(ver?.porCard[i] ?? []).map((a, j) => <div key={j} style={{ fontSize: 10, color: NIV_COR[a.nivel], maxWidth: 220 }}>{a.motivo}</div>)}
       </div>)}
     </div>
@@ -198,7 +214,7 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
           return <div key={v} style={{ textAlign: "center" }}>
             {v === "gerada" ? <div style={{ width: 110, height: formato === "9:16" ? 196 : 138, border: "1px dashed #ffffff30", display: "grid", placeItems: "center", fontFamily: T.fm, fontSize: 9, color: T.muted, padding: 6 }}>{geradorDisponivel ? "Salve em Meus cards e gere no editor" : "Indisponível"}</div>
               : v === "foto" && !fotoUrl(sel) ? <div style={{ width: 110, height: formato === "9:16" ? 196 : 138, border: "1px dashed #ffffff30", display: "grid", placeItems: "center", fontFamily: T.fm, fontSize: 9, color: T.muted }}>Escolha em Minhas fotos</div>
-                : <Mini c={c} formato={formato} brand={brand} variante={v} foto={fotoUrl(sel)} width={110} />}
+                : <Mini c={c} formato={formato} brand={brand} variante={v} foto={fotoUrl(sel)} width={220} total={cards.length} />}
             <button style={{ ...btn(T.cyan, varDe(sel) === v, dis), marginTop: 4 }} disabled={dis} onClick={() => setVariantes(m => ({ ...m, [sel]: v }))}>{v === "sem" ? "SEM IMAGEM" : v === "ilustracao" ? "ILUSTRAÇÃO" : v === "foto" ? "FOTO MINHA" : "GERADA"}</button>
           </div>; })}
       </div>
@@ -261,7 +277,13 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
         <div style={{ display: "flex", justifyContent: "space-between" }}><div style={{ fontFamily: T.ft, fontWeight: 700, fontSize: 18 }}>Provas</div><button style={btn(T.muted)} onClick={() => setGaveta(null)}>FECHAR</button></div>
         {ordenarProvas(gaveta).map((p, i) => <div key={i} style={{ borderTop: "1px solid #ffffff15", padding: "10px 0", fontSize: 12 }}>
           <div style={{ fontFamily: T.fm, fontSize: 10, color: p.nivel === "primaria" ? T.green : T.amber }}>{p.selo} · {p.nivel === "primaria" ? "PRIMÁRIA" : "SECUNDÁRIA · CONFERIR NO ORIGINAL"}</div>
-          <div style={{ margin: "4px 0" }}>{p.referencia}</div>
+          {p.autores ? <div style={{ margin: "4px 0" }}>
+            <div style={{ fontWeight: 700 }}>{p.autores}{p.ano ? ` · ${p.ano}` : ""}</div>
+            {p.periodico && <div>{p.periodico}</div>}
+            <div style={{ color: p.organizacao ? T.text : T.amber }}>{p.organizacao ?? "Organização não informada"}</div>
+            {p.n_participantes != null && <div style={{ color: T.muted }}>{p.n_participantes} participantes</div>}
+            {p.desenho_resumo && <div style={{ color: T.muted, marginTop: 4 }}>{p.desenho_resumo}</div>}
+          </div> : <div style={{ margin: "4px 0" }}>{p.referencia}</div>}
           <div style={{ color: T.muted }}>Tipo: {p.tipo_fonte.replace(/_/g, " ")}</div>
           {p.link && <a href={p.link} target="_blank" rel="noreferrer" style={{ color: T.cyan }}>Abrir fonte ↗</a>}
           {p.limites && <div style={{ marginTop: 6, border: `1px solid ${T.amber}`, padding: 6, color: T.amber }}>LIMITES: {p.limites}</div>}
@@ -272,12 +294,14 @@ export function KitAgente({ uid, assunto, brand, proibidas, geradorDisponivel, o
     {zoom != null && cards[zoom] && <div role="dialog" aria-label="Card em tela cheia" onClick={() => setZoom(null)} style={{ position: "fixed", inset: 0, background: "#000e", zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}
       onTouchStart={e => (touch.current = e.touches[0].clientX)} onTouchEnd={e => { if (touch.current == null) return; const dx = e.changedTouches[0].clientX - touch.current; if (Math.abs(dx) > 60) { e.stopPropagation(); setZoom(z => Math.max(0, Math.min(cards.length - 1, (z ?? 0) + (dx < 0 ? 1 : -1)))); } touch.current = null; }}>
       <button style={btn(T.cyan)} onClick={e => { e.stopPropagation(); setZoom(z => Math.max(0, (z ?? 0) - 1)); }} aria-label="Anterior">←</button>
-      <div onClick={e => e.stopPropagation()}><Mini c={cards[zoom]} formato={formato} brand={brand} variante={varDe(zoom)} foto={fotoUrl(zoom)} width={Math.min(window.innerWidth - 120, (window.innerHeight - 40) * FORMATOS[formato].w / FORMATOS[formato].h)} /></div>
+      <div onClick={e => e.stopPropagation()} style={{ display: "flex", gap: 10 }}>{(["ilustracao", "sem"] as Variante[]).map(v => <div key={v} style={{ textAlign: "center" }}>
+        <Mini c={cards[zoom]} formato={formato} brand={brand} variante={v} foto={fotoUrl(zoom)} total={cards.length} width={Math.min((window.innerWidth - 140) / 2, (window.innerHeight - 80) * FORMATOS[formato].w / FORMATOS[formato].h)} />
+        <button style={{ ...btn(T.cyan, varDe(zoom) === v), marginTop: 4 }} onClick={() => setVariantes(m => ({ ...m, [zoom]: v }))}>{varDe(zoom) === v ? "✓ " : ""}{v === "sem" ? "SEM IMAGEM" : "COM IMAGEM"}</button></div>)}</div>
       <button style={btn(T.cyan)} onClick={e => { e.stopPropagation(); setZoom(z => Math.min(cards.length - 1, (z ?? 0) + 1)); }} aria-label="Próximo">→</button>
     </div>}
 
     {render && <div style={{ position: "fixed", left: -20000, top: 0, pointerEvents: "none" }} aria-hidden>
-      {cards.map((x, i) => <KitCardView key={i} ref={el => (stage.current[i] = el)} c={x} formato={formato} brand={brand} variante={varDe(i)} fotoUrl={fotoUrl(i)} />)}
+      {cards.map((x, i) => <KitCardView key={`${stageFmt}${i}`} ref={el => (stage.current[i] = el)} c={x} formato={stageFmt} brand={brand} variante={varDe(i)} fotoUrl={fotoUrl(i)} total={cards.length} />)}
     </div>}
   </div>;
 }
