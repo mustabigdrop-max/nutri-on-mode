@@ -1,3 +1,4 @@
+import { VERIFICADOR_REGRAS } from "../../../supabase/functions/_shared/reelVerifier";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +67,8 @@ export default function EngineInstructionsPanel({ rows, userId, open, onToggle, 
     try { setResult(await runGerarReel({ tema: tema.trim(), objetivo: "alcance", tom: "direto", teste: true } as any, setTesting)); }
     catch (e: any) { toast.error(e.message); } finally { setTesting(null); }
   };
+  const [ouro, setOuro] = useState<number | null>(null);
+  useEffect(() => { supabase.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("exemplo_ouro", true).then(({ count }) => setOuro(count ?? 0)); }, [userId]);
   const ordered = ENGINE_PROMPT_KEYS.map((k: EnginePromptKey) => rows.find(r => r.chave === k)).filter(Boolean) as EngineRow[];
   return (
     <div id="cc-instrucoes" style={{ scrollMarginTop: 80 }}>
@@ -91,7 +94,13 @@ export default function EngineInstructionsPanel({ rows, userId, open, onToggle, 
               </div>
             ))}
           </div>
+          {ouro === 0 && <p style={{ fontFamily: F.m, fontSize: 10, color: C.gold, margin: 0 }}>Sem reels de referência cadastrados</p>}
           {ordered.map(r => <Card key={r.id + r.versao} row={r} userId={userId} onChanged={onChanged} />)}
+          <div style={{ border: `1px solid ${C.dim}`, padding: 10 }}>
+            <span style={{ fontFamily: F.t, fontSize: 14, fontWeight: 700, color: C.white }}>Verificador (regras em código)</span>
+            <span style={{ fontFamily: F.m, fontSize: 9, color: C.muted, marginLeft: 8 }}>SOMENTE LEITURA</span>
+            <ul style={{ margin: "6px 0 0", paddingLeft: 16 }}>{VERIFICADOR_REGRAS.map(t => <li key={t} style={{ fontFamily: F.m, fontSize: 10, color: C.text, lineHeight: 1.6 }}>{t}</li>)}</ul>
+          </div>
         </div>
       )}
     </div>
