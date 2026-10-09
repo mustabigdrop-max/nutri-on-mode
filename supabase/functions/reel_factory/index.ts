@@ -64,7 +64,7 @@ async function context(db: DB, uid: string) {
   const [{ data: cps }, { data: angs }, { data: cases }, { data: posted }, { data: results }] = await Promise.all([
     db.from("content_pillars").select("chave, nome, publico, qtd_diaria, objetivo, mecanismo, exige_caso_real, ativo").eq("user_id", uid).order("ordem"),
     db.from("content_angles").select("nome").order("id"),
-    db.from("content_cases").select("id").eq("user_id", uid).eq("autorizado", true).eq("ativo", true).limit(1),
+    db.from("content_cases").select("titulo, descricao").eq("user_id", uid).eq("autorizado", true).eq("ativo", true).limit(20),
     db.from("reel_bank").select("pilar, angulo, script_id").eq("user_id", uid).not("script_id", "is", null).limit(2000),
     db.from("retention_results").select("script_id, pct_3s").eq("user_id", uid),
   ]);
@@ -79,7 +79,7 @@ async function context(db: DB, uid: string) {
     ...(bank ?? []).map((b: any) => ({ tema: b.tema, abertura: b.abertura ?? "", formula_id: b.formula_id, funcoes: (b.estrutura?.blocos ?? []).map((x: any) => x.funcao).join("|") })),
     ...(scripts ?? []).map((s: any) => ({ tema: s.tema, abertura: s.roteiro?.blocos?.[0]?.fala ?? "", formula_id: s.formula_id, funcoes: (s.roteiro?.blocos ?? []).map((x: any) => x.funcao).join("|") })),
   ];
-  return { matrix: (cps ?? []) as Pillar[], angles: (angs ?? []).map((a: any) => a.nome as string), hasCase: !!cases?.length, pillarPerf: mean(byP), comboPerf: mean(byPA), pillars, niches: prof?.niches ?? [], voice: voice ?? null, patterns: patterns ?? [], formulas: formulas ?? [], stats: stats ?? [], plan: plan ?? [], priors };
+  return { matrix: (cps ?? []) as Pillar[], angles: (angs ?? []).map((a: any) => a.nome as string).filter((a: string) => cases?.length || a !== "caso real"), hasCase: !!cases?.length, cases: cases ?? [], pillarPerf: mean(byP), comboPerf: mean(byPA), pillars, niches: prof?.niches ?? [], voice: voice ?? null, patterns: patterns ?? [], formulas: formulas ?? [], stats: stats ?? [], plan: plan ?? [], priors };
 }
 
 async function ideate(db: DB, batch: any, counter: { n: number }) {
@@ -97,7 +97,7 @@ async function ideate(db: DB, batch: any, counter: { n: number }) {
     slots = formulaIds.map((fid, idx) => ({ idx, pilar: pil[idx % pil.length], angulo: null, publico: null, objetivo: null, mecanismo: null, formula_id: fid }));
   }
   const out = await pass(LIGHT, IDEIAS_PROMPT, { perfil: { nicho: ctx.niches, voz: ctx.voice }, planner: ctx.plan, padroes_vencedores: ctx.patterns.filter((p: any) => p.confirmado),
-    temas_recentes: ctx.priors.map(p => p.tema).slice(0, 200), slots }, counter);
+    temas_recentes: ctx.priors.map(p => p.tema).slice(0, 200), casos_reais_autorizados: ctx.cases, slots }, counter);
   const list = Array.isArray(out.ideias) ? out.ideias : [];
   const got = new Map(list.map((i: any) => [Number(i?.idx), str(i?.tema, 200)]));
   const tens = new Map(list.map((i: any) => [Number(i?.idx), str(i?.tensao, 240)]));
