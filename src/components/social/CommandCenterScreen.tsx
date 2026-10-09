@@ -309,22 +309,33 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
   const MOTOR_INSTRUCOES = { ativas: engRows.length ? CORE_KEYS.length - vazias.length : 0, total: CORE_KEYS.length };
   const abrirInstrucoes = () => { setEngOpen(true); setTimeout(() => document.getElementById("cc-instrucoes")?.scrollIntoView({ behavior: "smooth" }), 50); };
   const [fresh, setFresh] = useState(false);
+  const [atlas, setAtlas] = useState<{ id: number; nome: string }[]>([]);
+  const [bankAll, setBankAll] = useState<any[] | null>(null);
+  const [pillarsAll, setPillarsAll] = useState<any[] | null>(null);
+  const [leadsCount, setLeadsCount] = useState<number | null>(null);
+  const [dica, setDica] = useState<{ id: number; nome: string } | null>(null);
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoaded(true); return; }
     const since = new Date(Date.now() - 120 * 864e5).toISOString();
-    const [s, r, f, h, g, a, bk, pl] = await Promise.all([
-      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
+    const [s, r, f, h, g, a, bk, pl, ba, pa, ld] = await Promise.all([
+      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
       supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
       supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media").eq("user_id", user.id),
-      supabase.from("hook_formulas").select("id, nome"),
+      supabase.from("hook_formulas").select("id, nome").order("id"),
       supabase.from("creator_goals").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("cc_automation_settings").select("limite_diario, pausado").eq("user_id", user.id).maybeSingle(),
       supabase.from("reel_bank").select("tema").eq("user_id", user.id).in("status", ["novo", "guardado"]).order("nota", { ascending: false }).limit(12),
       supabase.from("content_pillars").select("nome, ativo").eq("user_id", user.id).eq("ativo", true).order("ordem").limit(8),
+      supabase.from("reel_bank").select("id, tema, pilar, status, created_at, updated_at, script_id, agendado_para").eq("user_id", user.id).neq("status", "descartado").order("created_at", { ascending: false }).limit(1000),
+      supabase.from("content_pillars").select("nome, chave, created_at").eq("user_id", user.id).eq("ativo", true),
+      supabase.from("leads").select("id", { count: "exact", head: true }),
     ]);
     setScripts(s.data ?? []); setResults(r.data ?? []);
+    setAtlas((h.data ?? []) as any[]);
+    setBankAll(ba.error ? null : (ba.data ?? [])); setPillarsAll(pa.error ? null : (pa.data ?? []));
+    setLeadsCount(ld.error ? null : (ld.count ?? null));
     setFormulas(((f.data ?? []) as any[]).map(x => ({ ...x, nome: (h.data ?? []).find((y: any) => y.id === x.formula_id)?.nome ?? `Fórmula ${x.formula_id}` }))
       .sort((a, b) => Number(b.retencao_3s_media ?? -1) - Number(a.retencao_3s_media ?? -1)));
     setAuto(a.data ?? null);
@@ -358,7 +369,8 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     if (!tema.trim()) return toast.error("Escreva o tema do reel");
     setGenErr(null); setStage("arquiteto");
     try {
-      const script = await runGerarReel({ tema: tema.trim(), objetivo, tom: "direto" }, setStage);
+      const script = await runGerarReel({ tema: tema.trim(), objetivo, tom: "direto", ...(dica ? { formula_dica: dica.id } : {}) } as any, setStage);
+      setDica(null);
       toast.success("Reel de hoje pronto");
       setTemaOpen(false); setTema(""); setBlocoAberto(null);
       await load(); setTodayIdx(0); setFresh(true);
@@ -396,23 +408,18 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     return { planejado, real, atual: Math.round(atual * 10) / 10, alvo: Number(goal.alvo), dia: Math.floor(dias) };
   }, [goal, results]);
 
-  const alertas = useMemo(() => {
-    const a: { tipo: string; txt: string; cor: string }[] = [];
-    if (ontem && !ontemResult) a.push({ tipo: "RESULTADO", txt: "Lance a retenção de ontem. É isso que afina o próximo lote.", cor: C.gold });
-    const fracos = blocos.filter(b => b.nota != null && b.nota < 7);
-    if (fracos.length) a.push({ tipo: "RITMO", txt: `${fracos.length} bloco(s) do reel de hoje abaixo de 7: ${fracos.map(b => b.id).join(", ")}.`, cor: C.red });
-    if (meta && meta.real < meta.planejado) a.push({ tipo: "META", txt: `Abaixo do planejado: ${meta.real}% real x ${meta.planejado}% esperado no dia ${meta.dia}.`, cor: C.cyan });
-    return a;
-  }, [ontem, ontemResult, blocos, meta]);
-
   const hoje = useMemo(() => new Date().toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "short" }).toUpperCase(), []);
-  const atalhos: { id: string; nome: string; zone?: string; tool?: string }[] = [
-    { id: "studio", nome: "STUDIO", tool: "studio" },
-    { id: "strategy", nome: "STRATEGY", zone: "strategy" },
-    { id: "planner", nome: "PLANNER", tool: "calendario" },
-    { id: "growth", nome: "GROWTH", zone: "growth" },
-    { id: "learn", nome: "LEARN", zone: "learn" },
-  ];
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const testarFormula = (id: number, nome: string) => {
+    setDica({ id, nome }); setTemaOpen(true); scrollTo("cc-missao");
+    toast.success(`${nome} vai como sugestão na próxima geração`);
+  };
+  const rodarAgora = () => {
+    const lim = auto?.limite_diario ?? 1;
+    if (doDia.length >= lim) return toast.error(`Limite de hoje atingido: ${doDia.length} de ${lim} gerações.`);
+    if (!window.confirm(`Rodar agora usa 1 geração (3 passes: Arquiteto, Redator e Crítico).\nHoje: ${doDia.length} de ${lim} usadas. Continuar?`)) return;
+    setTemaOpen(true); if (!tema && chips[0]) setTema(chips[0]); scrollTo("cc-missao");
+  };
   const busy = stage !== null;
   const abertura = reel ? (blocos[0]?.fala ?? reel.roteiro?.gancho) : null;
   const comp: any[] = calib?.comparacao ?? ontemResult?.curva_real?.comparacao ?? [];
