@@ -1,0 +1,6 @@
+# Edge function rules
+
+- The calibrar function compares predicted vs real per retention_scripts block in code, counts each reel once per pattern in retention_patterns (confirmed only at 3+ videos), and keeps its system prompt isolated in calibrar/prompts.ts; recalibrating the same reel never inflates samples.
+- Hook formula stats (creator_formula_stats) are recomputed in calibrar from saved retention_results per reel, and gerar_reel restricts the Architect to allowed formula ids, forcing an untested formula every third reel; this keeps ranking honest and exploration guaranteed in code.
+- The Cut Generator renders data/text/diagram cuts on canvas client-side (no image model) and only illustration cuts go through gerar_corte, which enforces chosen-reel gating, content blocklist, daily limit, prompt cache and regen cap server-side; text is always drawn by code over images.
+- Curated pillar reels are seeded from versioned templates (script_templates, loaded by seed_pilar) into the caller's retention_scripts via a SECURITY DEFINER upsert keyed by (user_id, slug); source checks write only through mark_fonte_conferida, so reseeding never duplicates and users cannot edit script content directly.
