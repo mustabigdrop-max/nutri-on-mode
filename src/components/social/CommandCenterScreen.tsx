@@ -8,7 +8,7 @@ import EngineInstructionsPanel from "./EngineInstructionsPanel";
 import CardStudioPanel from "./CardStudioPanel";
 import AcademyPanel from "./AcademyPanel";
 import { loadAndSeed, emptyCore, CORE_KEYS, ENGINE_LABEL, type EngineRow } from "@/lib/engineInstructions";
-import { BlockQuality, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
+import { BlockQuality, Critico2Panel, QualitySeal, VoiceText, sealReason } from "./ReelBlockQuality";
 import { runGerarReel, mergeBlocks, contentScore, STAGE_LABEL } from "@/lib/retentionEngine";
 
 /* ═══════════════════════════════════════════════════
@@ -329,7 +329,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
     if (!user) { setLoaded(true); return; }
     const since = new Date(Date.now() - 120 * 864e5).toISOString();
     const [s, r, f, h, g, a, bk, pl, ba, pa, ld] = await Promise.all([
-      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em, angulo, motivos_nota, status_qualidade").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
+      supabase.from("retention_scripts").select("id, created_at, tema, objetivo, tom, roteiro, notas, nota_geral, estrutura, formula_id, fonte_status, fonte_conferida_em, angulo, motivos_nota, critico2, status_qualidade").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }).limit(200),
       supabase.from("retention_results").select("id, script_id, pct_3s, tempo_medio, curva_real, created_at").eq("user_id", user.id).gte("created_at", since).order("created_at", { ascending: false }),
       supabase.from("creator_formula_stats").select("formula_id, usos, retencao_3s_media").eq("user_id", user.id),
       supabase.from("hook_formulas").select("id, nome").order("id"),
@@ -571,6 +571,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
                       <BlockQuality scriptId={reel.id} blocoId={Number(b.id)} motivo={(reel.motivos_nota ?? []).find((m: any) => m.id === Number(b.id))} onUpdated={() => load()} />
                     </div>
                   ))}
+                  <Critico2Panel c2={reel.critico2} />
                 </div>
               ) : abertura && <div style={{ fontFamily: F.m, fontSize: 11, color: C.text, marginTop: 10, lineHeight: 1.5 }}>ABERTURA: “{String(abertura)}”</div>}
             </div>
@@ -661,6 +662,7 @@ export default function CommandCenterScreen({ onOpenTool, onOpenZone }: { onOpen
           <Panel>
             <div id="cc-linha-atencao" style={{ scrollMarginTop: 80 }}>
               <Label color={C.cyan}>Linha da Atenção</Label>
+              <div style={{ fontFamily: F.m, fontSize: 9, color: C.gold, marginTop: 4 }}>Nota prevista pelo Crítico. Não é retenção real.</div>
               <div style={{ marginTop: 10 }}><LinhaAtencao blocos={blocos} open={blocoAberto} onToggle={setBlocoAberto} /></div>
             </div>
           </Panel>
