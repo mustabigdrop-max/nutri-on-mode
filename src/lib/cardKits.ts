@@ -4,11 +4,16 @@ import { contraste, corTextoAA } from "./cardStudio";
 
 export type Veredito = "sustentado" | "sustentado_com_ressalva" | "misto" | "sem_evidencia" | "bloqueado";
 export type MelhorPara = "alcance" | "autoridade" | "conversao";
-export interface Prova { selo: string; referencia: string; link?: string | null; tipo_fonte: string; nivel: "primaria" | "secundaria"; limites?: string | null }
+export interface Prova {
+  selo: string; referencia: string; link?: string | null; tipo_fonte: string; nivel: "primaria" | "secundaria"; limites?: string | null;
+  // P2: campos do selo de prova (nulos ficam nulos; nada é preenchido pelo sistema)
+  autores?: string | null; organizacao?: string | null; periodico?: string | null; ano?: number | null; tipo_estudo?: string | null;
+  n_participantes?: number | null; desenho_resumo?: string | null; doi_ou_link?: string | null;
+}
 export interface Subtema {
   slug: string; titulo: string; veredito: Veredito; melhor_para: MelhorPara; mito: string | null; verdade: string | null; fala_segura: string;
-  nao_dizer: string[]; ressalva_obrigatoria: string | null; dado_card: { rotulo: string; selo: string } | null; provas: Prova[]; dicas: string[];
-  ilustracao_chave: string; alt_texto: string; bloqueio_prova: string | null; sem_pesquisa?: boolean;
+  nao_dizer: string[]; ressalva_obrigatoria: string | null; dado_card: { rotulo: string; selo: string; numero_destaque?: string | null; chip?: string | null } | null; passos?: string[]; provas: Prova[]; dicas: string[];
+  ilustracao_chave: string; alt_texto: string; bloqueio_prova: string | null; sem_pesquisa?: boolean; seed_v?: number;
 }
 export interface Topic { slug: string; titulo: string; aliases: string[]; aviso_tema: string | null; subtemas: Subtema[] }
 
@@ -57,29 +62,30 @@ export function temaSemFonte(assunto: string): Topic {
 }
 
 /** Ícones: biblioteca mínima e mapeamento por significado (nunca sorteio). */
-export const ICONES = ["haltere", "bateria", "folha", "lua", "cerebro", "rim", "colher", "escudo", "balanca", "calendario", "relogio", "funil", "lupa", "cadeado", "semente", "escada", "ponte", "interruptor", "engrenagem", "bussola", "check", "alerta"] as const;
+// Engrenagem saiu da biblioteca (P2). "nenhum" = sem ícone quando nada corresponde ao tema.
+export const ICONES = ["cerebro", "neuronio", "bateria", "lua", "haltere", "folha", "rim", "escudo", "colher", "balanca", "calendario", "lupa", "cadeado", "semente", "funil", "check", "alerta", "relogio", "escada", "bussola", "nenhum"] as const;
 export type Icone = typeof ICONES[number];
 const MAPA: [RegExp, Icone][] = [
-  [/forca|treino|musculo|hipertrofia/, "haltere"], [/energia|atp|cansa/, "bateria"], [/sono|dormi|noite/, "lua"],
-  [/cerebro|foco|memoria|cogni|humor|dopamina/, "cerebro"], [/seguranca|risco|seguro/, "escudo"], [/rim|figado|orgao|renal/, "rim"],
-  [/dose|quantidade|medida|grama/, "colher"], [/mito|verdade/, "balanca"], [/habito|constancia|rotina/, "calendario"], [/tempo|hora|minuto/, "relogio"],
-  [/vegetal|vegetarian|carne|planta/, "folha"], [/crescimento|cresce/, "semente"],
+  [/cerebro|memoria|foco|cogni/, "cerebro"], [/neuronio|neurotransmissor|dopamina|serotonina/, "neuronio"], [/energia|atp|cansa/, "bateria"], [/sono|dormi|noite/, "lua"],
+  [/forca|treino|musculo|hipertrofia/, "haltere"], [/vegetal|vegetarian|carne|planta/, "folha"], [/rim|figado|orgao|renal/, "rim"],
+  [/seguranca|risco|seguro/, "escudo"], [/dose|quantidade|medida|grama/, "colher"], [/mito|verdade/, "balanca"], [/habito|constancia|rotina/, "calendario"],
 ];
 export function iconePara(texto: string, chave?: string | null): Icone {
   if (chave && (ICONES as readonly string[]).includes(chave)) return chave as Icone;
-  const t = norm(texto); return MAPA.find(([r]) => r.test(t))?.[1] ?? "lupa";
+  const t = norm(texto); return MAPA.find(([r]) => r.test(t))?.[1] ?? "nenhum";
 }
 export function alternativasIcone(principal: Icone, texto: string): Icone[] {
   const t = norm(texto); const porSentido = MAPA.filter(([r]) => r.test(t)).map(([, i]) => i);
-  return [...new Set([...porSentido, "balanca", "lupa", "check", "alerta", "escudo", "bussola"] as Icone[])].filter(i => i !== principal).slice(0, 5);
+  return [...new Set([...porSentido, "cerebro", "balanca", "lupa", "check", "alerta", "escudo", "bateria"] as Icone[])].filter(i => i !== principal && i !== "nenhum").slice(0, 5);
 }
 
 /* ─────────── KITS ─────────── */
-export type Papel = "gancho" | "mito_verdade" | "prova" | "prova_bloqueada" | "dizer" | "ressalva" | "cta" | "capa" | "dizem_estudos" | "limites" | "fechamento" | "fontes";
+export type Papel = "gancho" | "mito_verdade" | "prova" | "prova_bloqueada" | "dizer" | "ressalva" | "cta" | "capa" | "dizem_estudos" | "limites" | "fechamento" | "fontes" | "mecanismo" | "ha_falta";
 export interface KitCard {
   idx: number; papel: Papel; principal: string; secundario?: string | null; esquerda?: string | null; direita?: string | null; itens?: string[];
   selo?: string | null; prova?: Prova | null; provas?: Prova[]; fonte?: string | null; icone: Icone; alt: string; dica: string; bloco: string; segundos: string;
   mostrarSelo?: boolean; mostrarHandle?: boolean;
+  numero?: string | null; chip?: string | null; passos?: { nome: string; detalhe: string }[];
 }
 export type Pacote = "reel" | "carrossel";
 
@@ -96,7 +102,7 @@ export function montarKit(t: Topic, s: Subtema, pacote: Pacote): KitCard[] {
   const conceitual = !!s.sem_pesquisa;
   const mk = (papel: Papel, c: Partial<KitCard>): KitCard => ({ idx: 0, papel, principal: "", icone: ic, alt: s.alt_texto, dica: "", bloco: "", segundos: "", mostrarSelo: true, mostrarHandle: true, ...c });
   const provaCard = (): KitCard => dado
-    ? mk("prova", { principal: corte(s.dado_card!.rotulo, 12), selo: pv!.selo, prova: pv, fonte: rodapeFonte(pv!), dica: `Mostre por 2 a 3 segundos enquanto fala: ${corte(s.fala_segura, 14)}`, bloco: "Corpo (prova)", segundos: "2 a 3 s" })
+    ? mk(s.veredito === "sem_evidencia" ? "ha_falta" : "prova", { principal: corte(s.dado_card!.rotulo, 12), selo: pv!.selo, prova: pv, numero: s.dado_card!.numero_destaque ?? null, chip: s.dado_card!.chip ?? null, esquerda: s.veredito === "sem_evidencia" ? corte(frases(s.verdade)[0], 25) : undefined, direita: s.veredito === "sem_evidencia" ? corte(frases(s.verdade)[1] ?? "", 25) : undefined, fonte: rodapeFonte(pv!), dica: `Mostre por 2 a 3 segundos enquanto fala: ${corte(s.fala_segura, 14)}`, bloco: "Corpo (prova)", segundos: "2 a 3 s" })
     : mk("prova_bloqueada", { principal: "Prova bloqueada", secundario: corte(s.bloqueio_prova ?? "Sem prova cadastrada para este tema.", 25), dica: "Sem prova cadastrada: este card não entra no vídeo.", bloco: "—", segundos: "—" });
   const dizer = mk("dizer", { principal: "O que dizer × o que não dizer", esquerda: corte(s.fala_segura, 25), itens: s.nao_dizer, dica: "Use como roteiro de fala, não precisa ir para a tela.", bloco: "Corpo", segundos: "3 s" });
   const ressalva = s.ressalva_obrigatoria ? mk("ressalva", { principal: corte(s.ressalva_obrigatoria, 12), secundario: s.ressalva_obrigatoria.split(/\s+/).length > 12 ? corte(s.ressalva_obrigatoria, 25) : null, dica: "Card próprio, texto grande, por 3 segundos.", bloco: "Fecho (ressalva)", segundos: "3 s" }) : null;
@@ -127,13 +133,36 @@ export function montarKit(t: Topic, s: Subtema, pacote: Pacote): KitCard[] {
       mk("fontes", { principal: "Fontes", provas: s.provas, itens: s.provas.map(p => corte(p.referencia, 14)), secundario: `Comenta ${ctaPalavra(s)} para receber o resumo.`, dica: "Referências curtas, sem links clicáveis.", bloco: "Slide 7", segundos: "—" }),
     ];
   }
-  return list.map((c, i) => ({ ...c, idx: i }));
+  const mec = mecanismoCard(s, pv, mk);
+  if (mec) { const at = list.findIndex(c => c.papel === "mito_verdade" || c.papel === "dizem_estudos"); list.splice(at >= 0 ? at + 1 : 1, 0, mec); }
+  return list.map((c, i) => ({ ...c, idx: i, bloco: c.bloco.startsWith("Slide") ? `Slide ${i + 1}` : c.bloco }));
 }
+const frases = (s: string | null | undefined) => String(s ?? "").split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
+/** Passos "NOME|detalhe" do subtema viram o diagrama do card Mecanismo. Sem passos, sem card. */
+export const parsePassos = (p?: string[]) => (p ?? []).map(x => { const [nome, detalhe = ""] = x.split("|"); return { nome: nome.trim(), detalhe: detalhe.trim() }; }).filter(x => x.nome);
+function mecanismoCard(s: Subtema, pv: Prova | null, mk: (p: Papel, c: Partial<KitCard>) => KitCard): KitCard | null {
+  const passos = parsePassos(s.passos); if (!passos.length || s.sem_pesquisa) return null;
+  return mk("mecanismo", { principal: corte(s.titulo, 12), passos, prova: pv, selo: pv?.selo ?? null, dica: "Mostre o diagrama por 3 a 4 segundos enquanto explica o caminho.", bloco: "Corpo (mecanismo)", segundos: "3 a 4 s" });
+}
+
+/** Selo de prova em 4 linhas. Linha vazia é omitida, nunca preenchida. */
+export function autoresCurto(a?: string | null) {
+  const t = String(a ?? "").replace(/\(.*?\)/g, "").trim(); if (!t) return null;
+  if (/et al\./i.test(t)) return t.replace(/\s+et al\..*$/i, " et al.");
+  const nomes = t.split(/,\s*|\s+e\s+/).filter(Boolean);
+  return nomes.length > 2 ? `${nomes[0]} et al.` : nomes.join(" e ");
+}
+export function seloLinhas(p: Prova | null | undefined, chip?: string | null) {
+  if (!p) return null;
+  return { tipo: p.selo, autores: autoresCurto(p.autores), organizacao: p.organizacao?.trim() || null, ressalva: chip ?? null, cor: p.nivel === "secundaria" || /animal|in vitro|pre-?clinic/i.test(norm(p.limites ?? "")) ? "ambar" as const : "verde" as const };
+}
+export const ORG_NAO_INFORMADA = "organização não informada";
 
 /* ─────────── VERIFICADOR ─────────── */
 export type Nivel = "ok" | "aviso" | "bloqueio";
 export interface Achado { nivel: Exclude<Nivel, "ok">; motivo: string }
 export const ABSOLUTAS = ["prova", "garante", "nunca", "sempre", "todo mundo", "100%"];
+export const BLOQUEIO_FIXO = ["melhora a inteligencia", "aumenta a dopamina", "aumenta a serotonina"];
 export const PROIBIDAS_PADRAO = ["crucial", "muda tudo", "o segredo", "segredo"];
 const NUMERO_OU_ESTUDO = /\d|por\s*cento|\bestudos?\b|\bpesquisas?\b|meta-?an[aá]lise|\bensaio\b|\brevis[aã]o\b/i;
 const contem = (texto: string, termo: string) => { const t = ` ${norm(texto)} `, q = norm(termo); return q.length > 0 && new RegExp(`(^|[^a-z0-9])${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`).test(t); };
@@ -143,8 +172,10 @@ export function verificarCard(c: KitCard, s: Subtema, proibidas: string[] = []):
   const out: Achado[] = []; const txt = textoVisivel(c);
   const temProva = !!c.prova || (c.papel === "fontes" && (c.provas?.length ?? 0) > 0) || c.papel === "limites" || c.papel === "prova_bloqueada";
   if (NUMERO_OU_ESTUDO.test(txt) && !temProva) out.push({ nivel: "bloqueio", motivo: "Número ou estudo sem prova ligada." });
+  for (const b of BLOQUEIO_FIXO) if (contem(txt, b)) out.push({ nivel: "bloqueio", motivo: `Frase bloqueada: "${b}"` });
+  if (c.prova && "autores" in c.prova && !c.prova.organizacao) out.push({ nivel: "aviso", motivo: ORG_NAO_INFORMADA });
   for (const n of s.nao_dizer) if (contem(txt, n)) out.push({ nivel: "bloqueio", motivo: `Frase da lista "não dizer": ${n}` });
-  for (const a of ABSOLUTAS) if (contem(txt, a) && !(a === "prova" && (c.papel === "prova" || c.papel === "prova_bloqueada" || c.papel === "limites"))) out.push({ nivel: "aviso", motivo: `Linguagem absoluta: "${a}"` });
+  for (const a of ABSOLUTAS) if (contem(txt, a) && !(a === "prova" && (c.papel === "prova" || c.papel === "ha_falta" || c.papel === "prova_bloqueada" || c.papel === "limites"))) out.push({ nivel: "aviso", motivo: `Linguagem absoluta: "${a}"` });
   for (const p of [...new Set([...PROIBIDAS_PADRAO, ...proibidas])]) if (p && contem(txt, p)) out.push({ nivel: "aviso", motivo: `Termo proibido: "${p}"` });
   if (palavras(c.principal) > 12) out.push({ nivel: "aviso", motivo: "Texto principal com mais de 12 palavras." });
   if (palavras(c.secundario) > 25) out.push({ nivel: "aviso", motivo: "Texto secundário com mais de 25 palavras." });
@@ -155,6 +186,7 @@ export function verificarKit(cards: KitCard[], s: Subtema, proibidas: string[] =
   const porCard = cards.map(c => verificarCard(c, s, proibidas));
   const kit: Achado[] = [];
   if (s.ressalva_obrigatoria && !cards.some(c => c.papel === "ressalva")) kit.push({ nivel: "bloqueio", motivo: FALTA_RESSALVA });
+  if (s.bloqueio_prova && !s.sem_pesquisa && cards.some(c => c.prova && c.mostrarSelo !== false)) kit.push({ nivel: "bloqueio", motivo: `Selo de prova não conferido: ${s.bloqueio_prova}` });
   const nivel = (a: Achado[]): Nivel => a.some(x => x.nivel === "bloqueio") ? "bloqueio" : a.length ? "aviso" : "ok";
   const geral: Nivel = nivel([...kit, ...porCard.flat()]);
   return { porCard, kit, geral, nivelCard: porCard.map(nivel), exporta: geral !== "bloqueio" };
@@ -175,7 +207,7 @@ export function checklist(c: KitCard, kit: KitCard[], s: Subtema, brand: { cor_f
     { ok: palavras(c.principal) <= 12, item: "Texto principal com até 12 palavras" },
     { ok: contraste(brand.cor_fundo, txt) >= 4.5, item: "Contraste AA" },
     { ok: formato !== "9:16" || (brand.margem_topo >= 250 && brand.margem_base >= 340), item: "Margens seguras" },
-    { ok: c.papel !== "prova" || !!(c.mostrarSelo && c.selo), item: "Selo de prova visível" },
+    { ok: (c.papel !== "prova" && c.papel !== "ha_falta") || !!(c.mostrarSelo && c.selo), item: "Selo de prova visível" },
     { ok: !!brand.handle && c.mostrarHandle !== false, item: "@ presente" },
     { ok: !!c.alt.trim(), item: "Texto alternativo preenchido" },
     { ok: !s.ressalva_obrigatoria || kit.some(k => k.papel === "ressalva"), item: "Ressalva presente se obrigatória" },
