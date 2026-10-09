@@ -46,7 +46,7 @@ export async function runGerarReel(
     for (const line of lines) {
       if (!line.trim()) continue;
       const ev = JSON.parse(line);
-      if (ev.etapa === "erro") throw new Error(ev.error);
+      if (ev.etapa === "erro") throw Object.assign(new Error(ev.error), { status: ev.status });
       if (ev.etapa === "pronto") return ev.script;
       if (ev.etapa === "teste") return ev.resultado;
       onStage(ev.etapa, ev);
