@@ -358,7 +358,7 @@ Deno.serve(async (req) => {
               break;
             }
           }
-          const snap = { ang, estrutura, draft, blocks: blocks.map(b => ({ ...b })), cur, hist, formula, tipo_afirmacao, rod };
+          const snap = { ang, estrutura, draft, blocks: blocks.map(b => ({ ...b })), cur, hist, formula, tipo_afirmacao, rod, falta: parouPor === "falta_fonte" ? falta : null };
           if (!best || cur.nota_final > best.cur.nota_final || (cur.estado !== "rascunho" && best.cur.estado === "rascunho")) best = snap;
           if (cur.estado !== "rascunho" || parouPor) break;
         } catch (e) {
@@ -384,7 +384,7 @@ Deno.serve(async (req) => {
       const angSalvo = angulo ? { ...angulo, escolhido: best.ang ?? angulo.escolhido, outros: [angulo.escolhido, ...angulo.outros].filter((o: any) => o.titulo !== best.ang?.titulo).slice(0, 4) } : null;
       const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: crit.nota_geral, origem,
         angulo: angSalvo, angulo_usado: best.ang?.titulo ?? null, motivos_nota: cur.motivos, critico2: cur.critico2, tipo_afirmacao: best.tipo_afirmacao,
-        rodadas: rodadasTotal, historico_revisoes, ...gateCols(cur), fontes_usadas: fontesUsadas(fv, textoReel(blocks)), falta_fonte: parouPor === "falta_fonte" && best.cur === cur ? falta : null, pilar: pilarNum,
+        rodadas: rodadasTotal, historico_revisoes, ...gateCols(cur), fontes_usadas: fontesUsadas(fv, textoReel(blocks)), falta_fonte: best.falta ?? null,
         tecnicas: [...new Set([...detectarTecnicas(blocks, formula?.nome), ...(tecnica_dica ? [tecnica_dica] : [])])] })
         .select("*").single();
       if (error) throw new HttpError(500, "Reel gerado, mas não foi possível salvar no histórico.");
