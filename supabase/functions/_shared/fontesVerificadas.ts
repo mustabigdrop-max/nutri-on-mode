@@ -38,7 +38,7 @@ export function montarFontes(topicos: any[], tema: string, fontesReels: any[]): 
         provas.push(p);
         // "não mede X": the reel may not state anything about X (last word, unless it is part of the theme).
         for (const m of String(p.limites ?? "").matchAll(/n[aã]o mede ([^.]+)/gi)) {
-          const w = palavras(m[1]).pop(); if (w && !palavras(tema).includes(w) && !alem.includes(w)) alem.push(w);
+          const w = palavras(m[1]).pop(); if (w && !palavras(tema).some(x => x.slice(0, 5) === w.slice(0, 5)) && !alem.includes(w)) alem.push(w);
         }
         for (const v of [p.selo, p.ano, p.n_participantes, p.desenho_resumo, p.limites, p.periodico]) digits(String(v ?? "")).forEach(d => nums.add(d));
       }
