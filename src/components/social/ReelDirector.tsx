@@ -252,6 +252,8 @@ function ReelDeHoje({ s, onGravar, onMarcar, onMesmoAssim, onCopiar, onOutro, on
           {pend.map((p, i) => <T key={i} s={9} c={GRAV_COR[p.gravidade] ?? C.text}>Bloco {p.bloco} · {p.gravidade.toUpperCase()} · {p.regra}{p.trecho ? ` — “${p.trecho}”` : ""}</T>)}
         </div>
       )}
+      {s.falta_fonte && <FaltaFonte s={s} onOutro={onOutro} onReload={onReload} />}
+      <FontesUsadas f={s.fontes_usadas} />
       {hist.length > 0 && (
         <div>
           <button type="button" onClick={() => setDiario(d => !d)} aria-expanded={diario} style={{ fontFamily: F.m, fontSize: 10, color: C.cyan, background: "none", border: "none", cursor: "pointer", padding: 0, textAlign: "left" }}>
@@ -319,6 +321,41 @@ export function PrevistoRealScatter({ scripts, results, pesosTxt }: { scripts: a
       <T>Correlação de postos (Spearman): {rho == null ? "—" : fmt(rho, 2)} · n = {pts.length}</T>
       <T c={C.muted} s={9}>Com poucos reels esta correlação é instável.</T>
       {rho != null && rho < 0.3 && <T c={C.amber}>A nota do roteiro ainda não prevê o seu resultado. Use os dados para ajustar o Crítico.</T>}
+    </div>
+  );
+}
+
+function FontesUsadas({ f }: { f: any[] | null | undefined }) {
+  const [open, setOpen] = useState(false);
+  const lista = Array.isArray(f) ? f : [];
+  return (
+    <div>
+      <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ fontFamily: F.m, fontSize: 10, color: C.cyan, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Fontes usadas ({lista.length}) {open ? "▲" : "▼"}</button>
+      {open && (lista.length ? lista.map((x, i) => <T key={i} s={9}>{x.autor} · {x.ano ?? "ano não informado"} · {String(x.tipo).replace(/_/g, " ")}</T>) : <T s={9} c={C.muted}>Nenhuma fonte cadastrada foi usada neste roteiro.</T>)}
+    </div>
+  );
+}
+
+/** Q2: stop card when the same no-source critical issue repeated in 2 rounds. Pesquisar fonte stays hidden (no Sala de Pesquisa). */
+function FaltaFonte({ s, onOutro, onReload }: { s: any; onOutro: () => void; onReload: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const semDado = async () => {
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("gerar_reel", { body: { modo: "reescrever_sem_dado", script_id: s.id } });
+    setBusy(false);
+    const err = (data as any)?.error ?? (error ? "Não foi possível reescrever." : null);
+    if (err) return toast.error(err);
+    toast.success("Trecho reescrito sem o dado"); onReload();
+  };
+  return (
+    <div style={{ border: `1px solid ${C.red}60`, padding: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+      <L c={C.red}>Falta fonte para esta afirmação</L>
+      <T s={11}>“{s.falta_fonte.frase || s.falta_fonte.trecho}”</T>
+      <T s={9} c={C.muted}>Bloco {s.falta_fonte.bloco} · a mesma pendência se repetiu em 2 rodadas e não há fonte cadastrada.</T>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <button type="button" disabled={busy} onClick={semDado} style={b(false, C.amber)}>{busy ? "Reescrevendo…" : "Reescrever sem o dado"}</button>
+        <button type="button" onClick={onOutro} style={b()}>Outro ângulo</button>
+      </div>
     </div>
   );
 }
