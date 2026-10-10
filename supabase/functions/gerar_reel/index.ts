@@ -85,7 +85,8 @@ const DAY_START = () => { const ini = new Date(); ini.setUTCHours(3, 0, 0, 0); i
 async function avaliar(call: Call, P: any, contexto: unknown, estrutura: unknown, blocks: Block[], vopts: any) {
   const ver = verificarReel(blocks, { ...vopts, fatores: P.fatores });
   const sb = blocks.map(b => ({ id: b.id, tempo: b.tempo, fala: b.fala, caminho: [] as (string | number)[] }));
-  const rubrica = VERIFICADOR_REGRAS.join("\n");
+  // Q2: Crítico 2 sees the same verified sources as Crítico 1 (data only; its scale is unchanged).
+  const rubrica = VERIFICADOR_REGRAS.join("\n") + ((contexto as any)?.fontes_verificadas ? `\n\nFONTES VERIFICADAS (um número ou estudo que esteja aqui TEM fonte):\n${(contexto as any).fontes_verificadas}` : "");
   const c1 = async () => {
     let raw: Record<string, unknown> = {}; let critica: ReturnType<typeof normalizeCritique> | null = null;
     for (let t = 0; t < 2 && !critica; t++) {
