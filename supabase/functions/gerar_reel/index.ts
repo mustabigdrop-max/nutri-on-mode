@@ -187,7 +187,7 @@ async function revisarSalvo(db: any, userId: string, s: any, fv: FontesVerificad
         ...(modo === "sem_dado" ? { instrucao: "Reescrever sem o dado: transforme o trecho em pergunta aberta ou em posição do método com linguagem calibrada. Nunca como fato. Nunca acrescente número." } : {}),
         notas: (cur?.critica.notas_por_bloco ?? []).map(n => ({ id: n.id, nota: n.nota })), frases_fracas: cur?.frases_fracas ?? [] }, MODEL_PRO);
     } catch (e) { if (e instanceof Budget) { parou = "teto de chamadas"; break; } throw e; }
-    const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo);
+    const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo, fv.numeros);
     try { cur = await avaliar(call, P, cx, s.estrutura, blocks, modo === "sem_dado" ? { ...vopts, tipoAfirmacao: tipo === "achado_cientifico" && !fv.provas.length ? "posicao_do_metodo" : tipo } : vopts); }
     catch (e) { if (e instanceof Budget) { parou = "teto de chamadas"; break; } throw e; }
     historico_revisoes.push({ rodada: historico_revisoes.length + 1, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: mudancas, rejeitadas,
@@ -414,7 +414,7 @@ Deno.serve(async (req) => {
             const alvo = blocosParaRevisar(cur.critica.notas_por_bloco, cur.pendencias);
             const out = await call(P.revisor, { pedido, ...fontesParaModelo(fv), blocos: blocks, blocos_para_revisar: alvo, pendencias: cur.pendencias,
               notas: cur.critica.notas_por_bloco.map(n => ({ id: n.id, nota: n.nota })), frases_fracas: cur.frases_fracas }, MODEL_PRO);
-            const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo);
+            const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo, fv.numeros);
             send({ etapa: "verificador" }); send({ etapa: "critico", rodada: rod });
             cur = await avaliar(call, P, cx, estrutura, blocks, vopts); hist.push(cur.critica);
             historico_revisoes.push({ rodada: historico_revisoes.length + 1, angulo: ang?.titulo ?? tema, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: mudancas, rejeitadas, motivo: mudancas.length ? mudancas.map(m => m.regra).filter(Boolean).join(", ") || "revisão" : "nenhuma mudança aplicada" });

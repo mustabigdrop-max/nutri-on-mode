@@ -51,7 +51,7 @@ const digits = (s: string): string[] => s.match(/\d+(?:[.,]\d+)?/g) ?? [];
  * Applies the Revisor output in code: only allowed ids change, no new numbers may appear,
  * an optional Ressalva block is inserted before the given id, and ids are renumbered 1..n.
  */
-export function aplicarRevisao(blocks: RevBlock[], out: any, permitidos: number[]) {
+export function aplicarRevisao(blocks: RevBlock[], out: any, permitidos: number[], numerosFonte: string[] = []) {
   const mudancas: { id: number; antes: string; depois: string; regra: string; motivo: string }[] = [];
   const rejeitadas: { id: number; motivo: string }[] = [];
   for (const a of Array.isArray(out?.blocos_alterados) ? out.blocos_alterados : []) {
@@ -59,7 +59,7 @@ export function aplicarRevisao(blocks: RevBlock[], out: any, permitidos: number[
     const depois = typeof a?.depois === "string" ? a.depois.trim().slice(0, 1000) : "";
     if (!b || !depois || depois === b.fala) continue;
     if (!permitidos.includes(id)) { rejeitadas.push({ id, motivo: "bloco sem pendência: mantido igual" }); continue; }
-    const novos = digits(depois).filter(d => !digits(b.fala).includes(d));
+    const novos = digits(depois).filter(d => !digits(b.fala).includes(d) && !numerosFonte.includes(d));
     if (novos.length) { rejeitadas.push({ id, motivo: `número novo (${novos.join(", ")}) não permitido` }); continue; }
     mudancas.push({ id, antes: b.fala, depois, regra: String(a?.regra ?? "").slice(0, 120), motivo: String(a?.motivo ?? "").slice(0, 300) });
     b.fala = depois;
