@@ -106,7 +106,9 @@ export function verificarBloco(b: VerifyBlock, idx: number, o: VerifyOpts): Veri
   const dado = o.tipoAfirmacao === "tecnica_de_execucao" ? /(%|\bestudos?\b|\bpesquisas?\b|meta-?analise)/ : DADO;
   // Q2: with verified sources, every number in the block must exist in a prova field.
   const numsOk = !o.numerosFonte || (t.match(/\d+(?:[.,]\d+)?/g) ?? []).every(d => o.numerosFonte!.includes(d));
-  if (dado.test(t) && !(o.tipoAfirmacao === "achado_cientifico" && o.temFonte && numsOk)) { r.riscos.push("dado sem fonte"); r.forcar_reescrita = true; r.motivos.push("Dado sem fonte: reescrever sem número ou como posição do Método"); pend("dado_sem_fonte", "critico", (t.match(dado) ?? [""])[0]); }
+  // A block whose numbers all come from a verified prova is sourced even if the Writer mislabeled the claim type.
+  const comProva = !!o.numerosFonte && o.temFonte && numsOk && /\d/.test(t);
+  if (dado.test(t) && !((o.tipoAfirmacao === "achado_cientifico" || comProva) && o.temFonte && numsOk)) { r.riscos.push("dado sem fonte"); r.forcar_reescrita = true; r.motivos.push("Dado sem fonte: reescrever sem número ou como posição do Método"); pend("dado_sem_fonte", "critico", (t.match(dado) ?? [""])[0]); }
   if (r.teto === 10 && !(/\d/.test(t) && o.temFonte && numsOk)) r.teto = 9; // 10 only with sourced concrete number
   const a = has(t, ABSOLUTA); if (a) r.avisos.push(`linguagem absoluta: "${a}"`);
   return r;

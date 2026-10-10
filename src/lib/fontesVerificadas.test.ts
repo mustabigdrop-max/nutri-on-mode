@@ -34,3 +34,12 @@ describe("Q2 limites da prova", () => {
     expect(v[0].pendencias.some(p => p.regra === "afirmacao_sem_prova" && p.gravidade === "critico")).toBe(true);
   });
 });
+describe("Q2 número da prova", () => {
+  it("'ensaio com 27 homens' passa com a prova cadastrada; com 30 não", () => {
+    const o = { proibidas: [], temFonte: true, numerosFonte: fv.numeros, tipoAfirmacao: "posicao_do_metodo" };
+    const ok = verificarReel([{ id: 1, tempo: "6-12s", fala: "Um ensaio com 27 homens treinados mostrou isso." }], o);
+    const ruim = verificarReel([{ id: 1, tempo: "6-12s", fala: "Um ensaio com 30 homens treinados mostrou isso." }], o);
+    expect(ok[0].pendencias.some(p => p.regra === "dado_sem_fonte")).toBe(false);
+    expect(ruim[0].pendencias.some(p => p.regra === "dado_sem_fonte")).toBe(true);
+  });
+});
