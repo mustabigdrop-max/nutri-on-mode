@@ -15,7 +15,6 @@ export const MAX_CARDS = 7;
 export const CHIP_METODO = "POSIÇÃO DO MÉTODO";
 export const MSG_SEM_PALAVRA = "Defina a palavra-chave do reel";
 export const AVISO_FORA_DO_TEMA = "A afirmação não está no tema. Conferir.";
-export const RESSALVA_PADRAO = "Suplemento não substitui orientação profissional. Converse com seu nutricionista antes de usar.";
 const STATUS_SEM_PROVA = ["sem_fonte_primaria", "posicao_do_metodo"];
 const NOME: Record<string, string> = { capa: "Capa", mecanismo: "Mecanismo", prova: "Prova", ha_falta: "Há × Falta", ressalva: "Ressalva", cta: "CTA", fontes: "Fontes" };
 
@@ -103,9 +102,8 @@ export function cardsProDoReel(reel: ReelIn, o: Opcoes): ReelCardP3[] {
     if (passos.length) { out.push(mk("mecanismo", b, { principal: corte(tela || fala, 12), passos, prova: provas[0] ?? null, selo: provas[0] ? seloTexto(provas[0]) : null, icone: ic(txt), alt: corte(fala, 20) })); return; }
     out.push(mk("capa", b, { principal: corte(tela || fala, 12), secundario: tela ? corte(fala, 25) : null, icone: "nenhum", alt: corte(fala, 20) }));
   });
-  // Ressalva obrigatória em reel de saúde, dor, lesão ou suplemento.
-  const precisa = /suplement|creatina|whey|cafeina|dor|lesa|saude|rim|figado|remedio/.test(norm(`${reel.tema} ${reel.titulo ?? ""} ${blocos.map(b => limpar(b.fala)).join(" ")}`));
-  const ress = sub?.ressalva_obrigatoria ?? (precisa ? RESSALVA_PADRAO : null);
+  // Ressalva apenas quando o tema do reel a define; sem frase genérica.
+  const ress = sub?.ressalva_obrigatoria ?? null;
   const cta = out.findIndex(c => c.papel === "cta"); const cards = cta >= 0 ? out.splice(cta, 1) : [];
   const fontesCard = provas.length && !semProva ? [mk("fontes", null, { principal: "Fontes", provas, itens: provas.map(p => [autoresCurto(p.autores), p.ano, p.periodico].filter(Boolean).join(", ") || p.referencia), alt: "Referências do reel." })] : [];
   const fixos = [...(ress ? [mk("ressalva", null, { principal: corte(frases(ress)[0] ?? ress, 12), secundario: frases(ress).slice(1).join(" ") || null, alt: ress })] : []), ...cards, ...fontesCard];
