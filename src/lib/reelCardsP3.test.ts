@@ -22,7 +22,9 @@ describe("P3 cards do reel", () => {
     const cta = c.find(x => x.papel === "cta")!;
     expect(cta.principal).toBe("Comenta CREATINA");
     expect(cta.secundario).toBe("que eu te mando o guia seguro");
-    expect(c.some(x => x.papel === "ressalva")).toBe(true);
+    expect(c.some(x => x.papel === "ressalva")).toBe(false); // sem frase genérica: ressalva só vem do tema
+    const rim = temas.flatMap(t => t.subtemas).find(s => s.ressalva_obrigatoria)!;
+    expect(cardsProDoReel(reel, { fontes: [], subtema: rim }).some(x => x.papel === "ressalva")).toBe(true);
     expect(c.every(x => !/\[|\]|palavra-chave/i.test(`${x.principal} ${x.secundario ?? ""} ${x.esquerda ?? ""}`))).toBe(true);
     expect(c.every(x => x.icone !== ("engrenagem" as any))).toBe(true);
     expect(c[2].rotulo).toBe("Bloco 3 · 8-15s · Capa");
