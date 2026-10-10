@@ -296,7 +296,7 @@ Deno.serve(async (req) => {
       send({ etapa: "tema", tema, fonte: escolha.fonte });
       // Q2: {{fontes_verificadas}} before Passo 0 — card_topics + same-pillar sourced reels.
       const temaFontes = [tema, str(body.angulo_escolhido?.titulo, 200)].filter(Boolean).join(" ");
-      const { data: mesmos } = await db.from("retention_scripts").select("pilar").eq("user_id", auth.userId).not("pilar", "is", null).ilike("tema", `%${(tema.split(/\s+/).find(w => w.length > 4) ?? tema).replace(/[%,()]/g, "")}%`).limit(30);
+      const { data: mesmos } = await db.from("retention_scripts").select("pilar").eq("user_id", auth.userId).not("pilar", "is", null).ilike("tema", `%${(tema.split(/\s+/).find((w: string) => w.length > 4) ?? tema).replace(/[%,()]/g, "")}%`).limit(30);
       const freq = new Map<number, number>(); for (const m of mesmos ?? []) freq.set(m.pilar, (freq.get(m.pilar) ?? 0) + 1);
       const pilarNum = [...freq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
       const fv = await carregarFontes(db, auth.userId, temaFontes, pilarNum);
