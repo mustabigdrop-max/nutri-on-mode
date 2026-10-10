@@ -1,6 +1,6 @@
 // Verificador em código (PROMPT K1, Passo 3): no model, applies score ceilings per block and records why.
 export type VerifyBlock = { id: number; tempo: string; fala: string; texto_tela?: string };
-export type VerifyOpts = { proibidas: string[]; tipoAfirmacao?: string | null; temFonte: boolean; ultimo?: boolean; fatores?: string[] };
+export type VerifyOpts = { proibidas: string[]; tipoAfirmacao?: string | null; temFonte: boolean; ultimo?: boolean; fatores?: string[]; numerosFonte?: string[] };
 export type Gravidade = "critico" | "moderado" | "leve";
 export type Pendencia = { bloco: number; regra: string; gravidade: Gravidade; trecho: string; origem: "verificador" | "critico1" | "critico2" };
 export type VerifyResult = { id: number; teto: number; motivos: string[]; riscos: string[]; avisos: string[]; forcar_reescrita: boolean; pendencias: Pendencia[] };
@@ -100,8 +100,10 @@ export function verificarBloco(b: VerifyBlock, idx: number, o: VerifyOpts): Veri
   const s = has(t, SIGA); if (s && !SERIE.test(t)) { cap(3, `Pedido de seguir: "${s}"`); pend("cta_siga", "moderado", s); }
   // Técnica de execução is a method position: bare numbers (reps, seconds) are allowed, studies and % are not.
   const dado = o.tipoAfirmacao === "tecnica_de_execucao" ? /(%|\bestudos?\b|\bpesquisas?\b|meta-?analise)/ : DADO;
-  if (dado.test(t) && !(o.tipoAfirmacao === "achado_cientifico" && o.temFonte)) { r.riscos.push("dado sem fonte"); r.forcar_reescrita = true; r.motivos.push("Dado sem fonte: reescrever sem número ou como posição do Método"); pend("dado_sem_fonte", "critico", (t.match(dado) ?? [""])[0]); }
-  if (r.teto === 10 && !(/\d/.test(t) && o.temFonte)) r.teto = 9; // 10 only with sourced concrete number
+  // Q2: with verified sources, every number in the block must exist in a prova field.
+  const numsOk = !o.numerosFonte || (t.match(/\d+(?:[.,]\d+)?/g) ?? []).every(d => o.numerosFonte!.includes(d));
+  if (dado.test(t) && !(o.tipoAfirmacao === "achado_cientifico" && o.temFonte && numsOk)) { r.riscos.push("dado sem fonte"); r.forcar_reescrita = true; r.motivos.push("Dado sem fonte: reescrever sem número ou como posição do Método"); pend("dado_sem_fonte", "critico", (t.match(dado) ?? [""])[0]); }
+  if (r.teto === 10 && !(/\d/.test(t) && o.temFonte && numsOk)) r.teto = 9; // 10 only with sourced concrete number
   const a = has(t, ABSOLUTA); if (a) r.avisos.push(`linguagem absoluta: "${a}"`);
   return r;
 }
