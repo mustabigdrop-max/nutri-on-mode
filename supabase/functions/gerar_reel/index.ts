@@ -161,6 +161,75 @@ async function reescreverBloco(userId: string, body: any) {
   return { script: data };
 }
 
+/** Q2: re-evaluates a saved reel through the same gate (Verificador + C1 + C2), with up to `maxRodadas` Revisor rounds. */
+async function revisarSalvo(db: any, userId: string, s: any, fv: FontesVerificadas, call: Call, maxRodadas: number, modo: "sem_dado" | "revalidar") {
+  const P = await loadEnginePrompts(db, userId, { tema: s.tema, pilar: s.pilar, fontesTexto: fv.texto });
+  const blocks: Block[] = (s.roteiro?.blocos ?? []).map((b: any) => toBlock(b)).filter((b: Block) => Number.isFinite(b.id) && b.fala);
+  if (!blocks.length) return { error: "Reel sem blocos." };
+  const tipo = s.tipo_afirmacao ?? null;
+  const vopts = { proibidas: P.proibidas, tipoAfirmacao: tipo, ...voptsFontes(fv) };
+  const pedido = { tema: s.angulo?.escolhido?.titulo ?? s.tema, objetivo: s.objetivo, tom: s.tom };
+  const cx = { pedido, ...fontesParaModelo(fv) };
+  const historico_revisoes = [...(s.historico_revisoes ?? [])];
+  let cur = modo === "sem_dado" ? null : await avaliar(call, P, cx, s.estrutura, blocks, vopts);
+  if (cur) historico_revisoes.push({ rodada: historico_revisoes.length + 1, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: [], motivo: "Revalidação pela porta de qualidade" });
+  let rod = 0; let parou: string | null = null;
+  const pendIni = cur?.pendencias ?? (s.pendencias ?? []);
+  while ((cur ? cur.estado === "rascunho" : true) && rod < maxRodadas) {
+    rod++;
+    const pend = cur?.pendencias ?? pendIni;
+    const alvo = modo === "sem_dado" ? [...new Set([Number(s.falta_fonte?.bloco), ...pend.filter((p: any) => FALTA_FONTE.test(p.regra)).map((p: any) => p.bloco)].filter(Number.isFinite))] as number[]
+      : blocosParaRevisar((cur?.critica.notas_por_bloco ?? []), pend);
+    if (!alvo.length) break;
+    let out: any;
+    try {
+      out = await call(P.revisor, { pedido, ...fontesParaModelo(fv), blocos: blocks, blocos_para_revisar: alvo, pendencias: pend,
+        ...(modo === "sem_dado" ? { instrucao: "Reescrever sem o dado: transforme o trecho em pergunta aberta ou em posição do método com linguagem calibrada. Nunca como fato. Nunca acrescente número." } : {}),
+        notas: (cur?.critica.notas_por_bloco ?? []).map(n => ({ id: n.id, nota: n.nota })), frases_fracas: cur?.frases_fracas ?? [] }, MODEL_PRO);
+    } catch (e) { if (e instanceof Budget) { parou = "teto de chamadas"; break; } throw e; }
+    const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo);
+    try { cur = await avaliar(call, P, cx, s.estrutura, blocks, modo === "sem_dado" ? { ...vopts, tipoAfirmacao: tipo === "achado_cientifico" && !fv.provas.length ? "posicao_do_metodo" : tipo } : vopts); }
+    catch (e) { if (e instanceof Budget) { parou = "teto de chamadas"; break; } throw e; }
+    historico_revisoes.push({ rodada: historico_revisoes.length + 1, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: mudancas, rejeitadas,
+      motivo: modo === "sem_dado" ? "Reescrever sem o dado" : (mudancas.length ? mudancas.map(m => m.regra).filter(Boolean).join(", ") || "revisão" : "nenhuma mudança aplicada") });
+  }
+  if (!cur) return { error: "Não foi possível revisar o reel." };
+  const byId = new Map(cur.critica.notas_por_bloco.map(n => [n.id, n]));
+  const roteiro = { ...s.roteiro, blocos: blocks.map(b => ({ ...b, nota: byId.get(b.id)?.nota ?? null })) };
+  const notas = { ...(s.notas ?? {}), notas_por_bloco: cur.critica.notas_por_bloco, riscos_de_conteudo: cur.critica.riscos_de_conteudo, nota_geral: cur.critica.nota_geral, frases_fracas: cur.frases_fracas };
+  const upd: any = { roteiro, notas, nota_geral: cur.critica.nota_geral, motivos_nota: cur.motivos, critico2: cur.critico2, historico_revisoes, ...gateCols(cur),
+    fontes_usadas: fontesUsadas(fv, textoReel(blocks)), falta_fonte: null, ...(modo === "revalidar" ? { revalidado_em: new Date().toISOString() } : {}) };
+  const { data, error } = await db.from("retention_scripts").update(upd).eq("id", s.id).eq("user_id", userId).select("*").single();
+  if (error) return { error: "Não foi possível salvar a revisão." };
+  return { script: data, rodadas: rod, parou };
+}
+
+async function reescreverSemDado(userId: string, body: any) {
+  const db = adminClient();
+  const { data: s } = await db.from("retention_scripts").select("*").eq("id", str(body.script_id, 40)).eq("user_id", userId).maybeSingle();
+  if (!s) return { error: "Reel não encontrado." };
+  const fv = await carregarFontes(db, userId, [s.tema, s.angulo_usado].filter(Boolean).join(" "), s.pilar);
+  return revisarSalvo(db, userId, s, fv, makeCall({ calls: 0, max: 5, ctrl: new AbortController() }), 1, "sem_dado");
+}
+
+/** Revalidar Banco: one reel per request; counts against the daily generation limit. */
+async function revalidar(userId: string, body: any) {
+  const db = adminClient();
+  const ini = DAY_START();
+  const [{ data: cfg }, { count: feitos }, { count: reval }] = await Promise.all([
+    db.from("reel_factory_settings").select("limite_roteiros_dia").eq("user_id", userId).maybeSingle(),
+    db.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", ini).in("origem", ["manual", "diretor", "automacao", "fabrica"]),
+    db.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("revalidado_em", ini),
+  ]);
+  const limite = cfg?.limite_roteiros_dia ?? 100;
+  if ((feitos ?? 0) + (reval ?? 0) >= limite) return { error: `Limite de ${limite} gerações por dia atingido.`, limite: true };
+  const { data: s } = await db.from("retention_scripts").select("*").eq("id", str(body.script_id, 40)).eq("user_id", userId).maybeSingle();
+  if (!s) return { error: "Reel não encontrado." };
+  if (s.nota_final != null) return { pulado: true, script: s };
+  const fv = await fontesDoReel(db, userId, s.id);
+  return revisarSalvo(db, userId, s, fv, makeCall({ calls: 0, max: GATE.maxChamadas, ctrl: new AbortController() }), 2, "revalidar");
+}
+
 /** Diretor de Reels: theme order = typed > today's plan > pillar rotation; angles used in the last 14 days are avoided. */
 async function escolherTema(db: any, uid: string, typed: string) {
   if (typed) return { tema: typed, fonte: "digitado", evitar: [] as string[] };
@@ -191,6 +260,8 @@ Deno.serve(async (req) => {
   if (!auth.ok) return json({ error: "Não autenticado" }, auth.status);
   let body: any; try { body = await req.json(); } catch { return json({ error: "Pedido inválido." }, 400); }
   if (body.modo === "reescrever_bloco") return json(await reescreverBloco(auth.userId, body));
+  if (body.modo === "reescrever_sem_dado" && !cronKey) return json(await reescreverSemDado(auth.userId, body));
+  if (body.modo === "revalidar" && !cronKey) return json(await revalidar(auth.userId, body));
   const diretor = body.diretor === true && !cronKey;
   const origem = cronKey ? "automacao" : diretor ? "diretor" : "manual";
   const objetivo = OBJETIVOS.includes(str(body.objetivo, 20)) ? str(body.objetivo, 20) : diretor ? "alcance" : "";
