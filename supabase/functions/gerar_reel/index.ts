@@ -261,8 +261,17 @@ Deno.serve(async (req) => {
   if (!auth.ok) return json({ error: "Não autenticado" }, auth.status);
   let body: any; try { body = await req.json(); } catch { return json({ error: "Pedido inválido." }, 400); }
   if (body.modo === "reescrever_bloco") return json(await reescreverBloco(auth.userId, body));
-  if (body.modo === "reescrever_sem_dado" && !cronKey) return json(await reescreverSemDado(auth.userId, body));
-  if (body.modo === "revalidar" && !cronKey) return json(await revalidar(auth.userId, body));
+  // Long modes stream NDJSON with a keepalive so the connection is not closed before the result.
+  if ((body.modo === "reescrever_sem_dado" || body.modo === "revalidar") && !cronKey) {
+    const run = body.modo === "revalidar" ? revalidar : reescreverSemDado;
+    const st = new ReadableStream({ async start(c) {
+      const enc = new TextEncoder(); const ping = setInterval(() => { try { c.enqueue(enc.encode('{"etapa":"aguarde"}\n')); } catch { /* closed */ } }, 10_000);
+      try { c.enqueue(enc.encode(JSON.stringify({ etapa: "pronto", ...(await run(auth.userId, body)) }) + "\n")); }
+      catch (e) { c.enqueue(enc.encode(JSON.stringify({ etapa: "pronto", error: e instanceof Error ? e.message : "Erro" }) + "\n")); }
+      finally { clearInterval(ping); try { c.close(); } catch { /* closed */ } }
+    } });
+    return new Response(st, { headers: { ...cors, "Content-Type": "application/x-ndjson" } });
+  }
   const diretor = body.diretor === true && !cronKey;
   const origem = cronKey ? "automacao" : diretor ? "diretor" : "manual";
   const objetivo = OBJETIVOS.includes(str(body.objetivo, 20)) ? str(body.objetivo, 20) : diretor ? "alcance" : "";

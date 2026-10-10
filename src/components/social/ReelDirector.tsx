@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Nucleus3D } from "./ccSurreal";
 import { BlockQuality } from "./ReelBlockQuality";
-import { runGerarReel, mergeBlocks, DIRETOR_ETAPAS } from "@/lib/retentionEngine";
+import { runGerarReel, runModoReel, mergeBlocks, DIRETOR_ETAPAS } from "@/lib/retentionEngine";
 import { contentScores, parsePesos, COMP_LABEL, MIN_REELS, MIN_CORRELACAO, spearman, prontoParaGravar, ehRascunho, type Comp } from "@/lib/contentScore";
 
 const C = { cyan: "#00D4FF", gold: "#B8922A", amber: "#EF9F27", green: "#5DCAA5", red: "#EF4444", text: "#C8C8D8", white: "#F0F0F8", muted: "#555566", dim: "#333340", violet: "#AFA9EC" };
@@ -341,7 +341,7 @@ function FaltaFonte({ s, onOutro, onReload }: { s: any; onOutro: () => void; onR
   const [busy, setBusy] = useState(false);
   const semDado = async () => {
     setBusy(true);
-    const { data, error } = await supabase.functions.invoke("gerar_reel", { body: { modo: "reescrever_sem_dado", script_id: s.id } });
+    const data: any = await runModoReel({ modo: "reescrever_sem_dado", script_id: s.id }); const error = null;
     setBusy(false);
     const err = (data as any)?.error ?? (error ? "Não foi possível reescrever." : null);
     if (err) return toast.error(err);

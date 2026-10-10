@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { runModoReel } from "@/lib/retentionEngine";
 import { custoRevalidacao, contarPilares } from "@/lib/revalidarBanco";
 
 const C = { cyan: "#00D4FF", gold: "#B8922A", green: "#5DCAA5", amber: "#EF9F27", red: "#EF4444", text: "#C8C8D8", white: "#F0F0F8", muted: "#555566", dim: "#333340" };
@@ -30,8 +31,7 @@ export default function RevalidarBanco() {
     let parou: string | null = null; const out: Linha[] = [];
     for (let i = 0; i < fila.length; i++) {
       const s = fila[i];
-      const { data, error } = await supabase.functions.invoke("gerar_reel", { body: { modo: "revalidar", script_id: s.id } });
-      const d: any = data ?? {};
+      const d: any = await runModoReel({ modo: "revalidar", script_id: s.id }); const error = null;
       if (d.limite) { parou = `${d.error} Revalidados: ${out.length} de ${fila.length}.`; break; }
       if (error || d.error) { out.push({ id: s.id, titulo: s.titulo || s.tema, c1: null, c2: null, teto: null, nota: null, estado: "erro", pend: d.error || "Falha na revalidação" }); }
       else {
