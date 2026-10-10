@@ -38,3 +38,7 @@
 - [ ] Validar visual autenticado do Share View — aguarda uma sessão ativa de aluno na prévia
 - [x] Ajustar ativação muscular, corpo, rótulo e RIR do card TrainingON
 - [x] Separar zonas do card e exibir o treino completo sem cortes
+
+- [x] Q2 — Diretor com fontes da biblioteca, parada inteligente, "Reescrever sem o dado", "Revalidar Banco", subtema retenção de líquido
+- [ ] Q2 — terminar "Revalidar Banco" nos 12 reels restantes (botão na Fábrica; cerca de 5 min por reel)
+- [ ] Q3 → Q5 — aplicar agora que o Q2 chegou (Q4 se houver)

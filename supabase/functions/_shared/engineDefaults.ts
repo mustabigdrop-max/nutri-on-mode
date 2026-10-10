@@ -66,13 +66,28 @@ export const ENGINE_ADDENDA_Q1: Partial<Record<EnginePromptKey, { marcador: stri
 10) Final que retoma a abertura.
 Os exemplos de referência servem de formato, não de conteúdo.` },
 };
-export const hasAddendum = (key: EnginePromptKey) => !!(ENGINE_ADDENDA[key] || ENGINE_ADDENDA_M1[key] || ENGINE_ADDENDA_Q1[key]);
+/** PROMPT Q2 addenda: verified-sources rules (bloco_0, redator) and the no-source rule for the Revisor. */
+export const ENGINE_ADDENDA_Q2: Partial<Record<EnginePromptKey, { marcador: string; texto: string }>> = {
+  bloco_0: { marcador: "USO DAS FONTES VERIFICADAS", texto: `USO DAS FONTES VERIFICADAS
+- Afirmação factual só pode usar dados que estejam em FONTES VERIFICADAS DISPONÍVEIS. Número só se estiver no campo da prova.
+- Frases de fala_segura podem ser usadas quase literalmente. Itens de nao_dizer nunca.
+- Prova de nível 'secundaria' ou com campo limites: use linguagem calibrada ("em um ensaio com N pessoas...") e diga o limite.
+- Sem fonte para a afirmação: escreva como pergunta, posição do método ou técnica de execução, nunca como fato.
+- Nunca escreva referência, número ou fato que não esteja nas fontes.` },
+  redator: { marcador: "FONTES NO ROTEIRO", texto: `FONTES NO ROTEIRO
+- Use só dados de FONTES VERIFICADAS DISPONÍVEIS. Número só se estiver no campo da prova. Prefira a fala_segura. Nunca use itens de nao_dizer.
+- Se usar uma prova, marque "tipo_afirmacao": "achado_cientifico". Prova secundária ou com limites: linguagem calibrada e o limite dito no roteiro.
+- Sem fonte: pergunta, posição do método ou técnica de execução. Nunca como fato.` },
+  revisor: { marcador: "PENDÊNCIA SEM FONTE", texto: `PENDÊNCIA SEM FONTE
+Quando a pendência for 'dado_sem_fonte' ou 'afirmacao_vaga' e não houver prova em FONTES VERIFICADAS DISPONÍVEIS, você pode: (a) remover a afirmação, (b) trocar por pergunta aberta ("Será que...?") ou (c) trocar por posição do método com linguagem calibrada ("Na minha experiência com alunos..."). Nunca reescreva para soar como fato. Nunca acrescente número.` },
+};
+export const hasAddendum = (key: EnginePromptKey) => !!(ENGINE_ADDENDA[key] || ENGINE_ADDENDA_M1[key] || ENGINE_ADDENDA_Q1[key] || ENGINE_ADDENDA_Q2[key]);
 export function withAddendum(key: EnginePromptKey, text: string): string {
   let out = text;
-  for (const a of [ENGINE_ADDENDA[key], ENGINE_ADDENDA_M1[key], ENGINE_ADDENDA_Q1[key]]) {
+  for (const a of [ENGINE_ADDENDA[key], ENGINE_ADDENDA_M1[key], ENGINE_ADDENDA_Q1[key], ENGINE_ADDENDA_Q2[key]]) {
     if (!a || out.includes(a.marcador)) continue;
     out = `${out.trimEnd()}${key === "proibidas" ? "\n" : "\n\n"}${a.texto}`;
   }
   return out;
 }
-for (const k of [...new Set([...Object.keys(ENGINE_ADDENDA), ...Object.keys(ENGINE_ADDENDA_M1), ...Object.keys(ENGINE_ADDENDA_Q1)])] as EnginePromptKey[]) ENGINE_PROMPT_DEFAULTS[k] = withAddendum(k, ENGINE_PROMPT_DEFAULTS[k]);
+for (const k of [...new Set([...Object.keys(ENGINE_ADDENDA), ...Object.keys(ENGINE_ADDENDA_M1), ...Object.keys(ENGINE_ADDENDA_Q1), ...Object.keys(ENGINE_ADDENDA_Q2)])] as EnginePromptKey[]) ENGINE_PROMPT_DEFAULTS[k] = withAddendum(k, ENGINE_PROMPT_DEFAULTS[k]);

@@ -8,8 +8,8 @@ const sub = (slug: string) => creatina.subtemas.find(s => s.slug === slug)!;
 const prova = (slug: string) => montarKit(creatina, sub(slug), "reel").find(c => c.papel === "prova" || c.papel === "ha_falta")!;
 
 describe("P2 cards pro", () => {
-  it("creatina tem 8 temas, incluindo Energia no cérebro", () => {
-    expect(creatina.subtemas).toHaveLength(8);
+  it("creatina tem 9 temas (Q2: retenção de líquido), incluindo Energia no cérebro", () => {
+    expect(creatina.subtemas).toHaveLength(9);
     expect(creatina.subtemas.some(s => s.titulo === "Energia no cérebro")).toBe(true);
   });
   it("sono mostra 21h, Gordji-Nejad et al., Jülich e o chip de dose", () => {

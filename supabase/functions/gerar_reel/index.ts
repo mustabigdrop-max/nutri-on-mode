@@ -5,6 +5,7 @@ import { verificarReel, temaAmplo, tetoVerificador, VERIFICADOR_REGRAS } from ".
 import { rodarCritico2, limitarInflacao, inflado } from "../_shared/critico2.ts";
 import { GATE, notaFinal, estadoQualidade, juntarPendencias, blocosParaRevisar, aplicarRevisao } from "../_shared/qualityGate.ts";
 import { detectarTecnicas, errosDoReel } from "../_shared/academyRules.ts";
+import { carregarFontes, fontesDoReel, fontesUsadas, chavesFaltaFonte, deveParar, FALTA_FONTE, type FontesVerificadas } from "../_shared/fontesVerificadas.ts";
 // Highest-quality model for Ângulo, Redator and Crítico; lighter one for the Arquiteto plan.
 const MODEL_PRO = "google/gemini-2.5-pro", MODEL_LIGHT = "google/gemini-2.5-flash";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
@@ -75,11 +76,17 @@ function applyPatch(blocks: Block[], patch: Record<string, unknown>, ids: number
   }
 }
 
+const voptsFontes = (fv: FontesVerificadas) => ({ temFonte: fv.provas.length > 0, numerosFonte: fv.numeros, naoDizer: fv.nao_dizer, alemDoLimite: fv.alem_do_limite });
+const fontesParaModelo = (fv: FontesVerificadas) => fv.texto ? { fontes_verificadas: fv.texto } : { fontes_verificadas: null, aviso_fontes: "Sem fontes verificadas: nenhuma afirmação factual com número ou estudo." };
+const textoReel = (blocks: Block[]) => blocks.map(b => `${b.fala} ${b.texto_tela}`).join(" ");
+const DAY_START = () => { const ini = new Date(); ini.setUTCHours(3, 0, 0, 0); if (ini.getTime() > Date.now()) ini.setTime(ini.getTime() - 864e5); return ini.toISOString(); };
+
 /** Verifier (code) + Crítico 1 and Crítico 2 in parallel; gate = min(C1, C2, verifier ceiling). */
 async function avaliar(call: Call, P: any, contexto: unknown, estrutura: unknown, blocks: Block[], vopts: any) {
   const ver = verificarReel(blocks, { ...vopts, fatores: P.fatores });
   const sb = blocks.map(b => ({ id: b.id, tempo: b.tempo, fala: b.fala, caminho: [] as (string | number)[] }));
-  const rubrica = VERIFICADOR_REGRAS.join("\n");
+  // Q2: Crítico 2 sees the same verified sources as Crítico 1 (data only; its scale is unchanged).
+  const rubrica = VERIFICADOR_REGRAS.join("\n") + ((contexto as any)?.fontes_verificadas ? `\n\nFONTES VERIFICADAS (um número ou estudo que esteja aqui TEM fonte):\n${(contexto as any).fontes_verificadas}` : "");
   const c1 = async () => {
     let raw: Record<string, unknown> = {}; let critica: ReturnType<typeof normalizeCritique> | null = null;
     for (let t = 0; t < 2 && !critica; t++) {
@@ -155,6 +162,75 @@ async function reescreverBloco(userId: string, body: any) {
   return { script: data };
 }
 
+/** Q2: re-evaluates a saved reel through the same gate (Verificador + C1 + C2), with up to `maxRodadas` Revisor rounds. */
+async function revisarSalvo(db: any, userId: string, s: any, fv: FontesVerificadas, call: Call, maxRodadas: number, modo: "sem_dado" | "revalidar") {
+  const P = await loadEnginePrompts(db, userId, { tema: s.tema, pilar: s.pilar, fontesTexto: fv.texto });
+  const blocks: Block[] = (s.roteiro?.blocos ?? []).map((b: any) => toBlock(b)).filter((b: Block) => Number.isFinite(b.id) && b.fala);
+  if (!blocks.length) return { error: "Reel sem blocos." };
+  const tipo = s.tipo_afirmacao ?? null;
+  const vopts = { proibidas: P.proibidas, tipoAfirmacao: tipo, ...voptsFontes(fv) };
+  const pedido = { tema: s.angulo?.escolhido?.titulo ?? s.tema, objetivo: s.objetivo, tom: s.tom };
+  const cx = { pedido, ...fontesParaModelo(fv) };
+  const historico_revisoes = [...(s.historico_revisoes ?? [])];
+  let cur = modo === "sem_dado" ? null : await avaliar(call, P, cx, s.estrutura, blocks, vopts);
+  if (cur) historico_revisoes.push({ rodada: historico_revisoes.length + 1, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: [], motivo: "Revalidação pela porta de qualidade" });
+  let rod = 0; let parou: string | null = null;
+  const pendIni = cur?.pendencias ?? (s.pendencias ?? []);
+  while ((cur ? cur.estado === "rascunho" : true) && rod < maxRodadas) {
+    rod++;
+    const pend = cur?.pendencias ?? pendIni;
+    const alvo = modo === "sem_dado" ? [...new Set([Number(s.falta_fonte?.bloco), ...pend.filter((p: any) => FALTA_FONTE.test(p.regra)).map((p: any) => p.bloco)].filter(Number.isFinite))] as number[]
+      : blocosParaRevisar((cur?.critica.notas_por_bloco ?? []), pend);
+    if (!alvo.length) break;
+    let out: any;
+    try {
+      out = await call(P.revisor, { pedido, ...fontesParaModelo(fv), blocos: blocks, blocos_para_revisar: alvo, pendencias: pend,
+        ...(modo === "sem_dado" ? { instrucao: "Reescrever sem o dado: transforme o trecho em pergunta aberta ou em posição do método com linguagem calibrada. Nunca como fato. Nunca acrescente número." } : {}),
+        notas: (cur?.critica.notas_por_bloco ?? []).map(n => ({ id: n.id, nota: n.nota })), frases_fracas: cur?.frases_fracas ?? [] }, MODEL_PRO);
+    } catch (e) { if (e instanceof Budget) { parou = "teto de chamadas"; break; } throw e; }
+    const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo, fv.numeros);
+    try { cur = await avaliar(call, P, cx, s.estrutura, blocks, modo === "sem_dado" ? { ...vopts, tipoAfirmacao: tipo === "achado_cientifico" && !fv.provas.length ? "posicao_do_metodo" : tipo } : vopts); }
+    catch (e) { if (e instanceof Budget) { parou = "teto de chamadas"; break; } throw e; }
+    historico_revisoes.push({ rodada: historico_revisoes.length + 1, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: mudancas, rejeitadas,
+      motivo: modo === "sem_dado" ? "Reescrever sem o dado" : (mudancas.length ? mudancas.map(m => m.regra).filter(Boolean).join(", ") || "revisão" : "nenhuma mudança aplicada") });
+  }
+  if (!cur) return { error: "Não foi possível revisar o reel." };
+  const byId = new Map(cur.critica.notas_por_bloco.map(n => [n.id, n]));
+  const roteiro = { ...s.roteiro, blocos: blocks.map(b => ({ ...b, nota: byId.get(b.id)?.nota ?? null })) };
+  const notas = { ...(s.notas ?? {}), notas_por_bloco: cur.critica.notas_por_bloco, riscos_de_conteudo: cur.critica.riscos_de_conteudo, nota_geral: cur.critica.nota_geral, frases_fracas: cur.frases_fracas };
+  const upd: any = { roteiro, notas, nota_geral: cur.critica.nota_geral, motivos_nota: cur.motivos, critico2: cur.critico2, historico_revisoes, ...gateCols(cur),
+    fontes_usadas: fontesUsadas(fv, textoReel(blocks)), falta_fonte: null, ...(modo === "revalidar" ? { revalidado_em: new Date().toISOString() } : {}) };
+  const { data, error } = await db.from("retention_scripts").update(upd).eq("id", s.id).eq("user_id", userId).select("*").single();
+  if (error) return { error: "Não foi possível salvar a revisão." };
+  return { script: data, rodadas: rod, parou };
+}
+
+async function reescreverSemDado(userId: string, body: any) {
+  const db = adminClient();
+  const { data: s } = await db.from("retention_scripts").select("*").eq("id", str(body.script_id, 40)).eq("user_id", userId).maybeSingle();
+  if (!s) return { error: "Reel não encontrado." };
+  const fv = await carregarFontes(db, userId, [s.tema, s.angulo_usado].filter(Boolean).join(" "), s.pilar);
+  return revisarSalvo(db, userId, s, fv, makeCall({ calls: 0, max: 5, ctrl: new AbortController() }), 1, "sem_dado");
+}
+
+/** Revalidar Banco: one reel per request; counts against the daily generation limit. */
+async function revalidar(userId: string, body: any) {
+  const db = adminClient();
+  const ini = DAY_START();
+  const [{ data: cfg }, { count: feitos }, { count: reval }] = await Promise.all([
+    db.from("reel_factory_settings").select("limite_roteiros_dia").eq("user_id", userId).maybeSingle(),
+    db.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", ini).in("origem", ["manual", "diretor", "automacao", "fabrica"]),
+    db.from("retention_scripts").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("revalidado_em", ini),
+  ]);
+  const limite = cfg?.limite_roteiros_dia ?? 100;
+  if ((feitos ?? 0) + (reval ?? 0) >= limite) return { error: `Limite de ${limite} gerações por dia atingido.`, limite: true };
+  const { data: s } = await db.from("retention_scripts").select("*").eq("id", str(body.script_id, 40)).eq("user_id", userId).maybeSingle();
+  if (!s) return { error: "Reel não encontrado." };
+  if (s.nota_final != null) return { pulado: true, script: s };
+  const fv = await fontesDoReel(db, userId, s.id);
+  return revisarSalvo(db, userId, s, fv, makeCall({ calls: 0, max: GATE.maxChamadas, ctrl: new AbortController() }), 2, "revalidar");
+}
+
 /** Diretor de Reels: theme order = typed > today's plan > pillar rotation; angles used in the last 14 days are avoided. */
 async function escolherTema(db: any, uid: string, typed: string) {
   if (typed) return { tema: typed, fonte: "digitado", evitar: [] as string[] };
@@ -185,6 +261,17 @@ Deno.serve(async (req) => {
   if (!auth.ok) return json({ error: "Não autenticado" }, auth.status);
   let body: any; try { body = await req.json(); } catch { return json({ error: "Pedido inválido." }, 400); }
   if (body.modo === "reescrever_bloco") return json(await reescreverBloco(auth.userId, body));
+  // Long modes stream NDJSON with a keepalive so the connection is not closed before the result.
+  if ((body.modo === "reescrever_sem_dado" || body.modo === "revalidar") && !cronKey) {
+    const run = body.modo === "revalidar" ? revalidar : reescreverSemDado;
+    const st = new ReadableStream({ async start(c) {
+      const enc = new TextEncoder(); const ping = setInterval(() => { try { c.enqueue(enc.encode('{"etapa":"aguarde"}\n')); } catch { /* closed */ } }, 10_000);
+      try { c.enqueue(enc.encode(JSON.stringify({ etapa: "pronto", ...(await run(auth.userId, body)) }) + "\n")); }
+      catch (e) { c.enqueue(enc.encode(JSON.stringify({ etapa: "pronto", error: e instanceof Error ? e.message : "Erro" }) + "\n")); }
+      finally { clearInterval(ping); try { c.close(); } catch { /* closed */ } }
+    } });
+    return new Response(st, { headers: { ...cors, "Content-Type": "application/x-ndjson" } });
+  }
   const diretor = body.diretor === true && !cronKey;
   const origem = cronKey ? "automacao" : diretor ? "diretor" : "manual";
   const objetivo = OBJETIVOS.includes(str(body.objetivo, 20)) ? str(body.objetivo, 20) : diretor ? "alcance" : "";
@@ -217,7 +304,14 @@ Deno.serve(async (req) => {
       if (!escolha) throw new HttpError(400, "Cadastre pelo menos um pilar na Matriz ou digite um tema.");
       const tema = escolha.tema;
       send({ etapa: "tema", tema, fonte: escolha.fonte });
-      const P = await loadEnginePrompts(db, auth.userId, { tema });
+      // Q2: {{fontes_verificadas}} before Passo 0 — card_topics + same-pillar sourced reels.
+      const temaFontes = [tema, str(body.angulo_escolhido?.titulo, 200)].filter(Boolean).join(" ");
+      const { data: mesmos } = await db.from("retention_scripts").select("pilar").eq("user_id", auth.userId).not("pilar", "is", null).ilike("tema", `%${(tema.split(/\s+/).find((w: string) => w.length > 4) ?? tema).replace(/[%,()]/g, "")}%`).limit(30);
+      const freq = new Map<number, number>(); for (const m of mesmos ?? []) freq.set(m.pilar, (freq.get(m.pilar) ?? 0) + 1);
+      const pilarNum = [...freq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+      const fv = await carregarFontes(db, auth.userId, temaFontes, pilarNum);
+      send({ etapa: "tema", tema, fonte: escolha.fonte, fontes: fv.provas.length });
+      const P = await loadEnginePrompts(db, auth.userId, { tema, fontesTexto: fv.texto });
       const { data: pilares } = await db.from("content_pillars").select("nome").eq("user_id", auth.userId);
       const [{ data: voice }, { data: patterns }, { data: formulas }, { data: stats }, { count }] = await Promise.all([
         db.from("creator_voice").select("expressoes_usa, expressoes_evita, nicho").eq("user_id", auth.userId).maybeSingle(),
@@ -240,7 +334,7 @@ Deno.serve(async (req) => {
       const dicaId = Number(body.formula_dica); const dica_formula = Number.isInteger(dicaId) && all.some(f => f.id === dicaId) ? dicaId : null;
       const contexto: any = { pedido: { tema, objetivo, tom, rede, quero_mais, dica_formula, tecnica_dica }, formulas_atlas: all, ranking_formulas: ranking,
         selecao_formula: { modo: explorar ? "explorar" : "priorizar", permitidas }, voz_do_criador: voice ?? null,
-        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes };
+        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes, ...fontesParaModelo(fv) };
 
       // Passo 0 — Ângulo: broad themes become concrete angles before the Arquiteto.
       let angulo: any = null;
@@ -248,7 +342,7 @@ Deno.serve(async (req) => {
       if (escolhidoIn && !teste) angulo = normAngulo({ escolhido: escolhidoIn, outros: body.angulo_outros });
       else if (!teste && (diretor || temaAmplo(tema, (pilares ?? []).map((p: any) => p.nome)))) {
         send({ etapa: "angulo" });
-        angulo = normAngulo(await call(P.angulo, { tema_amplo: tema, objetivo, voz_do_criador: voice ?? null, padroes_confirmados: contexto.padroes_confirmados,
+        angulo = normAngulo(await call(P.angulo, { tema_amplo: tema, objetivo, ...fontesParaModelo(fv), voz_do_criador: voice ?? null, padroes_confirmados: contexto.padroes_confirmados,
           ...(escolha.evitar.length ? { angulos_usados_ultimos_14_dias: escolha.evitar.slice(0, 30), aviso: "Não repita ângulos usados nos últimos 14 dias." } : {}) }));
         if (angulo) {
           // Order by Passo 0 points; drop angles used in the last 14 days when there is an alternative.
@@ -293,7 +387,7 @@ Deno.serve(async (req) => {
 
       // Porta de qualidade: up to 3 revision rounds per angle, up to 3 angles, 14 model calls in total.
       const angulos = angulo ? [angulo.escolhido, ...angulo.outros].slice(0, GATE.maxAngulos) : [null];
-      let best: any = null; let rodadasTotal = 0; let parouPor: string | null = null;
+      let best: any = null; let rodadasTotal = 0; let parouPor: string | null = null; let falta: any = null;
       const historico_revisoes: any[] = [];
       const t0 = Date.now();
       for (let ai = 0; ai < angulos.length; ai++) {
@@ -315,27 +409,37 @@ Deno.serve(async (req) => {
           const blocks = (Array.isArray(draft.blocos) ? draft.blocos : []).map((b: any, i: number) => toBlock({ ...b, id: b?.id ?? i + 1 })).filter(b => Number.isFinite(b.id) && b.fala && b.tempo);
           if (!blocks.length) throw new HttpError(502, "Roteiro incompleto. Tente novamente.");
           const tipo_afirmacao = tipoDe(draft.tipo_afirmacao, estrutura.tipo_afirmacao);
-          const vopts = { proibidas: P.proibidas, tipoAfirmacao: tipo_afirmacao, temFonte: false };
+          const vopts = { proibidas: P.proibidas, tipoAfirmacao: tipo_afirmacao, ...voptsFontes(fv) };
           send({ etapa: "verificador" });
           send({ etapa: "critico" });
           let cur = await avaliar(call, P, cx, estrutura, blocks, vopts);
           const hist: any[] = [cur.critica];
           historico_revisoes.push({ rodada: historico_revisoes.length + 1, angulo: ang?.titulo ?? tema, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: [], motivo: "Primeira versão" });
-          let rod = 0;
+          let rod = 0; let chavesAnt = chavesFaltaFonte(cur.pendencias);
           while (cur.estado === "rascunho" && rod < GATE.maxRodadasPorAngulo) {
             if (ctx.max - ctx.calls < 3) { parouPor = "teto de chamadas"; break; }
             if (Date.now() - t0 > 270_000) { parouPor = "tempo"; break; }
             rod++; rodadasTotal++;
             send({ etapa: "revisao", rodada: rod });
             const alvo = blocosParaRevisar(cur.critica.notas_por_bloco, cur.pendencias);
-            const out = await call(P.revisor, { pedido, blocos: blocks, blocos_para_revisar: alvo, pendencias: cur.pendencias,
+            const out = await call(P.revisor, { pedido, ...fontesParaModelo(fv), blocos: blocks, blocos_para_revisar: alvo, pendencias: cur.pendencias,
               notas: cur.critica.notas_por_bloco.map(n => ({ id: n.id, nota: n.nota })), frases_fracas: cur.frases_fracas }, MODEL_PRO);
-            const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo);
+            const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo, fv.numeros);
             send({ etapa: "verificador" }); send({ etapa: "critico", rodada: rod });
             cur = await avaliar(call, P, cx, estrutura, blocks, vopts); hist.push(cur.critica);
             historico_revisoes.push({ rodada: historico_revisoes.length + 1, angulo: ang?.titulo ?? tema, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: mudancas, rejeitadas, motivo: mudancas.length ? mudancas.map(m => m.regra).filter(Boolean).join(", ") || "revisão" : "nenhuma mudança aplicada" });
+            // Q2 parada inteligente: same no-source critical pendência in two consecutive rounds, no new source -> stop.
+            const chaves = chavesFaltaFonte(cur.pendencias); const rep2 = deveParar(chavesAnt, chaves); chavesAnt = chaves;
+            if (rep2) {
+              const bl = Number(rep2.split("|")[0]);
+              const p = cur.pendencias.find(x => x.bloco === bl && x.gravidade === "critico" && FALTA_FONTE.test(x.regra));
+              falta = { bloco: bl, regra: p?.regra ?? "dado_sem_fonte", frase: blocks.find(b => b.id === bl)?.fala ?? p?.trecho ?? "", trecho: p?.trecho ?? "" };
+              parouPor = "falta_fonte";
+              historico_revisoes.push({ rodada: historico_revisoes.length + 1, angulo: ang?.titulo ?? tema, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: [], motivo: `Parada: falta fonte para a afirmação do bloco ${bl} (repetiu em 2 rodadas, sem fonte nova)` });
+              break;
+            }
           }
-          const snap = { ang, estrutura, draft, blocks: blocks.map(b => ({ ...b })), cur, hist, formula, tipo_afirmacao, rod };
+          const snap = { ang, estrutura, draft, blocks: blocks.map(b => ({ ...b })), cur, hist, formula, tipo_afirmacao, rod, falta: parouPor === "falta_fonte" ? falta : null };
           if (!best || cur.nota_final > best.cur.nota_final || (cur.estado !== "rascunho" && best.cur.estado === "rascunho")) best = snap;
           if (cur.estado !== "rascunho" || parouPor) break;
         } catch (e) {
@@ -361,7 +465,7 @@ Deno.serve(async (req) => {
       const angSalvo = angulo ? { ...angulo, escolhido: best.ang ?? angulo.escolhido, outros: [angulo.escolhido, ...angulo.outros].filter((o: any) => o.titulo !== best.ang?.titulo).slice(0, 4) } : null;
       const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: crit.nota_geral, origem,
         angulo: angSalvo, angulo_usado: best.ang?.titulo ?? null, motivos_nota: cur.motivos, critico2: cur.critico2, tipo_afirmacao: best.tipo_afirmacao,
-        rodadas: rodadasTotal, historico_revisoes, ...gateCols(cur),
+        rodadas: rodadasTotal, historico_revisoes, ...gateCols(cur), fontes_usadas: fontesUsadas(fv, textoReel(blocks)), falta_fonte: best.falta ?? null,
         tecnicas: [...new Set([...detectarTecnicas(blocks, formula?.nome), ...(tecnica_dica ? [tecnica_dica] : [])])] })
         .select("*").single();
       if (error) throw new HttpError(500, "Reel gerado, mas não foi possível salvar no histórico.");

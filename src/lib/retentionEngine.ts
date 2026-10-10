@@ -82,3 +82,14 @@ export function contentScore(scripts: any[], results: any[], now = new Date()) {
   const vals = subs.map(s => s.v).filter((v): v is number => v != null);
   return { score: vals.length ? Math.round(avg(vals)!) : null, subs };
 }
+
+/** Q2: long gerar_reel modes (revalidar, reescrever_sem_dado) stream keepalive lines; returns the final result. */
+export async function runModoReel(body: Record<string, unknown>): Promise<any> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { error: "Entre na sua conta." };
+  const res = await fetch(`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/gerar_reel`, {
+    method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const txt = await res.text();
+  const last = txt.trim().split("\n").reverse().find(l => l.includes('"pronto"'));
+  try { return last ? JSON.parse(last) : { error: "Sem resposta." }; } catch { return { error: "Resposta inválida." }; }
+}

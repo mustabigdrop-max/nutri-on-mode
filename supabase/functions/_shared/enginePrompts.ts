@@ -24,7 +24,7 @@ export function fillPlaceholders(text: string, data: Record<string, string>) {
 
 const list = (rows: any[]) => rows.length ? rows.map(p => `- ${p.tipo ? `[${p.tipo}] ` : ""}${p.texto}${p.amostras ? ` (${p.amostras} vídeos)` : ""}`).join("\n") : "";
 
-export async function loadEnginePrompts(db: any, userId: string, opts: { tema?: string; scriptId?: string; pilar?: number | null } = {}): Promise<EnginePrompts> {
+export async function loadEnginePrompts(db: any, userId: string, opts: { tema?: string; scriptId?: string; pilar?: number | null; fontesTexto?: string } = {}): Promise<EnginePrompts> {
   const [{ data: rows }, { data: voice }, { data: patterns }] = await Promise.all([
     db.from("engine_prompts").select("chave, conteudo").eq("user_id", userId),
     db.from("creator_voice").select("nicho, expressoes_usa, expressoes_evita").eq("user_id", userId).maybeSingle(),
@@ -59,7 +59,7 @@ export async function loadEnginePrompts(db: any, userId: string, opts: { tema?: 
     vencedores: list((patterns ?? []).filter((p: any) => p.confirmado)),
     fracos: list((patterns ?? []).filter((p: any) => /fraco|queda|evitar/i.test(String(p.tipo)))),
     exemplos_ouro: exemplos,
-    fontes_verificadas: fontes.map(f => `- ${f.rotulo_card ?? ""} ${f.referencia ?? ""} ${f.link ?? ""} (${f.tipo})`.trim()).join("\n"),
+    fontes_verificadas: opts.fontesTexto != null ? opts.fontesTexto : fontes.map(f => `- ${f.rotulo_card ?? ""} ${f.referencia ?? ""} ${f.link ?? ""} (${f.tipo})`.trim()).join("\n"),
   });
   const tail = `${get("atlas")}\n\n${get("retorica")}`;
   const build = (k: keyof typeof CONTRATO) => fillPlaceholders(`${base}\n\n${get(k)}${CONTRATO[k]}\n\n${tail}`, { exemplos_ouro: exemplos || "Sem reels de referência cadastrados" });

@@ -392,6 +392,51 @@
     "alt_texto": "Card sobre creatina como reserva de energia no cérebro.",
     "bloqueio_prova": null,
     "seed_v": 2
+   },
+   {
+    "slug": "retencao-de-liquido",
+    "titulo": "Inchaço e retenção de líquido",
+    "veredito": "sustentado_com_ressalva",
+    "melhor_para": "alcance",
+    "mito": "Creatina deixa você inchado.",
+    "verdade": "Num ensaio com 27 homens treinados em força, durante 8 semanas, a água corporal total e a intracelular subiram nos dois grupos, mais no que tomou creatina. A água fora das células subiu de forma parecida nos dois grupos, e a proporção entre água intracelular e massa muscular não mudou.",
+    "fala_segura": "Num ensaio com 27 homens treinados, a água aumentou dentro das células. Fora das células, o aumento foi parecido com o do placebo.",
+    "nao_dizer": [
+     "Creatina não retém líquido",
+     "Creatina não incha de jeito nenhum",
+     "Você vai ficar seco",
+     "Perde a água e fica definido"
+    ],
+    "ressalva_obrigatoria": null,
+    "dado_card": {
+     "rotulo": "27 HOMENS · 8 SEMANAS · ÁGUA SOBE DENTRO DA CÉLULA",
+     "selo": "ENSAIO · IJSNEM · 2020",
+     "numero_destaque": "27"
+    },
+    "provas": [
+     {
+      "selo": "ENSAIO · 27 HOMENS · 8 SEMANAS · 2020",
+      "autores": "Ribeiro, Avelar, Kassiano, Nunes, Schoenfeld, Aguiar, Trindade, Silva, Sardinha e Cyrino",
+      "organizacao": null,
+      "periodico": "International Journal of Sport Nutrition and Exercise Metabolism 30(6):405-411",
+      "ano": 2020,
+      "tipo_estudo": "ensaio_controlado_placebo",
+      "n_participantes": 27,
+      "desenho_resumo": "Homens treinados em força tomaram creatina (14) ou placebo (13) por 8 semanas, com treino de força.",
+      "doi_ou_link": "https://pubmed.ncbi.nlm.nih.gov/32916658/",
+      "nivel": "primaria",
+      "limites": "Amostra pequena, só homens treinados, 8 semanas. A água extracelular é de todo o corpo: o estudo não mede água sob a pele. Não mede a sensação de inchaço."
+     }
+    ],
+    "dicas": [
+     "Abra com: creatina deixa inchado?",
+     "Mostre o card de prova entre 6 e 14 segundos, por 2 a 3 segundos.",
+     "Diga o limite: um ensaio, 27 homens, 8 semanas.",
+     "Não prometa que não incha."
+    ],
+    "ilustracao_chave": "balanca",
+    "alt_texto": "Card sobre creatina e água no corpo: aumento dentro das células em um ensaio com 27 homens.",
+    "bloqueio_prova": null
    }
   ]
  }

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ContentMatrixPanel from "./ContentMatrixPanel";
 import PillarReelsPanel from "./PillarReelsPanel";
+import RevalidarBanco from "./RevalidarBanco";
 
 const C = { cyan: "#00D4FF", gold: "#B8922A", red: "#EF4444", text: "#C8C8D8", white: "#F0F0F8", muted: "#555566", dim: "#333340" };
 const F = { t: "'Rajdhani',sans-serif", m: "'Space Mono',monospace" };
@@ -153,6 +154,7 @@ export default function ReelFactoryPanel({ onChosen }: { onChosen?: () => void }
         <div style={{ ...lbl, color: C.gold }}>Fábrica de reels</div>
         <span style={{ fontFamily: F.m, fontSize: 9, color: cfg?.pausado ? C.gold : C.muted }}>{cfg?.pausado ? "PAUSADA" : cfg?.automatico ? `AUTOMÁTICA · ${String(cfg.hora).padStart(2, "0")}:00` : "MANUAL"}</span>
       </div>
+      <RevalidarBanco />
 
       <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={row}>
