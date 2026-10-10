@@ -12134,9 +12134,11 @@ export type Database = {
           estrutura: Json
           estrutura_nome: string | null
           exemplo_ouro: boolean
+          falta_fonte: Json | null
           figura: string | null
           fonte_conferida_em: string | null
           fonte_status: string | null
+          fontes_usadas: Json | null
           formula: string | null
           formula_id: number | null
           gravado_em: string | null
@@ -12158,6 +12160,7 @@ export type Database = {
           quero_mais: string | null
           rede: string
           ressalva_obrigatoria: string | null
+          revalidado_em: string | null
           revisao: string
           risco: string | null
           rodadas: number | null
@@ -12183,9 +12186,11 @@ export type Database = {
           estrutura?: Json
           estrutura_nome?: string | null
           exemplo_ouro?: boolean
+          falta_fonte?: Json | null
           figura?: string | null
           fonte_conferida_em?: string | null
           fonte_status?: string | null
+          fontes_usadas?: Json | null
           formula?: string | null
           formula_id?: number | null
           gravado_em?: string | null
@@ -12207,6 +12212,7 @@ export type Database = {
           quero_mais?: string | null
           rede?: string
           ressalva_obrigatoria?: string | null
+          revalidado_em?: string | null
           revisao?: string
           risco?: string | null
           rodadas?: number | null
@@ -12232,9 +12238,11 @@ export type Database = {
           estrutura?: Json
           estrutura_nome?: string | null
           exemplo_ouro?: boolean
+          falta_fonte?: Json | null
           figura?: string | null
           fonte_conferida_em?: string | null
           fonte_status?: string | null
+          fontes_usadas?: Json | null
           formula?: string | null
           formula_id?: number | null
           gravado_em?: string | null
@@ -12256,6 +12264,7 @@ export type Database = {
           quero_mais?: string | null
           rede?: string
           ressalva_obrigatoria?: string | null
+          revalidado_em?: string | null
           revisao?: string
           risco?: string | null
           rodadas?: number | null
