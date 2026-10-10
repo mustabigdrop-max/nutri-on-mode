@@ -223,7 +223,14 @@ Deno.serve(async (req) => {
       if (!escolha) throw new HttpError(400, "Cadastre pelo menos um pilar na Matriz ou digite um tema.");
       const tema = escolha.tema;
       send({ etapa: "tema", tema, fonte: escolha.fonte });
-      const P = await loadEnginePrompts(db, auth.userId, { tema });
+      // Q2: {{fontes_verificadas}} before Passo 0 — card_topics + same-pillar sourced reels.
+      const temaFontes = [tema, str(body.angulo_escolhido?.titulo, 200)].filter(Boolean).join(" ");
+      const { data: mesmos } = await db.from("retention_scripts").select("pilar").eq("user_id", auth.userId).not("pilar", "is", null).ilike("tema", `%${(tema.split(/\s+/).find(w => w.length > 4) ?? tema).replace(/[%,()]/g, "")}%`).limit(30);
+      const freq = new Map<number, number>(); for (const m of mesmos ?? []) freq.set(m.pilar, (freq.get(m.pilar) ?? 0) + 1);
+      const pilarNum = [...freq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+      const fv = await carregarFontes(db, auth.userId, temaFontes, pilarNum);
+      send({ etapa: "tema", tema, fonte: escolha.fonte, fontes: fv.provas.length });
+      const P = await loadEnginePrompts(db, auth.userId, { tema, fontesTexto: fv.texto });
       const { data: pilares } = await db.from("content_pillars").select("nome").eq("user_id", auth.userId);
       const [{ data: voice }, { data: patterns }, { data: formulas }, { data: stats }, { count }] = await Promise.all([
         db.from("creator_voice").select("expressoes_usa, expressoes_evita, nicho").eq("user_id", auth.userId).maybeSingle(),
@@ -246,7 +253,7 @@ Deno.serve(async (req) => {
       const dicaId = Number(body.formula_dica); const dica_formula = Number.isInteger(dicaId) && all.some(f => f.id === dicaId) ? dicaId : null;
       const contexto: any = { pedido: { tema, objetivo, tom, rede, quero_mais, dica_formula, tecnica_dica }, formulas_atlas: all, ranking_formulas: ranking,
         selecao_formula: { modo: explorar ? "explorar" : "priorizar", permitidas }, voz_do_criador: voice ?? null,
-        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes };
+        padroes_confirmados: (patterns ?? []).filter(p => p.confirmado), indicios: (patterns ?? []).filter(p => !p.confirmado), ajuste_do_ultimo_resultado: ajustes, ...fontesParaModelo(fv) };
 
       // Passo 0 — Ângulo: broad themes become concrete angles before the Arquiteto.
       let angulo: any = null;
@@ -254,7 +261,7 @@ Deno.serve(async (req) => {
       if (escolhidoIn && !teste) angulo = normAngulo({ escolhido: escolhidoIn, outros: body.angulo_outros });
       else if (!teste && (diretor || temaAmplo(tema, (pilares ?? []).map((p: any) => p.nome)))) {
         send({ etapa: "angulo" });
-        angulo = normAngulo(await call(P.angulo, { tema_amplo: tema, objetivo, voz_do_criador: voice ?? null, padroes_confirmados: contexto.padroes_confirmados,
+        angulo = normAngulo(await call(P.angulo, { tema_amplo: tema, objetivo, ...fontesParaModelo(fv), voz_do_criador: voice ?? null, padroes_confirmados: contexto.padroes_confirmados,
           ...(escolha.evitar.length ? { angulos_usados_ultimos_14_dias: escolha.evitar.slice(0, 30), aviso: "Não repita ângulos usados nos últimos 14 dias." } : {}) }));
         if (angulo) {
           // Order by Passo 0 points; drop angles used in the last 14 days when there is an alternative.
@@ -299,7 +306,7 @@ Deno.serve(async (req) => {
 
       // Porta de qualidade: up to 3 revision rounds per angle, up to 3 angles, 14 model calls in total.
       const angulos = angulo ? [angulo.escolhido, ...angulo.outros].slice(0, GATE.maxAngulos) : [null];
-      let best: any = null; let rodadasTotal = 0; let parouPor: string | null = null;
+      let best: any = null; let rodadasTotal = 0; let parouPor: string | null = null; let falta: any = null;
       const historico_revisoes: any[] = [];
       const t0 = Date.now();
       for (let ai = 0; ai < angulos.length; ai++) {
@@ -321,25 +328,35 @@ Deno.serve(async (req) => {
           const blocks = (Array.isArray(draft.blocos) ? draft.blocos : []).map((b: any, i: number) => toBlock({ ...b, id: b?.id ?? i + 1 })).filter(b => Number.isFinite(b.id) && b.fala && b.tempo);
           if (!blocks.length) throw new HttpError(502, "Roteiro incompleto. Tente novamente.");
           const tipo_afirmacao = tipoDe(draft.tipo_afirmacao, estrutura.tipo_afirmacao);
-          const vopts = { proibidas: P.proibidas, tipoAfirmacao: tipo_afirmacao, temFonte: false };
+          const vopts = { proibidas: P.proibidas, tipoAfirmacao: tipo_afirmacao, ...voptsFontes(fv) };
           send({ etapa: "verificador" });
           send({ etapa: "critico" });
           let cur = await avaliar(call, P, cx, estrutura, blocks, vopts);
           const hist: any[] = [cur.critica];
           historico_revisoes.push({ rodada: historico_revisoes.length + 1, angulo: ang?.titulo ?? tema, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: [], motivo: "Primeira versão" });
-          let rod = 0;
+          let rod = 0; let chavesAnt = chavesFaltaFonte(cur.pendencias);
           while (cur.estado === "rascunho" && rod < GATE.maxRodadasPorAngulo) {
             if (ctx.max - ctx.calls < 3) { parouPor = "teto de chamadas"; break; }
             if (Date.now() - t0 > 270_000) { parouPor = "tempo"; break; }
             rod++; rodadasTotal++;
             send({ etapa: "revisao", rodada: rod });
             const alvo = blocosParaRevisar(cur.critica.notas_por_bloco, cur.pendencias);
-            const out = await call(P.revisor, { pedido, blocos: blocks, blocos_para_revisar: alvo, pendencias: cur.pendencias,
+            const out = await call(P.revisor, { pedido, ...fontesParaModelo(fv), blocos: blocks, blocos_para_revisar: alvo, pendencias: cur.pendencias,
               notas: cur.critica.notas_por_bloco.map(n => ({ id: n.id, nota: n.nota })), frases_fracas: cur.frases_fracas }, MODEL_PRO);
             const { mudancas, rejeitadas } = aplicarRevisao(blocks, out, alvo);
             send({ etapa: "verificador" }); send({ etapa: "critico", rodada: rod });
             cur = await avaliar(call, P, cx, estrutura, blocks, vopts); hist.push(cur.critica);
             historico_revisoes.push({ rodada: historico_revisoes.length + 1, angulo: ang?.titulo ?? tema, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: mudancas, rejeitadas, motivo: mudancas.length ? mudancas.map(m => m.regra).filter(Boolean).join(", ") || "revisão" : "nenhuma mudança aplicada" });
+            // Q2 parada inteligente: same no-source critical pendência in two consecutive rounds, no new source -> stop.
+            const chaves = chavesFaltaFonte(cur.pendencias); const rep2 = deveParar(chavesAnt, chaves); chavesAnt = chaves;
+            if (rep2) {
+              const bl = Number(rep2.split("|")[0]);
+              const p = cur.pendencias.find(x => x.bloco === bl && x.gravidade === "critico" && FALTA_FONTE.test(x.regra));
+              falta = { bloco: bl, regra: p?.regra ?? "dado_sem_fonte", frase: blocks.find(b => b.id === bl)?.fala ?? p?.trecho ?? "", trecho: p?.trecho ?? "" };
+              parouPor = "falta_fonte";
+              historico_revisoes.push({ rodada: historico_revisoes.length + 1, angulo: ang?.titulo ?? tema, nota_final: cur.nota_final, pendencias: cur.pendencias.length, blocos_alterados: [], motivo: `Parada: falta fonte para a afirmação do bloco ${bl} (repetiu em 2 rodadas, sem fonte nova)` });
+              break;
+            }
           }
           const snap = { ang, estrutura, draft, blocks: blocks.map(b => ({ ...b })), cur, hist, formula, tipo_afirmacao, rod };
           if (!best || cur.nota_final > best.cur.nota_final || (cur.estado !== "rascunho" && best.cur.estado === "rascunho")) best = snap;
@@ -367,7 +384,7 @@ Deno.serve(async (req) => {
       const angSalvo = angulo ? { ...angulo, escolhido: best.ang ?? angulo.escolhido, outros: [angulo.escolhido, ...angulo.outros].filter((o: any) => o.titulo !== best.ang?.titulo).slice(0, 4) } : null;
       const { data, error } = await db.from("retention_scripts").insert({ user_id: auth.userId, formula_id: formula?.id ?? null, quero_mais, tema, objetivo, tom, rede, estrutura, roteiro, notas, nota_geral: crit.nota_geral, origem,
         angulo: angSalvo, angulo_usado: best.ang?.titulo ?? null, motivos_nota: cur.motivos, critico2: cur.critico2, tipo_afirmacao: best.tipo_afirmacao,
-        rodadas: rodadasTotal, historico_revisoes, ...gateCols(cur),
+        rodadas: rodadasTotal, historico_revisoes, ...gateCols(cur), fontes_usadas: fontesUsadas(fv, textoReel(blocks)), falta_fonte: parouPor === "falta_fonte" && best.cur === cur ? falta : null, pilar: pilarNum,
         tecnicas: [...new Set([...detectarTecnicas(blocks, formula?.nome), ...(tecnica_dica ? [tecnica_dica] : [])])] })
         .select("*").single();
       if (error) throw new HttpError(500, "Reel gerado, mas não foi possível salvar no histórico.");
