@@ -6,10 +6,10 @@ const temas = seed as unknown as Topic[];
 const t = temas[0]; const sub = (s: string) => t.subtemas.find(x => x.slug === s)!;
 
 describe("Agente de Cards 2.0", () => {
-  it("creatina acha o tema com 7 subtemas, ordenados por evidência", () => {
+  it("creatina acha o tema com 9 subtemas, ordenados por evidência", () => {
     expect(acharTema("Creatina", temas)?.slug).toBe("creatina");
     expect(acharTema("monohidrato de creatina", temas)?.slug).toBe("creatina");
-    const o = ordenarSubtemas(t.subtemas); expect(o).toHaveLength(7);
+    const o = ordenarSubtemas(t.subtemas); expect(o).toHaveLength(9);
     expect(o[o.length - 1].slug).toBe("dose-e-uso");
   });
   it("Dopamina e Dose ficam sem card de dado", () => {
