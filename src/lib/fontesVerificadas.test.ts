@@ -26,3 +26,11 @@ describe("Q2 fontes verificadas", () => {
     expect(contarPilares([{ slug: "p1-a" }, { slug: "p2-b" }, { slug: "p2-c" }, { slug: null }])).toMatchObject({ p1: 1, p2: 2 });
   });
 });
+import { verificarReel } from "../../supabase/functions/_shared/reelVerifier";
+describe("Q2 limites da prova", () => {
+  it("bloqueia 'não sob a pele' quando a prova não mede água sob a pele", () => {
+    expect(fv.alem_do_limite).toContain("pele");
+    const v = verificarReel([{ id: 1, tempo: "0-2s", fala: "Ela puxa água pro músculo, não pra debaixo da pele." }], { proibidas: [], temFonte: true, alemDoLimite: fv.alem_do_limite });
+    expect(v[0].pendencias.some(p => p.regra === "afirmacao_sem_prova" && p.gravidade === "critico")).toBe(true);
+  });
+});

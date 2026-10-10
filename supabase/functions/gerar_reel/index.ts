@@ -76,7 +76,7 @@ function applyPatch(blocks: Block[], patch: Record<string, unknown>, ids: number
   }
 }
 
-const voptsFontes = (fv: FontesVerificadas) => ({ temFonte: fv.provas.length > 0, numerosFonte: fv.numeros, naoDizer: fv.nao_dizer });
+const voptsFontes = (fv: FontesVerificadas) => ({ temFonte: fv.provas.length > 0, numerosFonte: fv.numeros, naoDizer: fv.nao_dizer, alemDoLimite: fv.alem_do_limite });
 const fontesParaModelo = (fv: FontesVerificadas) => fv.texto ? { fontes_verificadas: fv.texto } : { fontes_verificadas: null, aviso_fontes: "Sem fontes verificadas: nenhuma afirmação factual com número ou estudo." };
 const textoReel = (blocks: Block[]) => blocks.map(b => `${b.fala} ${b.texto_tela}`).join(" ");
 const DAY_START = () => { const ini = new Date(); ini.setUTCHours(3, 0, 0, 0); if (ini.getTime() > Date.now()) ini.setTime(ini.getTime() - 864e5); return ini.toISOString(); };

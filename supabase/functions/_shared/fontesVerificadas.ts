@@ -2,7 +2,7 @@
 // + script_sources of same-pillar reels with fonte_status verificada/parcial. Pure helpers are tested in the app.
 export type ProvaFV = { autores?: string | null; ano?: number | null; tipo_estudo?: string | null; periodico?: string | null; n_participantes?: number | null; desenho_resumo?: string | null; nivel?: string | null; limites?: string | null; selo?: string | null };
 export type FonteUsada = { autor: string; ano: number | null; tipo: string };
-export type FontesVerificadas = { texto: string; provas: ProvaFV[]; numeros: string[]; nao_dizer: string[]; falas_seguras: string[] };
+export type FontesVerificadas = { texto: string; provas: ProvaFV[]; numeros: string[]; nao_dizer: string[]; falas_seguras: string[]; alem_do_limite: string[] };
 
 export const norm = (s: string) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 const palavras = (s: string) => norm(s).split(/[^a-z0-9]+/).filter(w => w.length > 3);
@@ -23,7 +23,7 @@ export function subtemasRelevantes(subs: any[], tema: string): any[] {
 }
 
 export function montarFontes(topicos: any[], tema: string, fontesReels: any[]): FontesVerificadas {
-  const linhas: string[] = []; const provas: ProvaFV[] = []; const nums = new Set<string>(); const nao: string[] = []; const falas: string[] = [];
+  const linhas: string[] = []; const provas: ProvaFV[] = []; const nums = new Set<string>(); const nao: string[] = []; const falas: string[] = []; const alem: string[] = [];
   for (const t of topicos.filter(t => topicoCasa(t, tema))) {
     linhas.push(`TEMA: ${t.titulo}${t.aviso_tema ? ` (aviso: ${t.aviso_tema})` : ""}`);
     for (const s of subtemasRelevantes(Array.isArray(t.subtemas) ? t.subtemas : [], tema)) {
@@ -36,6 +36,10 @@ export function montarFontes(topicos: any[], tema: string, fontesReels: any[]): 
         const campos = [p.selo, p.autores, p.periodico, p.ano, p.tipo_estudo, p.n_participantes != null ? `${p.n_participantes} participantes` : null, p.desenho_resumo, p.nivel ? `nível ${p.nivel}` : null, p.limites ? `limites: ${p.limites}` : null].filter(v => v != null && v !== "");
         linhas.push(`  prova: ${campos.join(" · ")}`);
         provas.push(p);
+        // "não mede X": the reel may not state anything about X (last word, unless it is part of the theme).
+        for (const m of String(p.limites ?? "").matchAll(/n[aã]o mede ([^.]+)/gi)) {
+          const w = palavras(m[1]).pop(); if (w && !palavras(tema).includes(w) && !alem.includes(w)) alem.push(w);
+        }
         for (const v of [p.selo, p.ano, p.n_participantes, p.desenho_resumo, p.limites, p.periodico]) digits(String(v ?? "")).forEach(d => nums.add(d));
       }
       if (s.dado_card?.rotulo) digits(s.dado_card.rotulo).forEach(d => nums.add(d));
@@ -49,7 +53,7 @@ export function montarFontes(topicos: any[], tema: string, fontesReels: any[]): 
     provas.push({ autores: f.autores, ano: f.ano, tipo_estudo: f.tipo_estudo ?? f.tipo, periodico: f.periodico, n_participantes: f.n_participantes });
     for (const v of [f.ano, f.n_participantes, f.rotulo_card]) digits(String(v ?? "")).forEach(d => nums.add(d));
   }
-  return { texto: linhas.join("\n"), provas, numeros: [...nums], nao_dizer: nao, falas_seguras: falas };
+  return { texto: linhas.join("\n"), provas, numeros: [...nums], nao_dizer: nao, falas_seguras: falas, alem_do_limite: alem };
 }
 
 const sobrenome = (a: string) => norm(String(a ?? "").split(/[,;]| e /)[0]).trim();

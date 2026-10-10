@@ -1,6 +1,6 @@
 // Verificador em código (PROMPT K1, Passo 3): no model, applies score ceilings per block and records why.
 export type VerifyBlock = { id: number; tempo: string; fala: string; texto_tela?: string };
-export type VerifyOpts = { proibidas: string[]; tipoAfirmacao?: string | null; temFonte: boolean; ultimo?: boolean; fatores?: string[]; numerosFonte?: string[]; naoDizer?: string[] };
+export type VerifyOpts = { proibidas: string[]; tipoAfirmacao?: string | null; temFonte: boolean; ultimo?: boolean; fatores?: string[]; numerosFonte?: string[]; naoDizer?: string[]; alemDoLimite?: string[] };
 export type Gravidade = "critico" | "moderado" | "leve";
 export type Pendencia = { bloco: number; regra: string; gravidade: Gravidade; trecho: string; origem: "verificador" | "critico1" | "critico2" };
 export type VerifyResult = { id: number; teto: number; motivos: string[]; riscos: string[]; avisos: string[]; forcar_reescrita: boolean; pendencias: Pendencia[] };
@@ -94,6 +94,8 @@ export function verificarBloco(b: VerifyBlock, idx: number, o: VerifyOpts): Veri
   const cl = t.match(CAUSA_LESAO); if (cl) { cap(7, `Causalidade de lesão ou garantia de segurança: "${cl[0]}". Use "pode sobrecarregar", "costuma"`); pend("causalidade_lesao", "critico", cl[0]); }
   const nd = (o.naoDizer ?? []).map(x => norm(x).replace(/[.!?]+$/, "").trim()).find(x => x.length > 5 && t.includes(x));
   if (nd) { cap(5, `Frase da lista "não dizer" do tema: "${nd}"`); pend("nao_dizer", "critico", nd); }
+  const al = (o.alemDoLimite ?? []).find(w => new RegExp(`\\b${w}\\b`).test(t));
+  if (al) { cap(5, `Afirma algo que a prova não mede ("${al}")`); pend("afirmacao_sem_prova", "critico", al); }
   const fat = (o.fatores?.length ? o.fatores : FATORES_PADRAO).map(norm);
   const an = t.match(/\bnao e (sobre )?(a |o |as |os )?([\p{L}]+)[^.!?]*[.!?]\s*e\b/u);
   if (an && fat.includes(an[3])) { r.avisos.push(`antítese com fator central: "${an[0]}"`); pend("antitese_fator_central", "leve", an[0]); }
