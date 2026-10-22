@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { loginErrorMessage, logLoginError } from "@/lib/loginErrors";
 import {
   PROFILE_META,
   PROFILE_CHOICES,
@@ -152,21 +153,19 @@ const AuthPage = () => {
     setLoading(true);
     const t = window.setTimeout(() => {
       setLoading(false);
-      toast.error("Conexão demorou demais. Tente novamente.");
+      if (mode === "login") {
+        const timeoutError = { name: "TimeoutError", message: "Login request timed out after 15000ms", status: null };
+        logLoginError(timeoutError);
+        toast.error(loginErrorMessage(timeoutError));
+      } else toast.error("Conexão demorou demais. Tente novamente.");
     }, 15000);
-
-    console.log("[AUTH DEBUG] modo:", mode);
-    console.log("[AUTH DEBUG] email:", cleanEmail);
-    console.log("[AUTH DEBUG] nome:", cleanName);
-    console.log("[AUTH DEBUG] password length:", password?.length);
-    console.log("[AUTH DEBUG] perfil:", choice);
 
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) {
-          console.error("[AUTH] login error:", error.status, error.message);
-          toast.error(translateAuthError(error.message));
+          logLoginError(error);
+          toast.error(loginErrorMessage(error));
         } else if (nextPath) window.location.href = nextPath;
         else navigate("/dashboard");
       } else {
@@ -231,8 +230,13 @@ const AuthPage = () => {
 
       }
     } catch (err: any) {
-      console.error("[AUTH] unexpected error:", err);
-      toast.error(translateAuthError(err?.message));
+      if (mode === "login") {
+        logLoginError(err);
+        toast.error(loginErrorMessage(err));
+      } else {
+        console.error("[AUTH] unexpected error:", err);
+        toast.error(translateAuthError(err?.message));
+      }
     } finally {
       window.clearTimeout(t);
       setLoading(false);

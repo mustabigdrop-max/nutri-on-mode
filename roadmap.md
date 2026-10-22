@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Login — retomar Cloud, conferir domínios/configuração e separar erros sem alterar visual/cadastro/recuperação
+- [x] Login — conexão real voltou nos dois endereços (credenciais inválidas: 400; configurações: 200/CORS correto), mensagens verificadas na prévia e 7 testes passaram
+
 - [x] Aplicar textos oficiais no Command Center, Fábrica, avisos e SIGNAL; conferir tela autenticada
 - [ ] Aplicar textos no GRAVITAS — módulo não encontrado neste projeto; aguarda identificação pelo usuário
 
